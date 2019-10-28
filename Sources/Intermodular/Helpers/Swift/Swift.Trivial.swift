@@ -1,0 +1,204 @@
+//
+// Copyright (c) Vatsal Manot
+//
+
+import Darwin
+import Swift
+
+public protocol Trivial: AnyProtocol, CVarArg, Equatable {
+    static var null: Self { get }
+
+    var readOnly: Self { get nonmutating set }
+
+    init(null: Void)
+}
+
+// MARK: - Implementation -
+
+extension Trivial {
+    @inlinable
+    public static var null: Self {
+        @_specialize(where Self == Bool)
+        @_specialize(where Self == Double)
+        @_specialize(where Self == Float)
+        @_specialize(where Self == Int)
+        @_specialize(where Self == Int8)
+        @_specialize(where Self == Int16)
+        @_specialize(where Self == Int32)
+        @_specialize(where Self == Int64)
+        @_specialize(where Self == UInt)
+        @_specialize(where Self == UInt8)
+        @_specialize(where Self == UInt16)
+        @_specialize(where Self == UInt32)
+        @_specialize(where Self == UInt64)
+        get {
+            return alloca()
+        }
+    }
+
+    @inlinable
+    public var readOnly: Self {
+        @_specialize(where Self == Bool)
+        @_specialize(where Self == Double)
+        @_specialize(where Self == Float)
+        @_specialize(where Self == Int)
+        @_specialize(where Self == Int8)
+        @_specialize(where Self == Int16)
+        @_specialize(where Self == Int32)
+        @_specialize(where Self == Int64)
+        @_specialize(where Self == UInt)
+        @_specialize(where Self == UInt8)
+        @_specialize(where Self == UInt16)
+        @_specialize(where Self == UInt32)
+        @_specialize(where Self == UInt64)
+        get {
+            return self
+        } nonmutating set {
+
+        }
+    }
+
+    @_specialize(where Self == Bool)
+    @_specialize(where Self == Double)
+    @_specialize(where Self == Float)
+    @_specialize(where Self == Int)
+    @_specialize(where Self == Int8)
+    @_specialize(where Self == Int16)
+    @_specialize(where Self == Int32)
+    @_specialize(where Self == Int64)
+    @_specialize(where Self == UInt)
+    @_specialize(where Self == UInt8)
+    @_specialize(where Self == UInt16)
+    @_specialize(where Self == UInt32)
+    @_specialize(where Self == UInt64)
+    @inlinable
+    public init(null: Void = ()) {
+        self = alloca_zero()
+    }
+}
+
+// MARK: - Extensions -
+
+extension Trivial {
+    @inlinable
+    public static var sizeInBytes: Int {
+        return MemoryLayout<Self>.size
+    }
+
+    @inlinable
+    public var unsafeRawBytes: UnsafeRawBufferPointer {
+        mutating get {
+            return .to(assumingLayoutCompatible: &self)
+        }
+    }
+
+    @inlinable
+    public mutating func withUnsafeBytes<T>(_ body: ((UnsafeRawBufferPointer) throws -> T)) rethrows -> T {
+        return try Swift.withUnsafeBytes(of: &self, body)
+    }
+
+    @inlinable
+    public var unsafeMutableRawBytes: UnsafeMutableRawBufferPointer {
+        mutating get {
+            return .to(assumingLayoutCompatible: &self)
+        }
+    }
+
+    @inlinable
+    public mutating func withUnsafeMutableBytes<T>(_ body: ((UnsafeMutableRawBufferPointer) throws -> T)) rethrows -> T {
+        return try Swift.withUnsafeMutableBytes(of: &self, body)
+    }
+
+    @inlinable
+    public var bytes: [Byte] {
+        get {
+            return .init(readOnly.unsafeRawBytes)
+        } set {
+            self = Self(bytes: newValue).forceUnwrap()
+        }
+    }
+
+    public init?<S: Sequence>(bytes: S) where S.Element == Byte {
+        self.init()
+
+        var iterator = FixedCountIterator(bytes.makeIterator(), limit: Self.sizeInBytes)
+
+        while let next = iterator.next() {
+            unsafeMutableRawBytes[iterator.count - 1] = next
+        }
+
+        guard iterator.hasReachedLimit else {
+            return nil
+        }
+    }
+}
+
+extension Trivial {
+    @inlinable
+    public mutating func getNilIfNilAddressToSelf<P: Pointer>() -> P? {
+        if self == .init() {
+            return nil
+        } else {
+            return .to(assumingLayoutCompatible: &self)
+        }
+    }
+}
+
+// MARK: - Protocol Implementations -
+
+extension CVarArg where Self: Trivial {
+    @inlinable
+    public var _cVarArgEncoding: [NativeWord] {
+        return self
+            .readOnly
+            .unsafeRawBytes
+            .assumingMemoryBound(to: <<infer>>)
+            .map(id)
+    }
+}
+
+extension Initiable where Self: Trivial {
+    @inlinable
+    public init() {
+        self.init(null: ())
+    }
+}
+
+extension Initiable where Self: Trivial & SignedInteger {
+    @inlinable
+    public init() {
+        self.init(null: ())
+    }
+}
+
+extension Initiable where Self: Trivial & UnsignedInteger {
+    @inlinable
+    public init() {
+        self.init(null: ())
+    }
+}
+
+// MARK: - Helpers -
+
+public struct TrivialRepresentationOf<Value>: MutableWrapper, Trivial {
+    public var value: Value
+
+    public init(_ value: Value) {
+        self.value = value
+    }
+}
+
+extension AnyProtocol {
+    @inlinable
+    public var trivialRepresentation: TrivialRepresentationOf<Self> {
+        return .init(self)
+    }
+}
+
+// MARK: - Implementation Forwarding -
+
+extension ImplementationForwarder where Self: Trivial, ImplementationProvider: Trivial {
+    public init(null: Void = ()) {
+        self.init(implementationProvider: .init(null: ()))
+    }
+}
