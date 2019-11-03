@@ -58,12 +58,6 @@ extension KeyValuePairs: Initiable {
     }
 }
 
-extension Optional: Initiable {
-    public init() {
-        self = .none
-    }
-}
-
 extension Set: Initiable {
     
 }
