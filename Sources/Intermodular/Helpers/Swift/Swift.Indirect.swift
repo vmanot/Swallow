@@ -30,7 +30,7 @@ public struct Indirect<Value>: MutableWrapper {
             }
         }
     }
-
+    
     public var wrappedValue: Value {
         get {
             return value
@@ -38,7 +38,7 @@ public struct Indirect<Value>: MutableWrapper {
             value = newValue
         }
     }
-
+    
     public init(_ value: Value) {
         self.storage = .init(value)
     }
