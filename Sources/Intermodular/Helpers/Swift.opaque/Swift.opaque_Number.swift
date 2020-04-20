@@ -44,6 +44,8 @@ extension opaque_Number {
     @_specialize(where Self == UInt64)
     @inlinable
     public static func opaque_Number_baseInit(_ value: Any, isRetry: Bool) -> Self? {
+        TODO.whole(.fix)
+        
         let value = Optional(value).opaque_Optional_valueOrNil()
 
         switch value {
@@ -54,25 +56,25 @@ extension opaque_Number {
         case let value as Boolean:
             return Self(value.boolValue)
         case let value as CGFloat:
-            return Self(value)
+            return Self(unchecked: value)
         case let value as DarwinBoolean:
             return Self(value)
         case let value as Decimal:
             return Self(value)
         case let value as Double:
-            return Self(value)
+            return Self(unchecked: value)
         case let value as Float:
-            return Self(value)
+            return Self(unchecked: value)
         case let value as Int:
-            return Self(value)
+            return Self(unchecked: value)
         case let value as Int8:
-            return Self(value)
+            return Self(unchecked: value)
         case let value as Int16:
-            return Self(value)
+            return Self(unchecked: value)
         case let value as Int32:
-            return Self(value)
+            return Self(unchecked: value)
         case let value as Int64:
-            return Self(value)
+            return Self(unchecked: value)
         case let value as NSDecimalNumber:
             return Self(value)
         case let value as NSNumber:
@@ -80,15 +82,15 @@ extension opaque_Number {
         case let value as ObjCBool:
             return Self(value)
         case let value as UInt:
-            return Self(value)
+            return Self(unchecked: value)
         case let value as UInt8:
-            return Self(value)
+            return Self(unchecked: value)
         case let value as UInt16:
-            return Self(value)
+            return Self(unchecked: value)
         case let value as UInt32:
-            return Self(value)
+            return Self(unchecked: value)
         case let value as UInt64:
-            return Self(value)
+            return Self(unchecked: value)
 
         case let value as String:
             guard let `Self` = type(Self.self) as? LosslessStringConvertible.Type else {

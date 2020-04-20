@@ -6,8 +6,12 @@ import Darwin
 import Swift
 
 public enum ByteOrder: Hashable, Trivial {
-    case significanceAscending // little endian
-    case significanceDescending // big endian
+    /// Little endian
+    case significanceAscending 
+    
+    /// Big endian
+    case significanceDescending
+    
     case unknown
     
     public static var current: ByteOrder {

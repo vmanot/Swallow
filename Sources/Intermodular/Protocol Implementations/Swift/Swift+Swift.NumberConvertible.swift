@@ -327,7 +327,7 @@ extension Int: NumberConvertible {
     
     @inlinable
     public func toCGFloat() -> CGFloat {
-        return .init(self)
+        return .init(Double(self))
     }
     
     @inlinable
@@ -342,7 +342,7 @@ extension Int: NumberConvertible {
     
     @inlinable
     public func toInt() -> Int {
-        return .init(self)
+        return self
     }
     
     @inlinable

@@ -5,7 +5,7 @@
 import Swift
 
 /// A value identified by its `hashValue`.
-public struct HashIdentifiable<Value: Hashable>: Swift.Identifiable {
+public struct HashIdentifiedValue<Value: Hashable>: Swift.Identifiable {
     public let value: Value
     
     public init(_ value: Value) {

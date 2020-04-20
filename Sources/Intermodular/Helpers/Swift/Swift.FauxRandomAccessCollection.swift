@@ -16,7 +16,7 @@ public struct FauxRandomAccessCollection<C: Collection> {
     }
 }
 
-// MARK: - Protocol Implementation -
+// MARK: - Protocol Implementations -
 
 extension FauxRandomAccessCollection: RandomAccessCollection2 {
     public typealias Element = Value.Element
