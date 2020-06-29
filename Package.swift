@@ -1,4 +1,4 @@
-// swift-tools-version:5.1
+// swift-tools-version:5.3
 
 import PackageDescription
 
@@ -15,8 +15,5 @@ let package = Package(
     ],
     targets: [
         .target(name: "Swallow", dependencies: [], path: "Sources")
-    ],
-    swiftLanguageVersions: [
-        .version("5.1")
     ]
 )
