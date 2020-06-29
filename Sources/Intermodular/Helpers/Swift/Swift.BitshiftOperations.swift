@@ -5,43 +5,51 @@
 import Swift
 
 public protocol BitshiftOperable {
-    @inline(__always) static func << (lhs: Self, rhs: Self) -> Self
-    @inline(__always) static func <<= (lhs: inout Self, rhs: Self)
+    @inlinable
+    static func << (lhs: Self, rhs: Self) -> Self
+    @inlinable
+    static func <<= (lhs: inout Self, rhs: Self)
     
-    @inline(__always) static func ~<< (lhs: Self, rhs: Self) -> Self
-    @inline(__always) static func ~<<= (lhs: inout Self, rhs: Self)
-
-    @inline(__always) static func >> (lhs: Self, rhs: Self) -> Self
-    @inline(__always) static func >>= (lhs: inout Self, rhs: Self)
+    @inlinable
+    static func ~<< (lhs: Self, rhs: Self) -> Self
+    @inlinable
+    static func ~<<= (lhs: inout Self, rhs: Self)
     
-    @inline(__always) static func >>~ (lhs: Self, rhs: Self) -> Self
-    @inline(__always) static func >>~= (lhs: inout Self, rhs: Self)
+    @inlinable
+    static func >> (lhs: Self, rhs: Self) -> Self
+    @inlinable
+    static func >>= (lhs: inout Self, rhs: Self)
+    
+    @inlinable
+    static func >>~ (lhs: Self, rhs: Self) -> Self
+    @inlinable
+    static func >>~= (lhs: inout Self, rhs: Self)
 }
 
 infix operator ~<<
 
-/*@inlinable
-    public func ~<< <T: BitshiftOperations>(lhs: T, rhs: T) -> T where T: Integer & Trivial {
+@inlinable
+public func ~<< <T: BitshiftOperable>(lhs: T, rhs: T) -> T where T: BinaryInteger & Trivial {
     return (lhs << rhs) | (lhs >> (.init(T.sizeInBits) - rhs))
-}*/
+}
 
 infix operator ~<<=
 
 @inlinable
-    public func ~<<= <T: BitshiftOperable>(lhs: inout T, rhs: T) {
+public func ~<<= <T: BitshiftOperable>(lhs: inout T, rhs: T) {
     build(&lhs, with: ~<<, rhs)
 }
 
 infix operator >>~
 
-/*@inlinable
-    public func >>~ <T: BitshiftOperations>(lhs: T, rhs: T) -> T where T: Integer & Trivial {
+@inlinable
+public func >>~ <T: BitshiftOperable>(lhs: T, rhs: T) -> T where T: BinaryInteger & Trivial {
     return (lhs >> rhs) | (lhs << (.init(T.sizeInBits) - rhs))
-}*/
+}
 
 infix operator >>~=
 
 @inlinable
-    public func >>~= <T: BitshiftOperable>(lhs: inout T, rhs: T) {
+public func >>~= <T: BitshiftOperable>(lhs: inout T, rhs: T) {
     build(&lhs, with: >>~, rhs)
 }

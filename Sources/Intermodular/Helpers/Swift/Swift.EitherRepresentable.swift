@@ -11,7 +11,7 @@ public protocol EitherRepresentable: EitherValueConvertible {
 
 /// A mutable type that can be represented as a choice between one of two types.
 public protocol MutableEitherRepresentable: EitherRepresentable, MutableEitherValueConvertible {
-
+    
 }
 
 // MARK: - Implementation -
@@ -19,7 +19,7 @@ public protocol MutableEitherRepresentable: EitherRepresentable, MutableEitherVa
 extension MutableEitherRepresentable where Self: Initiable {
     public init(_ eitherValue: Either<LeftValue, RightValue>) {
         self.init()
-
+        
         self.eitherValue = eitherValue
     }
 }
@@ -30,7 +30,7 @@ extension EitherRepresentable {
     public init(leftValue: LeftValue) {
         self.init(.left(leftValue))
     }
-
+    
     public init(rightValue: RightValue) {
         self.init(.right(rightValue))
     }

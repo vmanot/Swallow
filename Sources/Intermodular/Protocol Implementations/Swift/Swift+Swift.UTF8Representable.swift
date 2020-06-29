@@ -61,7 +61,7 @@ extension String: UTF8Representable {
     public init(utf8String: NullTerminatedUTF8String, count: Int, deallocate: Bool) {
         self.init(repeating: " ", count: count)
 
-        _ = withMutableCString({ $0.assign(from: utf8String, count: utf8String.count) })
+        withMutableCString({ $0.assign(from: utf8String, count: utf8String.count) })
 
         if deallocate {
             utf8String.value.unsafeMutablePointerRepresentation.deallocate()

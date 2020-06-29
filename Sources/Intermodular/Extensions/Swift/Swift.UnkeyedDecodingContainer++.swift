@@ -8,7 +8,7 @@ extension UnkeyedDecodingContainer {
     public mutating func decode(opaque type: Decodable.Type) throws -> Decodable {
         return try type.decode(from: &self)
     }
-
+    
     public mutating func decodeIfPresent(opaque type: Decodable.Type) throws -> Decodable? {
         return try type.decodeIfPresent(from: &self)
     }

@@ -39,7 +39,7 @@ extension Float80: Continuous, Signed, Number {
 
     public init(from decoder: Decoder) throws {
         self = try hack {
-            try decoder.decode(Double.self).toFloat80()
+            try decoder.decode(single: Double.self).toFloat80()
         }
     }
 

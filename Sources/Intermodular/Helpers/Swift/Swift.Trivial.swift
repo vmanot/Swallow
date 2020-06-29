@@ -5,11 +5,12 @@
 import Darwin
 import Swift
 
+/// A trivial (Darwin) type.
 public protocol Trivial: AnyProtocol, CVarArg, Equatable {
     static var null: Self { get }
-
+    
     var readOnly: Self { get nonmutating set }
-
+    
     init(null: Void)
 }
 
@@ -35,7 +36,7 @@ extension Trivial {
             return alloca()
         }
     }
-
+    
     @inlinable
     public var readOnly: Self {
         @_specialize(where Self == Bool)
@@ -54,10 +55,10 @@ extension Trivial {
         get {
             return self
         } nonmutating set {
-
+            
         }
     }
-
+    
     @_specialize(where Self == Bool)
     @_specialize(where Self == Double)
     @_specialize(where Self == Float)
@@ -84,31 +85,31 @@ extension Trivial {
     public static var sizeInBytes: Int {
         return MemoryLayout<Self>.size
     }
-
+    
     @inlinable
     public var unsafeRawBytes: UnsafeRawBufferPointer {
         mutating get {
             return .to(assumingLayoutCompatible: &self)
         }
     }
-
+    
     @inlinable
     public mutating func withUnsafeBytes<T>(_ body: ((UnsafeRawBufferPointer) throws -> T)) rethrows -> T {
         return try Swift.withUnsafeBytes(of: &self, body)
     }
-
+    
     @inlinable
     public var unsafeMutableRawBytes: UnsafeMutableRawBufferPointer {
         mutating get {
             return .to(assumingLayoutCompatible: &self)
         }
     }
-
+    
     @inlinable
     public mutating func withUnsafeMutableBytes<T>(_ body: ((UnsafeMutableRawBufferPointer) throws -> T)) rethrows -> T {
         return try Swift.withUnsafeMutableBytes(of: &self, body)
     }
-
+    
     @inlinable
     public var bytes: [Byte] {
         get {
@@ -117,29 +118,18 @@ extension Trivial {
             self = Self(bytes: newValue).forceUnwrap()
         }
     }
-
+    
     public init?<S: Sequence>(bytes: S) where S.Element == Byte {
         self.init()
-
+        
         var iterator = FixedCountIterator(bytes.makeIterator(), limit: Self.sizeInBytes)
-
+        
         while let next = iterator.next() {
             unsafeMutableRawBytes[iterator.count - 1] = next
         }
-
+        
         guard iterator.hasReachedLimit else {
             return nil
-        }
-    }
-}
-
-extension Trivial {
-    @inlinable
-    public mutating func getNilIfNilAddressToSelf<P: Pointer>() -> P? {
-        if self == .init() {
-            return nil
-        } else {
-            return .to(assumingLayoutCompatible: &self)
         }
     }
 }
@@ -182,7 +172,7 @@ extension Initiable where Self: Trivial & UnsignedInteger {
 
 public struct TrivialRepresentationOf<Value>: MutableWrapper, Trivial {
     public var value: Value
-
+    
     public init(_ value: Value) {
         self.value = value
     }

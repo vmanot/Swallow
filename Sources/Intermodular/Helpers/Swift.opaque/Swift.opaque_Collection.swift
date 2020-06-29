@@ -42,7 +42,7 @@ extension opaque_Collection where Self: Collection {
     public var opaque_Collection_endIndex: Any {
         return endIndex
     }
-        
+    
     public func opaque_Collection_element(atPosition position: Any) -> Any? {
         return (-?>position).map({ self[$0 as Index] as Any })
     }
@@ -50,7 +50,7 @@ extension opaque_Collection where Self: Collection {
     public func opaque_Collection_elements(withinBounds bounds: Any) -> Any? {
         return (-?>bounds).map({ self[$0 as Range<Index>] })
     }
-
+    
     public func opaque_Collection_index(after i: Any) -> Any? {
         guard let i = i as? Index else {
             return nil
@@ -70,7 +70,7 @@ extension opaque_Collection where Self: Collection {
         
         return ()
     }
-
+    
     public func opaque_Collection_toAnyCollection() -> Any {
         return AnyCollection(fauxRandomAccessView)
     }

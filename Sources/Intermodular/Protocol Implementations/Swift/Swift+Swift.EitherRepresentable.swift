@@ -6,7 +6,7 @@ import Swift
 
 extension Bool: EitherRepresentable {
     public typealias EitherValue = Either<True.Type, False.Type>
-
+    
     public var eitherValue: EitherValue {
         return self ? .left(<<infer>>) : .right(<<infer>>)
     }
@@ -20,10 +20,10 @@ extension Bool: EitherRepresentable {
 public enum Either<T, U>: EitherRepresentable, MutableEitherRepresentable {
     public typealias LeftValue = T
     public typealias RightValue = U
-
+    
     case left(T)
     case right(U)
-
+    
     public var eitherValue: Either<LeftValue, RightValue> {
         get {
             return self
@@ -47,12 +47,12 @@ public enum Either3<T, U, V>: EitherRepresentable {
     
     public var eitherValue: EitherValue {
         switch self {
-        case .result1(let value):
-            return .left(.left(value))
-        case .result2(let value):
-            return .left(.right(value))
-        case .result3(let value):
-            return .right(value)
+            case .result1(let value):
+                return .left(.left(value))
+            case .result2(let value):
+                return .left(.right(value))
+            case .result3(let value):
+                return .right(value)
         }
     }
     
@@ -128,22 +128,22 @@ extension Optional: OptionalProtocol {
 
 extension Result: EitherRepresentable {
     public typealias EitherValue = Either<Success, Failure>
-
+    
     public var eitherValue: EitherValue {
         switch self {
-        case .success(let value):
-            return .left(value)
-        case .failure(let error):
-            return .right(error)
+            case .success(let value):
+                return .left(value)
+            case .failure(let error):
+                return .right(error)
         }
     }
-
+    
     public init(_ eitherValue: EitherValue) {
         switch eitherValue {
-        case .left(let value):
-            self = .success(value)
-        case .right(let error):
-            self = .failure(error)
+            case .left(let value):
+                self = .success(value)
+            case .right(let error):
+                self = .failure(error)
         }
     }
 }

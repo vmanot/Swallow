@@ -24,14 +24,14 @@ extension Equatable where Self: Trivial {
     }
 
     @inlinable
-    static public func == (lhs: Self, rhs: Self) -> Bool {
+    public static func == (lhs: Self, rhs: Self) -> Bool {
         return lhs.isEqual(to: rhs)
     }
 }
 
 extension Equatable where Self: Hashable & Trivial {
     @inlinable
-    static public func == (lhs: Self, rhs: Self) -> Bool {
+    public static func == (lhs: Self, rhs: Self) -> Bool {
         return lhs.hashValue == rhs.hashValue
     }
 }

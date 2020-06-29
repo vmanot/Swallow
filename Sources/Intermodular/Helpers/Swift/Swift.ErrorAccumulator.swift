@@ -11,7 +11,7 @@ public struct ErrorAccumulator {
         self.data = []
     }
 
-    public mutating func add(_ error: Error, file: StaticString = #function, function: StaticString = #function, line: UInt = #line, column: UInt = #column) {
+    public mutating func add(_ error: Error, file: StaticString = #file, function: StaticString = #function, line: UInt = #line, column: UInt = #column) {
         if let error = error as? AccumulatedErrors {
             data += error.data
         } else {

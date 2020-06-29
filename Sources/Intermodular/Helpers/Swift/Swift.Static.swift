@@ -10,12 +10,12 @@ public protocol Static: AnyProtocol {
 
 public protocol StaticValue: Static {
     associatedtype Value
-
+    
     static var value: Value { get }
 }
 
 public protocol StaticInteger: StaticValue where Value == Int {
-
+    
 }
 
 // MARK: - Concrete Implementations -

@@ -13,9 +13,9 @@ public protocol UTF8Representable {
     init(utf8String: NullTerminatedUTF8String, count: Int, managed: Bool)
     
     init?(validatingUTF8String _: NullTerminatedUTF8String?, deallocate: Bool)
-
+    
     func nullTerminatedUTF8String() -> NullTerminatedUTF8String
-
+    
     mutating func withMutableCString<T>(_ f: ((NullTerminatedUTF8String) throws -> T)) rethrows -> T
 }
 
@@ -33,11 +33,11 @@ extension UTF8Representable {
         
         self.init(utf8String: utf8String)
     }
-
+    
     public init(utf8String: NullTerminatedUTF8String, deallocate: Bool) {
         self.init(utf8String: utf8String, count: utf8String.count, deallocate: deallocate)
     }
-
+    
     public init?(utf8String: NullTerminatedUTF8String?, count: Int, deallocate: Bool) {
         guard let utf8String = utf8String else {
             return nil
@@ -49,11 +49,11 @@ extension UTF8Representable {
     public init?(utf8String: NullTerminatedUTF8String?, deallocate: Bool) {
         self.init(utf8String: utf8String, count: utf8String?.count ?? 0, deallocate: deallocate)
     }
-
+    
     public init(utf8String: NullTerminatedUTF8String, managed: Bool) {
         self.init(utf8String: utf8String, count: utf8String.count, managed: managed)
     }
-
+    
     public init?(utf8String: NullTerminatedUTF8String?, count: Int, managed: Bool) {
         guard let utf8String = utf8String else {
             return nil
@@ -79,7 +79,7 @@ extension UTF8Representable {
         
         self.init(utf8String: utf8String, deallocate: false)
     }
-
+    
     public init<P: Pointer>(utf8String: P, count: Int) where P.Pointee == CChar {
         let utf8String = NullTerminatedUTF8String(utf8String.opaquePointerRepresentation)
         
@@ -132,9 +132,9 @@ extension UTF8Representable {
 extension UTF8Representable {
     public func mutatingWithMutableCString<T>(_ f: ((NullTerminatedUTF8String) throws -> T)) rethrows -> Self {
         var result = self
-
+        
         _ = try result.withMutableCString(f)
-
+        
         return result
     }
 }

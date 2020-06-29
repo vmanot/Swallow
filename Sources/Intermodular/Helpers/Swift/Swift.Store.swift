@@ -8,7 +8,7 @@ public protocol Store: opaque_Store {
     associatedtype Storage
     
     var storage: Storage { get }
-
+    
     init(storage: Storage)
 }
 

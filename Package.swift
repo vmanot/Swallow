@@ -2,7 +2,6 @@
 
 import PackageDescription
 
-//[.unsafeFlags(["-enable-library-evolution"])]
 let package = Package(
     name: "Swallow",
     platforms: [

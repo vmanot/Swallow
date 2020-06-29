@@ -29,7 +29,7 @@ extension BooleanInitiable {
     public init(_ value: DarwinBoolean) {
         self.init(value.boolValue)
     }
-
+    
     @_specialize(where Self == Double)
     @_specialize(where Self == Float)
     @_specialize(where Self == Int)
