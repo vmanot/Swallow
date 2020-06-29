@@ -5,7 +5,6 @@
 import Swift
 
 @inlinable
-@inline(__always)
 public func assert(_ f: (() -> Bool)) {
     return Swift.assert(f())
 }

@@ -9,22 +9,15 @@ import ObjectiveC
 import Swift
 
 public protocol opaque_Number: opaque_Hashable, opaque_SignedOrUnsigned, Codable, NumberConvertible {
-    @inline(__always)
     static func opaque_Number_baseInit(_: Any, isRetry: Bool) -> Self?
-    @inline(__always)
     static func opaque_Number_init(_: Any, isRetry: Bool) -> Self?
     
-    @inline(__always)
     func opaque_Number_attemptCast(to _: opaque_Number.Type) -> opaque_Number?
     
-    @inline(__always)
     init(uncheckedOpaqueValue: opaque_Number)
-    @inline(__always)
     init?(opaqueValue: opaque_Number)
     
-    @inline(__always)
     init<N: opaque_Number>(unchecked _: N)
-    @inline(__always)
     init?<N: opaque_Number>(checked _: N)
 }
 

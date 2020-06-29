@@ -30,7 +30,7 @@ extension MutableSequence where Self: MutableCollection {
 }
 
 extension MutableSequence where Self: RangeReplaceableCollection {
-    @inline(__always) public mutating func forEach<T>(mutating iterator: ((inout Element) throws -> T)) rethrows {
+    public mutating func forEach<T>(mutating iterator: ((inout Element) throws -> T)) rethrows {
         for (index, element) in enumerated() {
             var oldElementWasMutated = false
             
