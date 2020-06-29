@@ -19,19 +19,6 @@ public protocol Trivial: AnyProtocol, CVarArg, Equatable {
 extension Trivial {
     @inlinable
     public static var null: Self {
-        @_specialize(where Self == Bool)
-        @_specialize(where Self == Double)
-        @_specialize(where Self == Float)
-        @_specialize(where Self == Int)
-        @_specialize(where Self == Int8)
-        @_specialize(where Self == Int16)
-        @_specialize(where Self == Int32)
-        @_specialize(where Self == Int64)
-        @_specialize(where Self == UInt)
-        @_specialize(where Self == UInt8)
-        @_specialize(where Self == UInt16)
-        @_specialize(where Self == UInt32)
-        @_specialize(where Self == UInt64)
         get {
             return alloca()
         }
@@ -39,19 +26,6 @@ extension Trivial {
     
     @inlinable
     public var readOnly: Self {
-        @_specialize(where Self == Bool)
-        @_specialize(where Self == Double)
-        @_specialize(where Self == Float)
-        @_specialize(where Self == Int)
-        @_specialize(where Self == Int8)
-        @_specialize(where Self == Int16)
-        @_specialize(where Self == Int32)
-        @_specialize(where Self == Int64)
-        @_specialize(where Self == UInt)
-        @_specialize(where Self == UInt8)
-        @_specialize(where Self == UInt16)
-        @_specialize(where Self == UInt32)
-        @_specialize(where Self == UInt64)
         get {
             return self
         } nonmutating set {
@@ -59,19 +33,6 @@ extension Trivial {
         }
     }
     
-    @_specialize(where Self == Bool)
-    @_specialize(where Self == Double)
-    @_specialize(where Self == Float)
-    @_specialize(where Self == Int)
-    @_specialize(where Self == Int8)
-    @_specialize(where Self == Int16)
-    @_specialize(where Self == Int32)
-    @_specialize(where Self == Int64)
-    @_specialize(where Self == UInt)
-    @_specialize(where Self == UInt8)
-    @_specialize(where Self == UInt16)
-    @_specialize(where Self == UInt32)
-    @_specialize(where Self == UInt64)
     @inlinable
     public init(null: Void = ()) {
         self = alloca_zero()
