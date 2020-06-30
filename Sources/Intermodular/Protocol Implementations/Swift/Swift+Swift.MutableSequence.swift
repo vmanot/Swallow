@@ -26,7 +26,11 @@ extension Dictionary: ElementRemoveableDestructivelyMutableSequence {
     }
 
     public mutating func remove(_ element: Element) -> Element? {
-        return compound(element.0, removeValue(forKey: element.0))
+        guard let value = removeValue(forKey: element.0) else {
+            return nil
+        }
+        
+        return (element.0, value)
     }
 }
 
@@ -44,7 +48,9 @@ extension Set: DestructivelyMutableSequence {
             if element != newElement {
                 remove(element)
 
-                optional(newElement).collapse({ self.insert($0) })
+                if let newElement = newElement {
+                    insert(newElement)
+                }
             }
         }
     }

@@ -222,7 +222,11 @@ extension Collection {
 extension Collection {
     @inlinable
     public func reduce(_ combine: ((Element, Element) -> Element)) -> Element? {
-        return compound(first, dropFirst()).map({ $0.1.reduce($0.0, combine) })
+        guard let first = first else {
+            return nil
+        }
+    
+        return dropFirst().reduce(first, combine)
     }
 }
 
