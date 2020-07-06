@@ -18,3 +18,13 @@ public struct EncodableSequence<Base: Sequence>: Encodable where Base.Element: E
         try container.encode(contentsOf: base)
     }
 }
+
+extension Never: Codable {
+    public func encode(to encoder: Encoder) throws {
+        fatalError()
+    }
+    
+    public init(from decoder: Decoder) throws {
+        fatalError()
+    }
+}
