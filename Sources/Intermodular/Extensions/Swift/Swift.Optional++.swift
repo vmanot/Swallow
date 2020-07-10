@@ -10,28 +10,18 @@ infix operator =??: AssignmentPrecedence
 extension Optional {
     @inlinable
     public init(_ wrapped: @autoclosure () -> Wrapped, if condition: Bool) {
-        self = condition ? wrapped() : nil 
+        self = condition ? wrapped() : nil
     }
-
+    
     @inlinable
     public init(_ wrapped: @autoclosure () -> Optional<Wrapped>, if condition: Bool) {
         self = condition ? wrapped() : nil
     }
-
+    
     @inlinable
-    public func iff(_ condition: Bool) -> Optional {
-        return condition ? self : .none
-    }
-
-    @inlinable
-    public func iff(_ predicate: ((Wrapped) -> Bool)) -> Optional {
-        return flatMap({ predicate($0) ? $0 : nil })
-    }
-
-    @inlinable
-    public func ifNone(do f: (() throws -> ())) rethrows {
+    public func ifNone(perform action: (() throws -> ())) rethrows {
         if self == nil {
-            try f()
+            try action()
         }
     }
 }
@@ -72,19 +62,19 @@ extension Optional {
             lhs = rhs()
         }
     }
-
+    
     public static func ??= (lhs: inout Optional<Wrapped>, rhs: @autoclosure () -> Wrapped?) {
         if lhs == nil, let rhs = rhs() {
             lhs = rhs
         }
     }
-
+    
     public static func =?? (lhs: inout Wrapped, rhs: Wrapped?) {
         if let rhs = rhs {
             lhs = rhs
         }
     }
-
+    
     public static func =?? (lhs: inout Wrapped, rhs: Wrapped??) {
         lhs =?? rhs.compact()
     }
@@ -94,12 +84,60 @@ extension Optional {
     public func compact<T>() -> T? where Wrapped == T? {
         return self ?? .none
     }
-
+    
     public func compact<T>() -> T? where Wrapped == T?? {
         return (self ?? .none) ?? .none
     }
-
+    
     public func compact<T>() -> T? where Wrapped == T??? {
         return ((self ?? .none) ?? .none) ?? .none
+    }
+}
+
+extension Optional {
+    public enum UnwrappingError: Error {
+        case unexpectedlyFoundNil(at: SourceCodeLocation)
+    }
+    
+    @inlinable
+    public func unwrapOrThrow(_ error: @autoclosure () throws -> Error) throws -> Wrapped {
+        if let wrapped = self {
+            return wrapped
+        } else {
+            throw try error()
+        }
+    }
+    
+    @inlinable
+    public func orFatallyThrow(_ message: @autoclosure () -> String, file: StaticString = #file, line: UInt = #line) -> Wrapped {
+        if let wrapped = self {
+            return wrapped
+        } else {
+            AnyError(description: message()).fatalThrow(file: file, line: line)
+        }
+    }
+        
+    @inlinable
+    public func unwrap(
+        file: StaticString = #file,
+        function: StaticString = #function,
+        line: UInt = #line,
+        column: UInt = #column
+    ) throws -> Wrapped {
+        guard let wrapped = self else {
+            throw UnwrappingError.unexpectedlyFoundNil(at: .init(file: file, function: function, line: line, column: column))
+        }
+        
+        return wrapped
+    }
+    
+    @inlinable
+    public func forceUnwrap(
+        file: StaticString = #file,
+        function: StaticString = #function,
+        line: UInt = #line,
+        column: UInt = #column
+    ) -> Wrapped {
+        try! unwrap(file: file, line: line)
     }
 }

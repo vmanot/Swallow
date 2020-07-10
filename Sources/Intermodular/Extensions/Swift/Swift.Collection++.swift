@@ -169,7 +169,7 @@ extension Collection {
 extension Collection {
     @inlinable
     public var lastIndex: Index {
-        return indices.last.orFatallyThrowFunctionFailureError()
+        return try! indices.last.unwrap()
     }
 
     @inlinable
