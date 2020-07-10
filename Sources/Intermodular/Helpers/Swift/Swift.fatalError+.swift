@@ -19,6 +19,14 @@ extension Never {
         case unimplemented
     }
     
+    public static func materialize() -> Never {
+        fatalError()
+    }
+    
+    public static func materialize<T, U>(_: T) -> U {
+        fatalError()
+    }
+
     public static func materialize<T>(reason: Reason, file: StaticString = #file, function: StaticString = #function, line: UInt = #line) -> T {
         switch reason {
             case .abstract:
