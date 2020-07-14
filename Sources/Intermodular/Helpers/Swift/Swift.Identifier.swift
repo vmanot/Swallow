@@ -13,7 +13,7 @@ public protocol Identifier: opaque_Identifier, Hashable {
     
 }
 
-public protocol opaque_Identifiable {
+public protocol opaque_Identifiable: AnyProtocol {
     var opaque_identifier: opaque_Identifier { get }
 }
 
