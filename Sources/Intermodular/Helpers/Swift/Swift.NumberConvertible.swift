@@ -11,11 +11,6 @@ public protocol NumberConvertible: NumberInitiable {
     func toCGFloat() -> CGFloat
     func toDouble() -> Double
     func toFloat() -> Float
-
-    #if os(macOS)
-    func toFloat80() -> Float80
-    #endif
-
     func toInt() -> Int
     func toInt8() -> Int8
     func toInt16() -> Int16
@@ -48,15 +43,6 @@ extension NumberConvertible where Self: opaque_Number {
     public func toFloat() -> Float {
         return .init(self)
     }
-
-    #if os(macOS)
-
-    @inlinable
-    public func toFloat80() -> Float80 {
-        return .init(self)
-    }
-
-    #endif
 
     @inlinable
     public func toInt() -> Int {

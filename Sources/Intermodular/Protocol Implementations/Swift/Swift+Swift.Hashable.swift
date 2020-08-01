@@ -57,3 +57,26 @@ public struct Hashable2ple<T: Hashable, U: Hashable>: Hashable, Wrapper {
         hasher.combine(value.1)
     }
 }
+
+public struct ManyHashable: Hashable {
+    @usableFromInline
+    let hashIntoHasherImpl: (inout Hasher) -> ()
+    
+    @inlinable
+    public init<H0: Hashable, H1: Hashable>(_ h0: H0, _ h1: H1) {
+        hashIntoHasherImpl = {
+            h0.hash(into: &$0)
+            h1.hash(into: &$0)
+        }
+    }
+    
+    @inlinable
+    public func hash(into hasher: inout Hasher) {
+        hashIntoHasherImpl(&hasher)
+    }
+    
+    @inlinable
+    public static func == (lhs: Self, rhs: Self) -> Bool {
+        lhs.hashValue == rhs.hashValue
+    }
+}

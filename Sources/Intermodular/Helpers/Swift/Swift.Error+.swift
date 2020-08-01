@@ -12,7 +12,7 @@ extension AnyProtocol {
     }
 }
 
-extension Boolean where Self: Error {
+extension Boolean  {
     public func orThrow(_ error: Error) throws {
         if !boolValue {
             throw error
@@ -21,10 +21,6 @@ extension Boolean where Self: Error {
     
     public func orThrow() throws {
         try orThrow(EmptyError()); TODO.here(.improve)
-    }
-    
-    public func throwSelfIfFalse() throws {
-        try orThrow(self)
     }
 }
 

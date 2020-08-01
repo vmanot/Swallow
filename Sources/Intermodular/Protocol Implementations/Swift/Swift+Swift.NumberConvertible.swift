@@ -21,16 +21,7 @@ extension Bool: NumberConvertible {
     public init(_ value: Float) {
         self = value > 0
     }
-    
-    #if os(macOS)
-    
-        @inlinable
-    public init(_ value: Float80) {
-            self = value > 0
-        }
-    
-    #endif
-    
+        
     @inlinable
     public init(_ value: Int) {
         self = value > 0
@@ -70,15 +61,6 @@ extension Bool: NumberConvertible {
     public func toFloat() -> Float {
         return .init(self)
     }
-    
-    #if os(macOS)
-    
-        @inlinable
-    public func toFloat80() -> Float80 {
-            return self ? 1 : 0
-        }
-    
-    #endif
     
     @inlinable
     public func toInt() -> Int {
@@ -304,20 +286,6 @@ extension Float: NumberConvertible {
         return self as NSNumber
     }
 }
-
-#if os(macOS)
-    
-    extension Float80 {
-        public init(_ value: NSNumber) {
-            self.init(value.doubleValue)
-        }
-
-        public func toBool() -> Bool {
-            return .init(self)
-        }
-    }
-    
-#endif
 
 extension Int: NumberConvertible {
     @inlinable

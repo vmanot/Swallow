@@ -131,7 +131,7 @@ extension IteratorOnly: Wrapper {
 
 }
 
-public final class MutableHeapWrapper<T>: MutableWrapperBase<T> {
+public final class ReferenceBox<T>: MutableWrapperBase<T> {
     public required init(_ value: T) {
         super.init(value)
     }

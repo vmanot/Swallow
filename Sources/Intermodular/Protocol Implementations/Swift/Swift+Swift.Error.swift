@@ -43,10 +43,6 @@ extension Array: Error where Element: Error {
 
 }
 
-extension Bool: Error {
-
-}
-
 public struct CustomStringError: opaque_Hashable, CustomStringConvertible, Error, Hashable {
     public let description: String
 

@@ -17,16 +17,6 @@ extension Float: BoundedRandomnable {
     }
 }
 
-#if os(macOS)
-
-extension Float80: BoundedRandomnable {
-    public static func random(minimum: Float80, maximum: Float80) -> Float80 {
-        return .random(in: minimum...maximum)
-    }
-}
-
-#endif
-
 extension Double: BoundedRandomnable {
     public static func random(minimum: Double, maximum: Double) -> Double {
         return .random(in: minimum...maximum)

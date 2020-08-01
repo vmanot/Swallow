@@ -23,7 +23,7 @@ extension ObjectiveCBridgeable {
 
     @inlinable
     public static func _forceBridgeFromObjectiveC(_ source: _ObjectiveCType, result: inout Self?) {
-        try! _conditionallyBridgeFromObjectiveC(source, result: &result).throwSelfIfFalse()
+        try! _conditionallyBridgeFromObjectiveC(source, result: &result).orThrow()
     }
 
     @discardableResult

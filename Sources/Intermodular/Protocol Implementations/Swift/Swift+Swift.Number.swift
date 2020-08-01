@@ -26,39 +26,6 @@ extension Float: Continuous, Signed, Number {
     }
 }
 
-#if os(macOS)
-
-extension Float80: Continuous, Signed, Number {
-    public init(uncheckedOpaqueValue value: opaque_Number) {
-        self = value.toFloat80()
-    }
-
-    public init<N: opaque_Number>(unchecked value: N) {
-        self = value.toFloat80()
-    }
-
-    public init(from decoder: Decoder) throws {
-        self = try hack {
-            try decoder.decode(single: Double.self).toFloat80()
-        }
-    }
-
-    public func encode(to encoder: Encoder) throws {
-        try hack {
-            try encoder.encode(Double(self))
-        }
-    }
-
-    @inlinable
-    public func toNSNumber() -> NSNumber {
-        return hack {
-            return toDouble() as NSNumber
-        }
-    }
-}
-
-#endif
-
 extension Int: Discrete, Signed, Number {
     #if arch(arm64) || arch(i386) || arch(x86_64)
     public typealias NativeType = Int64

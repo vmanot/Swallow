@@ -17,6 +17,20 @@ extension Sequence {
 }
 
 extension Sequence {
+    public func group<ID: Hashable>(
+        by identify: (Element) throws -> ID
+    ) rethrows -> [ID: [Element]] {
+        var result: [ID: [Element]] = .init(minimumCapacity: underestimatedCount)
+        
+        for element in self {
+            result[try identify(element), default: []].append(element)
+        }
+        
+        return result
+    }
+}
+
+extension Sequence {
     public func optionalFilter<T>(_ predicate: (T) throws -> Bool) rethrows -> [T?] where Element == T? {
         return try filter({ try $0.map(predicate) ?? true })
     }
