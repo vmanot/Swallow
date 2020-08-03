@@ -6,60 +6,54 @@ import Swift
 
 /// An indirect, copy-on-write wrapper over a value.
 @propertyWrapper
-public struct Indirect<Value>: MutableWrapper {
-    private final class Storage: MutableWrapper {
-        var value: Value
-        
-        init(_ value: Value) {
-            self.value = value
-        }
-    }
+public struct Indirect<Value> {
+    private var storage: ReferenceBox<Value>
     
-    private var storage: Storage
-    
-    public var value: Value {
+    public var wrappedValue: Value {
         get {
             return storage.value
         } set {
             if isKnownUniquelyReferenced(&storage) {
                 storage.value = newValue
-            }
-                
-            else {
-                storage = Storage(newValue)
+            } else {
+                storage = .init(newValue)
             }
         }
     }
     
-    public var wrappedValue: Value {
-        get {
-            return value
-        } set {
-            value = newValue
-        }
-    }
-    
-    public init(_ value: Value) {
-        self.storage = .init(value)
+    public init(wrappedValue: Value) {
+        self.storage = .init(wrappedValue)
     }
 }
 
 // MARK: - Protocol Implementations -
 
+extension Indirect: Encodable where Value: Encodable {
+    public func encode(to encoder: Encoder) throws {
+        try encoder.encode(wrappedValue)
+    }
+}
+
+extension Indirect: Decodable where Value: Decodable {
+    public init(from decoder: Decoder) throws {
+        self.init(wrappedValue: try Value.init(from: decoder))
+    }
+}
+
 extension Indirect: CustomStringConvertible where Value: CustomStringConvertible {
     public var description: String {
-        return value.description
+        return wrappedValue.description
     }
 }
 
 extension Indirect: Equatable where Value: Equatable {
     public static func == (lhs: Indirect, rhs: Indirect) -> Bool {
-        return lhs.value == rhs.value
+        return lhs.wrappedValue == rhs.wrappedValue
     }
 }
 
 extension Indirect: Hashable where Value: Hashable {
     public func hash(into hasher: inout Hasher) {
-        hasher.combine(value)
+        hasher.combine(wrappedValue)
     }
 }
