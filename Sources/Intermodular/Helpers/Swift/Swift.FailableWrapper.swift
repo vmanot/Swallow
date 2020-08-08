@@ -48,7 +48,7 @@ extension Wrapper {
         guard let value = value else {
             return nil
         }
-
+        
         self.init(value)
     }
 }
@@ -57,7 +57,7 @@ extension WrapperWrapper {
     public var value: Value {
         return valueWrapper.value
     }
-
+    
     public init(_ value: Value) {
         self.init(ValueWrapper(value))
     }
