@@ -4,18 +4,18 @@
 
 import Swift
 
-extension Array: opaque_RangeReplaceableCollection {
+extension Array: _opaque_RangeReplaceableCollection {
     
 }
 
-extension ArraySlice: opaque_RangeReplaceableCollection {
+extension ArraySlice: _opaque_RangeReplaceableCollection {
     
 }
 
-extension ContiguousArray: opaque_RangeReplaceableCollection {
+extension ContiguousArray: _opaque_RangeReplaceableCollection {
     
 }
 
-extension String.UnicodeScalarView: opaque_RangeReplaceableCollection {
+extension String.UnicodeScalarView: _opaque_RangeReplaceableCollection {
     
 }

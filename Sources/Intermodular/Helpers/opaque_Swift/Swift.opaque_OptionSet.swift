@@ -4,8 +4,8 @@
 
 import Swift
 
-public typealias OptionSet2 = opaque_OptionSet & OptionSet
+public typealias OptionSet2 = _opaque_OptionSet & OptionSet
 
-public protocol opaque_OptionSet: opaque_RawRepresentable {
+public protocol _opaque_OptionSet: _opaque_RawRepresentable {
     
 }

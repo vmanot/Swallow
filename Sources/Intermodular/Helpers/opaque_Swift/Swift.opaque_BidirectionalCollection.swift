@@ -4,14 +4,14 @@
 
 import Swift
 
-public typealias BidirectionalCollection2 = opaque_BidirectionalCollection & BidirectionalCollection
+public typealias BidirectionalCollection2 = _opaque_BidirectionalCollection & BidirectionalCollection
 
-public protocol opaque_BidirectionalCollection: opaque_Collection {
-    func opaque_BidirectionalCollection_toAnyBidirectionalCollection() -> Any
+public protocol _opaque_BidirectionalCollection: _opaque_Collection {
+    func _opaque_BidirectionalCollection_toAnyBidirectionalCollection() -> Any
 }
 
-extension opaque_BidirectionalCollection where Self: BidirectionalCollection {
-    public func opaque_BidirectionalCollection_toAnyBidirectionalCollection() -> Any {
+extension _opaque_BidirectionalCollection where Self: BidirectionalCollection {
+    public func _opaque_BidirectionalCollection_toAnyBidirectionalCollection() -> Any {
         return AnyBidirectionalCollection(fauxRandomAccessView)
     }
 }

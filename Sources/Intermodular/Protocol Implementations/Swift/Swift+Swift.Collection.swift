@@ -57,53 +57,6 @@ extension ContiguousArray: ResizableCollection {
 
 }
 
-public enum Few<T>: Collection, Countable {
-    case none
-    case single(T)
-    case array(Array<T>)
-
-    public var count: Int {
-        switch self {
-        case .none:
-            return 0
-        case .single:
-            return 1
-        case .array(let array):
-            return array.count
-        }
-    }
-
-    public var startIndex: Int {
-        return 0
-    }
-
-    public var endIndex: Int {
-        switch self {
-        case .none:
-            return 0
-        case .single:
-            return 1
-        case .array(let a):
-            return a.endIndex
-        }
-    }
-
-    public subscript(key: Int) -> T {
-        switch self {
-        case .none:
-            fatalError()
-        case .single(let value):
-            return value
-        case .array(let array):
-            return array[key]
-        }
-    }
-
-    public func index(after i: Int) -> Int {
-        return i + 1
-    }
-}
-
 public struct Join2Collection<C0: Collection, C1: Collection>: Collection2, Wrapper where C0.Index: Strideable, C0.Element == C1.Element, C0.Index == C1.Index {
     public typealias Element = C0.Element
     public typealias Index = C0.Index

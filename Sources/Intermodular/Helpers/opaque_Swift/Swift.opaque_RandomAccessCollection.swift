@@ -4,14 +4,14 @@
 
 import Swift
 
-public typealias RandomAccessCollection2 = opaque_RandomAccessCollection & RandomAccessCollection
+public typealias RandomAccessCollection2 = _opaque_RandomAccessCollection & RandomAccessCollection
 
-public protocol opaque_RandomAccessCollection: opaque_BidirectionalCollection {
-    func opaque_RandomAccessCollection_toAnyRandomAccessCollection() -> Any
+public protocol _opaque_RandomAccessCollection: _opaque_BidirectionalCollection {
+    func _opaque_RandomAccessCollection_toAnyRandomAccessCollection() -> Any
 }
 
-extension opaque_RandomAccessCollection where Self: RandomAccessCollection {
-    public func opaque_RandomAccessCollection_toAnyRandomAccessCollection() -> Any {
+extension _opaque_RandomAccessCollection where Self: RandomAccessCollection {
+    public func _opaque_RandomAccessCollection_toAnyRandomAccessCollection() -> Any {
         return AnyRandomAccessCollection(fauxRandomAccessView)
     }
 }

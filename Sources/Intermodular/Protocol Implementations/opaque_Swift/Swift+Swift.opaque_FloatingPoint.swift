@@ -4,10 +4,10 @@
 
 import Swift
 
-extension Double: opaque_FloatingPoint {
+extension Double: _opaque_FloatingPoint {
     
 }
 
-extension Float: opaque_FloatingPoint {
+extension Float: _opaque_FloatingPoint {
     
 }

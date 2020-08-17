@@ -4,8 +4,8 @@
 
 import Swift
 
-public typealias UnsignedInteger2 = opaque_UnsignedInteger & UnsignedInteger
+public typealias UnsignedInteger2 = _opaque_UnsignedInteger & UnsignedInteger
 
-public protocol opaque_UnsignedInteger: opaque_Integer  {
+public protocol _opaque_UnsignedInteger: _opaque_Integer  {
     init(_: UInt64)
 }

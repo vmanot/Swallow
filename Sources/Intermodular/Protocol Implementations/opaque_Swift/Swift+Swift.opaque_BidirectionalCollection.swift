@@ -4,6 +4,6 @@
 
 import Swift
 
-extension AnyBidirectionalCollection: opaque_BidirectionalCollection {
+extension AnyBidirectionalCollection: _opaque_BidirectionalCollection {
     
 }

@@ -5,19 +5,19 @@
 import Foundation
 import Swift
 
-public protocol opaque_Identifier: opaque_Hashable {
+public protocol _opaque_Identifier: _opaque_Hashable {
     
 }
 
-public protocol Identifier: opaque_Identifier, Hashable {
+public protocol Identifier: _opaque_Identifier, Hashable {
     
 }
 
-public protocol opaque_Identifiable: AnyProtocol {
-    var opaque_identifier: opaque_Identifier { get }
+public protocol _opaque_Identifiable: AnyProtocol {
+    var _opaque_identifier: _opaque_Identifier { get }
 }
 
-public protocol Identifiable: opaque_Identifiable, Swift.Identifiable {
+public protocol Identifiable: _opaque_Identifiable, Swift.Identifiable {
     typealias Identifier = ID
     
     var identifier: ID { get }
@@ -31,14 +31,14 @@ public protocol IdentifierGenerator {
 
 // MARK: - Implementation -
 
-extension opaque_Identifiable where Self: Identifiable, Identifier: Swallow.Identifier {
-    public var opaque_identifier: opaque_Identifier {
+extension _opaque_Identifiable where Self: Identifiable, Identifier: Swallow.Identifier {
+    public var _opaque_identifier: _opaque_Identifier {
         identifier
     }
 }
 
-extension opaque_Identifiable where Self: Identifiable {
-    public var opaque_identifier: opaque_Identifier {
+extension _opaque_Identifiable where Self: Identifiable {
+    public var _opaque_identifier: _opaque_Identifier {
         AnyHashable(identifier)
     }
 }
@@ -62,7 +62,7 @@ extension AnyHashable: Identifier {
 }
 
 public struct AnyIdentifier: Identifier {
-    public typealias Value = opaque_Identifier
+    public typealias Value = _opaque_Identifier
     
     public let value: Value
     

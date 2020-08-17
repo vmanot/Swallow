@@ -4,17 +4,17 @@
 
 import Swift
 
-public protocol opaque_ExtensibleSequence: opaque_Sequence {
-    mutating func opaque_ExtensibleSequence_insert(_: Any) -> Any?
-    mutating func opaque_ExtensibleSequence_insert(contentsOf _: Any) -> Any?
-    mutating func opaque_ExtensibleSequence_append(_: Any) -> Any?
-    mutating func opaque_ExtensibleSequence_append(contentsOf _: Any) -> Any?
+public protocol _opaque_ExtensibleSequence: _opaque_Sequence {
+    mutating func _opaque_ExtensibleSequence_insert(_: Any) -> Any?
+    mutating func _opaque_ExtensibleSequence_insert(contentsOf _: Any) -> Any?
+    mutating func _opaque_ExtensibleSequence_append(_: Any) -> Any?
+    mutating func _opaque_ExtensibleSequence_append(contentsOf _: Any) -> Any?
 }
 
-public protocol opaque_ExtensibleCollection: opaque_Collection, opaque_ExtensibleSequence {
+public protocol _opaque_ExtensibleCollection: _opaque_Collection, _opaque_ExtensibleSequence {
     
 }
 
-public protocol opaque_ExtensibleRangeReplaceableCollection: opaque_ExtensibleCollection, opaque_RangeReplaceableCollection {
+public protocol _opaque_ExtensibleRangeReplaceableCollection: _opaque_ExtensibleCollection, _opaque_RangeReplaceableCollection {
     
 }

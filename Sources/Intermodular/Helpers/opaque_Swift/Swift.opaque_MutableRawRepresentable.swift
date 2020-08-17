@@ -4,6 +4,6 @@
 
 import Swift
 
-public protocol opaque_MutableRawRepresentable: opaque_RawRepresentable {
-    mutating func opaque_MutableWrapper_set(rawValue: Any) -> Void?
+public protocol _opaque_MutableRawRepresentable: _opaque_RawRepresentable {
+    mutating func _opaque_MutableWrapper_set(rawValue: Any) -> Void?
 }

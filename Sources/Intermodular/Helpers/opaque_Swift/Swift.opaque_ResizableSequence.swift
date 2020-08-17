@@ -4,10 +4,10 @@
 
 import Swift
 
-public protocol opaque_ResizableSequence: opaque_DestructivelyMutableSequence, opaque_ExtensibleSequence, opaque_SequenceInitiableSequence, Initiable {
+public protocol _opaque_ResizableSequence: _opaque_DestructivelyMutableSequence, _opaque_ExtensibleSequence, _opaque_SequenceInitiableSequence, Initiable {
     
 }
 
-public protocol opaque_ResizableCollection: opaque_ExtensibleRangeReplaceableCollection, opaque_MutableCollection, opaque_ResizableSequence {
+public protocol _opaque_ResizableCollection: _opaque_ExtensibleRangeReplaceableCollection, _opaque_MutableCollection, _opaque_ResizableSequence {
     
 }

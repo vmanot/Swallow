@@ -8,25 +8,25 @@ import Foundation
 import ObjectiveC
 import Swift
 
-public protocol opaque_Number: opaque_Hashable, opaque_SignedOrUnsigned, Codable, NumberConvertible {
-    static func opaque_Number_baseInit(_: Any, isRetry: Bool) -> Self?
-    static func opaque_Number_init(_: Any, isRetry: Bool) -> Self?
+public protocol _opaque_Number: _opaque_Hashable, _opaque_SignedOrUnsigned, Codable, NumberConvertible {
+    static func _opaque_Number_baseInit(_: Any, isRetry: Bool) -> Self?
+    static func _opaque_Number_init(_: Any, isRetry: Bool) -> Self?
     
-    func opaque_Number_attemptCast(to _: opaque_Number.Type) -> opaque_Number?
+    func _opaque_Number_attemptCast(to _: _opaque_Number.Type) -> _opaque_Number?
     
-    init(uncheckedOpaqueValue: opaque_Number)
-    init?(opaqueValue: opaque_Number)
+    init(uncheckedOpaqueValue: _opaque_Number)
+    init?(opaqueValue: _opaque_Number)
     
-    init<N: opaque_Number>(unchecked _: N)
-    init?<N: opaque_Number>(checked _: N)
+    init<N: _opaque_Number>(unchecked _: N)
+    init?<N: _opaque_Number>(checked _: N)
 }
 
-extension opaque_Number {
+extension _opaque_Number {
     @inlinable
-    public static func opaque_Number_baseInit(_ value: Any, isRetry: Bool) -> Self? {
+    public static func _opaque_Number_baseInit(_ value: Any, isRetry: Bool) -> Self? {
         TODO.whole(.fix)
         
-        let value = Optional(value).opaque_Optional_valueOrNil()
+        let value = Optional(value)._opaque_Optional_valueOrNil()
         
         switch value {
             case let value as Self:
@@ -81,7 +81,7 @@ extension opaque_Number {
                 
             default:
                 if !isRetry {
-                    return (value as? opaque_Number)?.opaque_Number_attemptCast(to: type(Self.self)).map({ $0 as! Self })
+                    return (value as? _opaque_Number)?._opaque_Number_attemptCast(to: type(Self.self)).map({ $0 as! Self })
                 }
                 
                 return try? cast(value)
@@ -89,18 +89,18 @@ extension opaque_Number {
     }
     
     @inlinable
-    public static func opaque_Number_init(_ value: Any, isRetry: Bool) -> Self? {
-        return opaque_Number_baseInit(value, isRetry: isRetry)
+    public static func _opaque_Number_init(_ value: Any, isRetry: Bool) -> Self? {
+        return _opaque_Number_baseInit(value, isRetry: isRetry)
     }
     
     @inlinable
-    public func opaque_Number_attemptCast(to type: opaque_Number.Type) -> opaque_Number? {
-        return type.opaque_Number_init(self, isRetry: true)
+    public func _opaque_Number_attemptCast(to type: _opaque_Number.Type) -> _opaque_Number? {
+        return type._opaque_Number_init(self, isRetry: true)
     }
     
     @inlinable
-    public init?(opaqueValue value: opaque_Number) {
-        guard let _self = Self.opaque_Number_init(value, isRetry: false) else {
+    public init?(opaqueValue value: _opaque_Number) {
+        guard let _self = Self._opaque_Number_init(value, isRetry: false) else {
             return nil
         }
         
@@ -108,8 +108,8 @@ extension opaque_Number {
     }
     
     @inlinable
-    public init?<T: opaque_Number>(checked value: T) {
-        guard let value = Self.opaque_Number_init(value, isRetry: false) else {
+    public init?<T: _opaque_Number>(checked value: T) {
+        guard let value = Self._opaque_Number_init(value, isRetry: false) else {
             return nil
         }
         
@@ -119,31 +119,31 @@ extension opaque_Number {
 
 // MARK: - Extensions -
 
-extension opaque_Number {
+extension _opaque_Number {
     @inlinable
-    public init<T: opaque_Number>(_ value: T) {
+    public init<T: _opaque_Number>(_ value: T) {
         self = Self(checked: value).orFatallyThrow("could not cast value of type \(T.self) to \(type(Self.self))")
     }
     
     @inlinable
-    public init<T: opaque_Number & BinaryInteger>(_ value: T) {
+    public init<T: _opaque_Number & BinaryInteger>(_ value: T) {
         self = Self(checked: value).orFatallyThrow("could not cast value of type \(T.self) to \(type(Self.self))")
     }
     
     @inlinable
-    public init<T: opaque_Number & BinaryFloatingPoint>(_ value: T) {
+    public init<T: _opaque_Number & BinaryFloatingPoint>(_ value: T) {
         self = Self(checked: value).orFatallyThrow("could not cast value of type \(T.self) to \(type(Self.self))")
     }
 }
 
-extension opaque_Number where Self: BinaryInteger {
+extension _opaque_Number where Self: BinaryInteger {
     @inlinable
-    public init<T: opaque_Number & BinaryInteger>(_ value: T) {
+    public init<T: _opaque_Number & BinaryInteger>(_ value: T) {
         self = Self(use_stdlib_init: value)
     }
     
     @inlinable
-    public init<T: opaque_Number & BinaryFloatingPoint>(_ value: T) {
+    public init<T: _opaque_Number & BinaryFloatingPoint>(_ value: T) {
         self = Self(use_stdlib_init: value)
     }
 }

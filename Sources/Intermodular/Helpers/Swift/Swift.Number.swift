@@ -6,7 +6,7 @@ import CoreGraphics
 import Swift
 
 /// A type that represents a number.
-public protocol Number: opaque_Number, ApproximatelyEquatable, CustomStringConvertible, DiscreteOrContinuous, ExpressibleByNumericLiteral, Initiable, MutableArithmeticOperatable, Hashable, SignedOrUnsigned {
+public protocol Number: _opaque_Number, ApproximatelyEquatable, CustomStringConvertible, DiscreteOrContinuous, ExpressibleByNumericLiteral, Initiable, MutableArithmeticOperatable, Hashable, SignedOrUnsigned {
     associatedtype NativeType = Self
     
     @inlinable

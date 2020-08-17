@@ -4,7 +4,7 @@
 
 import Swift
 
-public protocol OptionalProtocol: opaque_Optional, MutableEitherRepresentable, ExpressibleByNilLiteral where RightValue == Void {
+public protocol OptionalProtocol: _opaque_Optional, MutableEitherRepresentable, ExpressibleByNilLiteral where RightValue == Void {
     typealias Wrapped = LeftValue
 }
 

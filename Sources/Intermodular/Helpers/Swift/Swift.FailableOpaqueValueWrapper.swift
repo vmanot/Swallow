@@ -4,23 +4,23 @@
 
 import Swift
 
-public protocol opaque_FailableOpaqueValueWrapper: AnyProtocol {
-    var opaque_FailableOpaqueValueWrapper_opaqueValue: Any { get }
+public protocol _opaque_FailableOpaqueValueWrapper: AnyProtocol {
+    var _opaque_FailableOpaqueValueWrapper_opaqueValue: Any { get }
     
-    static func opaque_FailableOpaqueValueWrapper_init(opaqueValue: Any) -> opaque_FailableOpaqueValueWrapper??
+    static func _opaque_FailableOpaqueValueWrapper_init(opaqueValue: Any) -> _opaque_FailableOpaqueValueWrapper??
 }
 
-extension opaque_FailableOpaqueValueWrapper where Self: FailableOpaqueValueWrapper {
-    public var opaque_FailableOpaqueValueWrapper_opaqueValue: Any {
+extension _opaque_FailableOpaqueValueWrapper where Self: FailableOpaqueValueWrapper {
+    public var _opaque_FailableOpaqueValueWrapper_opaqueValue: Any {
         return opaqueValue
     }
     
-    public static func opaque_FailableOpaqueValueWrapper_init(opaqueValue: Any) -> opaque_FailableOpaqueValueWrapper?? {
+    public static func _opaque_FailableOpaqueValueWrapper_init(opaqueValue: Any) -> _opaque_FailableOpaqueValueWrapper?? {
         return (-?>opaqueValue).map({ self.init(opaqueValue: $0) })
     }
 }
 
-public protocol FailableOpaqueValueWrapper: opaque_FailableOpaqueValueWrapper {
+public protocol FailableOpaqueValueWrapper: _opaque_FailableOpaqueValueWrapper {
     associatedtype OpaqueValue
     
     var opaqueValue: OpaqueValue { get }

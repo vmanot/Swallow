@@ -4,42 +4,42 @@
 
 import Swift
 
-extension AnySequence: opaque_Sequence {
+extension AnySequence: _opaque_Sequence {
 
 }
 
-extension EnumeratedSequence: opaque_Sequence {
+extension EnumeratedSequence: _opaque_Sequence {
     
 }
 
-extension IteratorSequence: opaque_Sequence {
+extension IteratorSequence: _opaque_Sequence {
     
 }
 
-extension JoinedSequence: opaque_Sequence {
+extension JoinedSequence: _opaque_Sequence {
     
 }
 
-extension LazySequence: opaque_Sequence {
-    public func opaque_Sequence_makeIterator() -> opaque_IteratorProtocol {
+extension LazySequence: _opaque_Sequence {
+    public func _opaque_Sequence_makeIterator() -> _opaque_IteratorProtocol {
         return makeIterator().iteratorOnly
     }
 }
 
-extension Set: opaque_Sequence {
+extension Set: _opaque_Sequence {
     
 }
 
-extension Slice: opaque_Sequence {
+extension Slice: _opaque_Sequence {
     
 }
 
-extension UnfoldSequence: opaque_Sequence {
+extension UnfoldSequence: _opaque_Sequence {
     
 }
 
-extension Zip2Sequence: opaque_Sequence {
-    public func opaque_Sequence_makeIterator() -> opaque_IteratorProtocol {
+extension Zip2Sequence: _opaque_Sequence {
+    public func _opaque_Sequence_makeIterator() -> _opaque_IteratorProtocol {
         return makeIterator().iteratorOnly
     }
 }

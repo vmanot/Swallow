@@ -11,11 +11,11 @@ public protocol FailableWrapper: ValueConvertible {
 }
 
 /// A type that can be infallibly converted to and from an associated value.
-public protocol Wrapper: opaque_Wrapper, FailableWrapper {
+public protocol Wrapper: _opaque_Wrapper, FailableWrapper {
     init(_: Value)
 }
 
-public protocol MutableWrapper: opaque_MutableWrapper, Wrapper {
+public protocol MutableWrapper: _opaque_MutableWrapper, Wrapper {
     var value: Value { get set }
 }
 

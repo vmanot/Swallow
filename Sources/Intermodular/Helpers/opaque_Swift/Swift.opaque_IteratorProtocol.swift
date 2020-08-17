@@ -4,27 +4,27 @@
 
 import Swift
 
-public typealias IteratorProtocol2 = opaque_IteratorProtocol & IteratorProtocol
+public typealias IteratorProtocol2 = _opaque_IteratorProtocol & IteratorProtocol
 
-public protocol opaque_IteratorProtocol: AnyProtocol {
-    static var opaque_IteratorProtocol_Element: Any.Type { get }
+public protocol _opaque_IteratorProtocol: AnyProtocol {
+    static var _opaque_IteratorProtocol_Element: Any.Type { get }
     
-    mutating func opaque_IteratorProtocol_next() -> Any?
+    mutating func _opaque_IteratorProtocol_next() -> Any?
     
-    func opaque_IteratorProtocol_toAnyIterator() -> Any
+    func _opaque_IteratorProtocol_toAnyIterator() -> Any
     func toOpaque() -> AnyIterator<Any>
 }
 
-extension opaque_IteratorProtocol where Self: IteratorProtocol {
-    public static var opaque_IteratorProtocol_Element: Any.Type {
+extension _opaque_IteratorProtocol where Self: IteratorProtocol {
+    public static var _opaque_IteratorProtocol_Element: Any.Type {
         return Element.self
     }
     
-    public mutating func opaque_IteratorProtocol_next() -> Any? {
+    public mutating func _opaque_IteratorProtocol_next() -> Any? {
         return next().map({ $0 })
     }
     
-    public func opaque_IteratorProtocol_toAnyIterator() -> Any {
+    public func _opaque_IteratorProtocol_toAnyIterator() -> Any {
         return AnyIterator(self)
     }
     

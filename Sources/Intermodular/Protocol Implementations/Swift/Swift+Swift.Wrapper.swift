@@ -53,10 +53,10 @@ public struct AnyThrowingFunction<T, U>: MutableThrowingFunctionWrapper {
 }
 
 public struct AnyWrapper<T>: CustomDebugStringConvertible, Wrapper {
-    private var base: opaque_Wrapper
+    private var base: _opaque_Wrapper
 
     public var value: T {
-        return try! cast(base.opaque_Wrapper_value)
+        return try! cast(base._opaque_Wrapper_value)
     }
 
     public init(_ value: T) {
@@ -73,7 +73,7 @@ public struct AnyWrapper<T>: CustomDebugStringConvertible, Wrapper {
 }
 
 public struct AnyMutableWrapper<T>: CustomDebugStringConvertible, MutableWrapper {
-    private var base: opaque_MutableWrapper
+    private var base: _opaque_MutableWrapper
 
     public init<U: MutableWrapper>(_ base: U) where U.Value == T {
         self.base = base
@@ -81,9 +81,9 @@ public struct AnyMutableWrapper<T>: CustomDebugStringConvertible, MutableWrapper
 
     public var value: T {
         get {
-            return try! cast(base.opaque_Wrapper_value)
+            return try! cast(base._opaque_Wrapper_value)
         } set {
-            base.opaque_MutableWrapper_set(value: newValue).forceUnwrap()
+            base._opaque_MutableWrapper_set(value: newValue).forceUnwrap()
         }
     }
 

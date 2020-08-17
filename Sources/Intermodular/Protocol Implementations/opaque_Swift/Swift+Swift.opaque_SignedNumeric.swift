@@ -4,22 +4,22 @@
 
 import Swift
 
-extension Int: opaque_SignedNumeric {
+extension Int: _opaque_SignedNumeric {
     
 }
 
-extension Int8: opaque_SignedNumeric {
+extension Int8: _opaque_SignedNumeric {
     
 }
 
-extension Int16: opaque_SignedNumeric {
+extension Int16: _opaque_SignedNumeric {
     
 }
 
-extension Int32: opaque_SignedNumeric {
+extension Int32: _opaque_SignedNumeric {
     
 }
 
-extension Int64: opaque_SignedNumeric {
+extension Int64: _opaque_SignedNumeric {
     
 }

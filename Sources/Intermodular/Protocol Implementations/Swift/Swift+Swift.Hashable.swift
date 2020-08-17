@@ -24,7 +24,7 @@ extension Either: Hashable where LeftValue: Hashable, RightValue: Hashable {
     }
 }
 
-public struct Empty: opaque_Hashable, Codable, Hashable {
+public struct Empty: _opaque_Hashable, Codable, Hashable {
     public init() {
         
     }

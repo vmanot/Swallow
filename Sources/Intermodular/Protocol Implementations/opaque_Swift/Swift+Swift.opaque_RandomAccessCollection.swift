@@ -4,34 +4,34 @@
 
 import Swift
 
-extension AnyRandomAccessCollection: opaque_RandomAccessCollection {
+extension AnyRandomAccessCollection: _opaque_RandomAccessCollection {
     
 }
 
-extension Array: opaque_RandomAccessCollection {
+extension Array: _opaque_RandomAccessCollection {
     
 }
 
-extension ArraySlice: opaque_RandomAccessCollection {
+extension ArraySlice: _opaque_RandomAccessCollection {
     
 }
 
-extension ContiguousArray: opaque_RandomAccessCollection {
+extension ContiguousArray: _opaque_RandomAccessCollection {
     
 }
 
-extension UnsafeBufferPointer: opaque_RandomAccessCollection {
+extension UnsafeBufferPointer: _opaque_RandomAccessCollection {
     
 }
 
-extension UnsafeMutableBufferPointer: opaque_RandomAccessCollection {
+extension UnsafeMutableBufferPointer: _opaque_RandomAccessCollection {
     
 }
 
-extension UnsafeMutableRawBufferPointer: opaque_RandomAccessCollection {
+extension UnsafeMutableRawBufferPointer: _opaque_RandomAccessCollection {
     
 }
 
-extension UnsafeRawBufferPointer: opaque_RandomAccessCollection {
+extension UnsafeRawBufferPointer: _opaque_RandomAccessCollection {
     
 }

@@ -2,6 +2,8 @@
 // Copyright (c) Vatsal Manot
 //
 
+import Swift
+
 /// A strongly typed to-do item.
 extension TODO {
     public enum Action {
@@ -36,7 +38,7 @@ extension TODO {
     }
 }
 
-public enum TODO: Error {
+public enum TODO {
     // @available(*, deprecated, message: "This should not be used in production code.")
     public static var unimplemented: Never {
         fatalError("Unimplemented function or code path")

@@ -33,7 +33,7 @@ public struct AnyNumber: Codable, Hashable {
         case floatingPointLiteral(Double)
         case integerLiteral(Int)
 
-        case opaque(opaque_Number)
+        case opaque(_opaque_Number)
 
         public var rawValue: Any {
             switch self {
@@ -207,7 +207,7 @@ public struct AnyNumber: Codable, Hashable {
         self.storage = .opaque(value)
     }
 
-    public init(opaque value: opaque_Number) {
+    public init(opaque value: _opaque_Number) {
         self.storage = .opaque(value)
     }
     

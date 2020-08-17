@@ -169,17 +169,17 @@ extension Collection {
 extension Collection {
     @inlinable
     public var lastIndex: Index {
-        return try! indices.last.unwrap()
+        try! indices.last.unwrap()
     }
 
     @inlinable
-    public func enumerated() -> LazyMapSequence<Self.Indices, (Self.Index, Self.Element)> {
-        return indices.lazy.map({ ($0, self[$0]) })
+    public func enumerated() -> LazyMapCollection<Self.Indices, (Self.Index, Self.Element)> {
+        indices.lazy.map({ ($0, self[$0]) })
     }
 
     @inlinable
     public func index(of predicate: ((Element) throws -> Bool)) rethrows -> Index? {
-        return try enumerated().find({ try predicate($1) })?.0
+        try enumerated().find({ try predicate($1) })?.0
     }
 }
 

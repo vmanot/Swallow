@@ -5,6 +5,6 @@
 import Foundation
 import Swift
 
-extension Date: opaque_Comparable {
+extension Date: _opaque_Comparable {
     
 }

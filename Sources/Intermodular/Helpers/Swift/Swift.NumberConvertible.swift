@@ -28,7 +28,7 @@ public protocol NumberConvertible: NumberInitiable {
 
 // MARK: - Implementation -
 
-extension NumberConvertible where Self: opaque_Number {
+extension NumberConvertible where Self: _opaque_Number {
     @inlinable
     public func toCGFloat() -> CGFloat {
         return .init(self)

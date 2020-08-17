@@ -4,18 +4,18 @@
 
 import Swift
 
-extension AnyBidirectionalCollection: opaque_Collection {
+extension AnyBidirectionalCollection: _opaque_Collection {
     
 }
 
-extension AnyCollection: opaque_Collection {
+extension AnyCollection: _opaque_Collection {
     
 }
 
-extension Dictionary: opaque_Collection {
+extension Dictionary: _opaque_Collection {
     
 }
 
-extension Set: opaque_Collection {
+extension Set: _opaque_Collection {
     
 }

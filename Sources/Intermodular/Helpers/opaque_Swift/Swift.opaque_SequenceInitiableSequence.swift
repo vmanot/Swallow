@@ -4,8 +4,8 @@
 
 import Swift
 
-public protocol opaque_SequenceInitiableSequence: opaque_Sequence {
+public protocol _opaque_SequenceInitiableSequence: _opaque_Sequence {
     init(noSequence: ())
 
-    static func opaque_SequenceInitiableSequence_init(_: Any) -> opaque_SequenceInitiableSequence?
+    static func _opaque_SequenceInitiableSequence_init(_: Any) -> _opaque_SequenceInitiableSequence?
 }

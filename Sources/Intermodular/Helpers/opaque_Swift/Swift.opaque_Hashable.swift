@@ -4,7 +4,7 @@
 
 import Swift
 
-public protocol opaque_Hashable: opaque_Equatable {
+public protocol _opaque_Hashable: _opaque_Equatable {
     var hashValue: Int { get }
 
     func hash(into hasher: inout Hasher)
@@ -14,7 +14,7 @@ public protocol opaque_Hashable: opaque_Equatable {
 
 // MARK: - Implementation -
 
-extension opaque_Hashable where Self: Hashable {
+extension _opaque_Hashable where Self: Hashable {
     public func toAnyHashable() -> AnyHashable {
         return .init(self)
     }

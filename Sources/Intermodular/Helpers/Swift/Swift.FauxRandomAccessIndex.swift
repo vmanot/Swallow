@@ -4,7 +4,7 @@
 
 import Swift
 
-public struct FauxRandomAccessIndex<C: Collection>: opaque_Strideable, Strideable {
+public struct FauxRandomAccessIndex<C: Collection>: _opaque_Strideable, Strideable {
     public typealias Value = C.Index
     public typealias Stride = Int
 

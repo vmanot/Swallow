@@ -4,14 +4,14 @@
 
 import Swift
 
-public typealias SignedNumeric2 = opaque_SignedNumeric & SignedNumeric
+public typealias SignedNumeric2 = _opaque_SignedNumeric & SignedNumeric
 
-public protocol opaque_SignedNumeric: opaque_Comparable {
-    var negated: opaque_SignedNumeric { get }
+public protocol _opaque_SignedNumeric: _opaque_Comparable {
+    var negated: _opaque_SignedNumeric { get }
 }
 
-extension opaque_SignedNumeric where Self: SignedNumeric {
-    public var negated: opaque_SignedNumeric {
+extension _opaque_SignedNumeric where Self: SignedNumeric {
+    public var negated: _opaque_SignedNumeric {
         return -self
     }
 }

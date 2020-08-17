@@ -4,7 +4,7 @@
 
 import Swift
 
-public protocol Store: opaque_Store {
+public protocol Store: _opaque_Store {
     associatedtype Storage
     
     var storage: Storage { get }
@@ -12,7 +12,7 @@ public protocol Store: opaque_Store {
     init(storage: Storage)
 }
 
-public protocol MutableStore: opaque_MutableStore, Store {
+public protocol MutableStore: _opaque_MutableStore, Store {
     var storage: Storage { get set }
 }
 

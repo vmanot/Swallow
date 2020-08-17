@@ -4,8 +4,8 @@
 
 import Swift
 
-public typealias SignedInteger2 = opaque_SignedInteger & SignedInteger
+public typealias SignedInteger2 = _opaque_SignedInteger & SignedInteger
 
-public protocol opaque_SignedInteger: opaque_Integer, opaque_SignedNumeric {
+public protocol _opaque_SignedInteger: _opaque_Integer, _opaque_SignedNumeric {
     
 }

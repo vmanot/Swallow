@@ -4,11 +4,11 @@
 
 import Swift
 
-extension AnyIndex: opaque_Comparable {
+extension AnyIndex: _opaque_Comparable {
     
 }
 
-extension DictionaryIndex: opaque_Comparable {
+extension DictionaryIndex: _opaque_Comparable {
     
 }
 

@@ -4,11 +4,11 @@
 
 import Swift
 
-public protocol opaque_ForwardIndex: opaque_Comparable {
+public protocol _opaque_ForwardIndex: _opaque_Comparable {
     func successor() -> Self
 }
 
-extension opaque_ForwardIndex where Self: Strideable {
+extension _opaque_ForwardIndex where Self: Strideable {
     public func successor() -> Self {
         return advanced(by: 1)
     }

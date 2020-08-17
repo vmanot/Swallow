@@ -27,7 +27,7 @@ public struct AnyError: CustomDebugStringConvertible, Error, Hashable {
     }
 
     public func hash(into hasher: inout Hasher) {
-        if let value = try? cast(value, to: opaque_Hashable.self) {
+        if let value = try? cast(value, to: _opaque_Hashable.self) {
             value.hash(into: &hasher)
         } else {
             value.localizedDescription.hash(into: &hasher)
@@ -43,7 +43,7 @@ extension Array: Error where Element: Error {
 
 }
 
-public struct CustomStringError: opaque_Hashable, CustomStringConvertible, Error, Hashable {
+public struct CustomStringError: _opaque_Hashable, CustomStringConvertible, Error, Hashable {
     public let description: String
 
     public var localizedDescription: String {

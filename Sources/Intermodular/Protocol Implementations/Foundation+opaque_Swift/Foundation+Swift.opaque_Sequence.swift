@@ -5,34 +5,34 @@
 import Foundation
 import Swift
 
-extension Data: opaque_Sequence {
+extension Data: _opaque_Sequence {
     
 }
 
-extension IndexSet: opaque_Sequence {
+extension IndexSet: _opaque_Sequence {
     
 }
 
-extension NSArray: opaque_Sequence {
+extension NSArray: _opaque_Sequence {
     
 }
 
-extension NSDictionary: opaque_Sequence {
+extension NSDictionary: _opaque_Sequence {
     
 }
 
-extension NSEnumerator: opaque_Sequence {
+extension NSEnumerator: _opaque_Sequence {
     
 }
 
-extension NSIndexSet: opaque_Sequence {
+extension NSIndexSet: _opaque_Sequence {
     
 }
 
-extension NSSet: opaque_Sequence {
+extension NSSet: _opaque_Sequence {
     
 }
 
-extension NSOrderedSet: opaque_Sequence {
+extension NSOrderedSet: _opaque_Sequence {
     
 }

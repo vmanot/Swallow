@@ -116,7 +116,7 @@ public struct FixedCountIterator<Value: IteratorProtocol>: IteratorProtocol2, Wr
     }
 }
 
-public struct IteratorOnly<Value: IteratorProtocol>: opaque_IteratorProtocol, IteratorProtocol {
+public struct IteratorOnly<Value: IteratorProtocol>: _opaque_IteratorProtocol, IteratorProtocol {
     public private(set) var value: Value
 
     public init(_ value: Value) {
@@ -179,7 +179,7 @@ public struct NaiveCountIterator<Value: IteratorProtocol>: IteratorProtocol2, Wr
     }
 }
 
-public enum OneOfTwoIterators<I0: IteratorProtocol, I1: IteratorProtocol>: opaque_IteratorProtocol, IteratorProtocol, MutableEitherRepresentable where I0.Element == I1.Element {
+public enum OneOfTwoIterators<I0: IteratorProtocol, I1: IteratorProtocol>: _opaque_IteratorProtocol, IteratorProtocol, MutableEitherRepresentable where I0.Element == I1.Element {
     public typealias Element = I0.Element
     
     case left(I0)

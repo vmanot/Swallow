@@ -4,23 +4,23 @@
 
 import Swift
 
-public protocol opaque_OpaqueValueWrapper: AnyProtocol {
-    var opaque_OpaqueValueWrapper_opaqueValue: Any { get }
+public protocol _opaque_OpaqueValueWrapper: AnyProtocol {
+    var _opaque_OpaqueValueWrapper_opaqueValue: Any { get }
     
-    static func opaque_OpaqueValueWrapper_init(opaqueValue: Any) -> opaque_OpaqueValueWrapper?
+    static func _opaque_OpaqueValueWrapper_init(opaqueValue: Any) -> _opaque_OpaqueValueWrapper?
 }
 
-extension opaque_OpaqueValueWrapper where Self: OpaqueValueWrapper {
-    public var opaque_OpaqueValueWrapper_opaqueValue: Any {
+extension _opaque_OpaqueValueWrapper where Self: OpaqueValueWrapper {
+    public var _opaque_OpaqueValueWrapper_opaqueValue: Any {
         return opaqueValue
     }
     
-    public static func opaque_OpaqueValueWrapper_init(opaqueValue: Any) -> opaque_OpaqueValueWrapper? {
+    public static func _opaque_OpaqueValueWrapper_init(opaqueValue: Any) -> _opaque_OpaqueValueWrapper? {
         return (-?>opaqueValue).map({ self.init(opaqueValue: $0) })
     }
 }
 
-public protocol OpaqueValueWrapper: opaque_OpaqueValueWrapper, FailableOpaqueValueWrapper {
+public protocol OpaqueValueWrapper: _opaque_OpaqueValueWrapper, FailableOpaqueValueWrapper {
     var opaqueValue: OpaqueValue { get }
 
     init(opaqueValue: OpaqueValue)

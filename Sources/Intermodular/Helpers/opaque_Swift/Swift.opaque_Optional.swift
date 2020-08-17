@@ -4,20 +4,20 @@
 
 import Swift
 
-public protocol opaque_Optional: AnyProtocol {
-    static var opaque_Optional_Wrapped: Any.Type { get }
+public protocol _opaque_Optional: AnyProtocol {
+    static var _opaque_Optional_Wrapped: Any.Type { get }
 
     var isNil: Bool { get }
 
-    var opaque_Optional_wrapped: Any? { get }
+    var _opaque_Optional_wrapped: Any? { get }
 
     init(none: Void)
 
-    mutating func opaque_Optional_set(wrapped: Any?) -> Void?
+    mutating func _opaque_Optional_set(wrapped: Any?) -> Void?
 }
 
-extension opaque_Optional where Self: OptionalProtocol {
-    public static var opaque_Optional_Wrapped: Any.Type {
+extension _opaque_Optional where Self: OptionalProtocol {
+    public static var _opaque_Optional_Wrapped: Any.Type {
         return RightValue.self
     }
 
@@ -25,11 +25,11 @@ extension opaque_Optional where Self: OptionalProtocol {
         return isRight
     }
 
-    public var opaque_Optional_wrapped: Any? {
+    public var _opaque_Optional_wrapped: Any? {
         return leftValue.flatMap(Optional<Any>.some)
     }
 
-    public mutating func opaque_Optional_set(wrapped: Any?) -> Void? {
+    public mutating func _opaque_Optional_set(wrapped: Any?) -> Void? {
         guard let wrapped: LeftValue = -?>wrapped else {
             return nil
         }
@@ -40,23 +40,23 @@ extension opaque_Optional where Self: OptionalProtocol {
 }
 // MARK: - Extensions -
 
-extension opaque_Optional {
+extension _opaque_Optional {
     public var isNotNil: Bool {
         return !isNil
     }
 
-    public func opaque_Optional_flattening() -> Any? {
-        var result = opaque_Optional_wrapped
+    public func _opaque_Optional_flattening() -> Any? {
+        var result = _opaque_Optional_wrapped
 
-        if let value = result, let _value = (value as? opaque_Optional) {
-            result = _value.opaque_Optional_flattening()
+        if let value = result, let _value = (value as? _opaque_Optional) {
+            result = _value._opaque_Optional_flattening()
         }
 
         return result
     }
 
-    public func opaque_Optional_valueOrNil() -> Any {
-        let flattened = opaque_Optional_flattening()
+    public func _opaque_Optional_valueOrNil() -> Any {
+        let flattened = _opaque_Optional_flattening()
 
         return (flattened != nil) ? flattened! : (flattened as Any)
     }
@@ -72,5 +72,5 @@ extension Sequence {
 }
 
 public func lowerFromOptionalIfPossible(_ value: Any) -> Any {
-    return (value as Any?).opaque_Optional_valueOrNil()
+    return (value as Any?)._opaque_Optional_valueOrNil()
 }
