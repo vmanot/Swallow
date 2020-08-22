@@ -13,47 +13,12 @@ public protocol Identifier: _opaque_Identifier, Hashable {
     
 }
 
-public protocol _opaque_Identifiable: AnyProtocol {
-    var _opaque_identifier: _opaque_Identifier { get }
-}
-
-public protocol Identifiable: _opaque_Identifiable, Swift.Identifiable {
-    typealias Identifier = ID
-    
-    var identifier: ID { get }
-}
-
 public protocol IdentifierGenerator {
     associatedtype Identifier: Swallow.Identifier
     
     mutating func next() -> Identifier
 }
 
-// MARK: - Implementation -
-
-extension _opaque_Identifiable where Self: Identifiable, Identifier: Swallow.Identifier {
-    public var _opaque_identifier: _opaque_Identifier {
-        identifier
-    }
-}
-
-extension _opaque_Identifiable where Self: Identifiable {
-    public var _opaque_identifier: _opaque_Identifier {
-        AnyHashable(identifier)
-    }
-}
-
-// MARK: - Protocol Implementations -
-
-extension Identifiable {
-    public var id: Identifier {
-        identifier
-    }
-    
-    public var identifier: ID {
-        id
-    }
-}
 
 // MARK: - Concrete Implementations -
 
