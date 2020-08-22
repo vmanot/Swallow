@@ -54,6 +54,14 @@ extension MaybeKnown: Codable where Value: Codable {
     }
 }
 
+extension MaybeKnown: Equatable where Value: Equatable {
+    
+}
+
+extension MaybeKnown: Hashable where Value: Hashable {
+    
+}
+
 // MARK: - Helpers -
 
 extension Optional {

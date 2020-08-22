@@ -8,17 +8,17 @@ import Swift
 ///
 /// More useful than `ObjectIdentifier` as it exposes access to the underlying value.
 public struct Metatype<T>: Hashable {
-    public let value: T.Type
+    public let value: T
     
-    public init(_ value: T.Type) {
+    public init(_ value: T) {
         self.value = value
     }
     
     public func hash(into hasher: inout Hasher) {
-        hasher.combine(ObjectIdentifier(value))
+        hasher.combine(ObjectIdentifier(value as! Any.Type))
     }
     
     public static func == (lhs: Self, rhs: Self) -> Bool {
-        lhs.value == rhs.value
+        (lhs.value as! Any.Type) == (rhs.value as! Any.Type)
     }
 }

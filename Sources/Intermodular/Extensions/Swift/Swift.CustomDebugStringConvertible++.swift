@@ -10,7 +10,7 @@ extension CustomDebugStringConvertible {
             if value is String {
                 return "\(label): \"\(value)\""
             }
-                
+            
             else {
                 return "\(label): \(value)"
             }
