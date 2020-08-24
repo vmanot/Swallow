@@ -11,13 +11,6 @@ extension Hashable {
     }
 }
 
-extension Hashable where Self: RawRepresentable, Self.RawValue: Hashable {
-    @inlinable
-    public static func == (lhs: Self, rhs: Self) -> Bool {
-        return lhs.rawValue.hashValue == rhs.rawValue.hashValue
-    }
-}
-
 extension Hashable where Self: Sequence, Self.Element: Equatable {
     @inlinable
     public static func == (lhs: Self, rhs: Self) -> Bool {

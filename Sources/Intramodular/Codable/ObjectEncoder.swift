@@ -37,9 +37,14 @@ public struct ObjectEncoder: Initiable {
     
     public struct EncodingStrategies {
         var strategies = [ObjectIdentifier: Any]()
+        
         public subscript<T>(type: T.Type) -> EncodingStrategy<T>? {
             get { return strategies[ObjectIdentifier(type)] as? EncodingStrategy<T> }
             set { strategies[ObjectIdentifier(type)] = newValue }
+        }
+        
+        public init() {
+            
         }
     }
     

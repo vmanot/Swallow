@@ -42,9 +42,17 @@ public struct ObjectDecoder: Initiable {
     
     public struct DecodingStrategies {
         var strategies = [ObjectIdentifier: Any]()
+        
         public subscript<T>(type: T.Type) -> DecodingStrategy<T>? {
-            get { return strategies[ObjectIdentifier(type)] as? DecodingStrategy<T> }
-            set { strategies[ObjectIdentifier(type)] = newValue }
+            get {
+                strategies[ObjectIdentifier(type)] as? DecodingStrategy<T>
+            } set {
+                strategies[ObjectIdentifier(type)] = newValue
+            }
+        }
+        
+        public init() {
+            
         }
     }
     

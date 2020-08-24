@@ -24,7 +24,7 @@ extension Unicode.ByteOrderMark {
 }
 
 extension Unicode.ByteOrderMark {
-    static func readBOM(buffer: UnsafePointer<UInt8>, count: Int) -> (ByteOrder, Int)? {
+    public static func readBOM(buffer: UnsafePointer<UInt8>, count: Int) -> (ByteOrder, Int)? {
         if count >= 4 {
             // UTF-32 BE
             if compare(buffer: buffer, bom: Unicode.ByteOrderMark.utf32BE) {
