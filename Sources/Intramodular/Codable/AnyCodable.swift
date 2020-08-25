@@ -14,15 +14,12 @@ public enum AnyCodable: _opaque_Hashable, Hashable {
     case url(URL)
     case array([AnyCodable])
     case dictionary([AnyCodingKey: AnyCodable])
-    case objectiveC(AnyHashable)
     case encodable(AnyHashableEncodable)
     
     public init(_ value: Any) throws {
         switch value {
             case let value as AnyCodableConvertible:
                 self = try value.toAnyCodable()
-            case let value as (_opaque_Hashable & NSObject & NSCoding):
-                self = .objectiveC(value.toAnyHashable())
             case let value as (_opaque_Hashable & Encodable):
                 self = .encodable(.init(value))
             default:
@@ -90,7 +87,7 @@ extension AnyCodable: Codable {
     public func encode(to encoder: Encoder) throws {
         switch self {
             case .none:
-                try encoder.encodeNil()
+                try encoder.encodeSingleNil()
             case .bool(let value):
                 try value.encode(to: encoder)
             case .number(let value):
@@ -105,8 +102,6 @@ extension AnyCodable: Codable {
                 try value.encode(to: encoder)
             case .dictionary(let value):
                 try value.encode(to: encoder)
-            case .objectiveC(let value):
-                TODO.unimplemented
             case .encodable(let value):
                 try value.encode(to: encoder)
         }
@@ -205,8 +200,6 @@ extension AnyCodable: ObjectiveCBridgeable {
                 return try value.map({ try $0.bridgeToObjectiveC() }) as NSArray
             case .dictionary(let value):
                 return try value.mapKeysAndValues({ $0.stringValue }, { try $0.bridgeToObjectiveC() }) as NSDictionary
-            case .objectiveC(let value):
-                return value.base as! NSCoding
             case .encodable(let value):
                 return try ObjectEncoder().encode(value)
         }

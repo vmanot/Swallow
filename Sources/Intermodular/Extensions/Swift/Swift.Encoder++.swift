@@ -5,7 +5,7 @@
 import Swift
 
 extension Encoder {
-    public func encodeNil() throws {
+    public func encodeSingleNil() throws {
         var container = self.singleValueContainer()
 
         try container.encodeNil()

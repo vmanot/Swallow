@@ -59,16 +59,16 @@ public struct OptionalDateValue<Formatter: DateValueCodableStrategy>: Codable {
     
     public init(from decoder: Decoder) throws {
         if (try? decoder.decodeNil()) ?? false {
+            self.wrappedValue = nil
             
+            return
         }
         
         self.wrappedValue = try Formatter.decode(try Formatter.RawValue(from: decoder))
     }
     
     public func encode(to encoder: Encoder) throws {
-        if let wrappedValue = wrappedValue {
-            try Formatter.encode(wrappedValue).encode(to: encoder)
-        }
+        try wrappedValue.map(Formatter.encode).encode(to: encoder)
     }
 }
 
