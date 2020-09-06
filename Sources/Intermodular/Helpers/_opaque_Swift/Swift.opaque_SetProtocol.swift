@@ -33,8 +33,8 @@ public protocol _opaque_ResizableSetProtocol: _opaque_DestructivelyMutableSetPro
 // MARK: - Implementation -
 
 extension _opaque_DestructivelyMutableSequence where Self: DestructivelyMutableSequence {
-    public mutating func _opaque_DestructivelyMutableSequence_forEach<T>(mutating iterator: ((inout Any?) throws -> T)) rethrows {
-        try forEach(mutating: {
+    public mutating func _opaque_DestructivelyMutableSequence_forEach<T>(destructivelyMutating iterator: ((inout Any?) throws -> T)) rethrows {
+        try forEach(destructivelyMutating: {
             var _element: Any? = $0
             _ = try iterator(&_element)
             $0 = _element.map({ try! cast($0) })

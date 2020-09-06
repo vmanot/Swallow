@@ -25,13 +25,13 @@ public protocol FailableOpaqueValueWrapper: _opaque_FailableOpaqueValueWrapper {
     
     var opaqueValue: OpaqueValue { get }
     
-    init(uncheckedOpaqueValue: OpaqueValue)
+    init(_opaque_uncheckedValue: OpaqueValue)
     
     init?(opaqueValue: OpaqueValue)
 }
 
 extension FailableOpaqueValueWrapper {
-    public init(uncheckedOpaqueValue opaqueValue: OpaqueValue) {
+    public init(_opaque_uncheckedValue opaqueValue: OpaqueValue) {
         self = Self(opaqueValue: opaqueValue)!
     }
 }

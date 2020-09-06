@@ -10,10 +10,10 @@ extension ArraySlice: DestructivelyMutableSequence {
 
 extension Dictionary: ElementRemoveableDestructivelyMutableSequence {
     public mutating func forEach<T>(mutating iterator: ((inout Element) throws -> T)) rethrows {
-        try forEach(mutating: { (element: inout Element!) in try iterator(&element!) })
+        try forEach(destructivelyMutating: { (element: inout Element!) in try iterator(&element!) })
     }
     
-    public mutating func forEach<T>(mutating iterator: ((inout Element?) throws -> T)) rethrows {
+    public mutating func forEach<T>(destructivelyMutating iterator: ((inout Element?) throws -> T)) rethrows {
         for element in self {
             var newElement: Element! = element
             
@@ -36,14 +36,14 @@ extension Dictionary: ElementRemoveableDestructivelyMutableSequence {
 
 extension Set: DestructivelyMutableSequence {
     public mutating func forEach<T>(mutating iterator: ((inout Element) throws -> T)) rethrows {
-        try forEach(mutating: { (element: inout Element!) in try iterator(&element!) })
+        try forEach(destructivelyMutating: { try iterator(&$0!) })
     }
     
-    public mutating func forEach<T>(mutating f: ((inout Element?) throws -> T)) rethrows {
+    public mutating func forEach<T>(destructivelyMutating body: ((inout Element?) throws -> T)) rethrows {
         for element in self {
             var newElement: Element! = element
             
-            _ = try f(&newElement)
+            _ = try body(&newElement)
             
             if element != newElement {
                 remove(element)

@@ -11,8 +11,22 @@ extension MutableImplementationForwarder where Self: DestructivelyMutableSequenc
         try implementationProvider.forEach(mutating: iterator)
     }
     
-    public mutating func forEach<T>(mutating iterator: ((inout Element?) throws -> T)) rethrows {
+    public mutating func forEach<T>(destructivelyMutating iterator: ((inout Element?) throws -> T)) rethrows {
+        try implementationProvider.forEach(destructivelyMutating: iterator)
+    }
+    
+    public mutating func removeAll() {
+        implementationProvider.removeAll()
+    }
+}
+
+extension MutableImplementationForwarder where Self: DestructivelyMutableSequence & RangeReplaceableCollection, ImplementationProvider: DestructivelyMutableSequence, ImplementationProvider.Element == Self.Element {
+    public mutating func forEach<T>(mutating iterator: ((inout Element) throws -> T)) rethrows {
         try implementationProvider.forEach(mutating: iterator)
+    }
+    
+    public mutating func forEach<T>(destructivelyMutating iterator: ((inout Element?) throws -> T)) rethrows {
+        try implementationProvider.forEach(destructivelyMutating: iterator)
     }
     
     public mutating func removeAll() {
@@ -22,7 +36,7 @@ extension MutableImplementationForwarder where Self: DestructivelyMutableSequenc
 
 extension MutableImplementationForwarder where Self: ResizableCollection, ImplementationProvider: ResizableCollection, ImplementationProvider.Element == Self.Element {
     public mutating func forEach<T>(mutating iterator: ((inout Element?) throws -> T)) rethrows {
-        try implementationProvider.forEach(mutating: iterator)
+        try implementationProvider.forEach(destructivelyMutating: iterator)
     }
     
     public mutating func removeAll() {

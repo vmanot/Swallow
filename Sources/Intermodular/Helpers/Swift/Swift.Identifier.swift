@@ -19,7 +19,6 @@ public protocol IdentifierGenerator {
     mutating func next() -> Identifier
 }
 
-
 // MARK: - Concrete Implementations -
 
 extension AnyHashable: Identifier {

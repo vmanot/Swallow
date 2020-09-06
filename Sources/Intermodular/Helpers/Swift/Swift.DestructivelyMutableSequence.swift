@@ -5,7 +5,7 @@
 import Swift
 
 public protocol DestructivelyMutableSequence: MutableSequence {
-    mutating func forEach<T>(mutating _: ((inout Element?) throws -> T)) rethrows
+    mutating func forEach<T>(destructivelyMutating _: ((inout Element?) throws -> T)) rethrows
     mutating func map<S: ExtensibleSequence & Initiable>(mutating _: ((inout Element?) throws -> S.Element)) rethrows -> S
     mutating func filter(inPlace _: ((Element) throws -> Bool)) rethrows
     mutating func remove(_: ((Element) throws -> Bool)) rethrows
@@ -32,11 +32,11 @@ extension DestructivelyMutableSequence {
     }
     
     public mutating func filter(inPlace predicate: ((Element) throws -> Bool)) rethrows {
-        try forEach(mutating: { try predicate($0!) &&-> ($0 = nil) })
+        try forEach(destructivelyMutating: { try predicate($0!) &&-> ($0 = nil) })
     }
     
     public mutating func remove(_ predicate: ((Element) throws -> Bool)) rethrows {
-        try forEach(mutating: {
+        try forEach(destructivelyMutating: {
             (element: inout Element!) in
             
             if try predicate(element) {
@@ -46,12 +46,12 @@ extension DestructivelyMutableSequence {
     }
 
     public mutating func removeAll() {
-        forEach(mutating: { $0 = nil })
+        forEach(destructivelyMutating: { $0 = nil })
     }
 }
 
 extension DestructivelyMutableSequence where Self: RangeReplaceableCollection {
-    public mutating func forEach<T>(mutating iterator: ((inout Element?) throws -> T)) rethrows {
+    public mutating func forEach<T>(destructivelyMutating iterator: ((inout Element?) throws -> T)) rethrows {
         var indexOffset: Int = 0
         
         for (index, element) in enumerated() {
@@ -82,7 +82,7 @@ extension DestructivelyMutableSequence where Self: RangeReplaceableCollection {
     }
 
     public mutating func remove(_ predicate: ((Element) throws -> Bool)) rethrows {
-        try forEach(mutating: {
+        try forEach(destructivelyMutating: {
             (element: inout Element!) in
 
             if try predicate(element) {
@@ -100,7 +100,7 @@ extension DestructivelyMutableSequence where Self: RangeReplaceableCollection {
 
 extension DestructivelyMutableSequence where Element: Equatable {
     public mutating func removeAll(of someElement: Element) {
-        forEach(mutating: { $0 == someElement &&-> ($0 = nil) })
+        forEach(destructivelyMutating: { $0 == someElement &&-> ($0 = nil) })
     }
     
     public static func -= (lhs: inout Self, rhs: Element) {
@@ -116,7 +116,7 @@ extension DestructivelyMutableSequence where Element: Equatable {
     }
     
     public mutating func remove<S: Sequence>(contentsOf sequence: S) where S.Element == Element {
-        forEach(mutating: { sequence.contains($0!) &&-> ($0 = nil) })
+        forEach(destructivelyMutating: { sequence.contains($0!) &&-> ($0 = nil) })
     }
     
     public static func -= <S: Sequence>(lhs: inout Self, rhs: S) where S.Element == Element {

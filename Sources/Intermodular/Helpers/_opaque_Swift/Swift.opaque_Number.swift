@@ -14,7 +14,7 @@ public protocol _opaque_Number: _opaque_Hashable, _opaque_SignedOrUnsigned, Coda
     
     func _opaque_Number_attemptCast(to _: _opaque_Number.Type) -> _opaque_Number?
     
-    init(uncheckedOpaqueValue: _opaque_Number)
+    init(_opaque_uncheckedValue: _opaque_Number)
     init?(opaqueValue: _opaque_Number)
     
     init<N: _opaque_Number>(unchecked _: N)

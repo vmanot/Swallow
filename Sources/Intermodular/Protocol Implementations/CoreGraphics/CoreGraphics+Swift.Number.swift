@@ -9,7 +9,7 @@ import Foundation
 import Swift
 
 extension CGFloat: Continuous, Signed, Number {
-    public init(uncheckedOpaqueValue value: _opaque_Number) {
+    public init(_opaque_uncheckedValue value: _opaque_Number) {
         self = value.toCGFloat()
     }
 

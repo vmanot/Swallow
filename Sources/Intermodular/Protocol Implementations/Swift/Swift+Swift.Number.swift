@@ -7,7 +7,7 @@ import Foundation
 import Swift
 
 extension Double: Continuous, Signed, Number {
-    public init(uncheckedOpaqueValue value: _opaque_Number) {
+    public init(_opaque_uncheckedValue value: _opaque_Number) {
         self = value.toDouble()
     }
 
@@ -17,7 +17,7 @@ extension Double: Continuous, Signed, Number {
 }
 
 extension Float: Continuous, Signed, Number {
-    public init(uncheckedOpaqueValue value: _opaque_Number) {
+    public init(_opaque_uncheckedValue value: _opaque_Number) {
         self = value.toFloat()
     }
 
@@ -33,7 +33,7 @@ extension Int: Discrete, Signed, Number {
     public typealias NativeType = Int32
     #endif
 
-    public init(uncheckedOpaqueValue value: _opaque_Number) {
+    public init(_opaque_uncheckedValue value: _opaque_Number) {
         self = value.toInt()
     }
 
@@ -43,7 +43,7 @@ extension Int: Discrete, Signed, Number {
 }
 
 extension Int8: Discrete, Signed, Number {
-    public init(uncheckedOpaqueValue value: _opaque_Number) {
+    public init(_opaque_uncheckedValue value: _opaque_Number) {
         self = value.toInt8()
     }
 
@@ -53,7 +53,7 @@ extension Int8: Discrete, Signed, Number {
 }
 
 extension Int16: Discrete, Signed, Number {
-    public init(uncheckedOpaqueValue value: _opaque_Number) {
+    public init(_opaque_uncheckedValue value: _opaque_Number) {
         self = value.toInt16()
     }
 
@@ -63,7 +63,7 @@ extension Int16: Discrete, Signed, Number {
 }
 
 extension Int32: Discrete, Signed, Number {
-    public init(uncheckedOpaqueValue value: _opaque_Number) {
+    public init(_opaque_uncheckedValue value: _opaque_Number) {
         self = value.toInt32()
     }
 
@@ -73,7 +73,7 @@ extension Int32: Discrete, Signed, Number {
 }
 
 extension Int64: Discrete, Signed, Number {
-    public init(uncheckedOpaqueValue value: _opaque_Number) {
+    public init(_opaque_uncheckedValue value: _opaque_Number) {
         self = value.toInt64()
     }
 
@@ -89,7 +89,7 @@ extension UInt: Discrete, Unsigned, Number {
     public typealias NativeType = UInt32
     #endif
 
-    public init(uncheckedOpaqueValue value: _opaque_Number) {
+    public init(_opaque_uncheckedValue value: _opaque_Number) {
         self = value.toUInt()
     }
 
@@ -99,7 +99,7 @@ extension UInt: Discrete, Unsigned, Number {
 }
 
 extension UInt8: Discrete, Unsigned, Number {
-    public init(uncheckedOpaqueValue value: _opaque_Number) {
+    public init(_opaque_uncheckedValue value: _opaque_Number) {
         self = value.toUInt8()
     }
 
@@ -109,7 +109,7 @@ extension UInt8: Discrete, Unsigned, Number {
 }
 
 extension UInt16: Discrete, Unsigned, Number {
-    public init(uncheckedOpaqueValue value: _opaque_Number) {
+    public init(_opaque_uncheckedValue value: _opaque_Number) {
         self = value.toUInt16()
     }
 
@@ -119,7 +119,7 @@ extension UInt16: Discrete, Unsigned, Number {
 }
 
 extension UInt32: Discrete, Unsigned, Number {
-    public init(uncheckedOpaqueValue value: _opaque_Number) {
+    public init(_opaque_uncheckedValue value: _opaque_Number) {
         self = value.toUInt32()
     }
 
@@ -129,7 +129,7 @@ extension UInt32: Discrete, Unsigned, Number {
 }
 
 extension UInt64: Discrete, Unsigned, Number {
-    public init(uncheckedOpaqueValue value: _opaque_Number) {
+    public init(_opaque_uncheckedValue value: _opaque_Number) {
         self = value.toUInt64()
     }
 
