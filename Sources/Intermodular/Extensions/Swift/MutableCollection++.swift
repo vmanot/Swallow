@@ -68,7 +68,7 @@ extension MutableCollection {
 extension MutableCollection {
     public subscript(try index: Index) -> Element? {
         get {
-            return collectionOnly[try: index]
+            return lazy.map({ $0 })[try: index]
         } set {
             if let newValue = newValue, indices.contains(index) {
                 self[index] = newValue
@@ -80,7 +80,7 @@ extension MutableCollection {
     
     public subscript(try bounds: Range<Index>) -> SubSequence? {
         get {
-            return collectionOnly[try: bounds]
+            return Optional(self[bounds], if: contains(bounds))
         } set {
             if let newValue = newValue, contains(bounds) {
                 self[bounds] = newValue
@@ -94,7 +94,7 @@ extension MutableCollection {
 extension MutableCollection where Self: RangeReplaceableCollection {
     public subscript(try index: Index) -> Element? {
         get {
-            return collectionOnly[try: index]
+            return lazy.map({ $0 })[try: index]
         } set {
             if let newValue = newValue, indices.contains(index) {
                 self[index] = newValue
@@ -106,7 +106,7 @@ extension MutableCollection where Self: RangeReplaceableCollection {
     
     public subscript(try bounds: Range<Index>) -> SubSequence? {
         get {
-            return collectionOnly[try: bounds]
+            return Optional(self[bounds], if: contains(bounds))
         } set {
             if let newValue = newValue, contains(bounds) {
                 self[bounds] = newValue

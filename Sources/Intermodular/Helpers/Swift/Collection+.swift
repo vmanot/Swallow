@@ -53,15 +53,15 @@ extension Collection {
 extension MutableCollection {
     public subscript(_ index: RelativeIndex) -> Element {
         get {
-            return CollectionOnly(self)[index]
+            lazy.map({ $0 })[index]
         } set {
             self[self.index(atDistance: index.distanceFromStartIndex)] = newValue
         }
     }
-
+    
     public subscript(_ index: FirstOrLastCollectionIndex) -> Element {
         get {
-            return CollectionOnly(self)[index]
+            return lazy.map({ $0 })[index]
         } set {
             switch index {
                 case .first:

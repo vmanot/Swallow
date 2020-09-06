@@ -5,7 +5,7 @@
 import Darwin
 import Swift
 
-public struct NullTerminatedUTF8String: MutableWrapper, ImplementationForwardingWrapper {
+public struct NullTerminatedUTF8String: MutableWrapper {
     public typealias Value = UnsafeMutablePointer<CChar>
     
     public var value: Value
@@ -97,6 +97,10 @@ extension NullTerminatedUTF8String: MutablePointer {
     public typealias Pointee = Value.Pointee
     public typealias Stride = Value.Stride
     
+    public var opaquePointerRepresentation: OpaquePointer {
+        value.opaquePointerRepresentation
+    }
+    
     public init(_ pointer: OpaquePointer) {
         self.init(Value(pointer))
     }
@@ -109,6 +113,14 @@ extension NullTerminatedUTF8String: MutablePointer {
         self.init(pointer)
     }
     
+    public func distance(to other: NullTerminatedUTF8String) -> Value.Stride {
+        value.distance(to: other.value)
+    }
+    
+    public func advanced(by n: Value.Stride) -> NullTerminatedUTF8String {
+        .init(value.advanced(by: n))
+    }
+
     public static func allocate(capacity: Stride) -> NullTerminatedUTF8String {
         let resultValue = Value.allocate(capacity: capacity + 1)
         resultValue[capacity] = 0
