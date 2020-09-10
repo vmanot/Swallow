@@ -143,7 +143,7 @@ extension Collection {
 
     public subscript(tryAfter index: Index) -> Element? {
         @inlinable get {
-            return Optional(self[index], if: contains(after: index))
+            return Optional(self[self.index(after: index)], if: contains(after: index))
         }
     }
 
@@ -162,6 +162,14 @@ extension Collection {
     public subscript(try bounds: Range<Int>) -> SubSequence? {
         @inlinable get {
             return Optional(self[try: range(from: bounds)], if: length > bounds.upperBound)
+        }
+    }
+}
+
+extension Collection where Index == Int {
+    public subscript(try index: Index) -> Element? {
+        @inlinable get {
+            return Optional(self[index], if: contains(index))
         }
     }
 }
