@@ -126,26 +126,6 @@ extension ImplementationForwarder where Self: Error, ImplementationProvider: Err
     }
 }
 
-extension ImplementationForwarder where Self: Error & RawRepresentable, Self.RawValue: Error & SignedInteger, ImplementationProvider: Error & SignedInteger {
-    public var _domain: String {
-        return implementationProvider._domain
-    }
-    
-    public var _code: Int {
-        return implementationProvider._code
-    }
-}
-
-extension ImplementationForwarder where Self: Error & RawRepresentable, Self.RawValue: Error & UnsignedInteger, ImplementationProvider: Error & UnsignedInteger {
-    public var _domain: String {
-        return implementationProvider._domain
-    }
-    
-    public var _code: Int {
-        return implementationProvider._code
-    }
-}
-
 // MARK: -
 
 extension ImplementationForwarder where Self: ExpressibleByArrayLiteral, ImplementationProvider: ExpressibleByArrayLiteral, Self.ArrayLiteralElement == ImplementationProvider.ArrayLiteralElement {
@@ -173,18 +153,6 @@ extension ImplementationForwarder where Self: ExpressibleByStringLiteral, Implem
 // MARK: -
 
 extension ImplementationForwarder where Self: Hashable, ImplementationProvider: Hashable {
-    public func hash(into hasher: inout Hasher) {
-        implementationProvider.hash(into: &hasher)
-    }
-}
-
-extension ImplementationForwarder where Self: Hashable, ImplementationProvider: RawRepresentable, ImplementationProvider.RawValue: Hashable {
-    public func hash(into hasher: inout Hasher) {
-        implementationProvider.rawValue.hash(into: &hasher)
-    }
-}
-
-extension ImplementationForwarder where Self: Hashable, ImplementationProvider: Hashable & RawRepresentable, ImplementationProvider.RawValue: Hashable {
     public func hash(into hasher: inout Hasher) {
         implementationProvider.hash(into: &hasher)
     }
