@@ -19,7 +19,7 @@ public protocol IdentifierGenerator {
     mutating func next() -> Identifier
 }
 
-// MARK: - Concrete Implementations -
+// MARK: - Conformances -
 
 extension AnyHashable: Identifier {
     

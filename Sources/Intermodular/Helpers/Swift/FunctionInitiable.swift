@@ -75,7 +75,7 @@ extension ThrowingFunctionWrapper {
     }
 }
 
-// MARK: - Concrete Implementations -
+// MARK: - Conformances -
 
 public struct NonMutatingGetter<T, U>: FunctionWrapper {
     public typealias Value = ((T) -> U)

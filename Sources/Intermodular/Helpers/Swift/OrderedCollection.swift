@@ -9,7 +9,7 @@ public protocol OrderedCollection: Collection {
 	func suffix(from lowerBound: Element) -> SubSequence
 }
 
-// MARK: - Concrete Implementations -
+// MARK: - Conformances -
 
 extension DefaultIndices: OrderedCollection {
     

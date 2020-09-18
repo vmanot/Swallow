@@ -9,7 +9,7 @@ public protocol CoderPrimitive: _opaque_Hashable, Codable {
     func hash(into: inout Hasher)
 }
 
-// MARK: - Concrete Implementations -
+// MARK: - Conformances -
 
 extension Bool: CoderPrimitive {
     

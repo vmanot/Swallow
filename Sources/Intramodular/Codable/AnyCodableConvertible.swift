@@ -13,7 +13,7 @@ public protocol AnyCodableUnconditionalConvertible: AnyCodableConvertible {
     func toAnyCodable() -> AnyCodable
 }
 
-// MARK: - Concrete Implementations -
+// MARK: - Conformances -
 
 extension Array: AnyCodableConvertible {
     public func toAnyCodable() throws -> AnyCodable {

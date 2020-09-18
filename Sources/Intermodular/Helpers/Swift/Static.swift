@@ -18,7 +18,7 @@ public protocol StaticInteger: StaticValue where Value == Int {
     
 }
 
-// MARK: - Concrete Implementations -
+// MARK: - Conformances -
 
 extension StaticString: Static {
     
