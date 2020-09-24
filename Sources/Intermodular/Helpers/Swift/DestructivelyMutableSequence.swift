@@ -5,9 +5,11 @@
 import Swift
 
 public protocol DestructivelyMutableSequence: MutableSequence {
+    @_disfavoredOverload
     mutating func forEach<T>(destructivelyMutating _: ((inout Element?) throws -> T)) rethrows
-    mutating func map<S: ExtensibleSequence & Initiable>(mutating _: ((inout Element?) throws -> S.Element)) rethrows -> S
-    mutating func filter(inPlace _: ((Element) throws -> Bool)) rethrows
+    @_disfavoredOverload
+    mutating func map<S: ExtensibleSequence & Initiable>(destructivelyMutating _: ((inout Element?) throws -> S.Element)) rethrows -> S
+    mutating func filterInPlace(_: ((Element) throws -> Bool)) rethrows
     mutating func remove(_: ((Element) throws -> Bool)) rethrows
     mutating func removeAll()
 }
@@ -19,19 +21,20 @@ public protocol ElementRemoveableDestructivelyMutableSequence: DestructivelyMuta
 // MARK: - Implementation -
 
 extension DestructivelyMutableSequence {
-    public mutating func map<S: ExtensibleSequence & Initiable>(mutating iterator: ((inout Element?) throws -> S.Element)) rethrows -> S {
+    @_disfavoredOverload
+    public mutating func map<S: ExtensibleSequence & Initiable>(destructivelyMutating iterator: ((inout Element?) throws -> S.Element)) rethrows -> S {
         var result = S()
         
-        try forEach {
+        try forEach(destructivelyMutating: {
             (element: inout Element?) in
             
             result += try iterator(&element)
-        }
+        })
         
         return result
     }
     
-    public mutating func filter(inPlace predicate: ((Element) throws -> Bool)) rethrows {
+    public mutating func filterInPlace(_ predicate: ((Element) throws -> Bool)) rethrows {
         try forEach(destructivelyMutating: { try predicate($0!) &&-> ($0 = nil) })
     }
     
@@ -44,7 +47,7 @@ extension DestructivelyMutableSequence {
             }
         })
     }
-
+    
     public mutating func removeAll() {
         forEach(destructivelyMutating: { $0 = nil })
     }
@@ -71,7 +74,7 @@ extension DestructivelyMutableSequence where Self: RangeReplaceableCollection {
                 if let newElement = newElement {
                     replaceSubrange(index..<self.index(index, offsetBy: 1), with: CollectionOfOne(newElement))
                 }
-                    
+                
                 else {
                     remove(at: index)
                     
@@ -80,17 +83,17 @@ extension DestructivelyMutableSequence where Self: RangeReplaceableCollection {
             }
         }
     }
-
+    
     public mutating func remove(_ predicate: ((Element) throws -> Bool)) rethrows {
         try forEach(destructivelyMutating: {
             (element: inout Element!) in
-
+            
             if try predicate(element) {
                 element = nil
             }
         })
     }
-
+    
     public mutating func removeAll() {
         removeAll(keepingCapacity: false)
     }

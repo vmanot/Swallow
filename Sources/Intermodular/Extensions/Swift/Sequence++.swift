@@ -144,16 +144,12 @@ extension Sequence {
 // MARK: forEach
 
 extension Sequence {
+    @_disfavoredOverload
     @inlinable
     public func forEach<T>(do iterator: @autoclosure () throws -> T) rethrows {
         for _ in self {
             _ = try iterator()
         }
-    }
-
-    @inlinable
-    public func forEach<T>(execute f: ((Element) throws -> (() -> T))) rethrows {
-        try forEach({ _ = try f($0)() })
     }
 }
 

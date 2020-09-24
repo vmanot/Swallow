@@ -43,12 +43,10 @@ extension String {
         hasPrefix(prefix) ? dropFirst(prefix.count) : .init(self)
     }
     
-    #if swift(>=5.3)
     @_disfavoredOverload
     public func dropPrefixIfPresent<String: StringProtocol>(_ prefix: String) -> Self {
         Self(dropPrefixIfPresent(prefix) as Substring)
     }
-    #endif
     
     public func dropLast() -> Substring {
         return dropLast(1)
@@ -58,12 +56,10 @@ extension String {
         return hasSuffix(suffix) ? dropLast(suffix.count) : .init(self)
     }
     
-    #if swift(>=5.3)
     @_disfavoredOverload
     public func dropSuffixIfPresent<String: StringProtocol>(_ prefix: String) -> Self {
         Self(dropSuffixIfPresent(prefix) as Substring)
     }
-    #endif
 }
 
 extension Substring {
