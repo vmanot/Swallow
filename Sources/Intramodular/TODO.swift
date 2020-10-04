@@ -39,7 +39,7 @@ extension TODO {
 }
 
 public enum TODO {
-    // @available(*, deprecated, message: "This should not be used in production code.")
+    @available(*, deprecated, message: "This should not be used in production code.")
     public static var unimplemented: Never {
         fatalError("Unimplemented function or code path")
     }

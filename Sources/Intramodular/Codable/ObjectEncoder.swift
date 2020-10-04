@@ -10,7 +10,10 @@ public struct ObjectEncoder: Initiable {
         
     }
     
-    public func encode<T>(_ value: T, userInfo: [CodingUserInfoKey: Any] = [:]) throws -> NSCoding where T: Swift.Encodable {
+    public func encode<T: Encodable>(
+        _ value: T,
+        userInfo: [CodingUserInfoKey: Any] = [:]
+    ) throws -> NSCoding {
         do {
             let encoder = ObjectEncoder.Encoder(options, userInfo)
             var container = encoder.singleValueContainer()
@@ -27,6 +30,13 @@ public struct ObjectEncoder: Initiable {
                                                 underlyingError: error)
             throw EncodingError.invalidValue(value, context)
         }
+    }
+    
+    public func encode(
+        _ value: Encodable,
+        userInfo: [CodingUserInfoKey: Any] = [:]
+    ) throws -> NSCoding {
+        try value.encode(to: self, userInfo: userInfo)
     }
     
     public struct EncodingStrategy<T: Encodable> {
@@ -442,5 +452,16 @@ extension ObjectEncoder.EncodingStrategy where T == URL {
     public static let compatibleWithJSONEncoder = ObjectEncoder.EncodingStrategy<URL>.custom { url, encoder in
         var container = encoder.singleValueContainer()
         try container.encode(url.absoluteString)
+    }
+}
+
+// MARK: - Helpers -
+
+extension Encodable {
+    fileprivate func encode(
+        to encoder: ObjectEncoder,
+        userInfo: [CodingUserInfoKey: Any]
+    ) throws -> NSCoding {
+        try encoder.encode(self, userInfo: userInfo)
     }
 }

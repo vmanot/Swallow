@@ -5,7 +5,7 @@
 import Foundation
 import Swift
 
-public enum AnyCodable: _opaque_Hashable, Hashable {
+public enum AnyCodable {
     case none
     case bool(Bool)
     case number(AnyNumber)
@@ -14,14 +14,19 @@ public enum AnyCodable: _opaque_Hashable, Hashable {
     case url(URL)
     case array([AnyCodable])
     case dictionary([AnyCodingKey: AnyCodable])
-    case encodable(AnyHashableEncodable)
+    case encodable(Encodable)
+    case _unsafe(Any)
+    
+    public init(_ encodable: Encodable) {
+        self = .encodable(encodable)
+    }
     
     public init(_ value: Any) throws {
         switch value {
             case let value as AnyCodableConvertible:
                 self = try value.toAnyCodable()
-            case let value as (_opaque_Hashable & Encodable):
-                self = .encodable(.init(value))
+            case let value as Encodable:
+                self = .encodable(value)
             default:
                 self = try cast((value as? NSCoding).unwrap(), to: AnyCodable.self)
         }
@@ -104,6 +109,13 @@ extension AnyCodable: Codable {
                 try value.encode(to: encoder)
             case .encodable(let value):
                 try value.encode(to: encoder)
+            case ._unsafe(let value): do {
+                if let value = value as? Encodable {
+                    try value.encode(to: encoder)
+                } else {
+                    assertionFailure()
+                }
+            }
         }
     }
 }
@@ -202,6 +214,8 @@ extension AnyCodable: ObjectiveCBridgeable {
                 return try value.mapKeysAndValues({ $0.stringValue }, { try $0.bridgeToObjectiveC() }) as NSDictionary
             case .encodable(let value):
                 return try ObjectEncoder().encode(value)
+            case ._unsafe:
+                return try Self.encodable(self).bridgeToObjectiveC()
         }
     }
 }
