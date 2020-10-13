@@ -25,8 +25,6 @@ extension Number {
     }
     
     public static func lossless(from other: AnyNumber) throws -> Self {
-        TODO.whole(.fix)
-        
-        return .init(other.toNSNumber())
+        return .init(try other.toNSNumber())
     }
 }

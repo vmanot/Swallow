@@ -201,7 +201,7 @@ extension AnyCodable: ObjectiveCBridgeable {
             case .bool(let value):
                 return value as NSNumber
             case .number(let value):
-                return value.toNSNumber()
+                return try value.toNSNumber()
             case .string(let value):
                 return value as NSString
             case .date(let value):
