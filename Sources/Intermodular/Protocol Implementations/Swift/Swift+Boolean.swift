@@ -6,6 +6,6 @@ import Swift
 
 extension Bool: Boolean {
     public var boolValue: Bool {
-        return self
+        self
     }
 }

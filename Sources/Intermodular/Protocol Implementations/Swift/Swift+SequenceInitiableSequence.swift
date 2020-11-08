@@ -4,7 +4,7 @@
 
 import Swift
 
-extension AnyBidirectionalCollection: SequenceInitiableSequence {    
+extension AnyBidirectionalCollection: SequenceInitiableSequence {
     public init<S: Sequence>(_ sequence: S) where S.Element == Element {
         self.init(sequence.toFauxCollection())
     }
@@ -22,8 +22,8 @@ extension AnyRandomAccessCollection: SequenceInitiableSequence {
     }
 }
 
-extension AnySequence: SequenceInitiableSequence {    
-
+extension AnySequence: SequenceInitiableSequence {
+    
 }
 
 extension Array: SequenceInitiableSequence {
@@ -57,7 +57,7 @@ extension Set: SequenceInitiableSequence {
 }
 
 extension String: SequenceInitiableSequence {
-
+    
 }
 
 extension String.UnicodeScalarView: SequenceInitiableSequence {

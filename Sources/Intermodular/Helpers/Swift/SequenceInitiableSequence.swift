@@ -9,14 +9,14 @@ public protocol SequenceInitiableSequence: Sequence {
     
     init(repeating _: Element, count: Int)
     init(repeating _: (@escaping () -> Element), count: Int)
-
+    
     init(element: Element)
-
+    
     init<I: IteratorProtocol>(iterator: I) where I.Element == Element
     init<I: IteratorProtocol>(iterator: I, count: Int) where I.Element == Element
     init<I: IteratorProtocol>(iterator: inout I) where I.Element == Element
     init<I: IteratorProtocol>(iterator: inout I, count: Int) where I.Element == Element
-
+    
     init<S: Sequence>(_: S, count: Int) where S.Element == Element
     init<S: Sequence>(_: S) where S.Element == Element
     
@@ -38,7 +38,7 @@ extension SequenceInitiableSequence {
     public init(repeating repeatedValue: (@escaping () -> Element), count: Int) {
         self.init(FixedCountSequence(AnyIterator(repeatedValue), limit: count))
     }
-
+    
     public init(element: Element) {
         self.init(repeating: element, count: 1)
     }
@@ -50,7 +50,7 @@ extension SequenceInitiableSequence {
     public init<I: IteratorProtocol>(iterator: I, count: Int) where I.Element == Element {
         self.init(iterator: FixedCountIterator(iterator, limit: count))
     }
-
+    
     public init<I: IteratorProtocol>(iterator: inout I) where I.Element == Element {
         var _iterator = iterator
         
@@ -66,7 +66,7 @@ extension SequenceInitiableSequence {
         
         iterator = _iterator.value
     }
-
+    
     public init<S: Sequence>(_ source: S, count: Int) where S.Element == Element {
         self.init(FixedCountSequence(source, limit: count))
     }

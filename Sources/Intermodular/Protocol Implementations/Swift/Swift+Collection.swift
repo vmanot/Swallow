@@ -81,7 +81,7 @@ public struct SequenceToCollection<S: Sequence>: RandomAccessCollection2, Wrappe
     
     public typealias Element = S.Element
     public typealias Index = Int
-    public typealias Indices = SignedIntegerRange<Index>
+    public typealias Indices = CountableRange<Index>
     public typealias Iterator = Value.Iterator
     
     public let value: Value

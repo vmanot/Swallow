@@ -22,9 +22,11 @@ public struct ObjectDecoder: Initiable {
         }
     }
     
-    public func decode<T>(_ type: T.Type = T.self,
-                          from object: Any,
-                          userInfo: [CodingUserInfoKey: Any] = [:]) throws -> T where T: Decodable {
+    public func decode<T: Decodable>(
+        _ type: T.Type = T.self,
+        from object: Any,
+        userInfo: [CodingUserInfoKey: Any] = [:]
+    ) throws -> T {
         do {
             return try ObjectDecoder.Decoder(object, options, userInfo).singleValueContainer().decode(type)
         } catch let error as DecodingError {

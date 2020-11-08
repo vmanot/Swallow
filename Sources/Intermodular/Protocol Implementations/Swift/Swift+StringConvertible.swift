@@ -15,8 +15,14 @@ extension String: MutableStringConvertible {
         get {
             return self
         } set {
-           self = newValue
+            self = newValue
         }
+    }
+}
+
+extension StaticString: StringConvertible {
+    public var stringValue: String {
+        return .init(self)
     }
 }
 

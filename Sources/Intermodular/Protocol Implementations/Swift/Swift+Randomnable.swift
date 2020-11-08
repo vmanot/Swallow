@@ -93,7 +93,7 @@ extension UnicodeScalar: BoundedRandomnable {
     public static func random() -> UnicodeScalar {
         return random(minimum: .minimum, maximum: .maximum)
     }
-
+    
     public static func random(minimum: UnicodeScalar, maximum: UnicodeScalar) -> UnicodeScalar {
         return UnicodeScalar(
             UInt32.random(

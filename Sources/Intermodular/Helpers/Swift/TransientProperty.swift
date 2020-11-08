@@ -6,10 +6,10 @@ import Swift
 
 /// A property that does not encode/decode itself.
 @propertyWrapper
-public struct TransientProperty<Value>: PropertyWrapper {
-    public var wrappedValue: Value?
+public struct TransientProperty<Value: Initiable>: PropertyWrapper {
+    public var wrappedValue: Value
     
-    public init(wrappedValue: Value?) {
+    public init(wrappedValue: Value) {
         self.wrappedValue = wrappedValue
     }
 }
@@ -24,7 +24,7 @@ extension TransientProperty: Equatable where Value: Equatable {
 
 extension TransientProperty: Codable {
     public init(from decoder: Decoder) throws {
-        
+        self.init(wrappedValue: .init())
     }
     
     public func encode(to encoder: Encoder) throws {
