@@ -61,3 +61,52 @@ extension ParameterlessPropertyWrapper where WrappedValue: Hashable, Self: Hasha
         wrappedValue.hash(into: &hasher)
     }
 }
+
+// MARK: - API -
+
+/// A type capable of either storing a direct value or flattening a property wrapper.
+///
+/// Use it while building your own protocol wrapper composition.
+@propertyWrapper
+public struct MutableValueBox<WrappedValue>: MutablePropertyWrapper {
+    private let getWrappedValue: (Self) -> WrappedValue
+    private let setWrappedValue: (inout Self, WrappedValue) -> ()
+    
+    private var _wrappedValue: Any
+    
+    public var wrappedValue: WrappedValue {
+        get {
+            getWrappedValue(self)
+        } set {
+            setWrappedValue(&self, newValue)
+        }
+    }
+    
+    public init(wrappedValue: WrappedValue) {
+        _wrappedValue = wrappedValue
+        
+        getWrappedValue = { _self in
+            _self._wrappedValue as! WrappedValue
+        }
+        
+        setWrappedValue = { _self, newValue in
+            _self._wrappedValue = newValue
+        }
+    }
+    
+    public init<Wrapper: MutablePropertyWrapper>(wrappedValue: Wrapper) where Wrapper.WrappedValue == WrappedValue {
+        _wrappedValue = wrappedValue
+        
+        getWrappedValue = { _self in
+            (_self._wrappedValue as! Wrapper).wrappedValue
+        }
+        
+        setWrappedValue = { _self, newValue in
+            var wrappedValue = _self.wrappedValue as! Wrapper
+            
+            wrappedValue.wrappedValue = newValue
+            
+            _self._wrappedValue = newValue
+        }
+    }
+}
