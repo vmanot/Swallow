@@ -8,7 +8,7 @@ public protocol NameInitiable {
     init(name: String)
 }
 
-// MARK: - Protocol Implementations -
+// MARK: - Protocol Conformances -
 
 extension ExpressibleByStringLiteral where Self: NameInitiable {
     public init(stringLiteral value: String) {

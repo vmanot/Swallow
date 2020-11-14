@@ -26,7 +26,7 @@ public struct Indirect<Value>: ParameterlessPropertyWrapper {
     }
 }
 
-// MARK: - Protocol Implementations -
+// MARK: - Protocol Conformances -
 
 extension Indirect: Encodable where Value: Encodable {
     

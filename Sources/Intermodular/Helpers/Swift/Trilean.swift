@@ -10,7 +10,7 @@ public enum Trilean: Int8, Hashable {
     case `true`
 }
 
-// MARK: - Protocol Implementations -
+// MARK: - Protocol Conformances -
 
 extension Trilean: Boolean {
     @inlinable

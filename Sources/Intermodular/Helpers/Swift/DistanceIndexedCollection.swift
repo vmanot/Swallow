@@ -14,7 +14,7 @@ public struct DistanceIndexedCollection<C: Collection>: Wrapper {
     }
 }
 
-// MARK: - Protocol Implementations -
+// MARK: - Protocol Conformances -
 
 extension DistanceIndexedCollection: Sequence {
     public typealias Element = Iterator.Element
@@ -44,7 +44,7 @@ extension DistanceIndexedCollection: Collection {
     }
 }
 
-// MARK: - Conditional Protocol Implementations -
+// MARK: - Conditional Protocol Conformances -
 
 extension DistanceIndexedCollection: CustomStringConvertible where Value: CustomStringConvertible {
     public var description: String {

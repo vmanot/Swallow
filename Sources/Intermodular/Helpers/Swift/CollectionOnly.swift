@@ -14,7 +14,7 @@ struct _CollectionOnly<C: Collection> {
     }
 }
 
-// MARK: - Protocol Implementations -
+// MARK: - Protocol Conformances -
 
 extension _CollectionOnly: Collection2 {
     typealias Element = Value.Element

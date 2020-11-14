@@ -102,7 +102,7 @@ extension SequenceInitiableSequence {
     }
 }
 
-// MARK: - Protocol Implementations -
+// MARK: - Protocol Conformances -
 
 extension SequenceInitiableSequence where Self: ExpressibleByArrayLiteral {
     public init(arrayLiteral elements: Self.Element...) {

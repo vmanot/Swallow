@@ -220,7 +220,7 @@ public struct AnyNumber: Codable, Hashable {
     }
 }
 
-// MARK: - Protocol Implementations -
+// MARK: - Protocol Conformances -
 
 extension AnyNumber: BooleanInitiable {
     public init(_ value: Bool) {

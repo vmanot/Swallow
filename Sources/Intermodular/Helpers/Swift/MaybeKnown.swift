@@ -35,7 +35,7 @@ extension MaybeKnown {
     }
 }
 
-// MARK: - Protocol Implementations -
+// MARK: - Protocol Conformances -
 
 extension MaybeKnown: Codable where Value: Codable {
     public init(from decoder: Decoder) throws {

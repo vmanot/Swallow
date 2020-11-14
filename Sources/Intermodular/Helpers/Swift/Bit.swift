@@ -14,7 +14,7 @@ public enum Bit: Byte {
     }
 }
 
-// MARK: - Protocol Implementations - 
+// MARK: - Protocol Conformances - 
 
 extension Bit: Boolean {
     @inlinable

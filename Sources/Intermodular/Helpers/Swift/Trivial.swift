@@ -95,7 +95,7 @@ extension Trivial {
     }
 }
 
-// MARK: - Protocol Implementations -
+// MARK: - Protocol Conformances -
 
 extension CVarArg where Self: Trivial {
     @inlinable

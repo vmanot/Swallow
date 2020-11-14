@@ -16,7 +16,7 @@ extension Optional {
     }
 }
 
-// MARK: - Protocol Implementations -
+// MARK: - Protocol Conformances -
 
 extension ExpressibleByNilLiteral where Self: OptionalProtocol {
     public init(nilLiteral: ()) {

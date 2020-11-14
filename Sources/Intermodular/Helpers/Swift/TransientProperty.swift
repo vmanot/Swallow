@@ -14,7 +14,7 @@ public struct TransientProperty<Value: Initiable>: PropertyWrapper {
     }
 }
 
-// MARK: - Protocol Implementations -
+// MARK: - Protocol Conformances -
 
 extension TransientProperty: Equatable where Value: Equatable {
     public static func == (lhs: Self, rhs: Self) -> Bool {
