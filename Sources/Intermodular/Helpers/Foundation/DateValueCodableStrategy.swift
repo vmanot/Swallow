@@ -5,7 +5,7 @@
 import Foundation
 import Swift
 
-public protocol DateValueCodableStrategy {
+public protocol DateCodingStrategy {
     associatedtype RawValue: Codable
     
     static func encode(_ date: Date) throws -> RawValue
@@ -13,7 +13,7 @@ public protocol DateValueCodableStrategy {
 }
 
 @propertyWrapper
-public struct DateValue<Formatter: DateValueCodableStrategy>: Codable {
+public struct DateValue<Formatter: DateCodingStrategy>: Codable {
     public var wrappedValue: Date
     
     public init(wrappedValue: Date) {
@@ -46,7 +46,7 @@ extension DateValue: Hashable where Formatter.RawValue: Hashable {
 }
 
 @propertyWrapper
-public struct OptionalDateValue<Formatter: DateValueCodableStrategy>: Codable {
+public struct OptionalDateValue<Formatter: DateCodingStrategy>: Codable {
     public var wrappedValue: Date?
     
     public init(wrappedValue: Date?) {

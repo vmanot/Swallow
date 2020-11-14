@@ -10,7 +10,7 @@ import Swift
 /// `@YearMonthDayDate` decodes string values of format `y-MM-dd` as a `Date`. Encoding the `Date` will encode the value back into the original string format.
 ///
 /// For example, decoding json data with a `String` representation  of `"2001-01-01"` produces a valid `Date` representing January 1st, 2001.
-public struct YearMonthDayStrategy: DateValueCodableStrategy {
+public struct YearMonthDayStrategy: DateCodingStrategy {
     private static let dateFormatter = DateFormatter().then {
         $0.timeZone = TimeZone(secondsFromGMT: 0)
         $0.locale = Locale(identifier: "en_US_POSIX")

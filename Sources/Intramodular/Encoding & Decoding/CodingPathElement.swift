@@ -6,23 +6,18 @@ import Foundation
 import Swift
 
 public enum CodingPathElement {
-    case key(CodingKey)
-    case unkeyedAccess(at: Int)
+    case key(AnyCodingKey)
     case `super`
-    case keyedSuper(CodingKey)
+    case keyedSuper(AnyCodingKey)
 }
 
 // MARK: - Extensions -
 
 extension CodingPathElement {
     public func toAnyCodingKey() -> AnyCodingKey {
-        TODO.whole(.rethink)
-        
         switch self {
             case .key(let value):
                 return .init(value)
-            case .unkeyedAccess(let value):
-                return .init(intValue: value)
             case .super:
                 return .init(stringValue: "super")
             case .keyedSuper(let value):
