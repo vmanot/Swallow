@@ -28,7 +28,7 @@ extension String {
     }
     
     public func line(containingSubstring substring: Substring) -> Substring? {
-        TODO.below(.optimize)
+        TODO.whole(.optimize)
         
         return lines().find({ $0.contains(substring: substring) })
     }

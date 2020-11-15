@@ -12,18 +12,6 @@ extension AnyProtocol {
     }
 }
 
-extension Boolean  {
-    public func orThrow(_ error: Error) throws {
-        if !boolValue {
-            throw error
-        }
-    }
-    
-    public func orThrow() throws {
-        try orThrow(EmptyError()); TODO.here(.improve)
-    }
-}
-
 extension Collection {
     public func fatallyAssertIndexAsValidSubscriptArgument(_ index: Index, file: StaticString = #file, line: UInt = #line) {
         if (startIndex == endIndex) || (index < startIndex && index >= endIndex) {
