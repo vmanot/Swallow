@@ -4,19 +4,6 @@
 
 import Swift
 
-extension Either: Equatable where LeftValue: Equatable, RightValue: Equatable {
-    public static func == (lhs: Either, rhs: Either) -> Bool {
-        switch (lhs, rhs) {
-            case (.left(let x), .left(let y)):
-                return x == y
-            case (.right(let x), .right(let y)):
-                return x == y
-            default:
-                return false
-        }
-    }
-}
-
 extension Either: Hashable where LeftValue: Hashable, RightValue: Hashable {
     public func hash(into hasher: inout Hasher) {
         hasher.combine(isLeft)

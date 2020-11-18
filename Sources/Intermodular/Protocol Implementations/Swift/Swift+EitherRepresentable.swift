@@ -37,6 +37,10 @@ public enum Either<T, U>: EitherRepresentable, MutableEitherRepresentable {
     }
 }
 
+extension Either: Comparable where LeftValue: Comparable, RightValue: Comparable {
+    
+}
+
 /// A type representing a choice between one of three types.
 public enum Either3<T, U, V>: EitherRepresentable {
     public typealias EitherValue = Either<Either<T, U>, V>

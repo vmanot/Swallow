@@ -27,6 +27,19 @@ public struct AnyEquatable: _opaque_Equatable, Equatable {
     }
 }
 
+extension Either: Equatable where LeftValue: Equatable, RightValue: Equatable {
+    public static func == (lhs: Either, rhs: Either) -> Bool {
+        switch (lhs, rhs) {
+            case (.left(let x), .left(let y)):
+                return x == y
+            case (.right(let x), .right(let y)):
+                return x == y
+            default:
+                return false
+        }
+    }
+}
+
 public struct EquatableOnly<Value: Equatable>: _opaque_Equatable, Equatable {
     public let value: Value
     
