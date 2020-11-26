@@ -113,7 +113,7 @@ extension Optional {
         if let wrapped = self {
             return wrapped
         } else {
-            AnyError(description: message()).fatalThrow(file: file, line: line)
+            fatalError(message())
         }
     }
         
