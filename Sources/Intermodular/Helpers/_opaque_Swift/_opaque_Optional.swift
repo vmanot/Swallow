@@ -62,15 +62,11 @@ extension _opaque_Optional {
     }
 }
 
-// MARK: - Helpers -
-
-extension Sequence {
-    @inlinable
-    public func nilIfEmpty() -> Self? {
-        return first(where: { _ in true }).map({ _ in self })
+/// Performs a check at runtime to determine whether a given value is `nil` or not.
+public func _isValueNil(_ value: Any) -> Bool {
+    if let value = value as? _opaque_Optional, value.isNil {
+        return true
+    } else {
+        return false
     }
-}
-
-public func lowerFromOptionalIfPossible(_ value: Any) -> Any {
-    return (value as Any?)._opaque_Optional_valueOrNil()
 }
