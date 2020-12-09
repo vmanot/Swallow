@@ -6,11 +6,11 @@ import Swift
 
 /// A type-erased shadow protocol for `PropertyWrapper`.
 public protocol _opaque_PropertyWrapper {
-    var _opaque_wrappedValue: Any { get }
+    var _opaque_reserved: Any { get }
 }
 
 extension _opaque_PropertyWrapper where Self: PropertyWrapper {
-    public var _opaque_wrappedValue: Any {
+    public var _opaque_reserved: Any {
         wrappedValue
     }
 }
@@ -72,7 +72,7 @@ public struct MutableValueBox<WrappedValue>: MutablePropertyWrapper {
     private let getWrappedValue: (Self) -> WrappedValue
     private let setWrappedValue: (inout Self, WrappedValue) -> ()
     
-    private var _wrappedValue: Any
+    private var _reserved: Any
     
     public var wrappedValue: WrappedValue {
         get {
@@ -83,22 +83,22 @@ public struct MutableValueBox<WrappedValue>: MutablePropertyWrapper {
     }
     
     public init(wrappedValue: WrappedValue) {
-        _wrappedValue = wrappedValue
+        _reserved = wrappedValue
         
         getWrappedValue = { _self in
-            _self._wrappedValue as! WrappedValue
+            _self._reserved as! WrappedValue
         }
         
         setWrappedValue = { _self, newValue in
-            _self._wrappedValue = newValue
+            _self._reserved = newValue
         }
     }
     
     public init<Wrapper: MutablePropertyWrapper>(wrappedValue: Wrapper) where Wrapper.WrappedValue == WrappedValue {
-        _wrappedValue = wrappedValue
+        _reserved = wrappedValue
         
         getWrappedValue = { _self in
-            (_self._wrappedValue as! Wrapper).wrappedValue
+            (_self._reserved as! Wrapper).wrappedValue
         }
         
         setWrappedValue = { _self, newValue in
@@ -106,7 +106,27 @@ public struct MutableValueBox<WrappedValue>: MutablePropertyWrapper {
             
             wrappedValue.wrappedValue = newValue
             
-            _self._wrappedValue = newValue
+            _self._reserved = newValue
+        }
+    }
+    
+    public init<T>(
+        initial: T,
+        get: @escaping (T) -> WrappedValue,
+        set: @escaping (inout T, WrappedValue) -> ()
+    )  {
+        _reserved = initial
+        
+        getWrappedValue = { _self in
+            get(_self._reserved as! T)
+        }
+        
+        setWrappedValue = { _self, newValue in
+            var initial = _self._reserved as! T
+            
+            set(&initial, newValue)
+            
+            _self._reserved = initial
         }
     }
 }

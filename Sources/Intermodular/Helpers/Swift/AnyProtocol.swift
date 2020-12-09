@@ -16,17 +16,6 @@ extension AnyProtocol {
 
 extension AnyProtocol {
     @inlinable
-    public init?(_optional _self: Self?) {
-        guard let _self = _self else {
-            return nil
-        }
-
-        self = _self
-    }
-}
-
-extension AnyProtocol {
-    @inlinable
     public func then(_ f: ((inout Self) throws -> Void)) rethrows -> Self {
         var result = self
         try f(&result)

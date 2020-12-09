@@ -4,7 +4,7 @@
 
 import Swift
 
-public protocol _opaque_Optional: AnyProtocol {
+public protocol _opaque_Optional: AnyProtocol, ExpressibleByNilLiteral {
     static var _opaque_Optional_Wrapped: Any.Type { get }
 
     var isNil: Bool { get }
