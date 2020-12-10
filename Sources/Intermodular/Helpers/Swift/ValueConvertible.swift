@@ -9,7 +9,7 @@ public protocol ValueConvertible: AnyProtocol {
     /// The type that can be used to represent all values of the conforming
     /// type.
     associatedtype Value
-
+    
     var value: Value { get }
 }
 
