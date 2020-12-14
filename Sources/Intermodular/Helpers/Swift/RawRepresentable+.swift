@@ -16,7 +16,7 @@ public protocol MutableRawValueConvertible {
     var rawValue: RawValue { get }
 }
 
-public protocol MutableRawRepresentable: _opaque_RawRepresentable, MutableRawValueConvertible, RawRepresentable {
+public protocol MutableRawRepresentable: MutableRawValueConvertible, RawRepresentable {
     var rawValue: RawValue { get set }
     
     init(rawValue: RawValue)
