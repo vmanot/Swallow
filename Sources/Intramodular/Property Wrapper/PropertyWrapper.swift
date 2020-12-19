@@ -94,8 +94,8 @@ public struct MutableValueBox<WrappedValue>: MutablePropertyWrapper {
         }
     }
     
-    public init<Wrapper: MutablePropertyWrapper>(wrappedValue: Wrapper) where Wrapper.WrappedValue == WrappedValue {
-        _reserved = wrappedValue
+    public init<Wrapper: MutablePropertyWrapper>(_ wrapper: Wrapper) where Wrapper.WrappedValue == WrappedValue {
+        _reserved = wrapper
         
         getWrappedValue = { _self in
             (_self._reserved as! Wrapper).wrappedValue
@@ -128,5 +128,17 @@ public struct MutableValueBox<WrappedValue>: MutablePropertyWrapper {
             
             _self._reserved = initial
         }
+    }
+}
+
+extension MutableValueBox: Equatable where WrappedValue: Equatable {
+    public static func == (lhs: Self, rhs: Self) -> Bool {
+        lhs.wrappedValue == rhs.wrappedValue
+    }
+}
+
+extension MutableValueBox: Hashable where WrappedValue: Hashable {
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(wrappedValue)
     }
 }
