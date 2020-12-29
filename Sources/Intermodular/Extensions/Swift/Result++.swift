@@ -146,3 +146,27 @@ extension Result where Failure == Error {
         }
     }
 }
+
+extension Result {
+    public static func == (lhs: Self, rhs: _ResultComparison) -> Bool {
+        switch (lhs, rhs) {
+            case (.success, .success):
+                return true
+            case (.failure, .failure):
+                return true
+            default:
+                return false
+        }
+    }
+    
+    public static func != (lhs: Self, rhs: _ResultComparison) -> Bool {
+        !(lhs == rhs)
+    }
+}
+
+// MARK: - Auxiliary Implementation -
+
+public enum _ResultComparison {
+    case success
+    case failure
+}
