@@ -45,7 +45,7 @@ extension MutableCollection {
             self[index] = iterator.next()!
         }
     }
-
+    
     public mutating func reindexWith<S: Sequence>(_ sequence: S, count: Int) where S.Element == Element {
         var iterator = sequence.makeIterator()
         

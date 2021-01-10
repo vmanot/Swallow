@@ -9,66 +9,66 @@ import Swift
 extension Bool: ByteOrderSwappable {
     @inlinable
     public mutating func swapByteOrder() {
-
+        
     }
-
+    
     @inlinable
     public mutating func swapByteOrderBigToHost() {
-
+        
     }
-
+    
     @inlinable
     public mutating func swapByteOrderHostToBig() {
-
+        
     }
-
+    
     @inlinable
     public mutating func swapByteOrderLittleToHost() {
-
+        
     }
-
+    
     @inlinable
     public mutating func swapByteOrderHostToLittle() {
-
+        
     }
-
+    
     @inlinable
     public mutating func swapByteOrderHostToPortable() {
-
+        
     }
-
+    
     @inlinable
     public mutating func swapByteOrderPortableToHost() {
-
+        
     }
 }
 
 extension Double: ByteOrderSwappable {
     @inlinable
     public mutating func swapByteOrderBigToHost() {
-        self = -*>CFConvertDoubleSwappedToHost(unsafeBitCast(self))
+        self = unsafeBitCast(CFConvertDoubleSwappedToHost(unsafeBitCast(self)))
     }
-
+    
     @inlinable
     public mutating func swapByteOrderHostToBig() {
-        self = -*>NSSwapHostDoubleToBig(self)
+        self = unsafeBitCast(NSSwapHostDoubleToBig(self))
     }
-
+    
     @inlinable
     public mutating func swapByteOrderLittleToHost() {
-        self = -*>NSSwapLittleDoubleToHost(unsafeBitCast(self))
+        self = unsafeBitCast(NSSwapLittleDoubleToHost(unsafeBitCast(self)))
     }
-
+    
     @inlinable
     public mutating func swapByteOrderHostToLittle() {
-        self = -*>NSSwapHostDoubleToLittle(unsafeBitCast(self))
+        self = unsafeBitCast(NSSwapHostDoubleToLittle(unsafeBitCast(self)))
     }
-
+    
     @inlinable
     public mutating func swapByteOrderHostToPortable() {
-        self = -*>CFConvertDoubleHostToSwapped(self)
+        self = unsafeBitCast(CFConvertDoubleHostToSwapped(self))
     }
-
+    
     @inlinable
     public mutating func swapByteOrderPortableToHost() {
         self = CFConvertDoubleSwappedToHost(unsafeBitCast(self))
@@ -78,29 +78,29 @@ extension Double: ByteOrderSwappable {
 extension Float: ByteOrderSwappable {
     @inlinable
     public mutating func swapByteOrderBigToHost() {
-        self = -*>CFConvertFloatSwappedToHost(unsafeBitCast(self))
+        self = unsafeBitCast(CFConvertFloatSwappedToHost(unsafeBitCast(self)))
     }
-
+    
     @inlinable
     public mutating func swapByteOrderHostToBig() {
-        self = -*>NSSwapHostFloatToBig(self)
+        self = unsafeBitCast(NSSwapHostFloatToBig(self))
     }
-
+    
     @inlinable
     public mutating func swapByteOrderLittleToHost() {
-        self = -*>NSSwapLittleFloatToHost(unsafeBitCast(self))
+        self = unsafeBitCast(NSSwapLittleFloatToHost(unsafeBitCast(self)))
     }
-
+    
     @inlinable
     public mutating func swapByteOrderHostToLittle() {
-        self = -*>NSSwapHostFloatToLittle(unsafeBitCast(self))
+        self = unsafeBitCast(NSSwapHostFloatToLittle(unsafeBitCast(self)))
     }
-
+    
     @inlinable
     public mutating func swapByteOrderHostToPortable() {
-        self = -*>CFConvertFloatHostToSwapped(self)
+        self = unsafeBitCast(CFConvertFloatHostToSwapped(self))
     }
-
+    
     @inlinable
     public mutating func swapByteOrderPortableToHost() {
         self = CFConvertFloatSwappedToHost(unsafeBitCast(self))
@@ -112,22 +112,22 @@ extension Int: ByteOrderSwappable {
     public mutating func swapByteOrder() {
         self = .init(NativeType(self).swappingByteOrder())
     }
-
+    
     @inlinable
     public mutating func swapByteOrderBigToHost() {
         self = .init(NativeType(self).swappingByteOrderBigToHost())
     }
-
+    
     @inlinable
     public mutating func swapByteOrderHostToBig() {
         self = .init(NativeType(self).swappingByteOrderHostToBig())
     }
-
+    
     @inlinable
     public mutating func swapByteOrderLittleToHost() {
         self = .init(NativeType(self).swappingByteOrderLittleToHost())
     }
-
+    
     @inlinable
     public mutating func swapByteOrderHostToLittle() {
         self = .init(NativeType(self).swappingByteOrderHostToLittle())
@@ -137,113 +137,113 @@ extension Int: ByteOrderSwappable {
 extension Int8: ByteOrderSwappable {
     @inlinable
     public mutating func swapByteOrder() {
-
+        
     }
-
+    
     @inlinable
     public mutating func swapByteOrderBigToHost() {
-
+        
     }
-
+    
     @inlinable
     public mutating func swapByteOrderHostToBig() {
-
+        
     }
-
+    
     @inlinable
     public mutating func swapByteOrderLittleToHost() {
-
+        
     }
-
+    
     @inlinable
     public mutating func swapByteOrderHostToLittle() {
-
+        
     }
-
+    
     @inlinable
     public mutating func swapByteOrderHostToPortable() {
-
+        
     }
 }
 
 extension Int16: ByteOrderSwappable {
     @inlinable
     public mutating func swapByteOrder() {
-        self = -*>CFSwapInt16(unsafeBitCast(self))
+        self = unsafeBitCast(CFSwapInt16(unsafeBitCast(self)))
     }
-
+    
     @inlinable
     public mutating func swapByteOrderBigToHost() {
-        self = -*>CFSwapInt16BigToHost(unsafeBitCast(self))
+        self = unsafeBitCast(CFSwapInt16BigToHost(unsafeBitCast(self)))
     }
-
+    
     @inlinable
     public mutating func swapByteOrderHostToBig() {
-        self = -*>CFSwapInt16HostToBig(unsafeBitCast(self))
+        self = unsafeBitCast(CFSwapInt16HostToBig(unsafeBitCast(self)))
     }
-
+    
     @inlinable
     public mutating func swapByteOrderLittleToHost() {
-        self = -*>CFSwapInt16LittleToHost(unsafeBitCast(self))
+        self = unsafeBitCast(CFSwapInt16LittleToHost(unsafeBitCast(self)))
     }
-
+    
     @inlinable
     public mutating func swapByteOrderHostToLittle() {
-        self = -*>CFSwapInt16HostToLittle(unsafeBitCast(self))
+        self = unsafeBitCast(CFSwapInt16HostToLittle(unsafeBitCast(self)))
     }
 }
 
 extension Int32: ByteOrderSwappable {
     @inlinable
     public mutating func swapByteOrder() {
-        self = -*>CFSwapInt32(unsafeBitCast(self))
+        self = unsafeBitCast(CFSwapInt32(unsafeBitCast(self)))
     }
-
+    
     @inlinable
     public mutating func swapByteOrderBigToHost() {
-        self = -*>CFSwapInt32BigToHost(unsafeBitCast(self))
+        self = unsafeBitCast(CFSwapInt32BigToHost(unsafeBitCast(self)))
     }
-
+    
     @inlinable
     public mutating func swapByteOrderHostToBig() {
-        self = -*>CFSwapInt32HostToBig(unsafeBitCast(self))
+        self = unsafeBitCast(CFSwapInt32HostToBig(unsafeBitCast(self)))
     }
-
+    
     @inlinable
     public mutating func swapByteOrderLittleToHost() {
-        self = -*>CFSwapInt32LittleToHost(unsafeBitCast(self))
+        self = unsafeBitCast(CFSwapInt32LittleToHost(unsafeBitCast(self)))
     }
-
+    
     @inlinable
     public mutating func swapByteOrderHostToLittle() {
-        self = -*>CFSwapInt32HostToLittle(unsafeBitCast(self))
+        self = unsafeBitCast(CFSwapInt32HostToLittle(unsafeBitCast(self)))
     }
 }
 
 extension Int64: ByteOrderSwappable {
     @inlinable
     public mutating func swapByteOrder() {
-        self = -*>CFSwapInt64(unsafeBitCast(self))
+        self = unsafeBitCast(CFSwapInt64(unsafeBitCast(self)))
     }
-
+    
     @inlinable
     public mutating func swapByteOrderBigToHost() {
-        self = -*>CFSwapInt64BigToHost(unsafeBitCast(self))
+        self = unsafeBitCast(CFSwapInt64BigToHost(unsafeBitCast(self)))
     }
-
+    
     @inlinable
     public mutating func swapByteOrderHostToBig() {
-        self = -*>CFSwapInt64HostToBig(unsafeBitCast(self))
+        self = unsafeBitCast(CFSwapInt64HostToBig(unsafeBitCast(self)))
     }
-
+    
     @inlinable
     public mutating func swapByteOrderLittleToHost() {
-        self = -*>CFSwapInt64LittleToHost(unsafeBitCast(self))
+        self = unsafeBitCast(CFSwapInt64LittleToHost(unsafeBitCast(self)))
     }
-
+    
     @inlinable
     public mutating func swapByteOrderHostToLittle() {
-        self = -*>CFSwapInt64HostToLittle(unsafeBitCast(self))
+        self = unsafeBitCast(CFSwapInt64HostToLittle(unsafeBitCast(self)))
     }
 }
 
@@ -252,22 +252,22 @@ extension UInt: ByteOrderSwappable {
     public mutating func swapByteOrder() {
         self = .init(NativeType(self).swappingByteOrder())
     }
-
+    
     @inlinable
     public mutating func swapByteOrderBigToHost() {
         self = .init(NativeType(self).swappingByteOrderBigToHost())
     }
-
+    
     @inlinable
     public mutating func swapByteOrderHostToBig() {
         self = .init(NativeType(self).swappingByteOrderHostToBig())
     }
-
+    
     @inlinable
     public mutating func swapByteOrderLittleToHost() {
         self = .init(NativeType(self).swappingByteOrderLittleToHost())
     }
-
+    
     @inlinable
     public mutating func swapByteOrderHostToLittle() {
         self = .init(NativeType(self).swappingByteOrderHostToLittle())
@@ -277,27 +277,27 @@ extension UInt: ByteOrderSwappable {
 extension UInt8: ByteOrderSwappable {
     @inlinable
     public mutating func swapByteOrder() {
-
+        
     }
-
+    
     @inlinable
     public mutating func swapByteOrderBigToHost() {
-
+        
     }
-
+    
     @inlinable
     public mutating func swapByteOrderHostToBig() {
-
+        
     }
-
+    
     @inlinable
     public mutating func swapByteOrderLittleToHost() {
-
+        
     }
-
+    
     @inlinable
     public mutating func swapByteOrderHostToLittle() {
-
+        
     }
 }
 
@@ -306,22 +306,22 @@ extension UInt16: ByteOrderSwappable {
     public mutating func swapByteOrder() {
         self = CFSwapInt16(self)
     }
-
+    
     @inlinable
     public mutating func swapByteOrderBigToHost() {
         self = CFSwapInt16BigToHost(self)
     }
-
+    
     @inlinable
     public mutating func swapByteOrderHostToBig() {
         self = CFSwapInt16HostToBig(self)
     }
-
+    
     @inlinable
     public mutating func swapByteOrderLittleToHost() {
         self = CFSwapInt16LittleToHost(self)
     }
-
+    
     @inlinable
     public mutating func swapByteOrderHostToLittle() {
         self = CFSwapInt16HostToLittle(self)
@@ -333,22 +333,22 @@ extension UInt32: ByteOrderSwappable {
     public mutating func swapByteOrder() {
         self = CFSwapInt32(self)
     }
-
+    
     @inlinable
     public mutating func swapByteOrderBigToHost() {
         self = CFSwapInt32BigToHost(self)
     }
-
+    
     @inlinable
     public mutating func swapByteOrderHostToBig() {
         self = CFSwapInt32HostToBig(self)
     }
-
+    
     @inlinable
     public mutating func swapByteOrderLittleToHost() {
         self = CFSwapInt32LittleToHost(self)
     }
-
+    
     @inlinable
     public mutating func swapByteOrderHostToLittle() {
         self = CFSwapInt32HostToLittle(self)
@@ -360,22 +360,22 @@ extension UInt64: ByteOrderSwappable {
     public mutating func swapByteOrder() {
         self = CFSwapInt64(self)
     }
-
+    
     @inlinable
     public mutating func swapByteOrderBigToHost() {
         self = CFSwapInt64BigToHost(self)
     }
-
+    
     @inlinable
     public mutating func swapByteOrderHostToBig() {
         self = CFSwapInt64HostToBig(self)
     }
-
+    
     @inlinable
     public mutating func swapByteOrderLittleToHost() {
         self = CFSwapInt64LittleToHost(self)
     }
-
+    
     @inlinable
     public mutating func swapByteOrderHostToLittle() {
         self = CFSwapInt64HostToLittle(self)

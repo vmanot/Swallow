@@ -4,10 +4,10 @@
 
 import Swift
 
-extension ReversedCollection {
+extension LazyMapCollection {
     public var base: Base {
         undocumented {
-            unsafeBitCast(self)
+            unsafeBitCast(self, to: ((Base), ((Base.Element) -> Element)).self).0
         }
     }
 }
