@@ -5,7 +5,7 @@
 import Swift
 
 @_functionBuilder
-public class ArrayBuilder<Element> {
+open class ArrayBuilder<Element> {
     public static func buildBlock() -> [Element] {
         return []
     }
