@@ -4,15 +4,6 @@
 
 import Swift
 
-public func fatalError(
-    reason: Never.Reason,
-    file: StaticString = #file,
-    function: StaticString = #function,
-    line: UInt = #line
-) -> Never {
-    Never.materialize(reason: reason, file: file, function: function, line: line)
-}
-
 extension Never {
     public enum Reason: Error {
         case abstract
@@ -22,6 +13,7 @@ extension Never {
         case irrational
         case unavailable
         case unimplemented
+        case unsupported
     }
     
     public static func materialize() -> Never {
@@ -31,7 +23,7 @@ extension Never {
     public static func materialize<T, U>(_: T) -> U {
         fatalError()
     }
-
+    
     public static func materialize(
         reason: Reason,
         file: StaticString = #file,
@@ -50,12 +42,14 @@ extension Never {
             case .irrational:
                 fatalError("irrational", file: file, line: line)
             case .unavailable:
-                fatalError("\(function) unavailable")
+                fatalError("\(function) unavailable", file: file, line: line)
+            case .unsupported:
+                fatalError("\(function) unsupported", file: file, line: line)
             case .unimplemented:
                 fatalError("\(function) unimplemented", file: file, line: line)
         }
     }
-
+    
     @_disfavoredOverload
     public static func materialize<T>(
         reason: Reason,
@@ -65,4 +59,15 @@ extension Never {
     ) -> T {
         materialize(reason: reason, file: file, function: function, line: line) as Never
     }
+}
+
+// MARK: - API -
+
+public func fatalError(
+    reason: Never.Reason,
+    file: StaticString = #file,
+    function: StaticString = #function,
+    line: UInt = #line
+) -> Never {
+    Never.materialize(reason: reason, file: file, function: function, line: line)
 }
