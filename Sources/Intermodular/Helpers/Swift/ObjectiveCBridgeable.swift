@@ -4,9 +4,10 @@
 
 import Swift
 
-public protocol ObjectiveCBridgeable: _ObjectiveCBridgeable where _ObjectiveCType == ObjectiveCType {
-    associatedtype _ObjectiveCType = ObjectiveCType
-    associatedtype ObjectiveCType
+public protocol ObjectiveCBridgeable: _ObjectiveCBridgeable {
+    associatedtype _ObjectiveCType
+    
+    typealias ObjectiveCType = _ObjectiveCType
 
     static func bridgeFromObjectiveC(_ source: ObjectiveCType) throws -> Self
 
@@ -18,7 +19,7 @@ public protocol ObjectiveCBridgeable: _ObjectiveCBridgeable where _ObjectiveCTyp
 extension ObjectiveCBridgeable {
     @inlinable
     public func _bridgeToObjectiveC() -> _ObjectiveCType {
-        return try! bridgeToObjectiveC()
+        try! bridgeToObjectiveC()
     }
 
     @inlinable

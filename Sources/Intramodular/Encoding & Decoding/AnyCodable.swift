@@ -235,7 +235,6 @@ extension AnyCodable: Hashable {
 
 extension AnyCodable: ObjectiveCBridgeable {
     public typealias _ObjectiveCType = NSCoding
-    public typealias ObjectiveCType = NSCoding
     
     public static func bridgeFromObjectiveC(_ source: ObjectiveCType) throws -> AnyCodable {
         switch source {
