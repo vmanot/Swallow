@@ -76,7 +76,7 @@ public struct EmptyError: Error, CustomStringConvertible {
     }
 }
 
-public struct ErrorOf<Value>: Error, Wrapper {
+public struct Erroneous<Value>: Error, Wrapper {
     public let value: Value
     
     public init(_ value: Value) {

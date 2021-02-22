@@ -118,11 +118,11 @@ extension MutableCollection where Self: RangeReplaceableCollection {
 }
 
 extension MutableCollection {
-    public subscript(cyclic index: Index) -> Element {
+    public subscript(cycling index: Index) -> Element {
         get {
-            return self[cyclical(index: index)]
+            return self[cycle(index: index)]
         } set {
-            self[cyclical(index: index)] = newValue
+            self[cycle(index: index)] = newValue
         }
     }
 }

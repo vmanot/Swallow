@@ -8,7 +8,7 @@ extension SingleValueDecodingContainer {
     public func decode(opaque type: Decodable.Type) throws -> Decodable {
         return try type.decode(from: self)
     }
-
+    
     public func decodeIfPresent(opaque type: Decodable.Type) throws -> Decodable? {
         return try type.decodeIfPresent(from: self)
     }
