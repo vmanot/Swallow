@@ -59,19 +59,14 @@ public struct EmptyError: Error, CustomStringConvertible {
     public let location: SourceCodeLocation?
     
     public var description: String {
-        TODO.whole(.improve)
         return "Empty error at \(location ?? "<unspecified>" as Any)"
     }
     
-    public init(location: SourceCodeLocation? = nil) {
+    private init(location: SourceCodeLocation? = nil) {
         self.location = location
     }
     
-    public init(atFile file: StaticString, line: UInt) {
-        self.init(location: .regular(file: file, line: line))
-    }
-    
-    public init(atFile file: StaticString, function: StaticString, line: UInt, column: UInt) {
+    public init(atFile file: StaticString = #file, function: StaticString = #function, line: UInt = #line, column: UInt = #column) {
         self.init(location: .exact(.init(file: file, function: function, line: line, column: column)))
     }
 }

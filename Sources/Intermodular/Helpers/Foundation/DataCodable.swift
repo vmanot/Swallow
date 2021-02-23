@@ -77,7 +77,6 @@ extension BinaryInteger where Self: DataEncodable, Self.DataEncodingStrategy == 
     @_specialize(where Self == UInt64)
     @inlinable
     public func data(using strategy: DataEncodingStrategy) throws -> Data {
-        TODO.whole(.rethink)
         return withUnsafeBytes(of: &trivialRepresentation.readOnly.value) {
             .init($0)
         }
@@ -97,7 +96,6 @@ extension BinaryInteger where Self: DataDecodable, Self.DataDecodingStrategy == 
     @_specialize(where Self == UInt64)
     @inlinable
     public init(data: Data, using strategy: DataDecodingStrategy) throws {
-        TODO.whole(.complete)
         self = data.withUnsafeBytes({ $0.baseAddress!.assumingMemoryBound(to: Self.self).pointee })
     }
 }

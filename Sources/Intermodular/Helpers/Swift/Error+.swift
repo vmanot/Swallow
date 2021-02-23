@@ -5,9 +5,15 @@
 import Swift
 
 extension AnyProtocol {
-    public func `throw`(file: StaticString = #file, function: StaticString = #function, line: UInt = #line, column: UInt = #column, if predicate: ((Self) -> Bool)) throws {
+    public func `throw`(
+        file: StaticString = #file,
+        function: StaticString = #function,
+        line: UInt = #line,
+        column: UInt = #column,
+        if predicate: ((Self) -> Bool)
+    ) throws {
         if predicate(self) {
-            throw EmptyError(location: .init(file: file, function: function, line: line, column: column))
+            throw EmptyError(atFile: file, function: function, line: line, column: column)
         }
     }
 }
