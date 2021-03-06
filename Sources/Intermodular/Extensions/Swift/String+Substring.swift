@@ -21,10 +21,28 @@ extension String {
         return split(whereSeparator: { $0 == separator })
     }
     
-    public func lines() -> [Substring] {
-        TODO.whole(.addressEdgeCase, .optimize, note: "Address \"\r\\n\" because Microsoft fucking Windows")
+    public var numberOfLines: Int {
+        var result = 0
         
-        return substrings(separatedBy: Character.newLine)
+        enumerateLines { (_, _) in
+            result += 1
+        }
+        
+        return result
+    }
+    
+    public func lines() -> [Substring] {
+        split(omittingEmptySubsequences: false, whereSeparator: { $0 == Character.newLine })
+    }
+    
+    public func enumeratedLines() -> [String] {
+        var result: [String] = []
+        
+        enumerateLines(invoking: { line, _ in
+            result.append(line)
+        })
+        
+        return result
     }
     
     public func line(containingSubstring substring: Substring) -> Substring? {
@@ -64,18 +82,18 @@ extension String {
 
 extension Substring {
     public func dropFirst() -> Substring {
-        return dropFirst(1)
+        dropFirst(1)
     }
     
     public func dropPrefixIfPresent<String: StringProtocol>(_ prefix: String) -> Substring {
-        return hasPrefix(prefix) ? dropFirst(prefix.count) : .init(self)
+        hasPrefix(prefix) ? dropFirst(prefix.count) : self
     }
     
     public func dropLast() -> Substring {
-        return dropLast(1)
+        dropLast(1)
     }
     
     public func dropSuffixIfPresent<String: StringProtocol>(_ suffix: String) -> Substring {
-        return hasSuffix(suffix) ? dropLast(suffix.count) : .init(self)
+        hasSuffix(suffix) ? dropLast(suffix.count) : self
     }
 }

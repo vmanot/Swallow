@@ -140,7 +140,7 @@ extension Collection {
             return Optional(self[index], if: contains(index))
         }
     }
-            
+    
     public subscript(try bounds: Range<Index>) -> SubSequence? {
         @inlinable get {
             return Optional(self[bounds], if: contains(bounds))
@@ -297,9 +297,9 @@ extension Collection {
 }
 
 extension Collection where Self.Index: Comparable {
-    public func chunked<C: Collection>(by ranges: C) -> [SubSequence] where C.Element == Range<Index> {
+    public func allSubrangesChunked<C: Collection>(by ranges: C) -> [Range<Index>] where C.Element == Range<Index> {
         guard !ranges.isEmpty else {
-            return [self[startIndex..<endIndex]]
+            return [startIndex..<endIndex]
         }
         
         var result: [Range<Index>] = []
@@ -331,6 +331,10 @@ extension Collection where Self.Index: Comparable {
             }
         }
         
-        return result.map({ self[$0] })
+        return result
+    }
+    
+    public func chunked<C: Collection>(by ranges: C) -> [SubSequence] where C.Element == Range<Index> {
+        allSubrangesChunked(by: ranges).map({ self[$0] })
     }
 }

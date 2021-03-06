@@ -2,6 +2,7 @@
 // Copyright (c) Vatsal Manot
 //
 
+import Foundation
 import Swift
 
 extension Substring {
@@ -72,7 +73,7 @@ extension Substring {
         let (first, last) = splitParentAboutSelf()
         
         guard let firstMatch = first.range(of: start, options: .backwards),
-            let secondMatch = last.range(of: end) else {
+              let secondMatch = last.range(of: end) else {
             return nil
         }
         
@@ -84,7 +85,7 @@ extension Substring {
     public var parent: String {
         // FIXME: Replace with semantically versioned code block.
         #if swift(>=4.1)
-            return (-*>self as Slice<String>).base
+        return (-*>self as Slice<String>).base
         #endif
     }
 }
@@ -101,7 +102,7 @@ extension Substring {
     public func contains(substring: Substring?) -> Bool {
         return substring.map({ contains(substring: $0) }) ?? false
     }
-
+    
     public init(across substrings: Substring...) {
         let parent = substrings.first!.parent
         
@@ -128,11 +129,79 @@ extension Substring {
 }
 
 extension Substring {
-    public func trimmingStart(toBeginningOf string: String) -> Substring {
-        return range(of: string).map({ self[$0.lowerBound...] }) ?? self
+    public func trimming(leading character: Character) -> Substring {
+        guard !isEmpty else {
+            return self
+        }
+        
+        var index = startIndex
+        
+        while index != endIndex, self[index] == character {
+            index = self.index(index, offsetBy: 1)
+        }
+        
+        return self[index..<endIndex]
     }
     
-    public func trimmingWhitespace() -> String {
-        return trimmingCharacters(in: .whitespaces)
+    public func trimming(trailing character: Character) -> Substring {
+        guard !isEmpty else {
+            return self
+        }
+
+        var index = lastIndex
+        
+        while contains(index), self[index] == character {
+            index = self.index(index, offsetBy: -1)
+        }
+        
+        guard startIndex != index else {
+            return self[startIndex..<self.index(startIndex, offsetBy: 1)]
+        }
+        
+        return self[startIndex...index]
+    }
+    
+    public func trimmingLeadingCharacters(in characterSet: CharacterSet) -> Substring {
+        guard !isEmpty else {
+            return self
+        }
+
+        var index = startIndex
+        
+        while CharacterSet(charactersIn: String(self[index])).isSubset(of: characterSet) {
+            index = self.index(index, offsetBy: 1)
+        }
+        
+        return self[index..<endIndex]
+    }
+    
+    public func trimmingTrailingCharacters(in characterSet: CharacterSet) -> Substring {
+        guard !isEmpty else {
+            return self
+        }
+
+        var index = lastIndex
+        
+        while contains(index), CharacterSet(charactersIn: String(self[index])).isSubset(of: characterSet) {
+            index = self.index(index, offsetBy: -1)
+        }
+        
+        guard startIndex != index else {
+            return self[startIndex..<self.index(startIndex, offsetBy: 1)]
+        }
+        
+        return self[startIndex...index]
+    }
+    
+    public func trimming(_ character: Character) -> Substring {
+        trimming(leading: character).trimming(trailing: character)
+    }
+    
+    public func trimmingCharacters(in characterSet: CharacterSet) -> Substring {
+        trimmingLeadingCharacters(in: characterSet).trimmingTrailingCharacters(in: characterSet)
+    }
+    
+    public func trimmingNewlines() -> Substring {
+        trimming("\n")
     }
 }

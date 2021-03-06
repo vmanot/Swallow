@@ -5,10 +5,26 @@
 import Swift
 
 extension String {
+    public var persistentHash: Int {
+        let unicodeScalars = self.unicodeScalars.lazy.map({ $0.value })
+        
+        return unicodeScalars.reduce(0) {
+            (Int($1) &+ ($0 << 6) &+ ($0 << 16)).addingReportingOverflow(-$0).partialValue
+        }
+    }
+}
+
+extension String {
+    public func numberOfOccurences(of character: Character) -> Int {
+        lazy.filter({ $0 == character }).count
+    }
+}
+
+extension String {
     public func capitalizingFirstLetter() -> String {
         return prefix(1).uppercased() + String(dropFirst())
     }
-
+    
     public mutating func capitalizeFirstLetter() {
         self = self.capitalizingFirstLetter()
     }
@@ -31,7 +47,7 @@ extension String {
     
     public mutating func replace<String: StringProtocol>(firstOccurenceOf target: String, with string: String) {
         TODO.whole(.remove, note: "replace with RangeReplaceableCollection function")
-
+        
         guard let range = range(of: target, options: .literal) else {
             return
         }
@@ -68,6 +84,6 @@ extension String {
 
 extension String {
     public func trimmingWhitespace() -> String {
-        return trimmingCharacters(in: .whitespaces)
+        trimmingCharacters(in: .whitespaces)
     }
 }

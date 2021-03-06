@@ -53,10 +53,6 @@ public struct OptionalDateValue<Formatter: DateCodingStrategy>: Codable {
         self.wrappedValue = wrappedValue
     }
     
-    public init() {
-        self.wrappedValue = nil
-    }
-    
     public init(from decoder: Decoder) throws {
         if (try? decoder.decodeNil()) ?? false {
             self.wrappedValue = nil

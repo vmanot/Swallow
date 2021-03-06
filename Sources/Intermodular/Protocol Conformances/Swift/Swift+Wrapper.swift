@@ -131,9 +131,22 @@ extension IteratorOnly: Wrapper {
     
 }
 
+@propertyWrapper
 public final class ReferenceBox<T>: MutableWrapperBase<T> {
+    public var wrappedValue: T {
+        get {
+            value
+        } set {
+            value = newValue
+        }
+    }
+    
     public required init(_ value: T) {
         super.init(value)
+    }
+    
+    public required init(wrappedValue: T) {
+        super.init(wrappedValue)
     }
 }
 
@@ -168,6 +181,30 @@ public struct Pair<T, U>: MutableWrapper {
     
     public init(_ value: Value) {
         self.value = value
+    }
+    
+    public init(_ value0: T, _ value1: U) {
+        self.value = (value0, value1)
+    }
+}
+
+extension Pair: Encodable where T: Encodable, U: Encodable {
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.unkeyedContainer()
+        
+        try container.encode(value.0)
+        try container.encode(value.1)
+    }
+}
+
+extension Pair: Decodable where T: Decodable, U: Decodable {
+    public init(from decoder: Decoder) throws {
+        var container = try decoder.unkeyedContainer()
+        
+        let value0 = try container.decode(T.self)
+        let value1 = try container.decode(U.self)
+        
+        self.init((value0, value1))
     }
 }
 

@@ -389,3 +389,28 @@ extension Sequence where Element: Numeric {
         return reduce(into: 0, { $0 += $1 })
     }
 }
+
+extension Sequence where Element: Hashable {
+    public func distinct() -> AnySequence<Element> {
+        return AnySequence<Element> { () -> AnyIterator<Element> in
+            var iterator = makeIterator()
+            var seen: [Element: Bool] = [:]
+            
+            return AnyIterator<Element> {
+                guard var next = iterator.next() else {
+                    return nil
+                }
+                
+                while seen.updateValue(true, forKey: next) == true {
+                    guard let _next = iterator.next() else {
+                        return nil
+                    }
+                    
+                    next = _next
+                }
+                
+                return next
+            }
+        }
+    }
+}
