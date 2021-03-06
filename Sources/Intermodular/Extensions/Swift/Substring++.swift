@@ -147,7 +147,7 @@ extension Substring {
         guard !isEmpty else {
             return self
         }
-
+        
         var index = lastIndex
         
         while contains(index), self[index] == character {
@@ -165,7 +165,7 @@ extension Substring {
         guard !isEmpty else {
             return self
         }
-
+        
         var index = startIndex
         
         while CharacterSet(charactersIn: String(self[index])).isSubset(of: characterSet) {
@@ -179,7 +179,7 @@ extension Substring {
         guard !isEmpty else {
             return self
         }
-
+        
         var index = lastIndex
         
         while contains(index), CharacterSet(charactersIn: String(self[index])).isSubset(of: characterSet) {
