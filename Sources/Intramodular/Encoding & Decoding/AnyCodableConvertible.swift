@@ -9,10 +9,6 @@ public protocol AnyCodableConvertible {
     func toAnyCodable() throws -> AnyCodable
 }
 
-public protocol AnyCodableUnconditionalConvertible: AnyCodableConvertible {
-    func toAnyCodable() -> AnyCodable
-}
-
 // MARK: - Conformances -
 
 extension Array: AnyCodableConvertible {
@@ -37,37 +33,37 @@ extension Dictionary: AnyCodableConvertible {
     }
 }
 
-extension Double: AnyCodableUnconditionalConvertible {
+extension Double: AnyCodableConvertible {
     public func toAnyCodable() -> AnyCodable {
         return .number(.init(self))
     }
 }
 
-extension Float: AnyCodableUnconditionalConvertible {
+extension Float: AnyCodableConvertible {
     public func toAnyCodable() -> AnyCodable {
         return .number(.init(Double(self)))
     }
 }
 
-extension Int: AnyCodableUnconditionalConvertible {
+extension Int: AnyCodableConvertible {
     public func toAnyCodable() -> AnyCodable {
         return .number(.init(self))
     }
 }
 
-extension Int16: AnyCodableUnconditionalConvertible {
+extension Int16: AnyCodableConvertible {
     public func toAnyCodable() -> AnyCodable {
         return .number(.init(self))
     }
 }
 
-extension Int32: AnyCodableUnconditionalConvertible {
+extension Int32: AnyCodableConvertible {
     public func toAnyCodable() -> AnyCodable {
         return .number(.init(self))
     }
 }
 
-extension Int64: AnyCodableUnconditionalConvertible {
+extension Int64: AnyCodableConvertible {
     public func toAnyCodable() -> AnyCodable {
         return .number(.init(self))
     }
@@ -79,7 +75,7 @@ extension Set: AnyCodableConvertible {
     }
 }
 
-extension String: AnyCodableUnconditionalConvertible {
+extension String: AnyCodableConvertible {
     public func toAnyCodable() -> AnyCodable {
         return .string(self)
     }
@@ -97,7 +93,7 @@ extension NSDictionary: AnyCodableConvertible {
     }
 }
 
-extension NSNull: AnyCodableUnconditionalConvertible {
+extension NSNull: AnyCodableConvertible {
     public func toAnyCodable() -> AnyCodable {
         return .none
     }
@@ -115,7 +111,7 @@ extension NSSet: AnyCodableConvertible {
     }
 }
 
-extension NSString: AnyCodableUnconditionalConvertible {
+extension NSString: AnyCodableConvertible {
     public func toAnyCodable() -> AnyCodable {
         return .string(self as String)
     }

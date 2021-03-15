@@ -36,7 +36,7 @@ public enum AnyCodable {
 
 // MARK: - Protocol Conformances -
 
-extension AnyCodable: AnyCodableUnconditionalConvertible {
+extension AnyCodable: AnyCodableConvertible {
     public func toAnyCodable() -> AnyCodable {
         return self
     }

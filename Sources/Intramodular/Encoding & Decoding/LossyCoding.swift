@@ -5,8 +5,13 @@
 import Foundation
 import Swift
 
-public struct LossyCoding<Value>: MutablePropertyWrapper {
+@propertyWrapper
+public struct LossyCoding<Value>: MutablePropertyWrapper, ParameterlessPropertyWrapper {
     public var wrappedValue: Value
+    
+    public init(wrappedValue: Value) {
+        self.wrappedValue = wrappedValue
+    }
 }
 
 // MARK: - Protocol Conformances -
