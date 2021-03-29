@@ -36,7 +36,7 @@ extension NullTerminatedUTF8String {
     }
 }
 
-// MARK: - Protocol Conformances -
+// MARK: - Conformances -
 
 extension NullTerminatedUTF8String: CustomStringConvertible {
     public var description: String {

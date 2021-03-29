@@ -34,7 +34,7 @@ public enum AnyCodable {
     }
 }
 
-// MARK: - Protocol Conformances -
+// MARK: - Conformances -
 
 extension AnyCodable: AnyCodableConvertible {
     public func toAnyCodable() -> AnyCodable {

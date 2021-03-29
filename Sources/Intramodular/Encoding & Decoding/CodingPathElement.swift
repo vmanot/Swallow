@@ -26,7 +26,7 @@ extension CodingPathElement {
     }
 }
 
-// MARK: - Protocol Conformances -
+// MARK: - Conformances -
 
 extension CodingPathElement: CodingKey {
     public var stringValue: String {

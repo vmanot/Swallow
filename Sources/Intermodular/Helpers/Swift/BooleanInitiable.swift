@@ -24,7 +24,7 @@ extension BooleanInitiable {
     }
 }
 
-// MARK: - Protocol Conformances -
+// MARK: - Conformances -
 
 extension BooleanInitiable where Self: ExpressibleByIntegerLiteral {
     @inlinable

@@ -30,7 +30,7 @@ public final class Inout<T> {
     }
 }
 
-// MARK: - Protocol Conformances -
+// MARK: - Conformances -
 
 extension Inout: CustomStringConvertible {
     public var description: String {

@@ -32,7 +32,7 @@ extension ObjectSet {
     }
 }
 
-// MARK: - Protocol Conformances -
+// MARK: - Conformances -
 
 extension ObjectSet: Hashable {
     public func hash(into hasher: inout Hasher) {

@@ -14,7 +14,7 @@ public struct GeographicalPoint: Codable, Hashable {
     }
 }
 
-// MARK: - Protocol Conformances -
+// MARK: - Conformances -
 
 #if canImport(CoreLocation)
 

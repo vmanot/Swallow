@@ -5,8 +5,6 @@
 import Swift
 
 public protocol ObjectiveCBridgeable: _ObjectiveCBridgeable {
-    associatedtype _ObjectiveCType
-    
     typealias ObjectiveCType = _ObjectiveCType
 
     static func bridgeFromObjectiveC(_ source: ObjectiveCType) throws -> Self

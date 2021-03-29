@@ -14,7 +14,7 @@ public struct DistanceIndexedCollection<C: Collection>: Wrapper {
     }
 }
 
-// MARK: - Protocol Conformances -
+// MARK: - Conformances -
 
 extension DistanceIndexedCollection: Sequence {
     public typealias Element = Iterator.Element

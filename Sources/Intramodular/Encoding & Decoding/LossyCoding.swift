@@ -14,7 +14,7 @@ public struct LossyCoding<Value>: MutablePropertyWrapper, ParameterlessPropertyW
     }
 }
 
-// MARK: - Protocol Conformances -
+// MARK: - Conformances -
 
 extension LossyCoding: Equatable where Value: Equatable {
     

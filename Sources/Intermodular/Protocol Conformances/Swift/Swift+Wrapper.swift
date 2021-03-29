@@ -322,7 +322,7 @@ open class WrapperBase<Value>: CustomDebugStringConvertible, Wrapper {
     }
 }
 
-// MARK: - Protocol Conformances -
+// MARK: - Conformances -
 
 extension Pair: Initiable where T: Initiable, U: Initiable {
     public init() {
