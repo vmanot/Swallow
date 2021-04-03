@@ -199,6 +199,10 @@ public struct AnyNumber: Codable, Hashable {
                     value.hash(into: &hasher)
             }
         }
+        
+        public static func == (lhs: Self, rhs: Self) -> Bool {
+            lhs.hashValue == rhs.hashValue
+        }
     }
     
     private let storage: Storage

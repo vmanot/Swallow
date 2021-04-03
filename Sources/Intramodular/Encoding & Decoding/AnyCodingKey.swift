@@ -83,6 +83,12 @@ extension AnyCodingKey: Codable {
     }
 }
 
+extension AnyCodingKey: Equatable {
+    public static func == (lhs: Self, rhs: Self) -> Bool {
+        lhs.hashValue == rhs.hashValue
+    }
+}
+
 extension AnyCodingKey: ExpressibleByIntegerLiteral {
     public init(integerLiteral value: Int) {
         self.init(intValue: value)

@@ -20,10 +20,6 @@ public protocol StaticInteger: StaticValue where Value == Int {
 
 // MARK: - Conformances -
 
-extension StaticString: Static {
-    
-}
-
 public struct One: StaticInteger {
     public static let value = 1
 }

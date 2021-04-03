@@ -316,4 +316,8 @@ public struct AnyHashableEncodable: Encodable, Hashable {
     public func hash(into hasher: inout Hasher) {
         value.hash(into: &hasher)
     }
+    
+    public static func == (lhs: Self, rhs: Self) -> Bool {
+        lhs.value._opaque_Equatable_isEqual(to: rhs.value) ?? false
+    }
 }

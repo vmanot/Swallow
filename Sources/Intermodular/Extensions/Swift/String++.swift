@@ -31,12 +31,6 @@ extension String {
 }
 
 extension String {
-    public init(_ string: StaticString) {
-        self = String(cString: string.utf8Start)
-    }
-}
-
-extension String {
     public mutating func replace(substrings: [Substring], with string: String) {
         replaceSubranges(substrings.lazy.map({ $0.bounds }), with: substrings.lazy.map({ _ in string }))
     }

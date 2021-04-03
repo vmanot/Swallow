@@ -20,12 +20,6 @@ extension String: MutableStringConvertible {
     }
 }
 
-extension StaticString: StringConvertible {
-    public var stringValue: String {
-        return .init(self)
-    }
-}
-
 extension Substring: StringConvertible {
     public var stringValue: String {
         return .init(self)

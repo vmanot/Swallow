@@ -21,6 +21,18 @@ public struct Indirect<Value>: ParameterlessPropertyWrapper {
         }
     }
     
+    public var unsafelyUnwrapped: Value {
+        get {
+            storage.value
+        } nonmutating set {
+            storage.value = newValue
+        }
+    }
+    
+    public var projectedValue: Indirect<Value> {
+        self
+    }
+    
     public init(wrappedValue: Value) {
         self.storage = .init(wrappedValue)
     }

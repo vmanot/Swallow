@@ -14,7 +14,7 @@ extension Equatable {
     }
 }
 
-extension Equatable where Self: Trivial {
+extension Trivial  {
     @inlinable
     public func isEqual(to other: Self) -> Bool {
         return memcmp(
@@ -25,13 +25,6 @@ extension Equatable where Self: Trivial {
 
     @inlinable
     public static func == (lhs: Self, rhs: Self) -> Bool {
-        return lhs.isEqual(to: rhs)
-    }
-}
-
-extension Equatable where Self: Hashable & Trivial {
-    @inlinable
-    public static func == (lhs: Self, rhs: Self) -> Bool {
-        return lhs.hashValue == rhs.hashValue
+        lhs.isEqual(to: rhs)
     }
 }

@@ -6,9 +6,8 @@ import Swift
 
 /// A type capable of representing the location of a line of code.
 public enum SourceCodeLocation: CustomStringConvertible, Hashable, Static {
-    case regular(file: StaticString, line: UInt)
+    case regular(file: String, line: UInt)
     case exact(Preprocessor.Point)
-    
     case unavailable
     
     public init(_ point: Preprocessor.Point) {

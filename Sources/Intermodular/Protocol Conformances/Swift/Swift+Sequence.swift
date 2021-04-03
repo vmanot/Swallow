@@ -78,6 +78,10 @@ public struct HashableSequence<S: Sequence>: Hashable, ImplementationForwardingW
     public func hash(into hasher: inout Hasher) {
         forEach({ hasher.combine($0) })
     }
+    
+    public static func == (lhs: Self, rhs: Self) -> Bool {
+        lhs.value.elementsEqual(rhs.value)
+    }
 }
 
 public struct Join2Sequence<S0: Sequence, S1: Sequence>: Sequence, Wrapper where S0.Element == S1.Element {

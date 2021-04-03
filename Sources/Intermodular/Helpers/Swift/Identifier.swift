@@ -37,6 +37,10 @@ public struct AnyIdentifier: Identifier {
     public func hash(into hasher: inout Hasher) {
         hasher.combine(opaque: value)
     }
+    
+    public static func == (lhs: Self, rhs: Self) -> Bool {
+        lhs.value._opaque_Equatable_isEqual(to: rhs.value) ?? false
+    }
 }
 
 public struct AnyStringIdentifier: Codable, Identifier {

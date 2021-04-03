@@ -37,6 +37,10 @@ public struct AnyError: CustomDebugStringConvertible, Error, Hashable {
     public func `throw`() throws -> Never {
         throw value
     }
+    
+    public static func == (lhs: Self, rhs: Self) -> Bool {
+        lhs.description == rhs.description && lhs.localizedDescription == rhs.localizedDescription
+    }
 }
 
 extension Array: Error where Element: Error {

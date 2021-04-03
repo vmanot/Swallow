@@ -43,6 +43,10 @@ public struct Hashable2ple<T: Hashable, U: Hashable>: Hashable, Wrapper {
         hasher.combine(value.0)
         hasher.combine(value.1)
     }
+    
+    public static func == (lhs: Self, rhs: Self) -> Bool {
+        lhs.value.0 == rhs.value.0 && lhs.value.1 == rhs.value.1
+    }
 }
 
 public struct ManyHashable: Hashable {

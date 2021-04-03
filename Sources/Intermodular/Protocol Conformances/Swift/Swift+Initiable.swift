@@ -62,10 +62,6 @@ extension Set: Initiable {
     
 }
 
-extension StaticString: Initiable {
-    
-}
-
 extension String: Initiable {
     
 }

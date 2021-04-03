@@ -29,6 +29,10 @@ extension ObjectSet {
         public func hash(into hasher: inout Hasher) {
             hasher.combine(ObjectIdentifier(value))
         }
+        
+        public static func == (lhs: Self, rhs: Self) -> Bool {
+            lhs.value === rhs.value
+        }
     }
 }
 

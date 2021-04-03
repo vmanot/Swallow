@@ -12,7 +12,7 @@ public protocol _opaque_RawRepresentable: AnyProtocol {
     static func _opaque_RawRepresentable_init(rawValue: Any) -> _opaque_RawRepresentable?
 }
 
-extension _opaque_RawRepresentable where Self: RawRepresentable {
+extension RawRepresentable where Self: _opaque_RawRepresentable {
     public var _opaque_RawRepresentable_rawValue: Any {
         return rawValue
     }

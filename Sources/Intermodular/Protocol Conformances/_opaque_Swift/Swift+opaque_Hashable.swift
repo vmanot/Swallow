@@ -64,12 +64,6 @@ extension String: _opaque_Hashable {
     
 }
 
-extension StaticString: Hashable {
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(String(cString: utf8Start))
-    }
-}
-
 extension UInt: _opaque_Hashable {
     
 }
