@@ -161,21 +161,41 @@ extension Substring {
         return self[startIndex...index]
     }
     
-    public func trimmingLeadingCharacters(in characterSet: CharacterSet) -> Substring {
+    public func trimmingLeadingCharacters(
+        in characterSet: CharacterSet,
+        maximum: Int? = nil
+    ) -> Substring {
+        if maximum == 0 {
+            return self
+        }
+        
         guard !isEmpty else {
             return self
         }
         
         var index = startIndex
+        var count = 0
         
         while CharacterSet(charactersIn: String(self[index])).isSubset(of: characterSet) {
             index = self.index(index, offsetBy: 1)
+            
+            count += 1
+            
+            if count == maximum {
+                break
+            }
+            
+            guard index < endIndex, index != endIndex else {
+                break
+            }
         }
-        
+
         return self[index..<endIndex]
     }
-    
-    public func trimmingTrailingCharacters(in characterSet: CharacterSet) -> Substring {
+        
+    public func trimmingTrailingCharacters(
+        in characterSet: CharacterSet
+    ) -> Substring {
         guard !isEmpty else {
             return self
         }

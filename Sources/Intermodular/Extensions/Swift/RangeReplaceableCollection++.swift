@@ -116,7 +116,7 @@ extension RangeReplaceableCollection {
     public mutating func tryRemoveLast() -> Element? {
         return isEmpty ||> remove(at: lastIndex)
     }
-
+    
     @discardableResult public func tryingRemoveLast() -> Self {
         return build(self, with: { $0.tryRemoveLast() })
     }
@@ -156,17 +156,17 @@ extension RangeReplaceableCollection {
     public func removing<S: Sequence>(at indices: S) -> Self where S.Element == Index {
         return build(self, with: { $0.remove(at: indices) })
     }
-
+    
     public mutating func remove<C0: Collection, C1: ExtensibleCollection>(at indices: C0, into result: inout C1) where C0.Element == Index, C1.Element == Element {
         remove(at: SequenceOnly(indices), into: &result)
     }
-
+    
     @discardableResult
     public mutating func remove<C: Collection>(at indices: C) -> [Element] where C.Element == Index {
         var result: [Element] = .init(capacity: indices.count)
-
+        
         remove(at: indices, into: &result)
-
+        
         return result
     }
     
@@ -208,15 +208,21 @@ extension RangeReplaceableCollection where Element: Equatable {
 }
 
 extension RangeReplaceableCollection {
-    public mutating func replaceSubranges<Ranges: Collection, Replacements: Collection, Replacement: Collection>(
+    public mutating func replaceSubranges<
+        Ranges: Collection,
+        Replacements: Collection,
+        Replacement: Collection
+    >(
         _ subranges: Ranges,
         with replacements: Replacements,
         file: StaticString = #file,
         line: UInt = #line
-        ) where Ranges.Element == Range<Index>, Replacement.Element == Element, Replacements.Element == Replacement {
-        
+    ) where Ranges.Element == Range<Index>,
+            Replacement.Element == Element,
+            Replacements.Element == Replacement
+    {
         TODO.whole(.document, .optimize, .refactor, .test)
-
+        
         assert(subranges.count == replacements.count)
         
         guard !subranges.isEmpty else {
@@ -238,17 +244,17 @@ extension RangeReplaceableCollection {
                 if $0.0.0.upperBound > $0.1.0.lowerBound {
                     fatalError("Input ranges may not overlap", file: file, line: line)
                 }
-        }
-
+            }
+        
         let sortedReplacmentsAndGaps = CollectionOfOne(first).join(
             sortedReplacements
                 .consecutives()
                 .map { [($0.0.0.upperBound..<$0.1.0.lowerBound, nil), ($0.1.0, $0.1.1)] }
                 .joined()
         )
-
+        
         var sortedReplacementsAndGapsWithEnd = sortedReplacmentsAndGaps.join([])
-
+        
         if last.0.upperBound < endIndex {
             sortedReplacementsAndGapsWithEnd = sortedReplacmentsAndGaps.join([(last.0.upperBound..<endIndex, nil)])
         }
@@ -260,7 +266,7 @@ extension RangeReplaceableCollection {
             let joiner: [(Range<Index>, Replacement?)] = [(startIndex..<first.0.lowerBound, nil)]
             sortedReplacementsAndGapsWithStart = joiner.join(sortedReplacementsAndGapsWithEnd)
         }
-
+        
         var newSelf = Self.init(capacity: 0); TODO.here(.optimize)
         
         sortedReplacementsAndGapsWithStart.forEach { range, replacement in
@@ -270,6 +276,24 @@ extension RangeReplaceableCollection {
         }
         
         self = newSelf
+    }
+    
+    public func replacingSubranges<
+        Ranges: Collection,
+        Replacements: Collection,
+        Replacement: Collection
+    >(
+        _ subranges: Ranges,
+        with replacements: Replacements
+    ) -> Self where Ranges.Element == Range<Index>,
+                    Replacement.Element == Element,
+                    Replacements.Element == Replacement
+    {
+        var result = self
+        
+        result.replaceSubranges(subranges, with: replacements)
+        
+        return result
     }
 }
 
@@ -289,7 +313,7 @@ extension RangeReplaceableCollection {
             insert(padding, at: index)
         }
     }
-
+    
     public func padded(at index: Index, with padding: Element, toCount targetCount: Int) -> Self {
         var collection = self
         collection.pad(at: index, with: padding, toCount: targetCount)

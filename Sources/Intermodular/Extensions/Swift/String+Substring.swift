@@ -31,7 +31,7 @@ extension String {
         return result
     }
     
-    public func lines() -> [Substring] {
+    public func lines(omittingEmpty: Bool = false) -> [Substring] {
         split(omittingEmptySubsequences: false, whereSeparator: { $0 == Character.newLine })
     }
     
