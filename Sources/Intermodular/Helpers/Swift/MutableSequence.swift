@@ -12,6 +12,7 @@ public protocol MutableSequence: Sequence {
 // MARK: - Implementation -
 
 extension MutableSequence {
+    @_disfavoredOverload
     public mutating func map<S: ExtensibleSequence & Initiable>(mutating iterator: ((inout Element) throws -> S.Element)) rethrows -> S {
         var result = S()
                 
@@ -22,6 +23,7 @@ extension MutableSequence {
 }
 
 extension MutableSequence where Self: MutableCollection {
+    @_disfavoredOverload
     public mutating func forEach<T>(mutating iterator: ((inout Element) throws -> T)) rethrows {
         for index in indices {
             _ = try iterator(&self[index])
@@ -30,6 +32,7 @@ extension MutableSequence where Self: MutableCollection {
 }
 
 extension MutableSequence where Self: RangeReplaceableCollection {
+    @_disfavoredOverload
     public mutating func forEach<T>(mutating iterator: ((inout Element) throws -> T)) rethrows {
         for (index, element) in enumerated() {
             var oldElementWasMutated = false
@@ -50,6 +53,7 @@ extension MutableSequence where Self: RangeReplaceableCollection {
 }
 
 extension MutableSequence where Self: MutableCollection & RangeReplaceableCollection {
+    @_disfavoredOverload
     public mutating func forEach<T>(mutating iterator: ((inout Self.Element) throws -> T)) rethrows {
         for index in indices {
             _ = try iterator(&self[index])
