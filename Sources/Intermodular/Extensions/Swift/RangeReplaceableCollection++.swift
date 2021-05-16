@@ -207,6 +207,36 @@ extension RangeReplaceableCollection where Element: Equatable {
     }
 }
 
+extension RangeReplaceableCollection where Element: Identifiable {
+    /// Updates a given identifiable element if already present, inserts it otherwise.
+    public mutating func upsert(_ element: Element) {
+        if let index = firstIndex(where: { $0.id == element.id }) {
+            replace(at: index, with: element)
+        } else {
+            insert(element, at: 0)
+        }
+    }
+    
+    /// Updates a given identifiable element if already present, inserts it otherwise.
+    public mutating func upsert<S: Sequence>(contentsOf elements: S) where S.Element == Element {
+        elements.forEach({ upsert($0) })
+    }
+    
+    /// Updates a given identifiable element if already present, inserts it otherwise.
+    public mutating func updateOrAppend(_ element: Element) {
+        if let index = firstIndex(where: { $0.id == element.id }) {
+            replace(at: index, with: element)
+        } else {
+            append(element)
+        }
+    }
+    
+    /// Updates a given identifiable element if already present, inserts it otherwise.
+    public mutating func updateOrAppend<S: Sequence>(contentsOf elements: S) where S.Element == Element {
+        elements.forEach({ updateOrAppend($0) })
+    }
+}
+
 extension RangeReplaceableCollection {
     public mutating func replaceSubranges<
         Ranges: Collection,
