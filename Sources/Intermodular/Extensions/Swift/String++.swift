@@ -60,6 +60,11 @@ extension String {
             return self[bounds]
         }
     }
+    
+    @_disfavoredOverload
+    public func trim(prefix: String, suffix: String) -> String {
+        String(trim(prefix: prefix, suffix: suffix) as Substring)
+    }
 }
 
 extension String {
@@ -79,5 +84,19 @@ extension String {
 extension String {
     public func trimmingWhitespace() -> String {
         trimmingCharacters(in: .whitespaces)
+    }
+}
+
+extension String {
+    public func splitInHalf(separator: String) -> (String, String) {
+        let range = range(of: separator, range: nil, locale: nil)
+        
+        if let range = range {
+            let lhs = String(self[..<range.lowerBound])
+            let rhs = String(self[range.upperBound...])
+            return (lhs, rhs)
+        }
+        
+        return (self, "")
     }
 }
