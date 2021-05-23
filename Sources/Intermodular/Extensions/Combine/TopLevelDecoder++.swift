@@ -9,7 +9,11 @@ import Swift
 extension TopLevelDecoder {
     /// Attempts to decode an instance of the indicated type.
     public func attemptToDecode<T>(_ type: T.Type, from input: Input) throws -> T {
-        try cast(try cast(type, to: Decodable.Type.self).decode(input, using: self), to: T.self)
+        if type == Void.self {
+            return try cast(() as Void, to: T.self)
+        }
+        
+        return try cast(try cast(type, to: Decodable.Type.self).decode(input, using: self), to: T.self)
     }
 }
 
