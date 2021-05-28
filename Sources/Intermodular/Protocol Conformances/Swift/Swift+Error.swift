@@ -59,7 +59,7 @@ public struct CustomStringError: _opaque_Hashable, CustomStringConvertible, Erro
     }
 }
 
-public struct EmptyError: Error, CustomStringConvertible {
+public struct EmptyError: Hashable, Error, CustomStringConvertible {
     public let location: SourceCodeLocation?
     
     public var description: String {
