@@ -6,6 +6,20 @@ import Foundation
 import Swift
 
 extension JSONEncoder {
+    public convenience init(
+        dateEncodingStrategy: JSONEncoder.DateEncodingStrategy? = nil,
+        dataEncodingStrategy: JSONEncoder.DataEncodingStrategy? = nil,
+        keyEncodingStrategy: JSONEncoder.KeyEncodingStrategy? = nil,
+        nonConformingFloatEncodingStrategy: JSONEncoder.NonConformingFloatEncodingStrategy? = nil
+    ) {
+        self.init()
+        
+        dateEncodingStrategy.map(into: &self.dateEncodingStrategy)
+        dataEncodingStrategy.map(into: &self.dataEncodingStrategy)
+        keyEncodingStrategy.map(into: &self.keyEncodingStrategy)
+        nonConformingFloatEncodingStrategy.map(into: &self.nonConformingFloatEncodingStrategy)
+    }
+    
     public func encode<T: Encodable>(_ value: T, allowFragments: Bool) throws -> Data {
         do {
             return try encode(value)
