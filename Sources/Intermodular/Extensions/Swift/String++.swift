@@ -5,16 +5,6 @@
 import Swift
 
 extension String {
-    public var persistentHash: Int {
-        let unicodeScalars = self.unicodeScalars.lazy.map({ $0.value })
-        
-        return unicodeScalars.reduce(0) {
-            (Int($1) &+ ($0 << 6) &+ ($0 << 16)).addingReportingOverflow(-$0).partialValue
-        }
-    }
-}
-
-extension String {
     public func numberOfOccurences(of character: Character) -> Int {
         lazy.filter({ $0 == character }).count
     }

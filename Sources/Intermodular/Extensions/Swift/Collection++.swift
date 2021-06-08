@@ -296,7 +296,7 @@ extension Collection {
     }
 }
 
-extension Collection where Self.Index: Comparable {
+extension Collection {
     public func allSubrangesChunked<C: Collection>(by ranges: C) -> [Range<Index>] where C.Element == Range<Index> {
         guard !ranges.isEmpty else {
             return [startIndex..<endIndex]

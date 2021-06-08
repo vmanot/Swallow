@@ -13,7 +13,7 @@ extension RangeReplaceableCollection {
     }
 }
 
-extension RangeReplaceableCollection where SubSequence: Collection {
+extension RangeReplaceableCollection {
     @inlinable
     public subscript(flexible bounds: Range<Index>) -> SubSequence {
         get {

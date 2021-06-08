@@ -96,7 +96,7 @@ extension BidirectionalCollection where Element: Equatable {
     }
 }
 
-extension BidirectionalCollection where SubSequence: BidirectionalCollection {
+extension BidirectionalCollection {
     public func unfoldBackwards() -> UnfoldSequence<(SubSequence, Element), SubSequence> {
         sequence(state: prefix(upTo: endIndex)) { (subsequence: inout SubSequence) in
             guard let (head, tail) = subsequence.splittingLast() else {

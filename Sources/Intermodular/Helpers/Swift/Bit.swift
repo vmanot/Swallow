@@ -87,7 +87,11 @@ extension Trivial {
     
     @inlinable
     public init?<S: Sequence>(bits: S) where S.Element == Bit {
-        self.init(bytes: ChunkSequence(Array(bits), chunkSize: 8).map({
+        TODO.whole(.fix)
+        
+        fatalError()
+        
+        /*self.init(bytes: ChunkSequence(Array(bits), chunkSize: 8).map({
             Byte(bitPattern: (
                 $0[0],
                 $0[1],
@@ -98,6 +102,6 @@ extension Trivial {
                 $0[6],
                 $0[7])
             )
-        }))
+        }))*/
     }
 }
