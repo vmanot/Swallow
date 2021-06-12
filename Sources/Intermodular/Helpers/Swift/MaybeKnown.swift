@@ -50,7 +50,14 @@ extension MaybeKnown: Codable where Value: Codable {
     }
     
     public func encode(to encoder: Encoder) throws {
-        try encoder.encode(single: Optional(self))
+        var container = encoder.singleValueContainer()
+        
+        switch self {
+            case .unknown:
+                try container.encodeNil()
+            case .known(let value):
+                try container.encode(value)
+        }
     }
 }
 

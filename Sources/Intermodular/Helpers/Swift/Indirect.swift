@@ -49,13 +49,19 @@ extension Indirect: Decodable where Value: Decodable {
 }
 
 extension Indirect: CustomStringConvertible where Value: CustomStringConvertible {
-    
+    public var description: String {
+        wrappedValue.description
+    }
 }
 
 extension Indirect: Equatable where Value: Equatable {
-    
+    public static func == (lhs: Self, rhs: Self) -> Bool {
+        lhs.wrappedValue == rhs.wrappedValue
+    }
 }
 
 extension Indirect: Hashable where Value: Hashable {
-    
+    public func hash(into hasher: inout Hasher) {
+        wrappedValue.hash(into: &hasher)
+    }
 }
