@@ -18,7 +18,11 @@ public struct ISO8601: DateCodingStrategy {
         return date
     }
     
-    public static func encode(_ date: Date) -> String {
-        return ISO8601DateFormatter().string(from: date)
+    public static func encode(_ date: Date) throws -> String {
+        let formatter = ISO8601DateFormatter()
+        
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        
+        return formatter.string(from: date)
     }
 }
