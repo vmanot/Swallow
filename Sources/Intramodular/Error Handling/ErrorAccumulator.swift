@@ -53,7 +53,14 @@ public struct AccumulatedErrors: CustomStringConvertible, Error {
 // MARK: - Helpers -
 
 extension Optional {
-    public init(try expr: @autoclosure () throws -> Wrapped, errorAccumulator: inout ErrorAccumulator, file: StaticString = #file, function: StaticString = #function, line: UInt = #line, column: UInt = #column) {
+    public init(
+        try expr: @autoclosure () throws -> Wrapped,
+        errorAccumulator: inout ErrorAccumulator,
+        file: StaticString = #file,
+        function: StaticString = #function,
+        line: UInt = #line,
+        column: UInt = #column
+    ) {
         do {
             self = .some(try expr())
         } catch {

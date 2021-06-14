@@ -14,6 +14,15 @@ let package = Package(
         .library(name: "Swallow", targets: ["Swallow"])
     ],
     targets: [
-        .target(name: "Swallow", dependencies: [], path: "Sources")
+        .target(
+            name: "Swallow",
+            dependencies: [],
+            path: "Sources"
+        ),
+        .testTarget(
+            name: "SwallowTests",
+            dependencies: ["Swallow"],
+            path: "Tests"
+        )
     ]
 )
