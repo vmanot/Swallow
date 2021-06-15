@@ -17,6 +17,16 @@ extension Decoder {
         return try container.decode(T.self)
     }
     
+    public func decodeIfPresent<T: Decodable>(single type: T.Type = T.self) throws -> T? {
+        let container = try singleValueContainer()
+        
+        if container.decodeNil() {
+            return nil
+        } else {
+            return try container.decode(T.self)
+        }
+    }
+    
     public func decodeUnkeyedNil() throws -> Bool {
         var container = try unkeyedContainer()
         
