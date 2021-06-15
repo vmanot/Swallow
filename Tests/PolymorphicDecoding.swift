@@ -60,16 +60,16 @@ final class PolymorphicDecoding: XCTestCase {
         
         class Monkey: Animal {
             let screeches: Bool
-
+            
             init(screeches: Bool) {
                 self.screeches = screeches
-
+                
                 super.init(type: .monkey)
             }
             
             required init(from decoder: Decoder) throws {
                 screeches = try decoder.decode(forKey: AnyStringKey(stringValue: "screeches"))
-
+                
                 try super.init(from: decoder)
             }
             
@@ -85,7 +85,7 @@ final class PolymorphicDecoding: XCTestCase {
         let encodedAnimals = try JSONEncoder().encode(animals)
         let incorrectlyDecodedAnimals = try JSONDecoder().decode([Animal].self, from: encodedAnimals)
         let correctlyDecodedAnimals = try JSONDecoder().polymorphic().decode([Animal].self, from: encodedAnimals)
-
+        
         XCTAssert(type(of: incorrectlyDecodedAnimals[0]) == Animal.self)
         XCTAssert(type(of: incorrectlyDecodedAnimals[1]) == Animal.self)
         XCTAssert(correctlyDecodedAnimals[0] is Lion)
