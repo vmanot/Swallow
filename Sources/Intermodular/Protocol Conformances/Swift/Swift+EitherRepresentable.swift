@@ -37,6 +37,17 @@ public enum Either<T, U>: EitherRepresentable, MutableEitherRepresentable {
     }
 }
 
+extension Either where T == U {
+    public var leftOrRightValue: T {
+        switch self {
+            case .left(let value):
+                return value
+            case .right(let value):
+                return value
+        }
+    }
+}
+
 extension Either: Comparable where LeftValue: Comparable, RightValue: Comparable {
     
 }

@@ -7,6 +7,7 @@ import Swift
 /// An indirect, copy-on-write wrapper over a value.
 @propertyWrapper
 public struct Indirect<Value>: ParameterlessPropertyWrapper {
+    @MutableValueBox
     private var storage: ReferenceBox<Value>
     
     public var wrappedValue: Value {

@@ -141,22 +141,13 @@ extension Sequence {
     }
 }
 
-// MARK: forEach
-
-extension Sequence {
-    @_disfavoredOverload
-    @inlinable
-    public func forEach<T>(do iterator: @autoclosure () throws -> T) rethrows {
-        for _ in self {
-            _ = try iterator()
-        }
-    }
-}
-
 // MARK: find
 
 extension Sequence {
-    public func elements(between firstPredicate: ((Element) throws -> Bool), and lastPredicate: ((Element) throws -> Bool)) rethrows -> [Element] {
+    public func elements(
+        between firstPredicate: ((Element) throws -> Bool),
+        and lastPredicate: ((Element) throws -> Bool)
+    ) rethrows -> [Element] {
         var first: Element?
         var result: [Element] = []
         
