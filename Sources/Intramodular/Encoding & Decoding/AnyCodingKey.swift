@@ -83,6 +83,12 @@ extension AnyCodingKey: Codable {
     }
 }
 
+extension AnyCodingKey: CustomStringConvertible {
+    public var description: String {
+        stringValue
+    }
+}
+
 extension AnyCodingKey: Equatable {
     public static func == (lhs: Self, rhs: Self) -> Bool {
         lhs.hashValue == rhs.hashValue
