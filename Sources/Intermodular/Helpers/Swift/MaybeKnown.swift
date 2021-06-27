@@ -69,6 +69,28 @@ extension MaybeKnown: Hashable where Value: Hashable {
     
 }
 
+extension MaybeKnown {
+    public enum _ComparisonType {
+        case unknown
+        case known
+        
+        public static func == (lhs: _ComparisonType, rhs: MaybeKnown) -> Bool {
+            switch (lhs, rhs) {
+                case (.unknown, .unknown):
+                    return true
+                case (.known, .known):
+                    return true
+                default:
+                    return false
+            }
+        }
+        
+        public static func == (lhs: MaybeKnown, rhs: _ComparisonType) -> Bool {
+            rhs == lhs
+        }
+    }
+}
+
 // MARK: - Helpers -
 
 extension Optional {

@@ -4,14 +4,15 @@
 
 import Swift
 
-public final class Inout<T> {
+@propertyWrapper
+public struct Inout<T> {
     public let getter: NonMutatingGetter<Void, T>
     public let setter: NonMutatingSetter<Void, T>
     
-    public var value: T {
+    public var wrappedValue: T {
         get {
             return getter.call(with: ())
-        } set {
+        } nonmutating set {
             setter.call(with: ((), newValue))
         }
     }
@@ -21,11 +22,11 @@ public final class Inout<T> {
         self.setter = setter
     }
     
-    public convenience init(getter: @escaping () -> T, setter: @escaping (T) -> Void) {
+    public init(getter: @escaping () -> T, setter: @escaping (T) -> Void) {
         self.init(getter: .init(getter), setter: .init({ setter($1) }))
     }
     
-    public convenience init(_ getter: @autoclosure @escaping () -> T, _ setter: @escaping (T) -> Void) {
+    public init(_ getter: @autoclosure @escaping () -> T, _ setter: @escaping (T) -> Void) {
         self.init(getter: getter, setter: setter)
     }
 }
@@ -34,6 +35,6 @@ public final class Inout<T> {
 
 extension Inout: CustomStringConvertible {
     public var description: String {
-        return describe(value)
+        String(describing: wrappedValue)
     }
 }
