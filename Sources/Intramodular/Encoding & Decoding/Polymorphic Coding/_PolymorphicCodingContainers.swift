@@ -1,5 +1,5 @@
 //
-//  Copyright © 2018 PhonePe. All rights reserved.
+// Copyright (c) Vatsal Manot
 //
 
 import Foundation
@@ -172,8 +172,6 @@ public struct _PolymorphicUnkeyedDecodingContainer: UnkeyedDecodingContainer {
         try base.decode(type)
     }
     
-    // This is where the magic happens.
-    
     public mutating func decode<T: Decodable>(_ type: T.Type) throws -> T {
         try base.decode(_PolymorphicDecodable<T>.self).value
     }
@@ -278,14 +276,44 @@ public struct _PolymorphicKeyedDecodingContainer<T: CodingKey>: KeyedDecodingCon
         try base.decode(type, forKey: key)
     }
     
-    // This is where the magic happens.
-    
     public func decode<T: Decodable>(_ type: T.Type, forKey key: Key) throws -> T {
-        try base.decode(_PolymorphicDecodable<T>.self, forKey: key).value
+        guard !(type is Date.Type) else {
+            return try base.decode(T.self, forKey: key)
+        }
+        
+        guard !(type is Optional<Date>.Type) else {
+            return try base.decode(T.self, forKey: key)
+        }
+        
+        guard !(type is URL.Type) else {
+            return try base.decode(T.self, forKey: key)
+        }
+        
+        guard !(type is Optional<URL>.Type) else {
+            return try base.decode(T.self, forKey: key)
+        }
+        
+        return try base.decode(_PolymorphicDecodable<T>.self, forKey: key).value
     }
     
     public func decodeIfPresent<T: Decodable>(_ type: T.Type, forKey key: Key) throws -> T?  {
-        try base.decodeIfPresent(_PolymorphicDecodable<T>.self, forKey: key)?.value
+        guard !(type is Date.Type) else {
+            return try base.decodeIfPresent(T.self, forKey: key)
+        }
+        
+        guard !(type is Optional<Date>.Type) else {
+            return try base.decodeIfPresent(T.self, forKey: key)
+        }
+        
+        guard !(type is URL.Type) else {
+            return try base.decodeIfPresent(T.self, forKey: key)
+        }
+        
+        guard !(type is Optional<URL>.Type) else {
+            return try base.decodeIfPresent(T.self, forKey: key)
+        }
+        
+        return try base.decodeIfPresent(_PolymorphicDecodable<T>.self, forKey: key)?.value
     }
     
     public func nestedContainer<NestedKey: CodingKey>(keyedBy type: NestedKey.Type, forKey key: Key) throws -> KeyedDecodingContainer<NestedKey>  {

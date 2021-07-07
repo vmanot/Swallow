@@ -1,5 +1,5 @@
 //
-//  Copyright © 2018 PhonePe. All rights reserved.
+// Copyright (c) Vatsal Manot
 //
 
 import Foundation
@@ -8,43 +8,55 @@ import Swift
 /// A custom decoder.
 public struct _PolymorphicDecoder: Decoder {
     private var base: Decoder
+    
+    public var codingPath: [CodingKey] {
+        base.codingPath
+    }
+    
+    public var userInfo: [CodingUserInfoKey: Any] {
+        base.userInfo
+    }
+    
     public init(_ base: Decoder) {
         self.base = base
     }
     
-    public var codingPath: [CodingKey] {
-        return base.codingPath
-    }
-    
-    public var userInfo: [CodingUserInfoKey: Any] {
-        return base.userInfo
-    }
-    
     public func container<Key: CodingKey>(keyedBy type: Key.Type) throws -> KeyedDecodingContainer<Key> {
-        return .init(_PolymorphicKeyedDecodingContainer(try base.container(keyedBy: type), parent: self))
+        .init(_PolymorphicKeyedDecodingContainer(try base.container(keyedBy: type), parent: self))
     }
     
     public func unkeyedContainer() throws -> UnkeyedDecodingContainer {
-        return _PolymorphicUnkeyedDecodingContainer(try base.unkeyedContainer(), parent: self)
+        _PolymorphicUnkeyedDecodingContainer(try base.unkeyedContainer(), parent: self)
     }
     
     public func singleValueContainer() throws -> SingleValueDecodingContainer {
-        return _PolymorphicSingleValueDecodingContainer(try base.singleValueContainer(), parent: self)
+        _PolymorphicSingleValueDecodingContainer(try base.singleValueContainer(), parent: self)
     }
 }
 
 /// A proxy for `Decodable` that forces our custom decoder to be used.
-internal struct _PolymorphicDecodable<T: Decodable>: Decodable {
+
+protocol _opaque_PolymorphicDecodableType {
+    
+}
+
+internal struct _PolymorphicDecodable<T: Decodable>: _opaque_PolymorphicDecodableType, Decodable {
     public var value: T
     
     public init(from decoder: Decoder) throws {
+        guard !(T.self is _opaque_PolymorphicDecodableType.Type) else {
+            self.value = try T.init(from: decoder)
+            
+            return
+        }
+        
         let decoder = _PolymorphicDecoder(decoder)
         
         do {
             if let type = T.self as? _opaque_PolymorphicDecodable.Type {
                 self.value = try cast(try type._opaque_PolymorphicProxyDecodableType().init(from: decoder)._opaque_getValue()) as T
             } else {
-                self.value = try T.init(from: decoder)
+                self.value = try T.init(from: decoder.polymorphic())
             }
         } catch {
             throw error

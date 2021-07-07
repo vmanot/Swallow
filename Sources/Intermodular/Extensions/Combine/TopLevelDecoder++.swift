@@ -24,6 +24,7 @@ extension Decodable {
         _ input: Decoder.Input,
         using decoder: Decoder
     ) throws -> Self {
-        return try decoder.decode(self, from: input)
+
+        return try decoder.polymorphic().decode(self, from: input)
     }
 }

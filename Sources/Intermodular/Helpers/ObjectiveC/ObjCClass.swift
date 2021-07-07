@@ -1,5 +1,5 @@
 //
-//  Copyright © 2018 PhonePe. All rights reserved.
+// Copyright (c) Vatsal Manot
 //
 
 import ObjectiveC

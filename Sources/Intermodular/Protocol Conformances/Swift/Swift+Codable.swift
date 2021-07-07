@@ -29,7 +29,7 @@ public struct EncodableSequence<Base: Sequence>: Encodable where Base.Element: E
     }
 }
 
-extension Either where LeftValue: Decodable, RightValue: Decodable {
+extension Either: Decodable where LeftValue: Decodable, RightValue: Decodable {
     public init(from decoder: Decoder)  throws{
         do {
             self = try .left(.init(from: decoder))
@@ -43,7 +43,7 @@ extension Either where LeftValue: Decodable, RightValue: Decodable {
     }
 }
 
-extension Either where LeftValue: Encodable, RightValue: Encodable {
+extension Either: Encodable where LeftValue: Encodable, RightValue: Encodable {
     public func encode(to encoder: Encoder) throws {
         try collapse({ try $0.encode(to: encoder) }, { try $0.encode(to: encoder) })
     }
