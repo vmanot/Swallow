@@ -5,11 +5,12 @@
 import Swift
 
 @propertyWrapper
-public final class _Memoized<EnclosingSelf: AnyObject & Hashable, Value>: PropertyWrapper, Hashable {
+public final class _Memoized<EnclosingSelf: AnyObject, Value>: Hashable, PropertyWrapper {
+    public var computeBaseHash: (EnclosingSelf) -> Int
     public var computeValue: (EnclosingSelf) -> Value
     
-    @Indirect var hashValueOfEnclosingSelf: Int?
-    @Indirect var computedValue: Value?
+    var baseHash: Int?
+    var computedValue: Value?
     
     public var wrappedValue: Value {
         get {
@@ -19,8 +20,14 @@ public final class _Memoized<EnclosingSelf: AnyObject & Hashable, Value>: Proper
         }
     }
     
-    public init(_ computeValue: @escaping (EnclosingSelf) -> Value) {
+    public init(_ computeValue: @escaping (EnclosingSelf) -> Value) where EnclosingSelf: Hashable {
+        self.computeBaseHash = { $0.hashValue }
         self.computeValue = computeValue
+    }
+    
+    public init<T: Hashable>(_ keyPath: KeyPath<EnclosingSelf, T>, _ computeValue: @escaping (T) -> Value) {
+        self.computeBaseHash = { $0[keyPath: keyPath].hashValue }
+        self.computeValue = { computeValue($0[keyPath: keyPath]) }
     }
     
     public static subscript(
@@ -36,15 +43,15 @@ public final class _Memoized<EnclosingSelf: AnyObject & Hashable, Value>: Proper
     }
     
     private func compute(for instance: EnclosingSelf) -> Value {
-        let instanceHashValue = instance.hashValue
+        let newBaseHash = computeBaseHash(instance)
         
-        if let computedValue = computedValue, hashValueOfEnclosingSelf == instanceHashValue {
+        if let computedValue = computedValue, baseHash == newBaseHash {
             return computedValue
         } else {
             let newValue = computeValue(instance)
             
-            $computedValue.unsafelyUnwrapped = newValue
-            $hashValueOfEnclosingSelf.unsafelyUnwrapped = instanceHashValue
+            computedValue = newValue
+            baseHash = newBaseHash
             
             return newValue
         }
