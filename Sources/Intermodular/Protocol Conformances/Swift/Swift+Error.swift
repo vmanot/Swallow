@@ -47,7 +47,7 @@ extension Array: Error where Element: Error {
     
 }
 
-public struct CustomStringError: _opaque_Hashable, Codable, CustomStringConvertible, Error, Hashable {
+public struct CustomStringError: _opaque_Hashable, Codable, CustomStringConvertible, Error, ExpressibleByStringLiteral, Hashable {
     public let description: String
     
     public var localizedDescription: String {
@@ -58,8 +58,12 @@ public struct CustomStringError: _opaque_Hashable, Codable, CustomStringConverti
         self.description = description
     }
     
+    public init(stringLiteral value: String) {
+        self.init(description: value)
+    }
+    
     public init(from error: Error) {
-        self.init(description: error.localizedDescription)
+        self.init(description: String(describing: error))
     }
 }
 

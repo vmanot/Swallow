@@ -62,27 +62,22 @@ extension Collection {
 
 extension Collection {
     @inlinable
-    public func contains(_ index: Index) -> Bool {
+    public func containsIndex(_ index: Index) -> Bool {
         return index >= startIndex && index < endIndex
     }
     
     @inlinable
     public func contains(after index: Index) -> Bool {
-        return contains(index) && contains(self.index(after: index))
+        return containsIndex(index) && containsIndex(self.index(after: index))
     }
     
     @inlinable
     public func contains(_ bounds: Range<Index>) -> Bool {
-        return contains(bounds.lowerBound) && contains(index(bounds.upperBound, offsetBy: -1))
+        return containsIndex(bounds.lowerBound) && containsIndex(index(bounds.upperBound, offsetBy: -1))
     }
 }
 
 extension Collection {
-    @inlinable
-    public func indexIfPresent(after index: Index) -> Index? {
-        return Optional(self.index(after: index), if: contains(index)).filter(contains(_:))
-    }
-    
     @inlinable
     public func index(atDistance distance: Int) -> Index {
         return index(startIndex, offsetBy: distance)
@@ -137,7 +132,7 @@ extension Collection {
 extension Collection {
     public subscript(try index: Index) -> Element? {
         @inlinable get {
-            return Optional(self[index], if: contains(index))
+            return Optional(self[index], if: containsIndex(index))
         }
     }
     
@@ -151,7 +146,7 @@ extension Collection {
 extension Collection where Index == Int {
     public subscript(try index: Index) -> Element? {
         @inlinable get {
-            return Optional(self[index], if: contains(index))
+            return Optional(self[index], if: containsIndex(index))
         }
     }
 }

@@ -150,7 +150,7 @@ extension Substring {
         
         var index = lastIndex
         
-        while contains(index), self[index] == character {
+        while containsIndex(index), self[index] == character {
             index = self.index(index, offsetBy: -1)
         }
         
@@ -202,7 +202,7 @@ extension Substring {
         
         var index = lastIndex
         
-        while contains(index), CharacterSet(charactersIn: String(self[index])).isSubset(of: characterSet) {
+        while containsIndex(index), CharacterSet(charactersIn: String(self[index])).isSubset(of: characterSet) {
             index = self.index(index, offsetBy: -1)
         }
         

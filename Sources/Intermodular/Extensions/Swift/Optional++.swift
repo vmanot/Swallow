@@ -95,8 +95,12 @@ extension Optional {
 }
 
 extension Optional {
-    public enum UnwrappingError: Error {
+    public enum UnwrappingError: CustomDebugStringConvertible, Error {
         case unexpectedlyFoundNil(at: SourceCodeLocation)
+        
+        public var debugDescription: String {
+            "Unexpectedly found nil while unwrapping an \(String(describing: Optional<Wrapped>.self)) value."
+        }
     }
     
     @inlinable
@@ -139,5 +143,11 @@ extension Optional {
         column: UInt = #column
     ) -> Wrapped {
         try! unwrap(file: file, line: line)
+    }
+}
+
+extension Optional where Wrapped: Collection {
+    public var isNilOrEmpty: Bool {
+        map({ $0.isEmpty }) ?? true
     }
 }
