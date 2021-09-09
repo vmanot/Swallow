@@ -4,13 +4,21 @@
 
 import Swift
 
+public protocol StaticBool {
+    static var value: Bool { get }
+}
+
 extension Bool {
-    public struct True {
-        
+    public struct True: StaticBool {
+        public static var value: Bool {
+            true
+        }
     }
     
-    public struct False {
-        
+    public struct False: StaticBool {
+        public static var value: Bool {
+            false
+        }
     }
 }
 

@@ -5,21 +5,22 @@
 import Swift
 
 extension SingleValueDecodingContainer {
-    public func decode(opaque type: Decodable.Type) throws -> Decodable {
-        return try type.decode(from: self)
-    }
-    
-    public func decodeIfPresent(opaque type: Decodable.Type) throws -> Decodable? {
-        return try type.decodeIfPresent(from: self)
+    /// Decodes a value of the given type, if present.
+    public func decodeIfPresent<T: Decodable>(_ type: T.Type = T.self) throws -> Optional<T> {
+        if decodeNil() {
+            return .none
+        } else {
+            return .init(try decode(T.self))
+        }
     }
 }
 
 extension SingleValueDecodingContainer {
-    public func decodeIfPresent<T: Decodable & OptionalProtocol>() throws -> T where T.Wrapped: Decodable {
-        if decodeNil() {
-            return .init(none: ())
-        } else {
-            return .init(try decode(T.Wrapped.self))
-        }
+    public func decode(opaque type: Decodable.Type) throws -> Decodable {
+        try type.decode(from: self)
+    }
+    
+    public func decodeIfPresent(opaque type: Decodable.Type) throws -> Decodable? {
+        try type.decodeIfPresent(from: self)
     }
 }
