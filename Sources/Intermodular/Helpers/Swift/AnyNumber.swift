@@ -232,6 +232,12 @@ extension AnyNumber: BooleanInitiable {
     }
 }
 
+extension AnyNumber: CustomStringConvertible {
+    public var description: String {
+        String(describing: storage.rawValue)
+    }
+}
+
 extension AnyNumber: FloatingPointInitiable {
     public init(_ value: Double) {
         self.storage = .double(value)

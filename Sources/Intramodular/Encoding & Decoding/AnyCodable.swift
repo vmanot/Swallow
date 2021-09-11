@@ -22,6 +22,33 @@ public enum AnyCodable {
         self = .encodable(encodable)
     }
     
+    public var value: Any? {
+        switch self {
+            case .none:
+                return nil
+            case .bool(let value):
+                return value
+            case .number(let value):
+                return value
+            case .string(let value):
+                return value
+            case .date(let value):
+                return value
+            case .url(let value):
+                return value
+            case .data(let value):
+                return value
+            case .array(let value):
+                return value
+            case .dictionary(let value):
+                return value
+            case .encodable(let value):
+                return value
+            case ._unsafe(let value):
+                return value
+        }
+    }
+    
     public init(_ value: Any) throws {
         switch value {
             case let value as AnyCodableConvertible:
@@ -125,6 +152,30 @@ extension AnyCodable: Codable {
                     assertionFailure()
                 }
             }
+        }
+    }
+}
+
+extension AnyCodable: CustomDebugStringConvertible {
+    public var debugDescription: String {
+        if let value = value {
+            if let value = value as? CustomDebugStringConvertible {
+                return value.debugDescription
+            } else {
+                return String(describing: value)
+            }
+        } else {
+            return "(No value)"
+        }
+    }
+}
+
+extension AnyCodable: CustomStringConvertible {
+    public var description: String {
+        if let value = value {
+            return String(describing: value)
+        } else {
+            return ""
         }
     }
 }
