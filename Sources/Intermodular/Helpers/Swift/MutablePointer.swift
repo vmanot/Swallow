@@ -8,12 +8,12 @@ import SwiftShims
 
 public protocol MutablePointer: Pointer {
     var pointee: Pointee { get nonmutating set }
-
+    
     init(mutating _: UnsafePointer<Pointee>)
     init?(mutating _: UnsafePointer<Pointee>?)
     
     static func allocate(capacity: Stride) -> Self
-
+    
     subscript(offset: Stride) -> Pointee { get nonmutating set }
     
     func assumingMemoryBound<T>(to _: T.Type) -> UnsafeMutablePointer<T>
@@ -23,10 +23,10 @@ public protocol MutablePointer: Pointer {
     
     func initialize(to _: Pointee)
     func initialize(repeating _: Pointee, count: Stride)
-
+    
     @discardableResult func deinitialize(count: Stride) -> UnsafeMutableRawPointer
     func move() -> Pointee
-
+    
     func deallocate()
 }
 
@@ -42,11 +42,11 @@ extension MutablePointer {
             unsafeMutablePointerRepresentation.pointee = newValue
         }
     }
-
+    
     public init(mutating pointer: UnsafePointer<Pointee>) {
         self.init(UnsafeMutablePointer(mutating: pointer))
     }
-
+    
     public init?(mutating pointer: UnsafePointer<Pointee>?) {
         guard let pointer = pointer else {
             return nil
@@ -54,7 +54,7 @@ extension MutablePointer {
         
         self.init(mutating: pointer)
     }
-
+    
     public func assumingMemoryBound<T>(to type: T.Type) -> UnsafeMutablePointer<T> {
         return mutableRawRepresentation.assumingMemoryBound(to: type)
     }
@@ -75,7 +75,7 @@ extension MutablePointer {
     }
     
     public func deallocate() {
-        free(unsafeMutablePointerRepresentation)
+        unsafeMutablePointerRepresentation.deallocate()
     }
 }
 
@@ -87,11 +87,11 @@ extension MutablePointer where Stride == Int {
     public func assign(from pointee: UnsafePointer<Pointee>, count: Stride) {
         unsafeMutablePointerRepresentation.assign(from: pointee, count: count)
     }
-
+    
     public func assign(repeating pointee: Pointee, count: Stride) {
         unsafeMutablePointerRepresentation.assign(repeating: pointee, count: count)
     }
-
+    
     public func assign(to pointee: Pointee) {
         unsafeMutablePointerRepresentation.assign(repeating: pointee, count: 1)
     }
@@ -155,7 +155,7 @@ extension MutablePointer {
         
         return self
     }
-
+    
     public func initialize<P: Pointer>(from pointer: P, count: Stride) where P.Pointee == Pointee, P.Stride == Stride {
         var initializedCount: Stride = 0
         
@@ -165,7 +165,7 @@ extension MutablePointer {
             initializedCount += 1
         }
     }
-
+    
     public static func initializing<P: Pointer>(from pointer: P, count: Stride) -> Self where P.Pointee == Pointee, P.Stride == Stride {
         let result = allocate(capacity: count)
         
@@ -242,7 +242,7 @@ extension MutablePointer where Stride: BinaryInteger {
     public func assign<P: Pointer, N: BinaryInteger>(from pointer: P, count: N) where P.Pointee == Pointee {
         assign(from: .init(pointer), count: numericCast(count))
     }
-
+    
     public func initialize<N: BinaryInteger>(repeating pointee: Pointee, count: N) {
         initialize(repeating: pointee, count: numericCast(count))
     }
@@ -252,7 +252,7 @@ extension MutablePointer where Stride: BinaryInteger {
         
         return self
     }
-
+    
     public func deinitialize<N: BinaryInteger>(capacity: N) -> UnsafeMutableRawPointer {
         return deinitialize(count: numericCast(capacity))
     }
@@ -270,7 +270,7 @@ extension ImplementationForwarder where Self: MutablePointer, ImplementationProv
             implementationProvider.pointee = newValue
         }
     }
-
+    
     public init(mutating pointer: UnsafePointer<Pointee>) {
         self.init(implementationProvider: .init(mutating: pointer))
     }
@@ -286,7 +286,7 @@ extension ImplementationForwarder where Self: MutablePointer, ImplementationProv
     public func assumingMemoryBound<T>(to type: T.Type) -> UnsafeMutablePointer<T> {
         return implementationProvider.assumingMemoryBound(to: type)
     }
-
+    
     public func assign(from pointer: UnsafePointer<Pointee>, count: Stride) {
         implementationProvider.assign(from: pointer, count: count)
     }
@@ -294,7 +294,7 @@ extension ImplementationForwarder where Self: MutablePointer, ImplementationProv
     public func initialize(repeating pointee: Pointee, count: Stride) {
         implementationProvider.initialize(repeating: pointee, count: count)
     }
-
+    
     public func deinitialize(count: Stride) -> UnsafeMutableRawPointer {
         return implementationProvider.deinitialize(count: count)
     }
@@ -302,7 +302,7 @@ extension ImplementationForwarder where Self: MutablePointer, ImplementationProv
     public func move() -> Pointee {
         return implementationProvider.move()
     }
-        
+    
     public func deallocate() {
         implementationProvider.deallocate()
     }
