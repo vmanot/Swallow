@@ -98,6 +98,10 @@ extension Optional {
     public enum UnwrappingError: CustomDebugStringConvertible, Error {
         case unexpectedlyFoundNil(at: SourceCodeLocation)
         
+        public static var unexpectedlyFoundNil: Self {
+            .unexpectedlyFoundNil(at: .unavailable)
+        }
+        
         public var debugDescription: String {
             "Unexpectedly found nil while unwrapping an \(String(describing: Optional<Wrapped>.self)) value."
         }
