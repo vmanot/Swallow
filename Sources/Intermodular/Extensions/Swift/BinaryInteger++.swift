@@ -14,105 +14,55 @@ extension BinaryInteger {
     }
 }
 
+// MARK: clamp
+
+extension BinaryInteger {
+    public func clamped(to range: ClosedRange<Self>) -> Self {
+        return max(min(self, range.upperBound), range.lowerBound)
+    }
+    
+    public func clamped(to range: PartialRangeFrom<Self>) -> Self {
+        return max(self, range.lowerBound)
+    }
+    
+    public func clamped(to range: PartialRangeThrough<Self>) -> Self {
+        return min(self, range.upperBound)
+    }
+
+    public mutating func clamp(to range: ClosedRange<Self>) {
+        self = self.clamped(to: range)
+    }
+    
+    public mutating func clamp(to range: PartialRangeFrom<Self>) {
+        self = self.clamped(to: range)
+    }
+    
+    public mutating func clamp(to range: PartialRangeThrough<Self>) {
+        self = self.clamped(to: range)
+    }
+}
+
+// MARK: square
+
 extension BinaryInteger {
     public func square() -> Self {
         return self * self
     }
 }
 
-extension BinaryInteger {
-    public mutating func increment() {
-        self += 1
-    }
-
-    public mutating func decrement() {
-        self -= 1
-    }
-}
-
-public func flooredAverage<T: BinaryInteger>(_ x: T, _ y: T) -> T {
-    let (minimum, maximum) = (min(x, y), max(x, y))
-    
-    // See: https://ai.googleblog.com/2006/06/extra-extra-read-all-about-it-nearly.html?m=1
-    return minimum + ((maximum - minimum) / 2)
-}
-
-public enum BinaryIntegerSquareRootComputationError: Error {
-    case noPerfectSquare
-}
-
-public enum BinarySearchStrategy {
-    case rightmost
-    case leftmost
-}
-
-public enum BinaryComparisonResult {
-    case lesser
-    case equal
-    case greater
-    
-    public init?<T: Comparable>(of x: T, to y: T) {
-        if x < y {
-            self = .lesser
-        } else if x == y {
-            self = .equal
-        } else if x > y {
-            self = .greater
-        } else {
-            return nil
-        }
-    }
-}
+// MARK: squareRoot
 
 extension BinaryInteger {
-    public func flooredAverage(with other: Self) -> Self {
-        return Swallow.flooredAverage(self, other)
-    }
-}
-
-extension Collection {
-    public func flooredAverage(of x: Index, and y: Index) -> Index {
-        return index(atDistance: distanceFromStartIndex(to: x).flooredAverage(with: distanceFromStartIndex(to: y)))
+    public func squareRoot() throws -> Self {
+        let root = squareRootOrLower()
+        
+        guard (root * root) == self else {
+            throw BinaryIntegerSquareRootComputationError.noPerfectSquare
+        }
+        
+        return root
     }
     
-    public func rightmostIndex(for predicate: ((Element) -> BinaryComparisonResult)) -> Index? {
-        guard !isEmpty else {
-            return nil
-        }
-        
-        guard !(count == 1) else {
-            return predicate(first!) == .equal ? startIndex : nil
-        }
-        
-        var lowerBound: Index = startIndex
-        var upperBound: Index = lastIndex
-        var result: Index? = nil
-        
-        while lowerBound != upperBound {
-            let middleIndex = index(flooredAverage(of: lowerBound, and: upperBound), offsetBy: 1)
-            
-            switch predicate(self[middleIndex]) {
-            case .equal:
-                result = middleIndex
-                lowerBound = middleIndex
-            case .lesser:
-                lowerBound = middleIndex
-            case .greater:
-                upperBound = index(middleIndex, offsetBy: -1)
-            }
-        }
-        
-        return result
-    }
-}
-
-extension Collection where Element: Comparable {
-    public func rightmostIndex(for element: Element) -> Index? {
-        return rightmostIndex(for: { BinaryComparisonResult(of: $0, to: element)! })
-    }
-}
-
-extension BinaryInteger {
     public func squareRootOrLower() -> Self {
         var low: Self = 0
         var high = (self / 2) + 1
@@ -123,7 +73,7 @@ extension BinaryInteger {
             if (mid * mid) <= self {
                 low = mid
             }
-                
+            
             else {
                 high = mid
             }
@@ -131,14 +81,24 @@ extension BinaryInteger {
         
         return low
     }
-    
-    public func squareRoot() throws -> Self {
-        let root = squareRootOrLower()
+}
+
+// MARK: flooredAverage
+
+extension BinaryInteger {
+    // See: https://ai.googleblog.com/2006/06/extra-extra-read-all-about-it-nearly.html?m=1
+    public func flooredAverage(with other: Self) -> Self {
+        let x = self
+        let y = other
         
-        guard (root * root) == self else {
-            throw BinaryIntegerSquareRootComputationError.noPerfectSquare
-        }
+        let (minimum, maximum) = (min(x, y), max(x, y))
         
-        return root
+        return minimum + ((maximum - minimum) / 2)
     }
+}
+
+// MARK: - Auxiliary Implementation -
+
+public enum BinaryIntegerSquareRootComputationError: Error {
+    case noPerfectSquare
 }
