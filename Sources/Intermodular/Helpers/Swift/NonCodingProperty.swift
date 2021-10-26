@@ -5,6 +5,8 @@
 import Swift
 
 /// A property that does not encode/decode itself.
+///
+/// It *does* implement `Equatable` and `Hashable` conditionally.
 @propertyWrapper
 public struct NonCodingProperty<Value: ExpressibleByNilLiteral>: PropertyWrapper {
     public var wrappedValue: Value
