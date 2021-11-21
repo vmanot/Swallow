@@ -97,6 +97,7 @@ extension JSONDecoder.DateDecodingStrategy {
         }
     }
 }
+
 // MARK: - Auxiliary Implementation -
 
 fileprivate extension CodingUserInfoKey {
