@@ -8,7 +8,8 @@ import Swift
 private var data: [String: [Int: Any]] = [:]
 
 public func memoize<T: Hashable, U>(
-    uniquingWith value: T, file: StaticString = #file,
+    uniquingWith value: T,
+    file: StaticString = #file,
     function: StaticString = #function,
     line: Int = #line,
     column: Int = #column,
