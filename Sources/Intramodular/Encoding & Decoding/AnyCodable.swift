@@ -15,13 +15,7 @@ public enum AnyCodable {
     case data(Data)
     case array([AnyCodable])
     case dictionary([AnyCodingKey: AnyCodable])
-    case encodable(Encodable)
-    case _unsafe(Any)
-    
-    public init(_ encodable: Encodable) {
-        self = .encodable(encodable)
-    }
-    
+        
     public var value: Any? {
         switch self {
             case .none:
@@ -42,10 +36,6 @@ public enum AnyCodable {
                 return value
             case .dictionary(let value):
                 return value
-            case .encodable(let value):
-                return value
-            case ._unsafe(let value):
-                return value
         }
     }
     
@@ -54,7 +44,7 @@ public enum AnyCodable {
             case let value as AnyCodableConvertible:
                 self = try value.toAnyCodable()
             case let value as Encodable:
-                self = .encodable(value)
+                self = try ObjectDecoder().decode(from: ObjectEncoder().encode(value))
             default:
                 self = try cast((value as? NSCoding).unwrap(), to: AnyCodable.self)
         }
@@ -143,15 +133,6 @@ extension AnyCodable: Codable {
                 try value.encode(to: encoder)
             case .dictionary(let value):
                 try value.encode(to: encoder)
-            case .encodable(let value):
-                try value.encode(to: encoder)
-            case ._unsafe(let value): do {
-                if let value = value as? Encodable {
-                    try value.encode(to: encoder)
-                } else {
-                    assertionFailure()
-                }
-            }
         }
     }
 }
@@ -199,10 +180,6 @@ extension AnyCodable: Equatable {
                 return x == y
             case (.dictionary(let x), .dictionary(let y)):
                 return x == y
-            case (.encodable, .encodable):
-                fatalError(reason: .unimplemented)
-            case (._unsafe, ._unsafe):
-                fatalError(reason: .unimplemented)
             default:
                 return false
         }
@@ -276,10 +253,6 @@ extension AnyCodable: Hashable {
                 hasher.combine(value)
             case .dictionary(let value):
                 hasher.combine(value)
-            case .encodable:
-                fatalError(reason: .unimplemented)
-            case ._unsafe:
-                fatalError(reason: .unimplemented)
         }
     }
 }
@@ -331,10 +304,6 @@ extension AnyCodable: ObjectiveCBridgeable {
                 return try value.map({ try $0.bridgeToObjectiveC() }) as NSArray
             case .dictionary(let value):
                 return try value.mapKeysAndValues({ $0.stringValue }, { try $0.bridgeToObjectiveC() }) as NSDictionary
-            case .encodable(let value):
-                return try ObjectEncoder().encode(value)
-            case ._unsafe:
-                return try Self.encodable(self).bridgeToObjectiveC()
         }
     }
 }
