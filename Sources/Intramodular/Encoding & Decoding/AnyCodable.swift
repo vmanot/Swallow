@@ -44,7 +44,7 @@ public enum AnyCodable {
             case let value as AnyCodableConvertible:
                 self = try value.toAnyCodable()
             case let value as Encodable:
-                self = try ObjectDecoder().decode(from: ObjectEncoder().encode(value))
+                self = try ObjectDecoder().decode(from: ObjectEncoder().encode(opaque: value))
             default:
                 self = try cast((value as? NSCoding).unwrap(), to: AnyCodable.self)
         }

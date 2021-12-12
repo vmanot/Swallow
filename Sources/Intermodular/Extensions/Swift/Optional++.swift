@@ -95,6 +95,7 @@ extension Optional {
 }
 
 extension Optional {
+    /// An error encountered while unwrapping an `Optional`.
     public enum UnwrappingError: CustomDebugStringConvertible, Error {
         case unexpectedlyFoundNil(at: SourceCodeLocation)
         
@@ -103,7 +104,14 @@ extension Optional {
         }
         
         public var debugDescription: String {
-            "Unexpectedly found nil while unwrapping an \(String(describing: Optional<Wrapped>.self)) value."
+            switch self {
+                case .unexpectedlyFoundNil(let location):
+                    if location == .unavailable {
+                        return "Unexpectedly found nil while unwrapping an \(String(describing: Optional<Wrapped>.self))."
+                    } else {
+                        return "Unexpectedly found nil while unwrapping an \(String(describing: Optional<Wrapped>.self)) value at \(location)."
+                    }
+            }
         }
     }
     

@@ -37,14 +37,6 @@ extension Substring {
         return split(whereSeparator: { $0 == separator })
     }
     
-    public mutating func extendBackwardsTillBeforeComponent(predicate: ((Substring) -> Bool), separator: Character) {
-        let body = splitParentAboutSelf().0
-        
-        if let last = body.components(separatedBy: separator).reversed().element(before: predicate) {
-            extend(upToAndInclusiveOf: last)
-        }
-    }
-    
     public mutating func extend(upToAndInclusiveOf substring: Substring) {
         assert(parent.contains(substring: substring))
         
@@ -53,31 +45,6 @@ extension Substring {
         } else {
             self = parent[bounds.lowerBound..<substring.bounds.upperBound]
         }
-    }
-}
-
-extension Substring {
-    public func substringOneCharacterMoreFromParentStart() -> Substring {
-        return parent[parent.index(before: bounds.lowerBound)..<bounds.upperBound]
-    }
-    
-    public func substringOneCharacterMoreFromParentEnd() -> Substring {
-        return parent[parent.index(before: bounds.lowerBound)..<bounds.upperBound]
-    }
-    
-    public func splitParentAboutSelf() -> (Substring, Substring) {
-        return (parent[..<bounds.lowerBound], parent[bounds.upperBound...])
-    }
-    
-    public func parentSubstringAboutSelf<String: StringProtocol>(from start: String, to end: String) -> Substring? {
-        let (first, last) = splitParentAboutSelf()
-        
-        guard let firstMatch = first.range(of: start, options: .backwards),
-              let secondMatch = last.range(of: end) else {
-            return nil
-        }
-        
-        return parent[firstMatch.lowerBound..<secondMatch.upperBound]
     }
 }
 

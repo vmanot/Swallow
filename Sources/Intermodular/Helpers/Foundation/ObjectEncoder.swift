@@ -25,15 +25,19 @@ public struct ObjectEncoder: Initiable {
             throw error
         } catch {
             let description = "Unable to encode the given top-level value to Object."
-            let context = EncodingError.Context(codingPath: [],
-                                                debugDescription: description,
-                                                underlyingError: error)
+
+            let context = EncodingError.Context(
+                codingPath: [],
+                debugDescription: description,
+                underlyingError: error
+            )
+
             throw EncodingError.invalidValue(value, context)
         }
     }
     
     public func encode(
-        _ value: Encodable,
+        opaque value: Encodable,
         userInfo: [CodingUserInfoKey: Any] = [:]
     ) throws -> NSCoding {
         try value.encode(to: self, userInfo: userInfo)

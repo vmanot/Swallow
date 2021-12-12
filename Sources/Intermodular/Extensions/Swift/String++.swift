@@ -21,6 +21,10 @@ extension String {
 }
 
 extension String {
+    public mutating func replaceSubstring(_ substring: Substring, with replacement: String) {
+        replaceSubrange(substring.bounds, with: replacement)
+    }
+    
     public mutating func replace(substrings: [Substring], with string: String) {
         replaceSubranges(substrings.lazy.map({ $0.bounds }), with: substrings.lazy.map({ _ in string }))
     }

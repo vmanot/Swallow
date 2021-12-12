@@ -52,25 +52,15 @@ extension BoundInitiableRangeProtocol {
 }
 
 extension HalfOpenRangeProtocol {
+    @inlinable
+    public init(_ bound: Bound) where Self: BoundInitiableRangeProtocol, Bound: Strideable {
+        self.init(bounds: (lower: bound, upper: bound.successor()))
+    }
+
     public func overlaps(with other: Self) -> Bool {
         return false
-            || (other.lowerBound >= lowerBound) && (other.lowerBound <= upperBound)
-            || (other.upperBound <= upperBound) && (other.upperBound >= lowerBound)
-    }
-}
-
-// MARK: - Helpers -
-
-extension HalfOpenRangeProtocol where Self: BoundInitiableRangeProtocol {
-    public func extendedByOne(advance: ((Bound) -> Bound)) -> Self {
-        return .init(lowerBound: lowerBound, upperBound: advance(upperBound))
-    }
-}
-
-extension HalfOpenRangeProtocol where Self: BoundInitiableRangeProtocol, Bound: Strideable {
-    @inlinable
-    public init(_ bound: Bound) {
-        self.init(bounds: (lower: bound, upper: bound.successor()))
+        || (other.lowerBound >= lowerBound) && (other.lowerBound <= upperBound)
+        || (other.upperBound <= upperBound) && (other.upperBound >= lowerBound)
     }
 }
 
