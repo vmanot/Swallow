@@ -9,10 +9,12 @@ public struct ObjectDecoder: Initiable {
     public init() {
         
     }
-    
-    public func decode(opaque type: Decodable.Type,
-                       from object: Any,
-                       userInfo: [CodingUserInfoKey: Any] = [:]) throws -> Decodable {
+
+    public func decode(
+        opaque type: Decodable.Type,
+        from object: Any,
+        userInfo: [CodingUserInfoKey: Any] = [:]
+    ) throws -> Decodable {
         do {
             return try ObjectDecoder.Decoder(object, options, userInfo).singleValueContainer().decode(opaque: type)
         } catch let error as DecodingError {

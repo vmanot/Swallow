@@ -15,7 +15,9 @@ public enum AnyCodable {
     case data(Data)
     case array([AnyCodable])
     case dictionary([AnyCodingKey: AnyCodable])
-        
+
+    case _lazy(Codable)
+
     public var value: Any? {
         switch self {
             case .none:
@@ -36,18 +38,28 @@ public enum AnyCodable {
                 return value
             case .dictionary(let value):
                 return value
+            case ._lazy(let value):
+                return value
         }
     }
-    
+
+    public init(_ value: Codable) {
+        self = ._lazy(value)
+    }
+
     public init(_ value: Any) throws {
         switch value {
             case let value as AnyCodableConvertible:
                 self = try value.toAnyCodable()
-            case let value as Encodable:
-                self = try ObjectDecoder().decode(from: ObjectEncoder().encode(opaque: value))
+            case let value as Codable:
+                self = ._lazy(value)
             default:
                 self = try cast((value as? NSCoding).unwrap(), to: AnyCodable.self)
         }
+    }
+
+    public init(destructuring value: Codable) throws {
+        self = try ObjectDecoder().decode(AnyCodable.self, from: ObjectEncoder().encode(opaque: value))
     }
 }
 
@@ -132,6 +144,8 @@ extension AnyCodable: Codable {
             case .array(let value):
                 try value.encode(to: encoder)
             case .dictionary(let value):
+                try value.encode(to: encoder)
+            case ._lazy(let value):
                 try value.encode(to: encoder)
         }
     }
@@ -253,6 +267,8 @@ extension AnyCodable: Hashable {
                 hasher.combine(value)
             case .dictionary(let value):
                 hasher.combine(value)
+            case ._lazy(let value):
+                try! ObjectDecoder().decode(AnyCodable.self, from: ObjectEncoder().encode(opaque: value)).hash(into: &hasher)
         }
     }
 }
@@ -304,6 +320,8 @@ extension AnyCodable: ObjectiveCBridgeable {
                 return try value.map({ try $0.bridgeToObjectiveC() }) as NSArray
             case .dictionary(let value):
                 return try value.mapKeysAndValues({ $0.stringValue }, { try $0.bridgeToObjectiveC() }) as NSDictionary
+            case ._lazy(let value):
+                return try Self(destructuring: value)._bridgeToObjectiveC()
         }
     }
 }
