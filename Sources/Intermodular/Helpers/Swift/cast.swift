@@ -6,8 +6,15 @@ import Darwin
 import Foundation
 import Swift
 
-public enum RuntimeCastError: Error {
+public enum RuntimeCastError: CustomStringConvertible, Error {
     case invalidTypeCast(from: Any.Type, to: Any.Type, value: Any, location: SourceCodeLocation)
+    
+    public var description: String {
+        switch self {
+            case let .invalidTypeCast(sourceType, destinationType, _, _):
+                return "Could not cast value of type '\(sourceType)' to '\(destinationType)'"
+        }
+    }
 }
 
 @inlinable
@@ -20,14 +27,20 @@ public func castCore<T, U>(_ value: T, to: U.Type) -> U? {
 }
 
 @inlinable
-public func cast<T, U>(_ value: T, to type: U.Type = U.self, file: StaticString = #file, function: StaticString = #function, line: UInt = #line, column: UInt = #column) throws -> U {
+public func cast<T, U>(
+    _ value: T,
+    to type: U.Type = U.self,
+    file: StaticString = #file,
+    function: StaticString = #function,
+    line: UInt = #line,
+    column: UInt = #column
+) throws -> U {
     guard let result = value as? U else {
-        throw RuntimeCastError
-            .invalidTypeCast(
-                from: Swift.type(of: value),
-                to: type,
-                value: value,
-                location: .init(file: file, function: function, line: line, column: column)
+        throw RuntimeCastError.invalidTypeCast(
+            from: Swift.type(of: value),
+            to: type,
+            value: value,
+            location: .init(file: file, function: function, line: line, column: column)
         )
     }
     

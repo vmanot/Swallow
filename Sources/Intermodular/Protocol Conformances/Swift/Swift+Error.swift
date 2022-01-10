@@ -6,20 +6,18 @@ import Swift
 
 /// A type-erased error.
 public struct AnyError: CustomDebugStringConvertible, Error, Hashable {
-    public typealias Value = Error
-    
-    public let value: Value
+    public let base: Error
     
     public var description: String {
-        return CustomStringConvertibleOnly(value).description
+        return CustomStringConvertibleOnly(base).description
     }
     
     public var localizedDescription: String {
-        return value.localizedDescription
+        String(describing: base)
     }
     
-    public init(_ value: Value) {
-        self.value = (value as? AnyError)?.value ?? value
+    public init(_ base: Error) {
+        self.base = (base as? AnyError)?.base ?? base
     }
     
     public init(description: String) {
@@ -27,15 +25,15 @@ public struct AnyError: CustomDebugStringConvertible, Error, Hashable {
     }
     
     public func hash(into hasher: inout Hasher) {
-        if let value = try? cast(value, to: _opaque_Hashable.self) {
+        if let value = try? cast(base, to: _opaque_Hashable.self) {
             value.hash(into: &hasher)
         } else {
-            value.localizedDescription.hash(into: &hasher)
+            String(describing: base).hash(into: &hasher)
         }
     }
     
     public func `throw`() throws -> Never {
-        throw value
+        throw base
     }
     
     public static func == (lhs: Self, rhs: Self) -> Bool {
