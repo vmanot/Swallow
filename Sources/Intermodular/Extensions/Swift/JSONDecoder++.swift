@@ -38,7 +38,7 @@ extension JSONDecoder {
         do {
             return try decode(type, from: data)
         } catch {
-            if error.isFragmentDecodeError {
+            if error.isFragmentDecodingError {
                 let jsonObject = try JSONSerialization.jsonObject(with: data, options: .allowFragments)
                 let boxedData = try JSONSerialization.data(withJSONObject: [jsonObject])
                 let decoder = copy()
@@ -56,11 +56,13 @@ extension JSONDecoder {
     
     private func copy() -> JSONDecoder {
         let decoder = JSONDecoder()
+        
         decoder.dataDecodingStrategy = dataDecodingStrategy
         decoder.dateDecodingStrategy = dateDecodingStrategy
         decoder.keyDecodingStrategy = keyDecodingStrategy
         decoder.nonConformingFloatDecodingStrategy = nonConformingFloatDecodingStrategy
         decoder.userInfo = userInfo
+        
         return decoder
     }
 }
@@ -105,7 +107,7 @@ fileprivate extension CodingUserInfoKey {
 }
 
 fileprivate extension Error {
-    var isFragmentDecodeError: Bool {
+    var isFragmentDecodingError: Bool {
         guard let error = self as? DecodingError, case let DecodingError.dataCorrupted(context) = error else {
             return false
         }
