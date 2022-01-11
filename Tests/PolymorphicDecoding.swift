@@ -10,7 +10,7 @@ import XCTest
 
 final class PolymorphicDecoding: XCTestCase {
     func test() throws {
-        enum AnimalType: String, CodingTypeDiscriminator {
+        enum AnimalType: String, Codable, CodingTypeDiscriminator {
             case lion
             case monkey
             
