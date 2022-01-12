@@ -11,13 +11,25 @@ public enum Preprocessor {
         public var file: String
         public var function: String
         public var line: UInt
-        public var column: UInt
+        public var column: UInt?
         
         public init(
             file: StaticString = #file,
             function: StaticString = #function,
             line: UInt = #line,
-            column: UInt = #column
+            column: UInt? = #column
+        ) {
+            self.file = file.description
+            self.function = function.description
+            self.line = line
+            self.column = column
+        }
+        
+        public init(
+            file: String = #file,
+            function: String = #function,
+            line: UInt = #line,
+            column: UInt? = #column
         ) {
             self.file = file.description
             self.function = function.description
@@ -26,7 +38,11 @@ public enum Preprocessor {
         }
         
         public var description: String {
-            return "file: \(file.description), function: \(function), line: \(line), column: \(column)"
+            if let column = column {
+                return "file: \(file.description), function: \(function), line: \(line), column: \(column)"
+            } else {
+                return "file: \(file.description), function: \(function), line: \(line)"
+            }
         }
     }
 }

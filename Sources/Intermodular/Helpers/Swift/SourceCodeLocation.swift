@@ -18,7 +18,16 @@ public enum SourceCodeLocation: CustomStringConvertible, Hashable, Static {
         file: StaticString = #file,
         function: StaticString = #function,
         line: UInt = #line,
-        column: UInt = #column
+        column: UInt? = #column
+    ) {
+        self.init(Preprocessor.Point(file: file, function: function, line: line, column: column))
+    }
+    
+    public init(
+        file: String = #file,
+        function: String = #function,
+        line: UInt = #line,
+        column: UInt? = #column
     ) {
         self.init(Preprocessor.Point(file: file, function: function, line: line, column: column))
     }
