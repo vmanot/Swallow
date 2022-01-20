@@ -37,6 +37,18 @@ public struct DateValue<Formatter: DateCodingStrategy>: Codable {
     }
 }
 
+extension DateValue: CustomStringConvertible {
+    public var description: String {
+        wrappedValue.description
+    }
+}
+
+extension DateValue: CustomDebugStringConvertible {
+    public var debugDescription: String {
+        wrappedValue.debugDescription
+    }
+}
+
 extension DateValue: Equatable where Formatter.RawValue: Equatable {
     
 }

@@ -51,3 +51,18 @@ extension Unicode.ByteOrderMark {
         return true
     }
 }
+
+// MARK: - API -
+
+/// https://gist.github.com/krzyzanowskim/f2ca3e1e4f6dfd490fc35630b823eaac
+extension String {
+    /// Remove the BOM character if present.
+    public mutating func removeByteOrderMark()  {
+        self = removingBOMCharacter()
+    }
+    
+    /// Returns the string removing the BOM character if present.
+    public func removingBOMCharacter() -> Self {
+        dropPrefixIfPresent("\u{feff}")
+    }
+}

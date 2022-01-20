@@ -17,7 +17,7 @@ extension Sequence {
 }
 
 extension Sequence {
-    public func group<ID: Hashable>(
+    public func grouped<ID: Hashable>(
         by identify: (Element) throws -> ID
     ) rethrows -> [ID: [Element]] {
         var result: [ID: [Element]] = .init(minimumCapacity: underestimatedCount)
@@ -72,6 +72,14 @@ extension Sequence {
     
     public func element(atReverseCount count: Int) -> Element? {
         return SequenceOnly(self).dropLast(count).last
+    }
+}
+
+// MARK: duplicate
+
+extension Sequence {
+    public func duplicates<T: Hashable>(groupedBy keyPath: KeyPath<Element, T>) -> [T: [Element]] {
+        Dictionary(grouping: self, by: { $0[keyPath: keyPath] }).filter({ $1.count > 1 })
     }
 }
 

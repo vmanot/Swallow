@@ -5,7 +5,9 @@
 import Foundation
 import Swift
 
+/// A type that can convert itself into a binary-data representation.
 public protocol DataEncodable: AnyProtocol {
+    /// The strategy to employ while converting to a binary-data representation.
     associatedtype DataEncodingStrategy
     
     func data(using _: DataEncodingStrategy) throws -> Data
@@ -16,6 +18,7 @@ public protocol DataEncodableWithDefaultStrategy: DataEncodable {
 }
 
 public protocol DataDecodable: AnyProtocol {
+    /// The strategy to employ while decoding from a binary-data representation.
     associatedtype DataDecodingStrategy
     
     init(data _: Data, using _: DataDecodingStrategy) throws
