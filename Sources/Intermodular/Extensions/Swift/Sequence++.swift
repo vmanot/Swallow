@@ -17,7 +17,7 @@ extension Sequence {
 }
 
 extension Sequence {
-    public func grouped<ID: Hashable>(
+    public func group<ID: Hashable>(
         by identify: (Element) throws -> ID
     ) rethrows -> [ID: [Element]] {
         var result: [ID: [Element]] = .init(minimumCapacity: underestimatedCount)
