@@ -20,6 +20,10 @@ public struct DateValue<Formatter: DateCodingStrategy>: Codable {
         self.wrappedValue = wrappedValue
     }
     
+    public var projectedValue: Self {
+        self
+    }
+    
     public init?(rawValue: Formatter.RawValue) {
         if let wrappedValue = try? Formatter.decode(rawValue) {
             self.wrappedValue = wrappedValue
@@ -34,6 +38,15 @@ public struct DateValue<Formatter: DateCodingStrategy>: Codable {
     
     public func encode(to encoder: Encoder) throws {
         try Formatter.encode(wrappedValue).encode(to: encoder)
+    }
+    
+    public func formatted(with format: String, in calendar: Calendar = .current) -> String {
+        let dateFormatter = DateFormatter()
+        
+        dateFormatter.calendar = calendar
+        dateFormatter.dateFormat = format
+        
+        return dateFormatter.string(from: wrappedValue)
     }
 }
 
