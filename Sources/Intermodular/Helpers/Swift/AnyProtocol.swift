@@ -30,6 +30,15 @@ extension AnyProtocol {
         
         return self
     }
+    
+    @inlinable
+    public func withMutableScope(_ body: ((inout Self) throws -> Void)) rethrows -> Self {
+        var result = self
+        
+        try body(&result)
+        
+        return result
+    }
 }
 
 extension AnyProtocol {
