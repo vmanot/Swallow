@@ -143,8 +143,13 @@ extension AnyCodable: Codable {
                 try value.encode(to: encoder)
             case .array(let value):
                 try value.encode(to: encoder)
-            case .dictionary(let value):
-                try value.encode(to: encoder)
+            case .dictionary(let value): do {
+                var container = encoder.container(keyedBy: AnyCodingKey.self)
+
+                for (key, value) in value {
+                    try container.encode(value, forKey: key)
+                }
+            }
             case ._lazy(let value):
                 try value.encode(to: encoder)
         }
