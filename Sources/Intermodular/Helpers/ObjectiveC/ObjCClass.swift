@@ -34,7 +34,7 @@ extension ObjCClass {
     }
 }
 
-// MARK: - Protocol Conformances -
+// MARK: - Conformances -
 
 extension ObjCClass: CaseIterable {
     static var allCases: [ObjCClass] {

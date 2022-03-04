@@ -44,7 +44,7 @@ extension DistanceIndexedCollection: Collection {
     }
 }
 
-// MARK: - Conditional Protocol Conformances -
+// MARK: - Conditional Conformances -
 
 extension DistanceIndexedCollection: CustomStringConvertible where Value: CustomStringConvertible {
     public var description: String {
