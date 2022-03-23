@@ -208,6 +208,23 @@ extension Pair: Decodable where T: Decodable, U: Decodable {
     }
 }
 
+extension Pair: Hashable where T: Hashable, U: Hashable {
+    public func hash(into hasher: inout Hasher) {
+        value.0.hash(into: &hasher)
+        value.1.hash(into: &hasher)
+    }
+}
+
+extension Pair: Equatable where T: Equatable, U: Equatable {
+    public static func == (lhs: Pair<T, U>, rhs: Pair<T, U>) -> Bool {
+        lhs.value == rhs.value
+    }
+}
+
+extension Pair: Sendable where T: Sendable, U: Sendable {
+    
+}
+
 public struct SomeBidirectionalIndex<C: BidirectionalCollection>: Wrapper, Strideable2 {
     public typealias Stride = Int
     public typealias Value = (C, C.Index)

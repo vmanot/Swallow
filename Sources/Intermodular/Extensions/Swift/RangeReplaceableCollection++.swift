@@ -143,6 +143,7 @@ extension RangeReplaceableCollection {
         }
     }
     
+    @_disfavoredOverload
     @discardableResult
     public mutating func remove<S: Sequence>(at indices: S) -> [Element] where S.Element == Index {
         var result: [Element] = []

@@ -69,6 +69,10 @@ extension MaybeKnown: Hashable where Value: Hashable {
     
 }
 
+extension MaybeKnown: Sendable where Value: Sendable {
+    
+}
+
 extension MaybeKnown {
     public enum _ComparisonType {
         case unknown

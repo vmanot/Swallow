@@ -3,26 +3,39 @@
 //
 
 import Swift
+import SwiftUI
 
 @resultBuilder
-open class ArrayBuilder<Element> {
-    @inlinable
-    public static func buildBlock() -> [Element] {
+open class ArrayBuilder {
+    public static func buildBlock<Element>() -> [Element] {
         []
     }
 
-    @inlinable
-    public static func buildBlock(_ element: Element) -> [Element] {
+    public static func buildBlock<Element>(_ element: Element) -> [Element] {
         [element]
     }
 
-    @inlinable
-    public static func buildBlock(_ elements: Element...) -> [Element] {
+    public static func buildBlock<Element>(_ elements: Element...) -> [Element] {
         elements
     }
 
-    @inlinable
-    public static func buildBlock(_ elements: [Element]) -> [Element] {
+    public static func buildBlock<Element>(_ elements: [Element]) -> [Element] {
         elements
+    }
+    
+    public static func buildIf<Element>(_ content: Element?) -> [Element] {
+        if let content = content {
+            return [content]
+        } else {
+            return []
+        }
+    }
+    
+    public static func buildEither<Element>(first: Element) -> [Element] {
+        [first]
+    }
+    
+    public static func buildEither<Element>(second: Element) -> [Element] {
+        [second]
     }
 }
