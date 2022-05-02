@@ -12,16 +12,16 @@ public protocol OpaquePointerInitiable {
 
 public protocol Pointer: Hashable, OpaquePointerInitiable, Strideable {
     associatedtype Pointee
-
+    
     var pointee: Pointee { get }
-
+    
     var opaquePointerRepresentation: OpaquePointer { get }
     var unsafePointerRepresentation: UnsafePointer<Pointee> { get }
     var unsafeMutablePointerRepresentation: UnsafeMutablePointer<Pointee> { get }
-
+    
     init(_: UnsafeMutablePointer<Pointee>)
     init?(_: UnsafeMutablePointer<Pointee>?)
-
+    
     func pointee(at _: Stride) -> Pointee
 }
 
@@ -31,15 +31,15 @@ extension Pointer {
     public var unsafePointerRepresentation: UnsafePointer<Pointee> {
         return .init(opaquePointerRepresentation)
     }
-
+    
     public var unsafeMutablePointerRepresentation: UnsafeMutablePointer<Pointee> {
         return .init(opaquePointerRepresentation)
     }
-
+    
     public func pointee(at stride: Stride) -> Pointee {
         return advanced(by: stride).pointee
     }
-
+    
     public subscript(offset: Stride) -> Pointee {
         @inlinable get {
             return pointee(at: offset)
@@ -54,13 +54,13 @@ extension Pointer {
     public init<P: MutablePointer>(_ pointer: P) where P.Pointee == Pointee {
         self.init(pointer.opaquePointerRepresentation)
     }
-
+    
     @inlinable
     public init?<P: MutablePointer>(_ pointer: P?) where P.Pointee == Pointee {
         guard let pointer = pointer else {
             return nil
         }
-
+        
         self.init(pointer)
     }
 }
@@ -78,11 +78,11 @@ extension Pointer {
     public var nativeWordPointerRepresentation: UnsafePointer<NativeWord> {
         return .init(opaquePointerRepresentation)
     }
-
+    
     public var rawRepresentation: UnsafeRawPointer {
         return .init(opaquePointerRepresentation)
     }
-
+    
     public var mutableRawRepresentation: UnsafeMutableRawPointer {
         return .init(opaquePointerRepresentation)
     }
@@ -107,7 +107,7 @@ extension Pointer {
     public static func to(_ pointee: inout Pointee) -> Self {
         return .init(withUnsafeMutablePointer(to: &pointee, id))
     }
-
+    
     @inlinable
     public static func to<T>(assumingLayoutCompatible value: inout T) -> Self {
         return .init(UnsafePointer.to(&value).opaquePointerRepresentation)
@@ -134,36 +134,4 @@ public func reinterpretCast<T: Pointer, U: Pointer>(_ pointer: T) -> U? {
 @inlinable
 public func reinterpretCast<T: Pointer, U: Pointer>(_ pointer: T?) -> U? {
     return pointer.map(reinterpretCast)
-}
-
-// MARK: - Implementation Forwarding -
-
-extension ImplementationForwarder where Self: Pointer, ImplementationProvider: Pointer, Self.Pointee == ImplementationProvider.Pointee, Self.Stride == ImplementationProvider.Stride {
-    public var pointee: Pointee {
-        return implementationProvider.pointee
-    }
-
-    public var opaquePointerRepresentation: OpaquePointer {
-        return implementationProvider.opaquePointerRepresentation
-    }
-
-    public var unsafePointerRepresentation: UnsafePointer<Pointee> {
-        return implementationProvider.unsafePointerRepresentation
-    }
-
-    public var unsafeMutablePointerRepresentation: UnsafeMutablePointer<Pointee> {
-        return implementationProvider.unsafeMutablePointerRepresentation
-    }
-
-    public init(_ pointer: UnsafeMutablePointer<Pointee>) {
-        self.init(implementationProvider: .init(pointer))
-    }
-
-    public init?(_ pointer: UnsafeMutablePointer<Pointee>?) {
-        self.init(implementationProvider: ImplementationProvider(pointer))
-    }
-
-    public func pointee(at stride: Stride) -> Pointee {
-        return implementationProvider.pointee(at: stride)
-    }
 }

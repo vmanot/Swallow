@@ -4,6 +4,7 @@
 
 import Swift
 
+/// A type that represents a bit.
 public enum Bit: Byte {
     case zero = 0
     case one = 1
@@ -14,7 +15,7 @@ public enum Bit: Byte {
     }
 }
 
-// MARK: - Conformances - 
+// MARK: - Conformances -
 
 extension Bit: Boolean {
     @inlinable
@@ -62,46 +63,22 @@ extension Trivial {
     public static var sizeInBits: Int {
         return sizeInBytes * 8
     }
-        
-    @inlinable
-    public var bits: [Bit] {
-        get {
-            var result = [Bit](capacity: Self.sizeInBits)
-            
-            for byte in bytes {
-                result += byte.bitPattern.0
-                result += byte.bitPattern.1
-                result += byte.bitPattern.2
-                result += byte.bitPattern.3
-                result += byte.bitPattern.4
-                result += byte.bitPattern.5
-                result += byte.bitPattern.6
-                result += byte.bitPattern.7
-            }
-            
-            return result
-        } set {
-            self = Self(bits: newValue).forceUnwrap()
-        }
-    }
     
     @inlinable
-    public init?<S: Sequence>(bits: S) where S.Element == Bit {
-        TODO.whole(.fix)
+    public var bits: [Bit] {
+        var result = [Bit](capacity: Self.sizeInBits)
         
-        fatalError()
+        for byte in bytes {
+            result += byte.bitPattern.0
+            result += byte.bitPattern.1
+            result += byte.bitPattern.2
+            result += byte.bitPattern.3
+            result += byte.bitPattern.4
+            result += byte.bitPattern.5
+            result += byte.bitPattern.6
+            result += byte.bitPattern.7
+        }
         
-        /*self.init(bytes: ChunkSequence(Array(bits), chunkSize: 8).map({
-            Byte(bitPattern: (
-                $0[0],
-                $0[1],
-                $0[2],
-                $0[3],
-                $0[4],
-                $0[5],
-                $0[6],
-                $0[7])
-            )
-        }))*/
+        return result
     }
 }

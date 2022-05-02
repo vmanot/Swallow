@@ -4,8 +4,6 @@
 
 import Swift
 
-public typealias Equatable2 = _opaque_Equatable & Equatable
-
 public protocol _opaque_Equatable: AnyProtocol {
     func _opaque_Equatable_isEqual(to other: Any) -> Bool?
 

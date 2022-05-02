@@ -10,6 +10,8 @@ public enum Trilean: Int8, Hashable {
     case `true`
 }
 
+public let unknown: Trilean = .unknown
+
 // MARK: - Conformances -
 
 extension Trilean: Boolean {
@@ -49,7 +51,7 @@ extension Trilean: MutableWrapper {
                     return true
                 case .false:
                     return false
-                
+                    
                 default:
                     return nil
             }
@@ -81,7 +83,3 @@ extension Trilean {
         return (lhs == true || rhs == true) ? true : ((lhs == .unknown || rhs == .unknown) ? .unknown : false)
     }
 }
-
-// MARK: - Helpers -
-
-public let unknown: Trilean = .unknown

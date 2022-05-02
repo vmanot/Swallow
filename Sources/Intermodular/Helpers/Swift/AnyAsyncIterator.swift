@@ -4,6 +4,7 @@
 
 import Swift
 
+/// A type-erased asynchronous iterator of `Element`.
 public struct AnyAsyncIterator<Element>: AsyncIteratorProtocol {
     let _next: () async throws -> Element?
     
@@ -22,5 +23,4 @@ public struct AnyAsyncIterator<Element>: AsyncIteratorProtocol {
     public mutating func next() async throws -> Element? {
         try await _next()
     }
-    
 }

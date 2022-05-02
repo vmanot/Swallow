@@ -5,7 +5,8 @@
 import Swift
 
 extension Mirror {
+    /// The `children` of this `Mirror` enumerated as a dictionary.
     public var dictionaryRepresentation: [String: Any] {
-        return children.enumerated()._map({ (key: $1.label.or(".\(describe($0))"), value: $1.value) })
+        children.enumerated()._map({ (key: $1.label ?? ".\(describe($0))", value: $1.value) })
     }
 }

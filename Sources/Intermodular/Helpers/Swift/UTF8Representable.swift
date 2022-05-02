@@ -16,7 +16,7 @@ public protocol UTF8Representable {
     
     func nullTerminatedUTF8String() -> NullTerminatedUTF8String
     
-    mutating func withMutableCString<T>(_ f: ((NullTerminatedUTF8String) throws -> T)) rethrows -> T
+    mutating func withMutableCString<T>(_ body: ((NullTerminatedUTF8String) throws -> T)) rethrows -> T
 }
 
 // MARK: - Extensions -

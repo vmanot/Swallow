@@ -159,12 +159,12 @@ public struct PredicatedSequencePrefix<S: Sequence>: Sequence {
         }
 
         public mutating func next() -> Element? {
-            return base.next().filter({ !isTerminator($0) })
+            base.next().flatMap({ !isTerminator($0) ? nil : $0 })
         }
     }
 
     public func makeIterator() -> Iterator {
-        return .init(base.makeIterator(), isTerminator: isTerminator)
+        .init(base.makeIterator(), isTerminator: isTerminator)
     }
 }
 

@@ -4,6 +4,7 @@
 
 import Swift
 
+/// A type-erased asynchronous sequence.
 public struct AnyAsyncSequence<Element>: AsyncSequence {
     let _makeAsyncIterator: () -> AnyAsyncIterator<Element>
     

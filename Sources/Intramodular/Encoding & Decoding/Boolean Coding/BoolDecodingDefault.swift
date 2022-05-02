@@ -16,7 +16,7 @@ import Swift
 /// }
 /// ```
 @propertyWrapper
-public struct BoolDecodingDefault<Value: StaticBool>: Codable, Hashable {
+public struct BoolDecodingDefault<Value: StaticValue>: Codable, Hashable where Value.Value == Bool {
     public var wrappedValue: Bool
     
     public init(wrappedValue: Bool) {

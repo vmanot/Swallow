@@ -15,6 +15,10 @@ public final class AutodeallocatingUnsafeBufferPointer<T>: ImplementationForward
     public var isAutodeallocating: Trilean
     public var value: Value
     
+    public var baseAddress: BaseAddressPointer? {
+        value.baseAddress
+    }
+
     public init(_ value: Value, isAutodeallocating: Trilean) {
         self.value = value
         self.isAutodeallocating = isAutodeallocating
@@ -41,6 +45,10 @@ public final class AutodeallocatingUnsafeMutableBufferPointer<T>: Implementation
     
     public var isAutodeallocating: Trilean
     public var value: Value
+    
+    public var baseAddress: BaseAddressPointer? {
+        value.baseAddress
+    }
     
     public init(_ value: Value, isAutodeallocating: Trilean) {
         self.value = value

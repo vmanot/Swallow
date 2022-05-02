@@ -145,11 +145,3 @@ extension AnyProtocol {
         return .init(self)
     }
 }
-
-// MARK: - Implementation Forwarding -
-
-extension ImplementationForwarder where Self: Trivial, ImplementationProvider: Trivial {
-    public init(null: Void = ()) {
-        self.init(implementationProvider: .init(null: ()))
-    }
-}

@@ -149,35 +149,3 @@ public func reinterpretCast<T: InitiableBufferPointer, U: InitiableBufferPointer
 public func reinterpretCast<T: InitiableBufferPointer, U: InitiableBufferPointer>(_ x: T) -> U {
     return U.init(start: -?>x.baseAddress, count: (x.count.toDouble() * MemoryLayout<T.Element>.size.toDouble() / MemoryLayout<U.Element>.size.toDouble()).toInt())
 }
-
-// MARK: - Implementation Forwarding -
-
-extension ImplementationForwarder where Self: InitiableBufferPointer, ImplementationProvider: InitiableBufferPointer, Self.BaseAddressPointer == ImplementationProvider.BaseAddressPointer {
-    public init(start baseAddress: BaseAddressPointer?, count: Int) {
-        self.init(implementationProvider: .init(start: baseAddress, count: count))
-    }
-
-    public static func allocate(capacity: Int) -> Self {
-        return .init(implementationProvider: .allocate(capacity: capacity))
-    }
-
-    public static func initializing(from baseAddress: BaseAddressPointer, count: Int) -> Self {
-        return .init(implementationProvider: .initializing(from: baseAddress, count: count))
-    }
-
-    public static func initializing<S: Sequence>(from source: S) -> Self where S.Element == Element {
-        return .init(implementationProvider: .initializing(from: source))
-    }
-
-    public static func initializing<S: Sequence>(from source: S, count: Int) -> Self where S.Element == Element {
-        return .init(implementationProvider: .initializing(from: source, count: count))
-    }
-
-    public static func initializing<C: Collection>(from source: C) -> Self where C.Element == Element {
-        return .init(implementationProvider: .initializing(from: source))
-    }
-
-    public static func initializing<C: Collection>(from source: C, count: Int) -> Self where C.Element == Element {
-        return .init(implementationProvider: .initializing(from: source, count: count))
-    }
-}

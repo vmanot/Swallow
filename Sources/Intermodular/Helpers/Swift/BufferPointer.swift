@@ -7,7 +7,7 @@ import Swift
 
 public protocol BufferPointer: Collection {
     associatedtype BaseAddressPointer: Pointer where BaseAddressPointer.Pointee == Element, BaseAddressPointer.Stride == Int
-
+    
     var baseAddress: BaseAddressPointer? { get }
 }
 
@@ -27,19 +27,19 @@ extension BufferPointer {
     public var unsafePointerRepresentation: UnsafePointer<Element>? {
         return reinterpretCast(baseAddress?.unsafePointerRepresentation)
     }
-
+    
     public var unsafeRawPointerRepresentation: UnsafeRawPointer? {
         return reinterpretCast(baseAddress)
     }
-
+    
     public var unsafeBufferPointerRepresentation: UnsafeBufferPointer<Element> {
         return UnsafeBufferPointer(start: UnsafePointer(baseAddress), count: numericCast(count))
     }
-
+    
     public var unsafeMutablePointerRepresentation: UnsafeMutablePointer<Element>? {
         return reinterpretCast(baseAddress?.unsafeMutablePointerRepresentation)
     }
-
+    
     public var unsafeMutableBufferPointerRepresentation: UnsafeMutableBufferPointer<Element> {
         return UnsafeMutableBufferPointer(start: UnsafeMutablePointer<Element>(baseAddress?.opaquePointerRepresentation), count: numericCast(count))
     }
@@ -74,13 +74,5 @@ extension UnsafePointer {
 extension UnsafeMutablePointer {
     public func buffer<Integer: BinaryInteger>(withCount count: Integer) -> UnsafeMutableBufferPointer<Pointee> {
         return UnsafeMutableBufferPointer(start: self, count: count)
-    }
-}
-
-// MARK: - Implementation Forwarding -
-
-extension ImplementationForwarder where Self: BufferPointer, ImplementationProvider: BufferPointer, Self.BaseAddressPointer == ImplementationProvider.BaseAddressPointer {
-    public var baseAddress: BaseAddressPointer? {
-        return implementationProvider.baseAddress
     }
 }

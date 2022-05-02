@@ -4,7 +4,7 @@
 
 import Swift
 
-// Allows any arbitrary `String` to be used as a coding key.
+/// Allows any arbitrary `String` to be used as a coding key.
 public struct AnyStringKey: Codable, CodingKey, ExpressibleByStringLiteral, Hashable {
     public var stringValue: String
 

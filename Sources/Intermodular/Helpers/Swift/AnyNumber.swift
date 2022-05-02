@@ -3,7 +3,9 @@
 //
 
 import CoreFoundation
+#if canImport(CoreGraphics)
 import CoreGraphics
+#endif
 import Foundation
 import Swift
 

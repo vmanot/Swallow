@@ -4,11 +4,14 @@
 
 import Swift
 
-public protocol Static: AnyProtocol {
+/// A type that represents a static construct.
+///
+/// For e.g. `StaticString`.
+public protocol StaticType: AnyProtocol {
     
 }
 
-public protocol StaticValue: Static {
+public protocol StaticValue: StaticType {
     associatedtype Value
     
     static var value: Value { get }

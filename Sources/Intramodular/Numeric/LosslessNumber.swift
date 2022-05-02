@@ -17,7 +17,8 @@ public struct LosslessNumber<N: Number>: Decodable, Equatable, Hashable {
         wrappedValue = try Result(
             try .init(from: decoder),
             or: try .lossless(from: try AnyNumber(from: decoder))
-        ).unwrap()
+        )
+        .get()
     }
 }
 
@@ -35,7 +36,7 @@ public struct LosslessNumberRepresentable<T: RawRepresentable & Hashable>: Decod
                 try .init(from: decoder),
                 or: try .lossless(from: try AnyNumber(from: decoder))
             )
-            .unwrap()
+            .get()
         )
         .unwrap()
     }
@@ -61,7 +62,7 @@ public struct OptionalLosslessNumber<N: Number>: Decodable, Hashable {
                 try .init(from: decoder),
                 or: try .lossless(from: try AnyNumber(from: decoder))
             )
-            .unwrap()
+            .get()
         }
     }
 }

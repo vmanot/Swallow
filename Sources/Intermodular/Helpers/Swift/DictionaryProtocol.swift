@@ -50,11 +50,11 @@ public protocol KeyExposingMutableDictionaryProtocol: KeysExposingDictionaryProt
 
 extension DictionaryProtocol {
     public func value(forKey key: DictionaryKey) -> DictionaryValue? {
-        return self[key]
+        self[key]
     }
     
     public subscript(key: DictionaryKey?) -> DictionaryValue? {
-        return key.map(value).nilIfNil
+        key.flatMap({ self.value(forKey: $0) })
     }
 }
 
@@ -79,9 +79,20 @@ extension MutableDictionaryProtocol {
         return result
     }
 
+    public subscript(
+        key: DictionaryKey,
+        default defaultValue: @autoclosure () -> DictionaryValue
+    ) -> DictionaryValue {
+        get {
+            self[key] ?? defaultValue()
+        } set {
+            self[key] = newValue
+        }
+    }
+    
     public subscript(key: DictionaryKey?) -> DictionaryValue? {
         get {
-            return key.map(value).nilIfNil
+            key.flatMap({ self.value(forKey: $0) })
         } set {
             if let key = key {
                 self[key] = newValue
@@ -120,27 +131,5 @@ extension DictionaryProtocol {
     @inlinable
     public func contains(key: DictionaryKey) -> Bool {
         return self[key] != nil
-    }
-}
-
-// MARK: - Implementation Forwarding -
-
-extension ImplementationForwarder where Self: DictionaryProtocol, ImplementationProvider: DictionaryProtocol,Self.DictionaryKey == ImplementationProvider.DictionaryKey, Self.DictionaryValue == ImplementationProvider.DictionaryValue {
-    public func value(forKey key: DictionaryKey) -> DictionaryValue? {
-        return implementationProvider.value(forKey: key)
-    }
-    
-    public subscript(key: DictionaryKey) -> DictionaryValue? {
-        return implementationProvider[key]
-    }
-}
-
-extension ImplementationForwarder where Self: KeysExposingDictionaryProtocol, ImplementationProvider: KeysExposingDictionaryProtocol, Self.DictionaryKey == ImplementationProvider.DictionaryKey, Self.DictionaryValue == ImplementationProvider.DictionaryValue {
-    public var keys: ImplementationProvider.DictionaryKeysSequence {
-        return implementationProvider.keys
-    }
-    
-    public var values: ImplementationProvider.DictionaryValuesSequence {
-        return implementationProvider.values
     }
 }

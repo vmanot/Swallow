@@ -42,17 +42,6 @@ extension FailableWrapper {
     }
 }
 
-extension Wrapper {
-    @inlinable
-    public init?(nilIfNil value: Value?) {
-        guard let value = value else {
-            return nil
-        }
-        
-        self.init(value)
-    }
-}
-
 extension WrapperWrapper {
     public var value: Value {
         return valueWrapper.value
