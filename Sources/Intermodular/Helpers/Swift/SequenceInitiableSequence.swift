@@ -125,29 +125,3 @@ extension Sequence {
         return S1(try lazy.map(transform).joined())
     }
 }
-
-// MARK: - Implementation Forwarding -
-
-extension ImplementationForwarder where Self: SequenceInitiableSequence, ImplementationProvider: SequenceInitiableSequence, Self.Element == ImplementationProvider.Element {
-    public init<S: Sequence>(_ sequence: S) where S.Element == Element {
-        self.init(implementationProvider: .init(sequence))
-    }
-}
-
-extension ImplementationForwarder where Self: ResizableSequence, ImplementationProvider: ResizableSequence, Self.Element == ImplementationProvider.Element {
-    public init<S: Sequence>(_ sequence: S) where S.Element == Element {
-        self.init(implementationProvider: .init(sequence))
-    }
-}
-
-extension ImplementationForwarder where Self: ResizableCollection, ImplementationProvider: ResizableCollection, Self.Element == ImplementationProvider.Element {
-    public init<S: Sequence>(_ sequence: S) where S.Element == Element {
-        self.init(implementationProvider: .init(sequence))
-    }
-}
-
-extension ImplementationForwarder where Self: ExpressibleByArrayLiteral & SequenceInitiableSequence, ImplementationProvider: ExpressibleByArrayLiteral, Self.ArrayLiteralElement == ImplementationProvider.ArrayLiteralElement, Self.ArrayLiteralElement == Self.Element {
-    public init(arrayLiteral elements: ArrayLiteralElement...) {
-        self.init(implementationProvider: (-*>ImplementationProvider.init as ((Array) -> ImplementationProvider))(elements))
-    }
-}

@@ -71,25 +71,3 @@ extension InitiableBufferPointer {
         return interface.withUnsafeBufferPointer(initializing(from:))
     }
 }
-
-// MARK: - Implementation Forwarding -
-
-extension ImplementationForwarder where Self: ContiguousStorage, ImplementationProvider: ContiguousStorage, Self.Element == ImplementationProvider.Element {
-    public func withUnsafeBytes<T>(_ f: ((UnsafeRawBufferPointer) throws -> T)) rethrows -> T {
-        return try implementationProvider.withUnsafeBytes(f)
-    }
-    
-    public func withBufferPointer<BP: InitiableBufferPointer & ConstantBufferPointer, T>(_ f: ((BP) throws -> T)) rethrows -> T where Element == BP.Element {
-        return try implementationProvider.withBufferPointer(f)
-    }
-}
-
-extension MutableImplementationForwarder where Self: MutableContiguousStorage, ImplementationProvider: MutableContiguousStorage, Self.Element == ImplementationProvider.Element {
-    public mutating func withUnsafeMutableBytes<T>(_ f: ((UnsafeMutableRawBufferPointer) throws -> T)) rethrows -> T {
-        return try implementationProvider.withUnsafeMutableBytes(f)
-    }
-    
-    public mutating func withMutableBufferPointer<BP: InitiableMutableBufferPointer, T>(_ f: ((BP) throws -> T)) rethrows -> T where Element == BP.Element {
-        return try implementationProvider.withMutableBufferPointer(f)
-    }
-}

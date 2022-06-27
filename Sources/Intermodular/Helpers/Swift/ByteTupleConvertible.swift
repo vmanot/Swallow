@@ -59,7 +59,7 @@ extension NativeWordSized {
 
 // MARK: - Helpers -
 
-public struct ByteTuple1: ByteTupleConvertible, CustomDebugStringConvertible, ImplementationForwardingMutableWrapper, Trivial {
+public struct ByteTuple1: ByteTupleConvertible, CustomDebugStringConvertible, Trivial {
     public typealias Value = Byte
 
     public var value: Value

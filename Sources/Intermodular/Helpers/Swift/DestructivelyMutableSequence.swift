@@ -135,7 +135,7 @@ extension DestructivelyMutableSequence where Element: Equatable {
     }
     
     public mutating func remove<C: Collection>(contentsOf sequence: C) where C.Element == Element {
-        remove(contentsOf: SequenceOnly(sequence))
+        remove(contentsOf: AnySequence(sequence))
     }
     
     public func removing<C: Collection>(contentsOf elements: C) -> Self where C.Element == Element {

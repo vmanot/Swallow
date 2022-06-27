@@ -159,7 +159,7 @@ extension RangeReplaceableCollection {
     }
     
     public mutating func remove<C0: Collection, C1: ExtensibleCollection>(at indices: C0, into result: inout C1) where C0.Element == Index, C1.Element == Element {
-        remove(at: SequenceOnly(indices), into: &result)
+        remove(at: AnySequence(indices), into: &result)
     }
     
     @discardableResult

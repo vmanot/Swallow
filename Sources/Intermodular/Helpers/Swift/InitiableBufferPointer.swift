@@ -56,7 +56,7 @@ extension InitiableBufferPointer {
     }
 
     public static func initializing<C: Collection>(from collection: C, count: Int) -> Self where C.Element == Element {
-        return initializing(from: collection.sequenceOnly, count: count)
+        return initializing(from: AnySequence(collection), count: count)
     }
 }
 

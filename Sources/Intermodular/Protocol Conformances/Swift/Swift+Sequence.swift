@@ -65,7 +65,7 @@ public struct FixedCountSequence<S: Sequence>: Sequence, Wrapper {
     }
 }
 
-public struct HashableSequence<S: Sequence>: Hashable, ImplementationForwardingWrapper, Sequence2 where S.Element: Hashable {
+public struct HashableSequence<S: Sequence>: Hashable, Sequence2 where S.Element: Hashable {
     public typealias Iterator = Value.Iterator
     public typealias Value = S
 
@@ -75,6 +75,10 @@ public struct HashableSequence<S: Sequence>: Hashable, ImplementationForwardingW
         self.value = value
     }
 
+    public func makeIterator() -> Value.Iterator {
+        value.makeIterator()
+    }
+    
     public func hash(into hasher: inout Hasher) {
         forEach({ hasher.combine($0) })
     }
@@ -168,39 +172,6 @@ public struct PredicatedSequencePrefix<S: Sequence>: Sequence {
     }
 }
 
-public struct SequenceOnly<S: Sequence>: ImplementationForwardingWrapper, Sequence2 {
-    public typealias Iterator = Value.Iterator
-    public typealias Value = S
-
-    public let value: Value
-
-    public init(_ value: Value) {
-        self.value = value
-    }
-}
-
-public struct MutableSequenceOnly<S: MutableSequence>: ImplementationForwardingMutableWrapper, MutableSequence {
-    public typealias Iterator = Value.Iterator
-    public typealias Value = S
-
-    public var value: Value
-
-    public init(_ value: Value) {
-        self.value = value
-    }
-}
-
-public struct DestructivelyMutableSequenceOnly<S: DestructivelyMutableSequence>: DestructivelyMutableSequence, ImplementationForwardingMutableWrapper {
-    public typealias Iterator = Value.Iterator
-    public typealias Value = S
-
-    public var value: Value
-
-    public init(_ value: Value) {
-        self.value = value
-    }
-}
-
 public struct SequenceWrapperMap<S: Sequence, I: IteratorProtocol & Wrapper>: Sequence where I.Value == S.Iterator {
     public typealias Value = S
 
@@ -224,12 +195,6 @@ extension Set: ResizableSetProtocol {
 // MARK: - Helpers -
 
 public typealias Join3Sequence<C0, C1, C2> = Join2Sequence<Join2Sequence<C0, C1>, C2> where C0: Sequence, C1: Sequence, C2: Sequence, C0.Element == C1.Element, C1.Element == C2.Element
-
-extension Sequence {
-    public var sequenceOnly: SequenceOnly<Self> {
-        return .init(self)
-    }
-}
 
 extension Sequence where Element: OptionalProtocol {
     public func compact() -> CompactSequence<Self> {

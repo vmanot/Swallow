@@ -67,11 +67,11 @@ extension Sequence {
     }
     
     public func element(atCount count: Int) -> Element? {
-        return SequenceOnly(self).dropFirst(count).last
+        return AnySequence(self).dropFirst(count).last
     }
     
     public func element(atReverseCount count: Int) -> Element? {
-        return SequenceOnly(self).dropLast(count).last
+        return AnySequence(self).dropLast(count).last
     }
 }
 

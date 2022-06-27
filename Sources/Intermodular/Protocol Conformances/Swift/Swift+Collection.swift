@@ -61,21 +61,6 @@ extension Join2Collection: MutableCollection where C0: MutableCollection, C1: Mu
     }
 }
 
-public struct RangeReplaceableCollectionOnly<C: RangeReplaceableCollection>: ImplementationForwardingMutableWrapper, Initiable, RangeReplaceableCollection2 {
-    public typealias Value = C
-    
-    public typealias Element = C.Element
-    public typealias Index = C.Index
-    public typealias Iterator = C.Iterator
-    public typealias SubSequence = C.SubSequence
-    
-    public var value: Value
-    
-    public init(_ value: Value) {
-        self.value = value
-    }
-}
-
 public struct SequenceToCollection<S: Sequence>: RandomAccessCollection2, Wrapper {
     public typealias Value = S
     
@@ -95,7 +80,7 @@ public struct SequenceToCollection<S: Sequence>: RandomAccessCollection2, Wrappe
     }
     
     public var endIndex: Index {
-        return sequenceOnly.countElements()
+        return AnySequence(self).countElements()
     }
     
     public var indices: Indices {
@@ -105,7 +90,7 @@ public struct SequenceToCollection<S: Sequence>: RandomAccessCollection2, Wrappe
     public subscript(index: Index) -> Element {
         fatallyAssertIndexAsValidSubscriptArgument(index)
         
-        return value.sequenceOnly.dropFirst(index).first.forceUnwrap()
+        return AnySequence(value).dropFirst(index).first.forceUnwrap()
     }
     
     public func makeIterator() -> Iterator {
