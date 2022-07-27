@@ -88,13 +88,11 @@ public struct SequenceToCollection<S: Sequence>: RandomAccessCollection2, Wrappe
     }
     
     public subscript(index: Index) -> Element {
-        fatallyAssertIndexAsValidSubscriptArgument(index)
-        
-        return AnySequence(value).dropFirst(index).first.forceUnwrap()
+        AnySequence(value).dropFirst(index).first.forceUnwrap()
     }
     
     public func makeIterator() -> Iterator {
-        return value.makeIterator()
+        value.makeIterator()
     }
 }
 

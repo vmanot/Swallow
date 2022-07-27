@@ -268,21 +268,17 @@ extension Collection {
 extension Collection {
     @inlinable
     public func subsequence(till index: Index) -> SubSequence {
-        fatallyAssertIndexAsValidSubscriptArgument(index)
-        
-        return self[startIndex..<index]
+        self[startIndex..<index]
     }
     
     @inlinable
     public func subsequence(till f: ((Element) throws -> Bool)) rethrows -> SubSequence? {
-        return try range(till: f).map({ self[$0] })
+        try range(till: f).map({ self[$0] })
     }
     
     @inlinable
     public func subsequence(after index: Index) -> SubSequence {
-        fatallyAssertIndexAsValidSubscriptArgument(index)
-        
-        return self[self.index(after: index)..<endIndex]
+        self[self.index(after: index)..<endIndex]
     }
     
     @inlinable
