@@ -43,33 +43,8 @@ extension AnyProtocol {
 
 extension AnyProtocol {
     @inlinable
-    public func applyingOnSelf<T>(_ f: ((inout Self) throws -> T)) rethrows -> Self {
-        var result = self
-        
-        _ = try f(&result)
-        
-        return result
-    }
-    
-    @inlinable
-    public func applyingSelfOn<T>(_ f: ((Self) throws -> T)) rethrows -> Self {
-        _ = try f(self)
-        
-        return self
-    }
-    
-    @inlinable
-    public mutating func applyingSelfOn<T>(_ f: ((inout Self) throws -> T)) rethrows -> Self {
-        _ = try f(&self)
-        
-        return self
-    }
-}
-
-extension AnyProtocol {
-    @inlinable
     public func mapSelf<T>(_ f: ((Self) throws -> T)) rethrows -> T {
-        return try f(self)
+        try f(self)
     }
 }
 
@@ -80,11 +55,9 @@ extension AnyProtocol {
         mapSelf({ print($0) })
     }
     
-    public func printSelfWithDebugInformation() {
-        mapSelf({ print("\($0) (\(type(of: $0)))") })
-    }
-    
     public func printingSelf() -> Self {
-        return applyingSelfOn({ print($0) })
+        print(self)
+        
+        return self
     }
 }

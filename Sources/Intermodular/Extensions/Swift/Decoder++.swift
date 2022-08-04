@@ -50,6 +50,12 @@ extension Decoder {
         
         return try container.decode(T.self, forKey: key)
     }
+    
+    public func decodeIfPresent<T: Decodable, Key: CodingKey>(_ type: T.Type = T.self, forKey key: Key) throws -> T? {
+        let container = try self.container(keyedBy: Key.self)
+        
+        return try container.decodeIfPresent(T.self, forKey: key)
+    }
 }
 
 extension Decoder {

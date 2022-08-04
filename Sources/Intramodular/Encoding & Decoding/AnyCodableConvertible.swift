@@ -140,3 +140,9 @@ extension UInt64: AnyCodableConvertible {
         return .number(.init(self))
     }
 }
+
+extension URL: AnyCodableConvertible {
+    public func toAnyCodable() throws -> AnyCodable {
+        return .url(self)
+    }
+}
