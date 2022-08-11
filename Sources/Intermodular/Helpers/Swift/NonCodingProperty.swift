@@ -39,3 +39,14 @@ extension NonCodingProperty: Hashable where Value: Hashable {
         wrappedValue.hash(into: &hasher)
     }
 }
+
+// MARK: - Auxiliary Implementation -
+
+extension KeyedDecodingContainer {
+    public func decode<T>(
+        _ type: NonCodingProperty<T>.Type,
+        forKey key: Key
+    ) throws -> NonCodingProperty<T> {
+        .init(wrappedValue: .init(nilLiteral: ()))
+    }
+}
