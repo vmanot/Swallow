@@ -411,6 +411,8 @@ extension Sequence {
     }
 }
 
+// MARK: hasPrefix & hasSuffix
+
 extension Sequence where Element: Equatable {
     public func hasPrefix(_ prefix: Element) -> Bool {
         return first == prefix
@@ -420,6 +422,8 @@ extension Sequence where Element: Equatable {
         return last == suffix
     }
 }
+
+// MARK: between
 
 extension Sequence  {
     public func between(count startIndex: Int, and endIndex: Int) -> PrefixSequence<DropFirstSequence<Self>> {
@@ -466,6 +470,8 @@ extension Sequence where Element: Equatable {
     }
 }
 
+// MARK: lexicographicallyPrecedes
+
 extension Sequence where Element: Comparable {
     func lexicographicallyPrecedes<OtherSequence: Sequence>(_ other: OtherSequence, orderingShorterSequencesAfter: ()) -> Bool where OtherSequence.Element == Element {
         var elementsOfFirstSequence = self.makeIterator()
@@ -489,12 +495,16 @@ extension Sequence where Element: Comparable {
     }
 }
 
+// MARK: sum
+
 extension Sequence where Element: Numeric {
     @inlinable
     public func sum() -> Element {
         return reduce(into: 0, { $0 += $1 })
     }
 }
+
+// MARK: distinct
 
 extension Sequence where Element: Hashable {
     public func distinct() -> AnySequence<Element> {
@@ -518,5 +528,10 @@ extension Sequence where Element: Hashable {
                 return next
             }
         }
+    }
+    
+    @_disfavoredOverload
+    public func distinct() -> [Element] {
+        Array(self.distinct() as AnySequence)
     }
 }
