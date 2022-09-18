@@ -28,6 +28,22 @@ extension Sequence {
         
         return result
     }
+    
+    public func groupFirstOnly<ID: Hashable>(
+        by identify: (Element) throws -> ID
+    ) rethrows -> [ID: Element] {
+        var result: [ID: Element] = .init(minimumCapacity: underestimatedCount)
+        
+        for element in self {
+            let id = try identify(element)
+            
+            if result[id] == nil {
+                result[id] = element
+            }
+        }
+        
+        return result
+    }
 }
 
 extension Sequence {
@@ -492,6 +508,14 @@ extension Sequence where Element: Comparable {
         }
         
         return false
+    }
+}
+
+// MARK: sorted
+
+extension Sequence {
+    public func sorted<T: Comparable>(by keyPath: KeyPath<Element, T>) -> [Element] {
+        sorted(by: { $0[keyPath: keyPath] < $1[keyPath: keyPath] })
     }
 }
 

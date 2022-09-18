@@ -39,13 +39,12 @@ extension MaybeKnown {
 
 extension MaybeKnown: Codable where Value: Codable {
     public init(from decoder: Decoder) throws {
-        let value = try decoder.decode(single: Optional<Value>.self)
+        let container = try decoder.singleValueContainer()
         
-        switch value {
-            case .none:
-                self = .unknown
-            case .some(let value):
-                self = .known(value)
+        if container.decodeNil() {
+            self = .unknown
+        } else {
+            self = .known(try Value(from: decoder))
         }
     }
     

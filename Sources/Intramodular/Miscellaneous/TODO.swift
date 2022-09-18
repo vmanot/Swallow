@@ -33,11 +33,11 @@ extension TODO {
         note: String? = nil,
         file: StaticString = #file,
         line: UInt = #line,
-        _ body: () -> T
-    ) -> T {
-        body()
+        _ body: () throws -> T
+    ) rethrows -> T {
+        try body()
     }
-    
+
     // @available(*, deprecated, message: "This should not be used in production code.")
     public static func here(_ action: Action..., note: String? = nil, file: StaticString = #file, line: UInt = #line) {
         

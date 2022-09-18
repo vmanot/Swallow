@@ -62,6 +62,12 @@ extension _opaque_Optional {
     }
 }
 
+extension Optional where Wrapped == Any {
+    public func flatten() -> Self {
+        _opaque_Optional_flattening()
+    }
+}
+
 /// Performs a check at runtime to determine whether a given value is `nil` or not.
 public func _isValueNil(_ value: Any) -> Bool {
     if let value = value as? _opaque_Optional, value.isNil {
