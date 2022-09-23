@@ -5,6 +5,7 @@
 import Foundation
 import Swift
 
+/// A property wrapper that decodes an empty collection in the absence of a value.
 @propertyWrapper
 public struct DefaultEmptyCollection<Value: RangeReplaceableCollection>: MutablePropertyWrapper, ParameterlessPropertyWrapper {
     public var wrappedValue: Value

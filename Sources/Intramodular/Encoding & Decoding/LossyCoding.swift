@@ -7,6 +7,10 @@ import Swift
 
 @propertyWrapper
 public struct LossyCoding<Value>: MutablePropertyWrapper, ParameterlessPropertyWrapper {
+    enum Error: Swift.Error {
+        case failedToMakeDefaultValueForType(Any.Type)
+    }
+    
     public var wrappedValue: Value
     
     public init(wrappedValue: Value) {
@@ -40,16 +44,33 @@ extension LossyCoding: Decodable where Value: Decodable {
             wrappedValue = try container.decode(Value.self)
         } catch {
             if (try? decoder.decodeNil()) ?? false {
-                if let valueType = Value.self as? ExpressibleByNilLiteral.Type {
-                    self.wrappedValue = valueType.init(nilLiteral: ()) as! Value
-                } else if let valueType = Value.self as? Initiable.Type {
-                    self.wrappedValue = valueType.init() as! Value
-                } else {
-                    throw error
-                }
+                self.wrappedValue = try Self._makeDefaultValue()
             } else {
                 throw error
             }
         }
+    }
+}
+
+extension LossyCoding {
+    static func _makeDefaultValue() throws -> Value {
+        if let valueType = Value.self as? ExpressibleByNilLiteral.Type {
+            return valueType.init(nilLiteral: ()) as! Value
+        } else if let valueType = Value.self as? Initiable.Type {
+            return valueType.init() as! Value
+        } else {
+            throw Error.failedToMakeDefaultValueForType(Value.self)
+        }
+    }
+}
+
+// MARK: - Auxiliary Implementation -
+
+extension KeyedDecodingContainer {
+    public func decode<T: Decodable>(
+        _ type: LossyCoding<T>.Type,
+        forKey key: Key
+    ) throws -> LossyCoding<T> {
+        try decodeIfPresent(type, forKey: key) ?? .init(wrappedValue: try LossyCoding._makeDefaultValue())
     }
 }
