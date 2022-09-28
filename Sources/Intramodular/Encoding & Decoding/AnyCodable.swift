@@ -15,9 +15,9 @@ public enum AnyCodable {
     case data(Data)
     case array([AnyCodable])
     case dictionary([AnyCodingKey: AnyCodable])
-
+    
     case _lazy(Codable)
-
+    
     public var value: Any? {
         switch self {
             case .none:
@@ -42,11 +42,11 @@ public enum AnyCodable {
                 return value
         }
     }
-
+    
     public init(_ value: Codable) {
         self = ._lazy(value)
     }
-
+    
     public init(_ value: Any) throws {
         switch value {
             case let value as AnyCodableConvertible:
@@ -57,7 +57,7 @@ public enum AnyCodable {
                 self = try cast((value as? NSCoding).unwrap(), to: AnyCodable.self)
         }
     }
-
+    
     public init(destructuring value: Codable) throws {
         self = try ObjectDecoder().decode(AnyCodable.self, from: ObjectEncoder().encode(opaque: value))
     }
@@ -145,7 +145,7 @@ extension AnyCodable: Codable {
                 try value.encode(to: encoder)
             case .dictionary(let value): do {
                 var container = encoder.container(keyedBy: AnyCodingKey.self)
-
+                
                 for (key, value) in value {
                     try container.encode(value, forKey: key)
                 }

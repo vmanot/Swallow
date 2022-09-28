@@ -52,7 +52,13 @@ extension LossyCoding: Decodable where Value: Decodable {
     }
 }
 
-extension LossyCoding {
+extension LossyCoding: Sendable where Value: Sendable {
+    
+}
+
+// MARK: - Auxiliary Implementation -
+
+    extension LossyCoding {
     static func _makeDefaultValue() throws -> Value {
         if let valueType = Value.self as? ExpressibleByNilLiteral.Type {
             return valueType.init(nilLiteral: ()) as! Value
@@ -63,8 +69,6 @@ extension LossyCoding {
         }
     }
 }
-
-// MARK: - Auxiliary Implementation -
 
 extension KeyedDecodingContainer {
     public func decode<T: Decodable>(

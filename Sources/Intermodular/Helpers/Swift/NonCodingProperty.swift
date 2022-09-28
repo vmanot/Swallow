@@ -6,7 +6,7 @@ import Swift
 
 /// A property that does not encode/decode itself.
 ///
-/// It *does* implement `Equatable` and `Hashable` conditionally.
+/// It does not participate in equality checks or hashing.
 @propertyWrapper
 public struct NonCodingProperty<Value: ExpressibleByNilLiteral>: PropertyWrapper {
     public var wrappedValue: Value
@@ -18,12 +18,6 @@ public struct NonCodingProperty<Value: ExpressibleByNilLiteral>: PropertyWrapper
 
 // MARK: - Conformances -
 
-extension NonCodingProperty: Equatable where Value: Equatable {
-    public static func == (lhs: Self, rhs: Self) -> Bool {
-        lhs.wrappedValue == rhs.wrappedValue
-    }
-}
-
 extension NonCodingProperty: Codable {
     public init(from decoder: Decoder) throws {
         self.init(wrappedValue: .init(nilLiteral: ()))
@@ -34,9 +28,15 @@ extension NonCodingProperty: Codable {
     }
 }
 
-extension NonCodingProperty: Hashable where Value: Hashable {
+extension NonCodingProperty: Equatable {
+    public static func == (lhs: Self, rhs: Self) -> Bool {
+        true
+    }
+}
+
+extension NonCodingProperty: Hashable  {
     public func hash(into hasher: inout Hasher) {
-        wrappedValue.hash(into: &hasher)
+
     }
 }
 

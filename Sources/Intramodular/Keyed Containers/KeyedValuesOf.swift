@@ -82,8 +82,7 @@ extension KeyedValuesOf {
         }
     }
     
-    /// Retrieve or set a value for the given key path. Returns `nil` if the value has not been set. If the value is set
-    /// to nil it will remove the value.
+    /// Retrieve or set a value for the given key path. Returns `nil` if the value has not been set. If the value is set to nil it will remove the value.
     ///
     /// - Parameter keyPath: A key path from `Wrapped` to a property of type `Value`.
     /// - Returns: The stored value, or `nil` if a value has not been set.
@@ -95,6 +94,22 @@ extension KeyedValuesOf {
                 setValue(newValue, for: keyPath)
             } else {
                 removeValue(for: keyPath)
+            }
+        }
+    }
+    
+    /// Retrieve or set a value for the given key path. Returns `nil` if the value has not been set. If the value is set to nil it will remove the value.
+    ///
+    /// - Parameter keyPath: A key path from `Wrapped` to a property of type `Value`.
+    /// - Returns: The stored value, or `nil` if a value has not been set.
+    public subscript<Value>(dynamicMember keyPath: WritableKeyPath<Wrapped, Value?>) -> Value?? {
+        get {
+            return try? self.value(for: keyPath)
+        } set {
+            if let newValue = newValue {
+                setValue(newValue, for: keyPath)
+            } else {
+                setValue(Optional<Value>.none, for: keyPath)
             }
         }
     }

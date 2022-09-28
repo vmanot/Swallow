@@ -33,6 +33,10 @@ extension MaybeKnown {
                 return .known(try transform(value))
         }
     }
+    
+    public func unwrap() throws -> Value {
+        try knownValue.unwrap()
+    }
 }
 
 // MARK: - Conformances -
