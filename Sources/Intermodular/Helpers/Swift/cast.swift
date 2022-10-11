@@ -61,18 +61,17 @@ public func cast<T, U>(_ value: T?, to type: U.Type = U.self, file: StaticString
     guard let value = value else {
         return nil
     }
-
+    
     guard !(value is NSNull) else {
         return nil
     }
     
     guard let result = castCore(value, to: type) else {
-        throw RuntimeCastError
-            .invalidTypeCast(
-                from: Swift.type(of: value),
-                to: type,
-                value: value,
-                location: .init(file: file, function: function, line: line, column: column)
+        throw RuntimeCastError.invalidTypeCast(
+            from: Swift.type(of: value),
+            to: type,
+            value: value,
+            location: .init(file: file, function: function, line: line, column: column)
         )
     }
     

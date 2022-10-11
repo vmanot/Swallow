@@ -7,8 +7,12 @@ import Swift
 /// A `Hashable` representation of a metatype.
 ///
 /// More useful than `ObjectIdentifier` as it exposes access to the underlying value.
-public struct Metatype<T>: Hashable, @unchecked Sendable {
+public struct Metatype<T>: CustomStringConvertible, Hashable, @unchecked Sendable {
     public let value: T
+
+    public var description: String {
+        String(describing: value)
+    }
     
     public init(_ value: T) {
         self.value = value
