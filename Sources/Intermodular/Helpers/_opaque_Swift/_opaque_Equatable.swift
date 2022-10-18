@@ -16,7 +16,7 @@ extension _opaque_Equatable where Self: Equatable {
     }
 
     public func toAnyEquatable() -> AnyEquatable {
-        return AnyEquatable(self)
+        return AnyEquatable(erasing: self)
     }
 }
 

@@ -10,7 +10,7 @@ public struct AnyEquatable: _opaque_Equatable, Equatable {
     
     public let base: Any
     
-    public init<T: Equatable>(_ base: T) {
+    public init<T: Equatable>(erasing base: T) {
         func equate(_ x: Any, _ y: Any) -> Bool {
             guard let x = x as? T, let y = y as? T else {
                 return false
@@ -27,23 +27,8 @@ public struct AnyEquatable: _opaque_Equatable, Equatable {
     }
 }
 
-extension Either: Equatable where LeftValue: Equatable, RightValue: Equatable {
-    public static func == (lhs: Either, rhs: Either) -> Bool {
-        switch (lhs, rhs) {
-            case (.left(let x), .left(let y)):
-                return x == y
-            case (.right(let x), .right(let y)):
-                return x == y
-            default:
-                return false
-        }
-    }
-}
-
-public struct EquatableOnly<Value: Equatable>: _opaque_Equatable, Equatable {
-    public let value: Value
-    
-    public init(_ value: Value) {
-        self.value = value
+extension Equatable {
+    public func eraseToAnyEquatable() -> AnyEquatable {
+        .init(erasing: self)
     }
 }
