@@ -24,7 +24,7 @@ extension _ComplexPropertyWrapper {
     }
 }
 
-// MARK: - Auxiliary Implementation -
+// MARK: - Auxiliary -
 
 public struct _ComplexPropertyWrapperValueAccessor<Wrapper: _ComplexPropertyWrapper> {
     fileprivate let _wrappedValue: Wrapper._WrappedValue

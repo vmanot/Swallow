@@ -12,7 +12,7 @@ extension ContiguousArray: ResizableCollection {
     
 }
 
-public struct Join2Collection<C0: Collection, C1: Collection>: Collection2, Wrapper where C0.Index: Strideable, C0.Element == C1.Element, C0.Index == C1.Index {
+public struct Join2Collection<C0: Collection, C1: Collection>: Collection, Wrapper where C0.Index: Strideable, C0.Element == C1.Element, C0.Index == C1.Index {
     public typealias Element = C0.Element
     public typealias Index = C0.Index
     public typealias Iterator = Join2Iterator<C0.Iterator, C1.Iterator>
@@ -61,7 +61,7 @@ extension Join2Collection: MutableCollection where C0: MutableCollection, C1: Mu
     }
 }
 
-public struct SequenceToCollection<S: Sequence>: RandomAccessCollection2, Wrapper {
+public struct SequenceToCollection<S: Sequence>: RandomAccessCollection, Wrapper {
     public typealias Value = S
     
     public typealias Element = S.Element

@@ -5,7 +5,7 @@
 import Swift
 
 /// A type-erased equatable value.
-public struct AnyEquatable: _opaque_Equatable, Equatable {
+public struct AnyEquatable: Equatable {
     private var isEqualToImpl: ((Any, Any) -> Bool)
     
     public let base: Any

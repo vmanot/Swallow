@@ -56,7 +56,7 @@ extension LossyCoding: Sendable where Value: Sendable {
     
 }
 
-// MARK: - Auxiliary Implementation -
+// MARK: - Auxiliary -
 
     extension LossyCoding {
     static func _makeDefaultValue() throws -> Value {

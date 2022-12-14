@@ -21,7 +21,7 @@ public protocol NonDestroyingMutableCollection: NonDestroyingMutableSequence, No
     
 }
 
-public protocol NonDestroyingBidirectionalCollection: BidirectionalCollection2, NonDestroyingCollection {
+public protocol NonDestroyingBidirectionalCollection: BidirectionalCollection, NonDestroyingCollection {
     
 }
 
@@ -29,7 +29,7 @@ public protocol NonDestroyingMutableBidirectionalCollection: NonDestroyingMutabl
     
 }
 
-public protocol NonDestroyingRandomAccessCollection: NonDestroyingBidirectionalCollection, RandomAccessCollection2 {
+public protocol NonDestroyingRandomAccessCollection: NonDestroyingBidirectionalCollection, RandomAccessCollection {
     
 }
 

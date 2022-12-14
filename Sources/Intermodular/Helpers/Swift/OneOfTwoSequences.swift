@@ -38,7 +38,7 @@ extension OneOfTwoCollections: Sequence {
     }
 }
 
-extension OneOfTwoCollections: Collection2 {
+extension OneOfTwoCollections: Collection {
     public typealias Element = C0.Element
     public typealias Index = C0.Index
     
@@ -81,7 +81,7 @@ extension OneOfTwoMutableCollections: Sequence {
     }
 }
 
-extension OneOfTwoMutableCollections: MutableCollection2 {
+extension OneOfTwoMutableCollections: MutableCollection {
     public typealias Element = C0.Element
     public typealias Index = C0.Index
     
@@ -136,7 +136,7 @@ extension OneOfTwoResizableCollections: Sequence {
     }
 }
 
-extension OneOfTwoResizableCollections: MutableCollection2 {
+extension OneOfTwoResizableCollections: MutableCollection {
     public typealias Element = C0.Element
     public typealias Index = C0.Index
     

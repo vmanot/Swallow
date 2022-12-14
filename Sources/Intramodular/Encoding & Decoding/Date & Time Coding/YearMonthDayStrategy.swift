@@ -11,11 +11,15 @@ import Swift
 ///
 /// For example, decoding json data with a `String` representation  of `"2001-01-01"` produces a valid `Date` representing January 1st, 2001.
 public struct YearMonthDayStrategy: DateCodingStrategy {
-    private static let dateFormatter = DateFormatter().then {
-        $0.timeZone = TimeZone(secondsFromGMT: 0)
-        $0.locale = Locale(identifier: "en_US_POSIX")
-        $0.dateFormat = "y-MM-dd"
-    }
+    private static let dateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        
+        formatter.timeZone = TimeZone(secondsFromGMT: 0)
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.dateFormat = "y-MM-dd"
+        
+        return formatter
+    }()
     
     public static func decode(_ value: String) throws -> Date {
         if let date = YearMonthDayStrategy.dateFormatter.date(from: value) {

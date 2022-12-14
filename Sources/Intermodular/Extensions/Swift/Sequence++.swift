@@ -270,6 +270,18 @@ extension Sequence {
     public func reduce<T: ExpressibleByNilLiteral>(_ combine: ((T, Element) throws -> T)) rethrows -> T {
         return try reduce(nil, combine)
     }
+
+    @inlinable
+    public func reduce<T>(
+        _ initial: (Element) -> T,
+        combine: ((T, Element) throws -> T)
+    ) rethrows -> T? {
+        guard let first = self.first else {
+            return nil
+        }
+
+        return try dropFirst().reduce(initial(first), combine)
+    }
 }
 
 // MARK: find

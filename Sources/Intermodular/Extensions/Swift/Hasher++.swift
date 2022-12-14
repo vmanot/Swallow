@@ -6,13 +6,13 @@ import Swift
 
 extension Hasher {
     @inlinable
-    public mutating func combine(opaque value: _opaque_Hashable) {
-        combine(value.toAnyHashable())
+    public mutating func combine(opaque value: any Hashable) {
+        combine(value.eraseToAnyHashable())
     }
 
     @inlinable
-    public mutating func combine(opaque value: _opaque_Hashable?) {
-        combine(value?.toAnyHashable())
+    public mutating func combine(opaque value: (any Hashable)?) {
+        combine(value?.eraseToAnyHashable())
     }
 }
 

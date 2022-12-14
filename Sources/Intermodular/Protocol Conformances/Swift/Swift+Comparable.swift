@@ -4,7 +4,7 @@
 
 import Swift
 
-public struct AnyComparable: _opaque_Comparable, Comparable {
+public struct AnyComparable: Comparable {
     private var isEqualToImpl: ((Any, Any) -> Bool)
     private var isGreaterThanImpl: ((Any, Any) -> Bool)
     private var isLessThanImpl: ((Any, Any) -> Bool)

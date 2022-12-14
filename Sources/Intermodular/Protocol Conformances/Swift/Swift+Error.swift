@@ -25,7 +25,7 @@ public struct AnyError: CustomDebugStringConvertible, Error, Hashable {
     }
     
     public func hash(into hasher: inout Hasher) {
-        if let value = try? cast(base, to: _opaque_Hashable.self) {
+        if let value = try? cast(base, to: (any Hashable).self) {
             value.hash(into: &hasher)
         } else {
             String(describing: base).hash(into: &hasher)
@@ -45,7 +45,7 @@ extension Array: Error where Element: Error {
     
 }
 
-public struct CustomStringError: _opaque_Hashable, Codable, CustomStringConvertible, Error, ExpressibleByStringLiteral, Hashable {
+public struct CustomStringError: Codable, CustomStringConvertible, Error, ExpressibleByStringLiteral, Hashable {
     public let description: String
     
     public var localizedDescription: String {
@@ -81,6 +81,7 @@ public struct EmptyError: Hashable, Error, CustomStringConvertible {
     }
 }
 
+/// A thin wrapper that can wrap an arbitrary value as a Swift error.
 public struct Erroneous<Value>: Error, Wrapper {
     public let value: Value
     

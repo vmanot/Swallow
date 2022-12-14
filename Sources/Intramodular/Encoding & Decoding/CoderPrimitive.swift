@@ -5,8 +5,8 @@
 import Foundation
 import Swift
 
-public protocol CoderPrimitive: _opaque_Hashable, Codable {
-    func hash(into: inout Hasher)
+public protocol CoderPrimitive: Codable, Hashable {
+    
 }
 
 // MARK: - Conformances -

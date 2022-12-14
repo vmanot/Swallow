@@ -40,7 +40,7 @@ extension NonCodingProperty: Hashable  {
     }
 }
 
-// MARK: - Auxiliary Implementation -
+// MARK: - Auxiliary -
 
 extension KeyedDecodingContainer {
     public func decode<T>(

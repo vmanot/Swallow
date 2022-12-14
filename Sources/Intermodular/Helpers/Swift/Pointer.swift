@@ -47,7 +47,7 @@ extension Pointer {
     }
 }
 
-// MARK: - Auxiliary Implementation -
+// MARK: - Auxiliary -
 
 extension Pointer {
     @inlinable

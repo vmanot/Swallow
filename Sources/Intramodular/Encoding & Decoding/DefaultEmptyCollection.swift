@@ -49,7 +49,7 @@ extension DefaultEmptyCollection: Decodable where Value: Decodable {
     }
 }
 
-// MARK: - Auxiliary Implementation -
+// MARK: - Auxiliary -
 
 extension KeyedDecodingContainer {
     public func decode<C: Decodable & RandomAccessCollection>(

@@ -97,7 +97,7 @@ extension BinaryInteger {
     }
 }
 
-// MARK: - Auxiliary Implementation -
+// MARK: - Auxiliary -
 
 public enum BinaryIntegerSquareRootComputationError: Error {
     case noPerfectSquare

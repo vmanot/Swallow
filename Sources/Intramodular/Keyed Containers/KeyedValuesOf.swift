@@ -137,7 +137,7 @@ extension KeyedValuesOf: CustomStringConvertible {
     }
 }
 
-// MARK: - Auxiliary Implementation -
+// MARK: - Auxiliary -
 
 extension KeyedValuesOf {
     /// An error that can be thrown by the `value(for:)` function.

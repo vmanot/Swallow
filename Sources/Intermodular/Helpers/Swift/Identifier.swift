@@ -5,11 +5,7 @@
 import Foundation
 import Swift
 
-public protocol _opaque_Identifier: _opaque_Hashable {
-    
-}
-
-public protocol Identifier: _opaque_Identifier, Hashable {
+public protocol Identifier: Hashable {
     
 }
 

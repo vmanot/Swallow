@@ -98,7 +98,7 @@ extension Boolean {
     }
 }
 
-// MARK: - Auxiliary Implementation -
+// MARK: - Auxiliary -
 
 private enum _BooleanAssertionError: Error {
     case isFalse

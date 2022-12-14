@@ -344,23 +344,3 @@ public struct AnyEncodable: Encodable {
         try value.encode(to: encoder)
     }
 }
-
-public struct AnyHashableEncodable: Encodable, Hashable {
-    public let value: _opaque_Hashable & Encodable
-    
-    public init(_ value: _opaque_Hashable & Encodable) {
-        self.value = value
-    }
-    
-    public func encode(to encoder: Encoder) throws {
-        try value.encode(to: encoder)
-    }
-    
-    public func hash(into hasher: inout Hasher) {
-        value.hash(into: &hasher)
-    }
-    
-    public static func == (lhs: Self, rhs: Self) -> Bool {
-        lhs.value._opaque_Equatable_isEqual(to: rhs.value) ?? false
-    }
-}

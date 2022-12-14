@@ -4,7 +4,7 @@
 
 import Swift
 
-public protocol SignedOrUnsigned: _opaque_SignedOrUnsigned, Comparable {
+public protocol SignedOrUnsigned: Comparable {
     static var canBeSignMinus: Bool { get }
     
     var isNegative: Bool { get }

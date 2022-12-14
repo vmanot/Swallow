@@ -4,7 +4,7 @@
 
 import Swift
 
-public struct CompactSequenceIterator<G: IteratorProtocol>: IteratorProtocol2, Wrapper where G.Element: OptionalProtocol {
+public struct CompactSequenceIterator<G: IteratorProtocol>: IteratorProtocol, Wrapper where G.Element: OptionalProtocol {
     public typealias Value = G
 
     public private(set) var value: Value
@@ -48,7 +48,7 @@ public struct ConsecutiveIterator<Value: IteratorProtocol>: IteratorProtocol, Wr
     }
 }
 
-public struct CyclicIterator<Element>: CustomDebugStringConvertible, IteratorProtocol2, Wrapper {
+public struct CyclicIterator<Element>: CustomDebugStringConvertible, IteratorProtocol, Wrapper {
     public private(set) var value: AnyIterator<Element>
     public private(set) var cache: [Element] = []
     public private(set) var isCacheComplete: Bool = false
@@ -82,7 +82,7 @@ public struct CyclicIterator<Element>: CustomDebugStringConvertible, IteratorPro
     }
 }
 
-public struct FixedCountIterator<Value: IteratorProtocol>: IteratorProtocol2, Wrapper {
+public struct FixedCountIterator<Value: IteratorProtocol>: IteratorProtocol, Wrapper {
     public private(set) var value: Value
     public private(set) var count: Int = 0
 
@@ -116,7 +116,7 @@ public struct FixedCountIterator<Value: IteratorProtocol>: IteratorProtocol2, Wr
     }
 }
 
-public struct IteratorOnly<Value: IteratorProtocol>: _opaque_IteratorProtocol, IteratorProtocol {
+public struct IteratorOnly<Value: IteratorProtocol>: IteratorProtocol {
     public private(set) var value: Value
 
     public init(_ value: Value) {
@@ -128,7 +128,7 @@ public struct IteratorOnly<Value: IteratorProtocol>: _opaque_IteratorProtocol, I
     }
 }
 
-public struct Join2Iterator<G0: IteratorProtocol, G1: IteratorProtocol>: IteratorProtocol2, Wrapper where G0.Element == G1.Element {
+public struct Join2Iterator<G0: IteratorProtocol, G1: IteratorProtocol>: IteratorProtocol, Wrapper where G0.Element == G1.Element {
     public typealias Value = (G0, G1)
     
     public private(set) var value: Value
@@ -162,7 +162,7 @@ public struct LazyMapIteratorWithMemoryRecall<S: Sequence, Memory, Element>: Ite
     }
 }
 
-public struct NaiveCountIterator<Value: IteratorProtocol>: IteratorProtocol2, Wrapper {
+public struct NaiveCountIterator<Value: IteratorProtocol>: IteratorProtocol, Wrapper {
     public private(set) var value: Value
     public private(set) var count: Int = 0
 
@@ -179,7 +179,7 @@ public struct NaiveCountIterator<Value: IteratorProtocol>: IteratorProtocol2, Wr
     }
 }
 
-public enum OneOfTwoIterators<I0: IteratorProtocol, I1: IteratorProtocol>: _opaque_IteratorProtocol, IteratorProtocol, MutableEitherRepresentable where I0.Element == I1.Element {
+public enum OneOfTwoIterators<I0: IteratorProtocol, I1: IteratorProtocol>: IteratorProtocol, MutableEitherRepresentable where I0.Element == I1.Element {
     public typealias Element = I0.Element
     
     case left(I0)

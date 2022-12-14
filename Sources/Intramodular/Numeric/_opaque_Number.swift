@@ -8,7 +8,7 @@ import Foundation
 import ObjectiveC
 import Swift
 
-public protocol _opaque_Number: _opaque_Hashable, _opaque_SignedOrUnsigned, Codable, NumberConvertible {
+public protocol _opaque_Number: Codable, NumberConvertible {
     static func _opaque_Number_baseInit(_: Any, isRetry: Bool) -> Self?
     static func _opaque_Number_init(_: Any, isRetry: Bool) -> Self?
     

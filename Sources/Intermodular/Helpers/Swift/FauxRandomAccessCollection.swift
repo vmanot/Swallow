@@ -18,7 +18,7 @@ public struct FauxRandomAccessCollection<C: Collection> {
 
 // MARK: - Conformances -
 
-extension FauxRandomAccessCollection: RandomAccessCollection2 {
+extension FauxRandomAccessCollection: RandomAccessCollection {
     public typealias Element = Value.Element
     public typealias Index = FauxRandomAccessIndex<Value>
     public typealias Indices = DefaultIndices<FauxRandomAccessCollection>

@@ -4,7 +4,7 @@
 
 import Swift
 
-public struct ChunkSequence<S: Sequence>: CustomDebugStringConvertible, Sequence2, Wrapper  {
+public struct ChunkSequence<S: Sequence>: CustomDebugStringConvertible, Sequence, Wrapper  {
     public private(set) var value: S
 
     public var chunkSize: Int = 1
@@ -33,7 +33,7 @@ public struct ChunkSequence<S: Sequence>: CustomDebugStringConvertible, Sequence
     }
 }
 
-public struct CyclicSequence<S: Sequence>: CustomDebugStringConvertible, Sequence2, Wrapper {
+public struct CyclicSequence<S: Sequence>: CustomDebugStringConvertible, Sequence, Wrapper {
     public typealias Value = S
 
     public private(set) var value: Value
@@ -65,7 +65,7 @@ public struct FixedCountSequence<S: Sequence>: Sequence, Wrapper {
     }
 }
 
-public struct HashableSequence<S: Sequence>: Hashable, Sequence2 where S.Element: Hashable {
+public struct HashableSequence<S: Sequence>: Hashable, Sequence where S.Element: Hashable {
     public typealias Iterator = Value.Iterator
     public typealias Value = S
 

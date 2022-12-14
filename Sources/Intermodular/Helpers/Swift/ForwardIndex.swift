@@ -4,19 +4,19 @@
 
 import Swift
 
-public protocol ForwardIndex: _opaque_ForwardIndex, Comparable {
+public protocol ForwardIndex: Comparable {
     associatedtype Distance: SignedInteger = Int
 
     /// The logical successor to `self`.
     func successor() -> Self
 }
 
-public protocol BidirectionalIndex: _opaque_BidirectionalIndex, ForwardIndex {
+public protocol BidirectionalIndex: ForwardIndex {
     /// The logical predecessor to `self`.
     func predecessor() -> Self
 }
 
-public protocol RandomAccessIndex: _opaque_RandomAccessIndex, BidirectionalIndex, Strideable2 {
+public protocol RandomAccessIndex: BidirectionalIndex, Strideable {
 
 }
 

@@ -35,9 +35,11 @@ extension _opaque_Optional where Self: OptionalProtocol {
         }
 
         self = .init(leftValue: wrapped)
+        
         return ()
     }
 }
+
 // MARK: - Extensions -
 
 extension _opaque_Optional {

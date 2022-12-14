@@ -28,11 +28,7 @@ extension _opaque_PolymorphicDecodable where Self: PolymorphicDecodable {
 
 // MARK: - Protocols -
 
-public protocol _opaque_CodingTypeDiscriminator: _opaque_Hashable {
-    var typeValue: Decodable.Type { get }
-}
-
-public protocol CodingTypeDiscriminator: _opaque_CodingTypeDiscriminator, Hashable {
+public protocol CodingTypeDiscriminator: Hashable {
     var typeValue: Decodable.Type { get }
 }
 
@@ -71,10 +67,10 @@ extension TopLevelDecoder {
     }
 }
 
-// MARK: - Auxiliary Implementation -
+// MARK: - Auxiliary -
 
 public struct AnyCodingTypeDiscriminator: CodingTypeDiscriminator, HashEquatable {
-    public let base: _opaque_CodingTypeDiscriminator
+    public let base: any CodingTypeDiscriminator
     
     public var typeValue: Decodable.Type {
         base.typeValue

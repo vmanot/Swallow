@@ -6,7 +6,7 @@ import Darwin
 import Foundation
 import Swift
 
-public enum RuntimeCastError: CustomStringConvertible, Error {
+public enum RuntimeCastError: CustomStringConvertible, LocalizedError {
     case invalidTypeCast(from: Any.Type, to: Any.Type, value: Any, location: SourceCodeLocation)
     
     public var description: String {
@@ -14,6 +14,10 @@ public enum RuntimeCastError: CustomStringConvertible, Error {
             case let .invalidTypeCast(sourceType, destinationType, _, _):
                 return "Could not cast value of type '\(sourceType)' to '\(destinationType)'"
         }
+    }
+
+    public var errorDescription: String? {
+        description
     }
 }
 

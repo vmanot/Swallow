@@ -16,7 +16,7 @@ struct _CollectionOnly<C: Collection> {
 
 // MARK: - Conformances -
 
-extension _CollectionOnly: Collection2 {
+extension _CollectionOnly: Collection {
     typealias Element = Value.Element
     typealias Index = Value.Index
     

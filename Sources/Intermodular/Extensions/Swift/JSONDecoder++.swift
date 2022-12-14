@@ -100,7 +100,7 @@ extension JSONDecoder.DateDecodingStrategy {
     }
 }
 
-// MARK: - Auxiliary Implementation -
+// MARK: - Auxiliary -
 
 fileprivate extension CodingUserInfoKey {
     static let fragmentBoxedType = CodingUserInfoKey(rawValue: "fragmentBoxedType")!
