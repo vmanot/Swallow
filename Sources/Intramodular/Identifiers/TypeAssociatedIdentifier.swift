@@ -19,3 +19,9 @@ public struct TypeAssociatedIdentifier<Parent, RawValue: Codable & Hashable>: Co
         try rawValue.encode(to: encoder)
     }
 }
+
+extension TypeAssociatedIdentifier: CustomStringConvertible where RawValue: CustomStringConvertible {
+    public var description: String {
+        rawValue.description
+    }
+}
