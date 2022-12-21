@@ -46,6 +46,16 @@ extension Result {
 }
 
 extension Result where Failure == Error {
+    public init(catching body: () async throws -> Success) async {
+        do {
+            let success = try await body()
+            
+            self = .success(success)
+        } catch {
+            self = .failure(error)
+        }
+    }
+
     public init(_ value: @autoclosure () throws -> Success) {
         self.init(catching: value)
     }
