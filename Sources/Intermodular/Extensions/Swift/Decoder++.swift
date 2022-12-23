@@ -11,7 +11,7 @@ extension Decoder {
         return container.decodeNil()
     }
     
-    public func decode<T: Decodable>(single type: T.Type = T.self) throws -> T {
+    public func decodeSingleValue<T: Decodable>(_ type: T.Type = T.self) throws -> T {
         let container = try singleValueContainer()
         
         return try container.decode(T.self)
