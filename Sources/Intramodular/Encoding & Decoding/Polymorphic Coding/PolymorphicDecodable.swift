@@ -120,10 +120,17 @@ struct _PolymorphicProxyDecodable<T: PolymorphicDecodable>: Decodable, _opaque_P
             }
         }
         
-        value = try cast(try T.resolveSubtype(for: T.decodeTypeDiscriminator(from: decoder)).init(from: decoder), to: T.self)
+        if isType(T.self, descendantOf: subtype) {
+            value = try T.init(from: decoder)
+        } else if !isType(subtype, descendantOf: T.self) {
+            value = try T.init(from: decoder)
+        } else {
+            value = try cast(try subtype.init(from: decoder), to: T.self)
+        }
     }
     
     func _opaque_getValue() -> Any {
         return value
     }
 }
+
