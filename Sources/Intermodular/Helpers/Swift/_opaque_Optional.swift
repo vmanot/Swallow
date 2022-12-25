@@ -12,8 +12,6 @@ public protocol _opaque_Optional: AnyProtocol, ExpressibleByNilLiteral {
     var _opaque_Optional_wrapped: Any? { get }
 
     init(none: Void)
-
-    mutating func _opaque_Optional_set(wrapped: Any?) -> Void?
 }
 
 extension _opaque_Optional where Self: OptionalProtocol {
@@ -27,16 +25,6 @@ extension _opaque_Optional where Self: OptionalProtocol {
 
     public var _opaque_Optional_wrapped: Any? {
         return leftValue.flatMap(Optional<Any>.some)
-    }
-
-    public mutating func _opaque_Optional_set(wrapped: Any?) -> Void? {
-        guard let wrapped: LeftValue = -?>wrapped else {
-            return nil
-        }
-
-        self = .init(leftValue: wrapped)
-        
-        return ()
     }
 }
 

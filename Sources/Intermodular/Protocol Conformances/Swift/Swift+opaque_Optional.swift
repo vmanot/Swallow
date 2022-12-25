@@ -20,8 +20,4 @@ extension Optional: _opaque_Optional {
     public init(none: Void) {
         self = .none
     }
-
-    public mutating func _opaque_Optional_set(wrapped: Any?) -> Void? {
-        return (-?>wrapped).map({ self = $0 })
-    }
 }

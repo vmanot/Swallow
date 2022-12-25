@@ -16,7 +16,7 @@ public protocol SequenceInitiableSetProtocol: SequenceInitiableSequence, SetProt
     func isSubset<C: Collection>(of _: C) -> Bool where C.Element == Element
     func isSuperset<S: Sequence>(of _: S) -> Bool where S.Element == Element
     func isSuperset<C: Collection>(of _: C) -> Bool where C.Element == Element
-
+    
     func intersection<S: Sequence>(_: S) -> Self where S.Element == Element
     func intersection<C: Collection>(_: C) -> Self where C.Element == Element
     func intersection(_: Self) -> Self
@@ -27,15 +27,14 @@ public protocol SequenceInitiableSetProtocol: SequenceInitiableSequence, SetProt
 }
 
 public protocol MutableSetProtocol: MutableSequence, SetProtocol {
-
+    
 }
 
 public protocol ExtensibleSetProtocol: ExtensibleSequence, SetProtocol {
-
+    
 }
 
-public protocol DestructivelyMutableSetProtocol: DestructivelyMutableSequence, MutableSetProtocol {
-    mutating func remove(_: Element) -> Element?
+public protocol DestructivelyMutableSetProtocol: DestructivelyMutableSequence, ElementRemoveableDestructivelyMutableSequence, MutableSetProtocol {
     mutating func remove<S: Sequence>(contentsOf _: S) where S.Element == Element
 }
 

@@ -34,7 +34,7 @@ extension Dictionary: ElementRemoveableDestructivelyMutableSequence {
     }
 }
 
-extension Set: DestructivelyMutableSequence {
+extension Set: DestructivelyMutableSetProtocol {
     public mutating func forEach<T>(mutating iterator: ((inout Element) throws -> T)) rethrows {
         try forEach(destructivelyMutating: { try iterator(&$0!) })
     }

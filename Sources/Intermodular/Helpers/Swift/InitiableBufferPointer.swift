@@ -142,10 +142,16 @@ extension InitiableBufferPointer {
 
 @inlinable
 public func reinterpretCast<T: InitiableBufferPointer, U: InitiableBufferPointer>(_ x: T) -> U? {
-    return U.init(start: -?>x.baseAddress, count: x.count)
+    return U.init(
+        start: U.BaseAddressPointer(x.baseAddress?.opaquePointerRepresentation),
+        count: x.count
+    )
 }
 
 @inlinable
 public func reinterpretCast<T: InitiableBufferPointer, U: InitiableBufferPointer>(_ x: T) -> U {
-    return U.init(start: -?>x.baseAddress, count: (x.count.toDouble() * MemoryLayout<T.Element>.size.toDouble() / MemoryLayout<U.Element>.size.toDouble()).toInt())
+    return U.init(
+        start: U.BaseAddressPointer(x.baseAddress?.opaquePointerRepresentation),
+        count: (x.count.toDouble() * MemoryLayout<T.Element>.size.toDouble() / MemoryLayout<U.Element>.size.toDouble()).toInt()
+    )
 }

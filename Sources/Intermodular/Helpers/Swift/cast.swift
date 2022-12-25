@@ -6,30 +6,6 @@ import Darwin
 import Foundation
 import Swift
 
-public enum RuntimeCastError: CustomStringConvertible, LocalizedError {
-    case invalidTypeCast(from: Any.Type, to: Any.Type, value: Any, location: SourceCodeLocation)
-    
-    public var description: String {
-        switch self {
-            case let .invalidTypeCast(sourceType, destinationType, _, _):
-                return "Could not cast value of type '\(sourceType)' to '\(destinationType)'"
-        }
-    }
-
-    public var errorDescription: String? {
-        description
-    }
-}
-
-@inlinable
-public func castCore<T, U>(_ value: T, to: U.Type) -> U? {
-    if let result = value as? U {
-        return result
-    } else {
-        return nil
-    }
-}
-
 @inlinable
 public func cast<T, U>(
     _ value: T,
@@ -53,7 +29,7 @@ public func cast<T, U>(
 
 @inlinable
 public func cast<T, U>(_ value: T, to type: U.Type = U.self, default: U, file: StaticString = #file, function: StaticString = #function, line: UInt = #line, column: UInt = #column) -> U {
-    guard let result = castCore(value, to: type) else {
+    guard let result = _runtimeCast(value, to: type) else {
         return `default`
     }
     
@@ -61,16 +37,19 @@ public func cast<T, U>(_ value: T, to type: U.Type = U.self, default: U, file: S
 }
 
 @inlinable
-public func cast<T, U>(_ value: T?, to type: U.Type = U.self, file: StaticString = #file, function: StaticString = #function, line: UInt = #line, column: UInt = #column) throws -> U? {
+public func cast<T, U>(
+    _ value: T?,
+    to type: U.Type = U.self,
+    file: StaticString = #file,
+    function: StaticString = #function,
+    line: UInt = #line,
+    column: UInt = #column
+) throws -> U? {
     guard let value = value else {
         return nil
     }
-    
-    guard !(value is NSNull) else {
-        return nil
-    }
-    
-    guard let result = castCore(value, to: type) else {
+        
+    guard let result = _runtimeCast(value, to: type) else {
         throw RuntimeCastError.invalidTypeCast(
             from: Swift.type(of: value),
             to: type,
@@ -82,38 +61,54 @@ public func cast<T, U>(_ value: T?, to type: U.Type = U.self, file: StaticString
     return result
 }
 
-// MARK: - Helpers -
+// MARK: - Auxiliary -
 
-prefix operator -!>
-
-@inlinable
-public prefix func -!> <T, U>(rhs: T) -> U {
-    return try! cast(rhs, to: U.self)
+@usableFromInline
+func _runtimeCast<T, U>(_ value: T, to otherType: U.Type) -> U? {
+    var _value: Any?
+    
+    if let value = value as? _opaque_Optional {
+        _value = value._opaque_Optional_wrapped
+    }
+    
+    if _value == nil {
+        if otherType == Optional<Any>.self {
+            return (Optional<Any>.none as! U)
+        }
+    }
+    
+    guard !(value is NSNull) else {
+        return nil
+    }
+    
+    if let result = _value as? U {
+        return result
+    } else {
+        return nil
+    }
 }
 
-@inlinable
-public prefix func -!> <T, U>(rhs: T?) -> U {
-    return try! cast(rhs, to: U.self)
+public enum RuntimeCastError: CustomStringConvertible, LocalizedError {
+    case invalidTypeCast(from: Any.Type, to: Any.Type, value: Any, location: SourceCodeLocation)
+    
+    public var description: String {
+        switch self {
+            case let .invalidTypeCast(sourceType, destinationType, _, _):
+                return "Could not cast value of type '\(sourceType)' to '\(destinationType)'"
+        }
+    }
+    
+    public var errorDescription: String? {
+        description
+    }
 }
 
-prefix operator -?>
-
-@inlinable
-public prefix func -?> <T, U>(rhs: T) -> U? {
-    return try? cast(rhs, to: U.self)
-}
-
-@inlinable
-public prefix func -?> <T, U>(rhs: T?) -> U? {
-    return try? cast(rhs, to: U.self)
-}
+prefix operator -*>
 
 @inlinable
 public func unsafeBitCast<T, U>(_ x: T) -> U {
     return unsafeBitCast(x, to: U.self)
 }
-
-prefix operator -*>
 
 @inlinable
 public prefix func -*> <T, U>(rhs: T) -> U {

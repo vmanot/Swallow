@@ -52,7 +52,7 @@ extension ContiguousStorage {
     }
     
     public func createCopy<BP: InitiableBufferPointer>() -> BP where Element == BP.Element {
-        return -!>createCopy()
+        return .init(createCopy())
     }
     
     public func createRawCopy() -> UnsafeMutableRawBufferPointer {

@@ -42,11 +42,6 @@ extension Optional {
     }
     
     @inlinable
-    public func castMap<T, U>(_ transform: ((T) -> U)) -> U? {
-        return (-?>self).map(transform)
-    }
-    
-    @inlinable
     public mutating func remove() -> Wrapped {
         defer {
             self = nil
