@@ -8,12 +8,15 @@ public typealias IdentifierIndexedArrayOf<Element: Identifiable> = IdentifierInd
 
 public struct IdentifierIndexedArray<Element, ID: Hashable>: AnyProtocol {
     private var base: OrderedDictionary<ID, Element>
-    private var keyPath: KeyPath<Element, ID>
+    private var id: (Element) -> ID
+    
+    public init(_ array: [Element] = [], id: @escaping (Element) -> ID) {
+        self.base = OrderedDictionary(uniqueKeysWithValues: array.map({ (key: id($0), value: $0) }))
+        self.id = id
+    }
     
     public init(_ array: [Element] = [], id: KeyPath<Element, ID>) {
-        self.keyPath = id
-        
-        base = OrderedDictionary(uniqueKeysWithValues: array.map({ (key: $0[keyPath: id], value: $0) }))
+        self.init(array, id: { $0[keyPath: id] })
     }
     
     public init(_ array: [Element]) where Element: Identifiable, Element.ID == ID {
@@ -21,7 +24,7 @@ public struct IdentifierIndexedArray<Element, ID: Hashable>: AnyProtocol {
     }
     
     private func _idForElement(_ element: Element) -> ID {
-        element[keyPath: keyPath]
+        id(element)
     }
 }
 
@@ -40,7 +43,9 @@ extension IdentifierIndexedArray: CustomDebugStringConvertible {
 }
 
 extension IdentifierIndexedArray: Equatable where Element: Equatable {
-    
+    public static func == (lhs: Self, rhs: Self) -> Bool {
+        lhs.base == rhs.base
+    }
 }
 
 extension IdentifierIndexedArray: ExpressibleByArrayLiteral where Element: Identifiable, Element.ID == ID {
@@ -50,7 +55,9 @@ extension IdentifierIndexedArray: ExpressibleByArrayLiteral where Element: Ident
 }
 
 extension IdentifierIndexedArray: Hashable where Element: Hashable {
-    
+    public func hash(into hasher: inout Hasher) {
+        base.hash(into: &hasher)
+    }
 }
 
 extension IdentifierIndexedArray: Initiable where Element: Identifiable, Element.ID == ID {
@@ -100,6 +107,15 @@ extension IdentifierIndexedArray: MutableCollection, MutableSequence, RandomAcce
         }
     }
     
+    @_disfavoredOverload
+    public subscript(id identifier: any Hashable) -> Element? where ID == AnyHashable {
+        get {
+            self[id: identifier.eraseToAnyHashable()]
+        } set {
+            self[id: identifier.eraseToAnyHashable()] = newValue
+        }
+    }
+    
     public func index(of id: ID) -> Int? {
         base.index(forKey: id)
     }
@@ -118,7 +134,7 @@ extension IdentifierIndexedArray: RangeReplaceableCollection where Element: Iden
     }
     
     public mutating func remove(_ element: Element) {
-        self[id: element[keyPath: keyPath]] = nil
+        self[id: id(element)] = nil
     }
     
     /// Updates a given identifiable element if already present, inserts it otherwise.

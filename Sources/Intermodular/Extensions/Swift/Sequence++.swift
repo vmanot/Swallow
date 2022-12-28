@@ -103,11 +103,11 @@ extension Sequence where Element: Sendable {
                     await operation(element)
                 }
             }
-
+            
             await group.waitForAll()
         }
     }
-
+    
     public func concurrentForEach(
         _ operation: @escaping @Sendable (Element) async throws -> Void
     ) async throws {
@@ -117,7 +117,7 @@ extension Sequence where Element: Sendable {
                     try await operation(element)
                 }
             }
-
+            
             try await group.waitForAll()
         }
     }
@@ -141,16 +141,16 @@ extension Sequence where Element: Sendable {
     ) async rethrows -> [T] {
         let initialCapacity = underestimatedCount
         var result = ContiguousArray<T>()
-
+        
         result.reserveCapacity(initialCapacity)
-
+        
         for element in self {
             try await result.append(transform(element))
         }
-
+        
         return Array(result)
     }
-
+    
     /// Returns an array containing the results of mapping the given async closure over
     /// the sequence’s elements.
     ///
@@ -172,28 +172,36 @@ extension Sequence where Element: Sendable {
             enumerated().forEach { element in
                 group.addTask(priority: priority) {
                     let result = try await transform(element.1)
-
+                    
                     return (element.0, result)
                 }
             }
-
+            
             let initialCapacity = underestimatedCount
-
+            
             var result = ContiguousArray<(Int, T)>()
-
+            
             result.reserveCapacity(initialCapacity)
-
+            
             for _ in 0..<initialCapacity {
                 try await result.append(group.next()!)
             }
-
+            
             while let element = try await group.next() {
                 result.append(element)
             }
-
+            
             try await group.waitForAll()
-
+            
             return result.sorted(by: { $0.0 < $1.0 }).map({ $0.1 })
+        }
+    }
+    
+    public func asyncForEach(
+        _ body: @Sendable (Element) async throws -> Void
+    ) async rethrows {
+        for element in self {
+            try await body(element)
         }
     }
 }
@@ -241,16 +249,16 @@ extension Sequence where Element: Comparable {
 extension Sequence {
     @inlinable
     public func reduce(_ combine: ((Element, Element) -> Element)) -> Element? {
-        var result: Element! = nil
+        var result: Element? = nil
         
         for element in self {
-            guard result != nil else {
+            guard let lastResult = result else {
                 result = element
                 
                 continue
             }
             
-            result = combine(result, element)
+            result = combine(lastResult, element)
         }
         
         return result
@@ -270,7 +278,7 @@ extension Sequence {
     public func reduce<T: ExpressibleByNilLiteral>(_ combine: ((T, Element) throws -> T)) rethrows -> T {
         return try reduce(nil, combine)
     }
-
+    
     @inlinable
     public func reduce<T>(
         _ initial: (Element) -> T,
@@ -279,7 +287,7 @@ extension Sequence {
         guard let first = self.first else {
             return nil
         }
-
+        
         return try dropFirst().reduce(initial(first), combine)
     }
 }

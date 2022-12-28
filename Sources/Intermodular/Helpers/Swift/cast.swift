@@ -28,34 +28,17 @@ public func cast<T, U>(
 }
 
 @inlinable
-public func cast<T, U>(_ value: T, to type: U.Type = U.self, default: U, file: StaticString = #file, function: StaticString = #function, line: UInt = #line, column: UInt = #column) -> U {
-    guard let result = _runtimeCast(value, to: type) else {
-        return `default`
-    }
-    
-    return result
-}
-
-@inlinable
 public func cast<T, U>(
-    _ value: T?,
+    _ value: T,
     to type: U.Type = U.self,
+    default: U,
     file: StaticString = #file,
     function: StaticString = #function,
     line: UInt = #line,
-    column: UInt = #column
-) throws -> U? {
-    guard let value = value else {
-        return nil
-    }
-        
+    column: UInt = #column)
+-> U {
     guard let result = _runtimeCast(value, to: type) else {
-        throw RuntimeCastError.invalidTypeCast(
-            from: Swift.type(of: value),
-            to: type,
-            value: value,
-            location: .init(file: file, function: function, line: line, column: column)
-        )
+        return `default`
     }
     
     return result
