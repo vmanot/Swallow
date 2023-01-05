@@ -4,54 +4,6 @@
 
 import Swift
 
-public struct AnyFunction<T, U>: MutableFunctionWrapper {
-    public typealias Value = ((T) -> U)
-    
-    public var value: Value
-    
-    public init(_ value: (@escaping Value)) {
-        self.value = value
-    }
-    
-    public var functionView: AnyFunction {
-        get {
-            return self
-        } set {
-            self = newValue
-        }
-    }
-    
-    public func input(_ value: T) -> U {
-        return self.value(value)
-    }
-}
-
-public struct AnyThrowingFunction<T, U>: MutableThrowingFunctionWrapper {
-    public typealias Value = ((T) throws -> U)
-    
-    public var value: Value
-    
-    public init(_ value: (@escaping Value)) {
-        self.value = value
-    }
-    
-    public var functionView: AnyFunction<T, Result<U, AnyError>> {
-        get {
-            return AnyFunction(input)
-        } set {
-            self = .init({ try newValue.input($0).unwrap() })
-        }
-    }
-    
-    public func input(_ value: T) throws -> U {
-        return try self.value(value)
-    }
-    
-    public func input(_ value: T) -> Result<U, AnyError> {
-        return Result(try self.value(value)).mapFailure({ AnyError($0 )})
-    }
-}
-
 extension Character: MutableWrapper {
     public typealias Value = String.UnicodeScalarView
     
@@ -81,18 +33,14 @@ extension CollectionOfOne: MutableWrapper {
     }
 }
 
-public final class HeapWrapper<T>: MutableWrapperBase<T> {
-    public required init(_ value: T) {
-        super.init(value)
-    }
-}
-
 extension IteratorOnly: Wrapper {
     
 }
 
 @propertyWrapper
-public final class ReferenceBox<T>: MutableWrapperBase<T> {
+public final class ReferenceBox<T>: Wrapper {
+    public var value: T
+    
     public var wrappedValue: T {
         get {
             value
@@ -101,36 +49,12 @@ public final class ReferenceBox<T>: MutableWrapperBase<T> {
         }
     }
     
-    public required init(_ value: T) {
-        super.init(value)
-    }
-    
-    public required init(wrappedValue: T) {
-        super.init(wrappedValue)
-    }
-}
-
-public struct MutableUnowned<Value: AnyObject>: MutableWrapper {
-    public unowned var value: Value
-    
-    public init(_ value: Value) {
+    public init(_ value: T) {
         self.value = value
     }
-}
-
-public struct MutableWeak<Value: AnyObject>: MutableWrapper {
-    public weak var value: Value?
     
-    public init(_ value: Value?) {
-        self.value = value
-    }
-}
-
-open class MutableWrapperBase<Value>: CustomDebugStringConvertible, MutableWrapper {
-    open var value: Value
-    
-    public required init(_ value: Value) {
-        self.value = value
+    public convenience init(wrappedValue: T) {
+        self.init(wrappedValue)
     }
 }
 

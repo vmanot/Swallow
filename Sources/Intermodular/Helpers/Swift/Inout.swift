@@ -6,24 +6,20 @@ import Swift
 
 @propertyWrapper
 public struct Inout<T> {
-    public let getter: NonMutatingGetter<Void, T>
-    public let setter: NonMutatingSetter<Void, T>
+    public let getter: () -> T
+    public let setter: (T) -> Void
     
     public var wrappedValue: T {
         get {
-            return getter.call(with: ())
+            return getter()
         } nonmutating set {
-            setter.call(with: ((), newValue))
+            setter(newValue)
         }
     }
-    
-    public init(getter: NonMutatingGetter<Void, T>, setter: NonMutatingSetter<Void, T>) {
+        
+    public init(getter: @escaping () -> T, setter: @escaping (T) -> Void) {
         self.getter = getter
         self.setter = setter
-    }
-    
-    public init(getter: @escaping () -> T, setter: @escaping (T) -> Void) {
-        self.init(getter: .init(getter), setter: .init({ setter($1) }))
     }
     
     public init(_ getter: @autoclosure @escaping () -> T, _ setter: @escaping (T) -> Void) {
