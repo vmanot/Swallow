@@ -50,10 +50,7 @@ extension Substring {
 
 extension Substring {
     public var parent: String {
-        // FIXME: Replace with semantically versioned code block.
-        #if swift(>=4.1)
-        return (-*>self as Slice<String>).base
-        #endif
+        (unsafeBitCast(self, to: Slice<String>.self)).base
     }
 }
 

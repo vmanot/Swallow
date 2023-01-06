@@ -86,14 +86,7 @@ public enum RuntimeCastError: CustomStringConvertible, LocalizedError {
     }
 }
 
-prefix operator -*>
-
 @inlinable
 public func unsafeBitCast<T, U>(_ x: T) -> U {
     return unsafeBitCast(x, to: U.self)
-}
-
-@inlinable
-public prefix func -*> <T, U>(rhs: T) -> U {
-    return unsafeBitCast(rhs)
 }
