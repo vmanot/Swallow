@@ -5,6 +5,12 @@
 import Swift
 
 extension String {
+    public init(_staticString string: StaticString) {
+        self = string.withUTF8Buffer({ String(decoding: $0, as: UTF8.self) })
+    }
+}
+
+extension String {
     public func numberOfOccurences(of character: Character) -> Int {
         lazy.filter({ $0 == character }).count
     }
