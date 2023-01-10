@@ -36,15 +36,15 @@ public struct _PolymorphicDecoder: Decoder {
 
 /// A proxy for `Decodable` that forces our custom decoder to be used.
 
-protocol _opaque_PolymorphicDecodableType {
+protocol _PolymorphicDecodableType: Decodable {
     
 }
 
-internal struct _PolymorphicDecodable<T: Decodable>: _opaque_PolymorphicDecodableType, Decodable {
+internal struct _PolymorphicDecodable<T: Decodable>: _PolymorphicDecodableType {
     public var value: T
     
     public init(from decoder: Decoder) throws {
-        guard !(T.self is _opaque_PolymorphicDecodableType.Type) else {
+        guard !(T.self is _PolymorphicDecodableType.Type) else {
             self.value = try T.init(from: decoder)
             
             return
@@ -53,8 +53,8 @@ internal struct _PolymorphicDecodable<T: Decodable>: _opaque_PolymorphicDecodabl
         let decoder = _PolymorphicDecoder(decoder)
         
         do {
-            if let type = T.self as? _opaque_PolymorphicDecodable.Type {
-                self.value = try cast(try type._opaque_PolymorphicProxyDecodableType().init(from: decoder)._opaque_getValue()) as T
+            if let type = T.self as? any PolymorphicDecodable.Type {
+                self.value = try cast(try type._PolymorphicProxyDecodableType().init(from: decoder).value, to: T.self)
             } else {
                 self.value = try T.init(from: decoder.polymorphic())
             }

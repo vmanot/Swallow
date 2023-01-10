@@ -58,7 +58,7 @@ extension LossyCoding: Sendable where Value: Sendable {
 
 // MARK: - Auxiliary -
 
-    extension LossyCoding {
+extension LossyCoding {
     static func _makeDefaultValue() throws -> Value {
         if let valueType = Value.self as? ExpressibleByNilLiteral.Type {
             return valueType.init(nilLiteral: ()) as! Value

@@ -185,22 +185,35 @@ private class _IndexReferencingEncoder: ObjectEncoder.Encoder {
     }
 }
 
-private struct _KeyedEncodingContainer<Key: CodingKey> : KeyedEncodingContainerProtocol {
+private struct _KeyedEncodingContainer<Key: CodingKey>: KeyedEncodingContainerProtocol {
     private let encoder: ObjectEncoder.Encoder
     
-    private func encoder(for key: CodingKey) -> _KeyReferencingEncoder { return encoder.encoder(for: key) }
+    private func encoder(for key: CodingKey) -> _KeyReferencingEncoder {
+        return encoder.encoder(for: key)
+    }
     
     init(referencing encoder: ObjectEncoder.Encoder) {
         self.encoder = encoder
     }
     
     var codingPath: [CodingKey] { return encoder.codingPath }
-    func encodeNil(forKey key: Key)             throws { try encoder(for: key).encodeNil() }
-    func encode<T>(_ value: T, forKey key: Key) throws where T: CoderPrimitive { try encoder(for: key).encode(value) }
-    func encode<T>(_ value: T, forKey key: Key) throws where T: Encodable { try encoder(for: key).encode(value) }
     
-    func nestedContainer<NestedKey>(keyedBy type: NestedKey.Type,
-                                    forKey key: Key) -> KeyedEncodingContainer<NestedKey> {
+    func encodeNil(forKey key: Key) throws {
+        try encoder(for: key).encodeNil()
+    }
+    
+    func encode<T>(_ value: T, forKey key: Key) throws where T: CoderPrimitive {
+        try encoder(for: key).encode(value)
+    }
+    
+    func encode<T>(_ value: T, forKey key: Key) throws where T: Encodable {
+        try encoder(for: key).encode(value)
+    }
+    
+    func nestedContainer<NestedKey>(
+        keyedBy type: NestedKey.Type,
+        forKey key: Key
+    ) -> KeyedEncodingContainer<NestedKey> {
         return encoder(for: key).container(keyedBy: type)
     }
     
@@ -208,8 +221,13 @@ private struct _KeyedEncodingContainer<Key: CodingKey> : KeyedEncodingContainerP
         return encoder(for: key).unkeyedContainer()
     }
     
-    func superEncoder() -> Encoder { return encoder(for: _ObjectCodingKey.super) }
-    func superEncoder(forKey key: Key) -> Encoder { return encoder(for: key) }
+    func superEncoder() -> Encoder {
+        return encoder(for: _ObjectCodingKey.super)
+    }
+    
+    func superEncoder(forKey key: Key) -> Encoder {
+        return encoder(for: key)
+    }
 }
 
 private struct _UnkeyedEncodingContainer: UnkeyedEncodingContainer {

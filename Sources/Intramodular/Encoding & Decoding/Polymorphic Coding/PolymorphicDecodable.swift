@@ -5,38 +5,15 @@
 import Combine
 import Swift
 
-// MARK: - Opaque Protocols -
-
-public protocol _opaque_PolymorphicProxyDecodable {
-    func _opaque_getValue() -> Any
-}
-
-public protocol _opaque_PolymorphicDecodable: Decodable {
-    static func _opaque_decodeTypeDiscriminator(from _: Decoder) throws -> Any
-    static func _opaque_PolymorphicProxyDecodableType() -> (_opaque_PolymorphicProxyDecodable & Decodable).Type
-}
-
-extension _opaque_PolymorphicDecodable where Self: PolymorphicDecodable {
-    public static func _opaque_decodeTypeDiscriminator(from decoder: Decoder) throws -> Any {
-        try decodeTypeDiscriminator(from: decoder)
-    }
-    
-    public static func _opaque_PolymorphicProxyDecodableType() -> (_opaque_PolymorphicProxyDecodable & Decodable).Type {
-        _PolymorphicProxyDecodable<Self>.self
-    }
-}
-
-// MARK: - Protocols -
-
 public protocol CodingTypeDiscriminator: Hashable {
     var typeValue: Decodable.Type { get }
 }
 
-public protocol PolymorphicDecodable: _opaque_PolymorphicDecodable, AnyObject {
+public protocol PolymorphicDecodable: AnyObject, Decodable {
     associatedtype TypeDiscriminator: Equatable
     
     static func decodeTypeDiscriminator(from _: Decoder) throws -> TypeDiscriminator
-    static func resolveSubtype(for _: TypeDiscriminator) throws -> _opaque_PolymorphicDecodable.Type
+    static func resolveSubtype(for _: TypeDiscriminator) throws -> any PolymorphicDecodable.Type
 }
 
 // MARK: - Implementation -
@@ -44,8 +21,14 @@ public protocol PolymorphicDecodable: _opaque_PolymorphicDecodable, AnyObject {
 extension PolymorphicDecodable where TypeDiscriminator: CodingTypeDiscriminator {
     public static func resolveSubtype(
         for discriminator: TypeDiscriminator
-    ) throws -> _opaque_PolymorphicDecodable.Type {
-        try cast(discriminator.typeValue, to: _opaque_PolymorphicDecodable.Type.self)
+    ) throws -> any PolymorphicDecodable.Type {
+        try cast(discriminator.typeValue, to: any PolymorphicDecodable.Type.self)
+    }
+}
+
+extension PolymorphicDecodable where Self: TypeDiscriminable, TypeDiscriminator: CodingTypeDiscriminator {
+    public static func decodeTypeDiscriminator(from decoder: Decoder) throws -> TypeDiscriminator {
+        try Self(from: decoder).type
     }
 }
 
@@ -97,7 +80,13 @@ public struct _PolymorphicTopLevelDecoder<Base: TopLevelDecoder>: TopLevelDecode
     }
 }
 
-struct _PolymorphicProxyDecodable<T: PolymorphicDecodable>: Decodable, _opaque_PolymorphicProxyDecodable {
+protocol _PolymorphicProxyDecodableType: Decodable {
+    associatedtype Value
+    
+    var value: Value { get }
+}
+
+struct _PolymorphicProxyDecodable<T: PolymorphicDecodable>: _PolymorphicProxyDecodableType {
     var value: T
     
     init(from decoder: Decoder) throws {
@@ -105,14 +94,14 @@ struct _PolymorphicProxyDecodable<T: PolymorphicDecodable>: Decodable, _opaque_P
         let subtype = try T.resolveSubtype(for: discriminator)
         
         do {
-            let _subtype = try cast(subtype, to: _opaque_PolymorphicDecodable.Type.self)
-            let subdiscriminator = try _subtype._opaque_decodeTypeDiscriminator(from: decoder)
+            let _subtype = try cast(subtype, to: any PolymorphicDecodable.Type.self)
+            let subdiscriminator = try _subtype.decodeTypeDiscriminator(from: decoder)
             
             if let discriminator = discriminator as? AnyCodingTypeDiscriminator, let subdiscriminator = subdiscriminator as? AnyCodingTypeDiscriminator {
                 if discriminator != subdiscriminator {
                     // This cast will always succeed.
-                    if let type = (subdiscriminator.typeValue as? _opaque_PolymorphicDecodable.Type) {
-                        value = try cast(type._opaque_PolymorphicProxyDecodableType().init(from: decoder)._opaque_getValue(), to: T.self)
+                    if let type = (subdiscriminator.typeValue as? any PolymorphicDecodable.Type) {
+                        value = try cast(type._PolymorphicProxyDecodableType().init(from: decoder).value, to: T.self)
                         
                         return
                     }
@@ -134,3 +123,8 @@ struct _PolymorphicProxyDecodable<T: PolymorphicDecodable>: Decodable, _opaque_P
     }
 }
 
+extension PolymorphicDecodable {
+    static func _PolymorphicProxyDecodableType() -> any _PolymorphicProxyDecodableType.Type {
+        _PolymorphicProxyDecodable<Self>.self
+    }
+}

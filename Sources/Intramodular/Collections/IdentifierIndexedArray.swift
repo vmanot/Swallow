@@ -121,7 +121,7 @@ extension IdentifierIndexedArray: MutableCollection, MutableSequence, RandomAcce
     }
 }
 
-extension IdentifierIndexedArray: RangeReplaceableCollection where Element: Identifiable, Element.ID == ID {
+extension IdentifierIndexedArray {
     public mutating func replaceSubrange<C: Collection>(
         _ subrange: Range<Int>,
         with newElements: C
@@ -134,9 +134,24 @@ extension IdentifierIndexedArray: RangeReplaceableCollection where Element: Iden
     }
     
     public mutating func remove(_ element: Element) {
-        self[id: id(element)] = nil
+        self[id: _idForElement(element)] = nil
     }
-    
+        
+    @discardableResult
+    public mutating func update(_ element: Element) -> Element? {
+        guard let index = self.index(of: _idForElement(element)) else {
+            return nil
+        }
+        
+        let oldElement = self[index]
+        
+        self[index] = element
+        
+        return oldElement
+    }
+}
+
+extension IdentifierIndexedArray: RangeReplaceableCollection where Element: Identifiable, Element.ID == ID {
     /// Updates a given identifiable element if already present, inserts it otherwise.
     public mutating func updateOrAppend(_ element: Element) {
         if let index = self.index(of: _idForElement(element)) {
