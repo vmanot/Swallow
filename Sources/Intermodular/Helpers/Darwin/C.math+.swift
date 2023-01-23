@@ -6,41 +6,37 @@ import CoreGraphics
 import Darwin
 import Swift
 
-// MARK: - Extensions -
-
 extension Number where Self: FloatingPoint {
     @inlinable
     public var ceiling: Self {
         return ceil(self)
     }
-
+    
     @inlinable
     public var floor: Self {
         return Darwin.floor(self)
     }
-
+    
     @inlinable
     public func raised(to power: Self) -> Self {
         return .init(pow(CGFloat(self), CGFloat(power)))
     }
-
+    
     @inlinable
     public func normalize(_ lower: Self, _ upper: Self) -> Self {
         return (self - lower) / (upper - lower)
     }
-
+    
     @inlinable
     public func denormalize(_ lower: Self, _ upper: Self) -> Self {
         return self * (lower - upper) + lower
     }
-
+    
     @inlinable
     public func interpolate(_ lower: Self, _ upper: Self) -> Self {
         return self * (upper - lower) + lower
     }
 }
-
-// MARK: - Helpers -
 
 precedencegroup ExponentiatingPrecedence {
     associativity: left

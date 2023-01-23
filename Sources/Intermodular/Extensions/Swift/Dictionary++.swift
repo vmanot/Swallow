@@ -29,10 +29,36 @@ extension Dictionary {
         
         return result
     }
-    
+}
+
+extension Dictionary {
     public func reduce<T, U>(
         _ updateAccumulatingResult: (inout [T: U], (key: Key, value: Value)) throws -> ()
     ) rethrows -> [T: U] {
-        return try reduce(into: [T: U](), updateAccumulatingResult)
+        try reduce(into: [T: U](), updateAccumulatingResult)
+    }
+}
+
+extension Dictionary {
+    /// Merges the key-value pairs in the given sequence into the dictionary, using a combining closure to determine the value for any duplicate keys.
+    public mutating func merge<S: Sequence>(
+        uniqueKeysWithValues other: S
+    ) where S.Element == (Key, Value) {
+        merge(other, uniquingKeysWith: { lhs, rhs in lhs })
+    }
+    
+    /// Creates a dictionary by merging key-value pairs in a sequence into the dictionary, using a combining closure to determine the value for duplicate keys.
+    public func merging<S: Sequence>(
+        uniqueKeysWithValues other: S
+    ) -> Self where S.Element == (Key, Value) {
+        merging(other, uniquingKeysWith: { lhs, rhs in lhs })
+    }
+    
+    /// Creates a dictionary by merging key-value pairs in a sequence into the dictionary, using a combining closure to determine the value for duplicate keys.
+    @_disfavoredOverload
+    public func merging<S: Sequence>(
+        uniqueKeysWithValues other: S
+    ) -> Self where S.Element == (key: Key, value: Value) {
+        merging(uniqueKeysWithValues: other.lazy.map({ ($0.key, $0.value) }))
     }
 }

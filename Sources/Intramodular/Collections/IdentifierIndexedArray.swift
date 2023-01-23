@@ -136,7 +136,7 @@ extension IdentifierIndexedArray {
     public mutating func remove(_ element: Element) {
         self[id: _idForElement(element)] = nil
     }
-        
+    
     @discardableResult
     public mutating func update(_ element: Element) -> Element? {
         guard let index = self.index(of: _idForElement(element)) else {

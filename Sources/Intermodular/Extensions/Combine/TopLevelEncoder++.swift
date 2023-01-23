@@ -2,6 +2,8 @@
 // Copyright (c) Vatsal Manot
 //
 
+#if canImport(Combine)
+
 import Combine
 import Swift
 
@@ -20,3 +22,5 @@ extension Encodable {
         try encoder.encode(self)
     }
 }
+
+#endif

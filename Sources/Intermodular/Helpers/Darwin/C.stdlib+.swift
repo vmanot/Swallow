@@ -5,8 +5,6 @@
 import Darwin
 import Swift
 
-// MARK: - Helpers -
-
 @inlinable
 public func alloca<T>(_: T.Type = <<infer>>) -> T {
     return malloc(MemoryLayout<T>.size).assumingMemoryBound(to: T.self).remove()

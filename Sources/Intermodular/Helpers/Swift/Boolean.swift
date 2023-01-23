@@ -49,29 +49,15 @@ extension Boolean {
     }
 }
 
-infix operator ||>: LogicalDisjunctionPrecedence
-
 extension Boolean {
     @inlinable
     public func or<T>(_ value: @autoclosure () throws -> T) rethrows -> T? {
         return !boolValue ? try value() : nil
     }
     
-    @discardableResult
-    @inlinable
-    public static func ||> <T>(lhs: Self, rhs: @autoclosure () throws -> T) rethrows -> T? {
-        return try lhs.or(rhs())
-    }
-    
     @inlinable
     public func or<T>(_ value: @autoclosure () throws -> T?) rethrows -> T? {
         return !boolValue ? try value() : nil
-    }
-    
-    @discardableResult
-    @inlinable
-    public static func ||> <T>(lhs: Self, rhs: @autoclosure () throws -> T?) rethrows -> T? {
-        return try lhs.or(rhs())
     }
 }
 

@@ -56,7 +56,7 @@ internal struct _PolymorphicDecodable<T: Decodable>: _PolymorphicDecodableType {
             if let type = T.self as? any PolymorphicDecodable.Type {
                 self.value = try cast(try type._PolymorphicProxyDecodableType().init(from: decoder).value, to: T.self)
             } else {
-                self.value = try T.init(from: decoder.polymorphic())
+                self.value = try T.init(from: decoder._polymorphic())
             }
         } catch {
             throw error

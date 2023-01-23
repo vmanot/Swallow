@@ -6,18 +6,6 @@ import Swift
 
 extension Hasher {
     @inlinable
-    public mutating func combine(opaque value: any Hashable) {
-        combine(value.eraseToAnyHashable())
-    }
-
-    @inlinable
-    public mutating func combine(opaque value: (any Hashable)?) {
-        combine(value?.eraseToAnyHashable())
-    }
-}
-
-extension Hasher {
-    @inlinable
     public static func finalizedHashValue<T: Hashable>(for value: T) -> Int {
         var hasher = Hasher()
         

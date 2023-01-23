@@ -10,11 +10,11 @@ import XCTest
 
 final class PolymorphicDecoding: XCTestCase {
     func test() throws {
-        enum AnimalType: String, Codable, CodingTypeDiscriminator {
+        enum AnimalType: String, Codable, TypeDiscriminator {
             case lion
             case monkey
             
-            var typeValue: Decodable.Type {
+            func resolveType() -> Any.Type {
                 switch self {
                     case .lion:
                         return Lion.self
@@ -84,7 +84,7 @@ final class PolymorphicDecoding: XCTestCase {
         
         let encodedAnimals = try JSONEncoder().encode(animals)
         let incorrectlyDecodedAnimals = try JSONDecoder().decode([Animal].self, from: encodedAnimals)
-        let correctlyDecodedAnimals = try JSONDecoder().polymorphic().decode([Animal].self, from: encodedAnimals)
+        let correctlyDecodedAnimals = try JSONDecoder()._polymorphic().decode([Animal].self, from: encodedAnimals)
         
         XCTAssert(type(of: incorrectlyDecodedAnimals[0]) == Animal.self)
         XCTAssert(type(of: incorrectlyDecodedAnimals[1]) == Animal.self)

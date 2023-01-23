@@ -128,7 +128,9 @@ extension AnyCodable: Codable {
     public func encode(to encoder: Encoder) throws {
         switch self {
             case .none:
-                try encoder.encodeSingleNil()
+                var container = encoder.singleValueContainer()
+                
+                try container.encodeNil()
             case .bool(let value):
                 try value.encode(to: encoder)
             case .number(let value):

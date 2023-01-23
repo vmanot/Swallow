@@ -9,7 +9,7 @@ import Swift
 /// More useful than `ObjectIdentifier` as it exposes access to the underlying value.
 public struct Metatype<T>: CustomStringConvertible, Hashable, @unchecked Sendable {
     public let value: T
-
+    
     public var description: String {
         String(describing: value)
     }

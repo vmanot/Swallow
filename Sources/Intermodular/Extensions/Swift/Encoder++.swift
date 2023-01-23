@@ -5,20 +5,6 @@
 import Swift
 
 extension Encoder {
-    public func encodeSingleNil() throws {
-        var container = self.singleValueContainer()
-
-        try container.encodeNil()
-    }
-
-    public func encodeSingleValue<T: Encodable>(_ value: T) throws {
-        var container = self.singleValueContainer()
-
-        try container.encode(value)
-    }
-}
-
-extension Encoder {
     public func encode<T: Encodable>(_ value: T) throws {
         var container = self.unkeyedContainer()
 

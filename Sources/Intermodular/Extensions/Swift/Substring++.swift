@@ -50,7 +50,9 @@ extension Substring {
 
 extension Substring {
     public var parent: String {
-        (unsafeBitCast(self, to: Slice<String>.self)).base
+        fragile {
+            (unsafeBitCast(self, to: Slice<String>.self)).base
+        }
     }
 }
 

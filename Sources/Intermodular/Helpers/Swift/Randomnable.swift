@@ -5,7 +5,7 @@
 import Swift
 
 /// A type capable of generating random instances of itself.
-public protocol Randomnable: AnyProtocol {
+public protocol Randomnable {
     static func random() -> Self
 }
 
@@ -22,7 +22,7 @@ extension BoundedRandomnable {
     public static func random() -> Self {
         return random(minimum: minimum, maximum: maximum)
     }
-
+    
     public static func random(minimum: Self) -> Self {
         return random(minimum: minimum, maximum: maximum)
     }
@@ -43,8 +43,8 @@ extension BoundedRandomnable where Self: Strideable {
         }
         
         while range.contains(result)
-
-        return result
+                
+                return result
     }
     
     public static func random(minimum: Self = .minimum, maximum: Self = .maximum, excluding element: Self) -> Self {

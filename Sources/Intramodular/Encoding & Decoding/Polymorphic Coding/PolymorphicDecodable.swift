@@ -5,68 +5,48 @@
 import Combine
 import Swift
 
-public protocol CodingTypeDiscriminator: Hashable {
-    var typeValue: Decodable.Type { get }
-}
-
 public protocol PolymorphicDecodable: AnyObject, Decodable {
-    associatedtype TypeDiscriminator: Equatable
+    associatedtype DecodingTypeDiscriminator: Equatable
     
-    static func decodeTypeDiscriminator(from _: Decoder) throws -> TypeDiscriminator
-    static func resolveSubtype(for _: TypeDiscriminator) throws -> any PolymorphicDecodable.Type
+    static func decodeTypeDiscriminator(from _: Decoder) throws -> DecodingTypeDiscriminator
+    static func resolveSubtype(for _: DecodingTypeDiscriminator) throws -> any PolymorphicDecodable.Type
 }
 
 // MARK: - Implementation -
 
-extension PolymorphicDecodable where TypeDiscriminator: CodingTypeDiscriminator {
+extension PolymorphicDecodable where DecodingTypeDiscriminator: Swallow.TypeDiscriminator {
     public static func resolveSubtype(
-        for discriminator: TypeDiscriminator
+        for discriminator: DecodingTypeDiscriminator
     ) throws -> any PolymorphicDecodable.Type {
-        try cast(discriminator.typeValue, to: any PolymorphicDecodable.Type.self)
+        try cast(discriminator.resolveType(), to: any PolymorphicDecodable.Type.self)
     }
 }
 
-extension PolymorphicDecodable where Self: TypeDiscriminable, TypeDiscriminator: CodingTypeDiscriminator {
-    public static func decodeTypeDiscriminator(from decoder: Decoder) throws -> TypeDiscriminator {
+extension PolymorphicDecodable where Self: TypeDiscriminable, InstanceType == DecodingTypeDiscriminator {
+    public static func decodeTypeDiscriminator(from decoder: Decoder) throws -> DecodingTypeDiscriminator {
         try Self(from: decoder).type
     }
 }
 
-// MARK: - API -
-
-public enum PolymorphicDecodingError: Error {
-    case abstractSuperclass
-}
+// MARK: - Supplementary API -
 
 extension Decoder {
-    public func polymorphic() -> _PolymorphicDecoder {
-        .init(self)
+    public func _polymorphic() -> _PolymorphicDecoder {
+        if let decoder = self as? _PolymorphicDecoder {
+            return decoder
+        } else {
+            return _PolymorphicDecoder(self)
+        }
     }
 }
 
 extension TopLevelDecoder {
-    public func polymorphic() -> _PolymorphicTopLevelDecoder<Self> {
+    public func _polymorphic() -> _PolymorphicTopLevelDecoder<Self> {
         .init(from: self)
     }
 }
 
 // MARK: - Auxiliary -
-
-public struct AnyCodingTypeDiscriminator: CodingTypeDiscriminator, HashEquatable {
-    public let base: any CodingTypeDiscriminator
-    
-    public var typeValue: Decodable.Type {
-        base.typeValue
-    }
-    
-    public init<T: CodingTypeDiscriminator>(_ base: T) {
-        self.base = base
-    }
-    
-    public func hash(into hasher: inout Hasher) {
-        base.hash(into: &hasher)
-    }
-}
 
 public struct _PolymorphicTopLevelDecoder<Base: TopLevelDecoder>: TopLevelDecoder {
     private let base: Base
@@ -86,7 +66,7 @@ protocol _PolymorphicProxyDecodableType: Decodable {
     var value: Value { get }
 }
 
-struct _PolymorphicProxyDecodable<T: PolymorphicDecodable>: _PolymorphicProxyDecodableType {
+fileprivate struct _PolymorphicProxyDecodable<T: PolymorphicDecodable>: _PolymorphicProxyDecodableType {
     var value: T
     
     init(from decoder: Decoder) throws {
@@ -97,15 +77,15 @@ struct _PolymorphicProxyDecodable<T: PolymorphicDecodable>: _PolymorphicProxyDec
             let _subtype = try cast(subtype, to: any PolymorphicDecodable.Type.self)
             let subdiscriminator = try _subtype.decodeTypeDiscriminator(from: decoder)
             
-            if let discriminator = discriminator as? AnyCodingTypeDiscriminator, let subdiscriminator = subdiscriminator as? AnyCodingTypeDiscriminator {
-                if discriminator != subdiscriminator {
-                    // This cast will always succeed.
-                    if let type = (subdiscriminator.typeValue as? any PolymorphicDecodable.Type) {
-                        value = try cast(type._PolymorphicProxyDecodableType().init(from: decoder).value, to: T.self)
-                        
-                        return
-                    }
-                }
+            if let discriminator = discriminator as? any TypeDiscriminator,
+               let subdiscriminator = subdiscriminator as? any TypeDiscriminator,
+               discriminator.eraseToAnyHashable() != subdiscriminator.eraseToAnyHashable(),
+               let type = (try? subdiscriminator.resolveType() as? any PolymorphicDecodable.Type)
+            {
+                // This cast will always succeed.
+                value = try cast(type._PolymorphicProxyDecodableType().init(from: decoder).value, to: T.self)
+                
+                return
             }
         }
         
@@ -116,10 +96,6 @@ struct _PolymorphicProxyDecodable<T: PolymorphicDecodable>: _PolymorphicProxyDec
         } else {
             value = try cast(try subtype.init(from: decoder), to: T.self)
         }
-    }
-    
-    func _opaque_getValue() -> Any {
-        return value
     }
 }
 

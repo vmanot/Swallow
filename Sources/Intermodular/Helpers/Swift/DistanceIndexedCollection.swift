@@ -28,19 +28,19 @@ extension DistanceIndexedCollection: Sequence {
 
 extension DistanceIndexedCollection: Collection {
     public var startIndex: Int {
-        return value.distanceFromStartIndex(to: value.startIndex)
+        value.distanceFromStartIndex(to: value.startIndex)
     }
     
     public var endIndex: Int {
-        return value.distanceFromStartIndex(to: value.endIndex)
+        value.distanceFromStartIndex(to: value.endIndex)
     }
     
     public subscript(_ index: Int) -> Element {
-        return value[value.index(atDistance: index)]
+        value[value.index(atDistance: index)]
     }
     
     public subscript(_ bounds: Range<Index>) -> SubSequence {
-        return .init(value[value.index(atDistance: bounds.lowerBound)..<value.index(atDistance: bounds.upperBound)])
+        .init(value[value.index(atDistance: bounds.lowerBound)..<value.index(atDistance: bounds.upperBound)])
     }
 }
 
@@ -48,7 +48,7 @@ extension DistanceIndexedCollection: Collection {
 
 extension DistanceIndexedCollection: CustomStringConvertible where Value: CustomStringConvertible {
     public var description: String {
-        return value.description
+        value.description
     }
 }
 
@@ -56,6 +56,6 @@ extension DistanceIndexedCollection: CustomStringConvertible where Value: Custom
 
 extension Collection {
     public var distanceIndexed: DistanceIndexedCollection<Self> {
-        return .init(self)
+        .init(self)
     }
 }

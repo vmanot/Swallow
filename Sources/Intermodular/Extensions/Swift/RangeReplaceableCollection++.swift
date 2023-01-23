@@ -35,14 +35,20 @@ extension RangeReplaceableCollection {
 
 extension RangeReplaceableCollection {
     @discardableResult
-    public mutating func replace(at index: Index, with replacement: Element) -> Element {
+    public mutating func replace(
+        at index: Index,
+        with replacement: Element
+    ) -> Element {
         insert(replacement, at: index)
         
         return remove(at: self.index(index, offsetBy: 1))
     }
     
     @discardableResult
-    public mutating func replace<S: Collection>(at index: Index, with replacements: S) -> Element where S.Element == Element {
+    public mutating func replace<S: Collection>(
+        at index: Index,
+        with replacements: S
+    ) -> Element where S.Element == Element {
         let oldCount = count
         
         self.insert(contentsOf: replacements, at: index)
@@ -51,12 +57,19 @@ extension RangeReplaceableCollection {
     }
     
     @discardableResult
-    public mutating func replace<S: Sequence>(at indices: S, with replacement: Element) -> [Element] where S.Element == Index {
+    public mutating func replace<S: Sequence>(
+        at indices: S,
+        with replacement: Element
+    ) -> [Element] where S.Element == Index {
         return indices.map({ self.insert(replacement, at: $0); return self.remove(at: self.index($0, offsetBy: 1)) })
     }
     
     @inlinable
-    public mutating func replace<S0: Sequence, S1: Sequence, S2: ExtensibleSequence>(at indices: S0, with replacements: S1, removedInto sink: inout S2) where S0.Element == Index, S1.Element == Element, S2.Element == Element {
+    public mutating func replace<S0: Sequence, S1: Sequence, S2: ExtensibleSequence>(
+        at indices: S0,
+        with replacements: S1,
+        removedInto sink: inout S2
+    ) where S0.Element == Index, S1.Element == Element, S2.Element == Element {
         let replacements = Array(replacements)
         var indexOffset: Int = 0
         
@@ -68,7 +81,10 @@ extension RangeReplaceableCollection {
     }
     
     @discardableResult
-    public mutating func replace<S0: Sequence, S1: Sequence>(at indices: S0, with replacements: S1) -> [Element] where S0.Element == Index, S1.Element == Element {
+    public mutating func replace<S0: Sequence, S1: Sequence>(
+        at indices: S0,
+        with replacements: S1
+    ) -> [Element] where S0.Element == Index, S1.Element == Element {
         var result: [Element] = []
         replace(at: indices, with: replacements, removedInto: &result)
         return result
@@ -77,48 +93,19 @@ extension RangeReplaceableCollection {
 
 extension RangeReplaceableCollection {
     @discardableResult
-    public mutating func replace(_ predicate: ((Element) -> Bool), with replacement: Element) -> [Element] {
+    public mutating func replace(
+        _ predicate: ((Element) -> Bool),
+        with replacement: Element
+    ) -> [Element] {
         return replace(at: indices.filter({ predicate(self[$0]) }), with: replacement)
     }
     
     @discardableResult
-    public mutating func replace<S: Collection>(_ predicate: ((Element) -> Bool), with replacements: S) -> [Element] where S.Element == Element {
+    public mutating func replace<S: Collection>(
+        _ predicate: ((Element) -> Bool),
+        with replacements: S
+    ) -> [Element] where S.Element == Element {
         return replace(at: indices.filter({ predicate(self[$0]) }), with: replacements)
-    }
-}
-
-extension RangeReplaceableCollection {
-    @discardableResult
-    public mutating func tryRemove(at index: Index) -> Element? {
-        return indices.contains(index) ? remove(at: index) : nil
-    }
-    
-    @discardableResult
-    public mutating func tryRemoveSubrange(_ bounds: Range<Index>) -> Void? {
-        return contains(bounds) ? removeSubrange(bounds) : nil
-    }
-}
-
-extension RangeReplaceableCollection {
-    @discardableResult
-    public mutating func tryRemoveFirst() -> Element? {
-        return isEmpty ||> removeFirst()
-    }
-    
-    @discardableResult
-    public func tryingRemoveFirst() -> Self {
-        return build(self, with: { $0.tryRemoveFirst() })
-    }
-}
-
-extension RangeReplaceableCollection {
-    @discardableResult
-    public mutating func tryRemoveLast() -> Element? {
-        return isEmpty ||> remove(at: lastIndex)
-    }
-    
-    @discardableResult public func tryingRemoveLast() -> Self {
-        return build(self, with: { $0.tryRemoveLast() })
     }
 }
 
@@ -329,15 +316,25 @@ extension RangeReplaceableCollection {
 }
 
 extension RangeReplaceableCollection {
-    public mutating func insert(_ element: Element, at index: RelativeIndex) {
+    public mutating func insert(
+        _ element: Element,
+        at index: RelativeIndex
+    ) {
         insert(element, at: self.index(atDistance: index.distanceFromStartIndex))
     }
     
-    public mutating func insert<C: Collection>(contentsOf collection: C, at index: RelativeIndex) where C.Element == Element {
+    public mutating func insert<C: Collection>(
+        contentsOf collection: C,
+        at index: RelativeIndex
+    ) where C.Element == Element {
         insert(contentsOf: collection, at: self.index(atDistance: index.distanceFromStartIndex))
     }
     
-    public mutating func pad(at index: Index, with padding: Element, toCount targetCount: Int) {
+    public mutating func pad(
+        at index: Index,
+        with padding: Element,
+        toCount targetCount: Int
+    ) {
         let index = RelativeIndex(index, in: self)
         
         while targetCount > count {
@@ -345,13 +342,21 @@ extension RangeReplaceableCollection {
         }
     }
     
-    public func padded(at index: Index, with padding: Element, toCount targetCount: Int) -> Self {
+    public func padded(
+        at index: Index,
+        with padding: Element,
+        toCount targetCount: Int
+    ) -> Self {
         var collection = self
         collection.pad(at: index, with: padding, toCount: targetCount)
         return collection
     }
     
-    public mutating func pad<C: Collection>(at index: Index, withContentsOf padding: C, toCount targetCount: Int) where C.Element == Element {
+    public mutating func pad<C: Collection>(
+        at index: Index,
+        withContentsOf padding: C,
+        toCount targetCount: Int
+    ) where C.Element == Element {
         precondition(!padding.isEmpty, "Empty padding")
         
         let index = RelativeIndex(index, in: self)
@@ -362,8 +367,10 @@ extension RangeReplaceableCollection {
     }
     
     public func padded<C: Collection>(at index: Index, withContentsOf padding: C, toCount targetCount: Int) -> Self where C.Element == Element {
-        var collection = self
-        collection.pad(at: index, withContentsOf: padding, toCount: targetCount)
-        return collection
+        var result = self
+        
+        result.pad(at: index, withContentsOf: padding, toCount: targetCount)
+        
+        return result
     }
 }

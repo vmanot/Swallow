@@ -2,6 +2,8 @@
 // Copyright (c) Vatsal Manot
 //
 
+#if canImport(Combine)
+
 import Foundation
 import Combine
 import Swift
@@ -24,7 +26,9 @@ extension Decodable {
         _ input: Decoder.Input,
         using decoder: Decoder
     ) throws -> Self {
-
-        return try decoder.polymorphic().decode(self, from: input)
+        
+        return try decoder._polymorphic().decode(self, from: input)
     }
 }
+
+#endif

@@ -128,6 +128,10 @@ extension Optional {
         }
     }
     
+    /// Unwraps this `Optional`.
+    ///
+    /// - Throws: `UnwrappingError` if the instance is `nil`.
+    /// - Returns: The unwrapped value of this instance.
     @inlinable
     public func unwrap(
         file: StaticString = #file,
@@ -142,6 +146,7 @@ extension Optional {
         return wrapped
     }
     
+    /// Force unwraps this `Optional`.
     @inlinable
     public func forceUnwrap(
         file: StaticString = #file,

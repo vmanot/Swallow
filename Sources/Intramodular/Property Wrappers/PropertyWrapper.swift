@@ -4,32 +4,8 @@
 
 import Swift
 
-/// A type-erased shadow protocol for `PropertyWrapper`.
-public protocol _opaque_PropertyWrapper {
-    var _opaque_wrappedValue: Any { get }
-}
-
-/// A type-erased shadow protocol for `PropertyWrapper`.
-public protocol _opaque_MutablePropertyWrapper {
-    var _opaque_wrappedValue: Any { get }
-    
-    mutating func _opaque_setWrappedValue(_ newValue: Any) throws
-}
-
-extension _opaque_PropertyWrapper where Self: PropertyWrapper {
-    public var _opaque_wrappedValue: Any {
-        wrappedValue
-    }
-}
-
-extension _opaque_MutablePropertyWrapper where Self: MutablePropertyWrapper {
-    public mutating func _opaque_setWrappedValue(_ newValue: Any) throws {
-        wrappedValue = try cast(newValue, to: WrappedValue.self)
-    }
-}
-
 /// A protocol formalizing a `@propertyWrapper`.
-public protocol PropertyWrapper: _opaque_PropertyWrapper {
+public protocol PropertyWrapper {
     associatedtype WrappedValue
     
     var wrappedValue: WrappedValue { get }
@@ -39,7 +15,7 @@ public protocol ParameterlessPropertyWrapper: PropertyWrapper {
     init(wrappedValue: WrappedValue)
 }
 
-public protocol MutablePropertyWrapper: _opaque_MutablePropertyWrapper, PropertyWrapper {
+public protocol MutablePropertyWrapper: PropertyWrapper {
     var wrappedValue: WrappedValue { get set }
 }
 
@@ -78,11 +54,11 @@ extension ParameterlessPropertyWrapper where WrappedValue: Hashable, Self: Hasha
 // MARK: - API -
 
 public struct AnyMutablePropertyWrapper<Value>: MutablePropertyWrapper {
-    private var base: _opaque_MutablePropertyWrapper
+    private var base: any MutablePropertyWrapper
     
     public var wrappedValue: Value {
         get {
-            base._opaque_wrappedValue as! Value
+            base.wrappedValue as! Value
         } set {
             try! base._opaque_setWrappedValue(newValue)
         }
@@ -93,11 +69,17 @@ public struct AnyMutablePropertyWrapper<Value>: MutablePropertyWrapper {
     }
     
     public init<Wrapper: PropertyWrapper>(unsafelyAdapting wrapper: Wrapper) where Wrapper.WrappedValue == Value {
-        if let wrapper = wrapper as? _opaque_MutablePropertyWrapper {
+        if let wrapper = wrapper as? any MutablePropertyWrapper {
             self.base = wrapper
         } else {
             self.base = _PropertyWrapperMutabilityAdaptor(wrapper)
         }
+    }
+}
+
+extension MutablePropertyWrapper {
+    fileprivate mutating func _opaque_setWrappedValue(_ newValue: Any) throws {
+        self.wrappedValue = try cast(newValue, to: WrappedValue.self)
     }
 }
 

@@ -18,7 +18,7 @@ extension MutableCollection  {
     @inlinable
     public var mutableFirst: Element? {
         get {
-            return isEmpty ? nil : self[startIndex]
+            return isEmpty ? nil : self.first
         } set {
             if !isEmpty {
                 self[startIndex] = newValue!
@@ -28,7 +28,7 @@ extension MutableCollection  {
     
     public var mutableLast: Element? {
         get {
-            return isEmpty ||> self[lastIndex]
+            return isEmpty ? nil : self.last
         } set {
             if !isEmpty {
                 self[lastIndex] = newValue!
@@ -99,7 +99,9 @@ extension MutableCollection where Self: RangeReplaceableCollection {
             if let newValue = newValue, indices.contains(index) {
                 self[index] = newValue
             } else {
-                tryRemove(at: index)
+                if containsIndex(index) {
+                    remove(at: index)
+                }
             }
         }
     }
@@ -111,7 +113,9 @@ extension MutableCollection where Self: RangeReplaceableCollection {
             if let newValue = newValue, contains(bounds) {
                 self[bounds] = newValue
             } else {
-                tryRemoveSubrange(bounds)
+                if contains(bounds) {
+                    removeSubrange(bounds)
+                }
             }
         }
     }

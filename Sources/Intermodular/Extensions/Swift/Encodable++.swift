@@ -28,17 +28,6 @@ extension Encodable {
 }
 
 extension Encodable {
-    public func toObjectDecoder() throws -> Decoder {
-        let wrapper = try ObjectDecoder().decode(
-            DecoderUnwrapper.self, from:
-                ObjectEncoder().encode(self)
-        )
-        
-        return wrapper.value
-    }
-}
-
-extension Encodable {
     public func toJSONData(prettyPrint: Bool = false) throws -> Data {
         let encoder = JSONEncoder()
         

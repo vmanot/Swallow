@@ -19,6 +19,8 @@ extension ObjCClass {
     }
     
     func isKind(of other: ObjCClass) -> Bool {
+        TODO.here(.fix)
+        
         let supercls = class_getSuperclass
         
         if let lhs = value as? NSObject.Type, let rhs = other.value as? NSObject.Type {

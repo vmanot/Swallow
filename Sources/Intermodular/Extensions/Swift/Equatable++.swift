@@ -20,9 +20,9 @@ extension Trivial  {
         return memcmp(
             .to(assumingLayoutCompatible: &readOnly),
             .to(assumingLayoutCompatible: &other.readOnly), Self.sizeInBytes
-            ) == 0
+        ) == 0
     }
-
+    
     @inlinable
     public static func == (lhs: Self, rhs: Self) -> Bool {
         lhs.isEqual(to: rhs)

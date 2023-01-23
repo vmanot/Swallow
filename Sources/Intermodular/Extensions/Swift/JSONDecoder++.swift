@@ -15,7 +15,7 @@ extension JSONDecoder {
             self.value = try container.decode(type)
         }
     }
-        
+    
     public convenience init(
         dateDecodingStrategy: DateDecodingStrategy? = nil,
         dataDecodingStrategy: DataDecodingStrategy? = nil,
@@ -29,7 +29,7 @@ extension JSONDecoder {
         keyDecodingStrategy.map(into: &self.keyDecodingStrategy)
         nonConformingFloatDecodingStrategy.map(into: &self.nonConformingFloatDecodingStrategy)
     }
-
+    
     public func decode<T: Decodable>(_ type: T.Type, from data: Data, allowFragments: Bool) throws -> T {
         guard allowFragments else {
             return try decode(type, from: data)
@@ -73,13 +73,13 @@ extension JSONDecoder.DateDecodingStrategy {
             enum DateError: String, Error {
                 case invalidDate
             }
-
+            
             let formatter = DateFormatter()
             
             formatter.calendar = Calendar(identifier: .iso8601)
             formatter.locale = Locale(identifier: "en_US_POSIX")
             formatter.timeZone = TimeZone(secondsFromGMT: 0)
-
+            
             let container = try decoder.singleValueContainer()
             let dateStr = try container.decode(String.self)
             
