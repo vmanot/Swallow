@@ -15,7 +15,7 @@ public struct CompactSequenceIterator<G: IteratorProtocol>: IteratorProtocol, Wr
 
     public mutating func next() -> G.Element.Wrapped? {
         if let nextElement = value.next() {
-            return nextElement.wrapped ?? next()
+            return nextElement._wrapped ?? next()
         } else {
             return nil
         }

@@ -61,14 +61,6 @@ public func debug(_ body: () -> ()) {
     }
 }
 
-public func debugOnly<T>(_ body: () throws -> T) rethrows -> T? {
-    if isDebugAssertConfiguration {
-        return try body()
-    } else {
-        return nil
-    }
-}
-
 @inlinable
 public func fragile<T>(_ f: () -> T) -> T {
     return f()
@@ -80,15 +72,6 @@ public func fragile<T>(_ x: @autoclosure () -> T) -> T {
 }
 
 @inlinable
-public func hack<T>(_ message: StaticString? = nil, _ f: (() throws -> T)) rethrows -> T {
-    return try f()
-}
-
-@inlinable
 public func undocumented<T>(_ f: (() -> T)) -> T {
     return f()
-}
-
-public func warn(file: StaticString = #file, function: StaticString = #function, line: UInt = #line, column: UInt = #column) {
-    debugPrint("This should be happening!")
 }

@@ -16,8 +16,50 @@ public enum AnyCodable {
     case array([AnyCodable])
     case dictionary([AnyCodingKey: AnyCodable])
     
+    /// Do **not** use this case yourself. This is meant for internal use only.
     case _lazy(Codable)
+}
+
+// MARK: - Initializers -
+
+extension AnyCodable {
+    public init(_ value: Codable) {
+        if let value = value as? (AnyCodableConvertible & Codable) {
+            do {
+                self = try value.toAnyCodable()
+            } catch {
+                assertionFailure(error)
+                
+                self = ._lazy(value)
+            }
+        } else {
+            self = ._lazy(value)
+        }
+    }
     
+    public init(lazy value: Codable) {
+        self = ._lazy(value)
+    }
+    
+    public init(_ value: Any) throws {
+        switch value {
+            case let value as AnyCodableConvertible:
+                self = try value.toAnyCodable()
+            case let value as Codable:
+                self = ._lazy(value)
+            default:
+                self = try cast((value as? NSCoding).unwrap(), to: AnyCodable.self)
+        }
+    }
+    
+    public init(destructuring value: Codable) throws {
+        self = try ObjectDecoder().decode(AnyCodable.self, from: ObjectEncoder().encode(opaque: value))
+    }
+}
+
+// MARK: - Extensions -
+
+extension AnyCodable {
     public var value: Any? {
         switch self {
             case .none:
@@ -41,25 +83,6 @@ public enum AnyCodable {
             case ._lazy(let value):
                 return value
         }
-    }
-    
-    public init(_ value: Codable) {
-        self = ._lazy(value)
-    }
-    
-    public init(_ value: Any) throws {
-        switch value {
-            case let value as AnyCodableConvertible:
-                self = try value.toAnyCodable()
-            case let value as Codable:
-                self = ._lazy(value)
-            default:
-                self = try cast((value as? NSCoding).unwrap(), to: AnyCodable.self)
-        }
-    }
-    
-    public init(destructuring value: Codable) throws {
-        self = try ObjectDecoder().decode(AnyCodable.self, from: ObjectEncoder().encode(opaque: value))
     }
 }
 
@@ -201,8 +224,25 @@ extension AnyCodable: Equatable {
                 return x == y
             case (.dictionary(let x), .dictionary(let y)):
                 return x == y
-            default:
-                return false
+                
+            default: do {
+                do {
+                    switch (lhs, rhs) {
+                        case (._lazy(let lhs), ._lazy(let rhs)):
+                            return try AnyCodable(destructuring: lhs) == AnyCodable(destructuring: rhs)
+                        case (._lazy(let lhs), _):
+                            return try AnyCodable(destructuring: lhs) == rhs
+                        case (_, ._lazy(let rhs)):
+                            return try lhs == AnyCodable(destructuring: rhs)
+                        default:
+                            return false
+                    }
+                } catch {
+                    assertionFailure(error)
+                    
+                    return false
+                }
+            }
         }
     }
 }
@@ -275,7 +315,15 @@ extension AnyCodable: Hashable {
             case .dictionary(let value):
                 hasher.combine(value)
             case ._lazy(let value):
-                try! ObjectDecoder().decode(AnyCodable.self, from: ObjectEncoder().encode(opaque: value)).hash(into: &hasher)
+                if let value = value as? any Hashable {
+                    value.hash(into: &hasher)
+                } else {
+                    do {
+                        try hasher.combine(AnyCodable(destructuring: value))
+                    } catch {
+                        assertionFailure(error)
+                    }
+                }
         }
     }
 }
@@ -330,19 +378,5 @@ extension AnyCodable: ObjectiveCBridgeable {
             case ._lazy(let value):
                 return try Self(destructuring: value)._bridgeToObjectiveC()
         }
-    }
-}
-
-// MARK: - Helpers -
-
-public struct AnyEncodable: Encodable {
-    public let value: Encodable
-    
-    public init(_ value: Encodable) {
-        self.value = value
-    }
-    
-    public func encode(to encoder: Encoder) throws {
-        try value.encode(to: encoder)
     }
 }

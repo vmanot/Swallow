@@ -10,6 +10,6 @@ public protocol HashEquatable: Hashable {
 
 extension HashEquatable {
     public static func == (lhs: Self, rhs: Self) -> Bool {
-        lhs.hashValue == rhs.hashValue 
+        lhs.hashValue == rhs.hashValue
     }
 }

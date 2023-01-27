@@ -53,12 +53,6 @@ extension Int64: BoundedRandomnable {
     }
 }
 
-extension String: Randomnable {
-    public static func random() -> String {
-        return String(element: Character.random())
-    }
-}
-
 extension UInt: BoundedRandomnable {
     public static func random(minimum: UInt, maximum: UInt) -> UInt {
         return .random(in: minimum...maximum)

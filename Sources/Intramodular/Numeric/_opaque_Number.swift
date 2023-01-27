@@ -23,10 +23,15 @@ public protocol _opaque_Number: Codable, NumberConvertible {
 
 extension _opaque_Number {
     @inlinable
-    public static func _opaque_Number_baseInit(_ value: Any, isRetry: Bool) -> Self? {
+    public static func _opaque_Number_baseInit(
+        _ value: Any,
+        isRetry: Bool
+    ) -> Self? {
         TODO.whole(.fix)
         
-        let value = Optional(value)._opaque_Optional_valueOrNil()
+        guard let value = Optional(_flattening: value) else {
+            return nil
+        }
         
         switch value {
             case let value as Self:

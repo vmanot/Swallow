@@ -58,7 +58,11 @@ extension MutableEitherValueConvertible {
 
             return nil
         } set {
-            newValue.collapse({ eitherValue = .left($0) })
+            if let newValue = newValue {
+                eitherValue = .left(newValue)
+            } else {
+                assertionFailure()
+            }
         }
     }
 
@@ -70,7 +74,11 @@ extension MutableEitherValueConvertible {
 
             return nil
         } set {
-            newValue.collapse({ eitherValue = .right($0) })
+            if let newValue = newValue {
+                eitherValue = .right(newValue)
+            } else {
+                assertionFailure()
+            }
         }
     }
 }

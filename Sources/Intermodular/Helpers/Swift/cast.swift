@@ -35,8 +35,8 @@ public func cast<T, U>(
     file: StaticString = #file,
     function: StaticString = #function,
     line: UInt = #line,
-    column: UInt = #column)
--> U {
+    column: UInt = #column
+) -> U {
     guard let result = _runtimeCast(value, to: type) else {
         return `default`
     }
@@ -50,8 +50,8 @@ public func cast<T, U>(
 func _runtimeCast<T, U>(_ value: T, to otherType: U.Type) -> U? {
     var _value: Any?
     
-    if let value = value as? _opaque_Optional {
-        _value = value._opaque_Optional_wrapped
+    if let value = value as? (any OptionalProtocol) {
+        _value = value._wrapped
     }
     
     if _value == nil {

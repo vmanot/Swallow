@@ -13,15 +13,19 @@ extension Dictionary: ElementRemoveableDestructivelyMutableSequence {
         try forEach(destructivelyMutating: { (element: inout Element!) in try iterator(&element!) })
     }
     
-    public mutating func forEach<T>(destructivelyMutating iterator: ((inout Element?) throws -> T)) rethrows {
+    public mutating func forEach<T>(
+        destructivelyMutating iterator: ((inout Element?) throws -> T)
+    ) rethrows {
         for element in self {
-            var newElement: Element! = element
+            var newElement: Element? = element
             
             _ = try iterator(&newElement)
-            
-            removeValue(forKey: element.0)
-            
-            (newElement as Element?).collapse({ updateValue($0.1, forKey: $0.0) })
+                        
+            if let newElement = newElement {
+                updateValue(newElement.value, forKey: newElement.key)
+            } else {
+                removeValue(forKey: element.0)
+            }
         }
     }
     

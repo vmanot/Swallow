@@ -28,6 +28,16 @@ public struct IdentifierIndexedArray<Element, ID: Hashable>: AnyProtocol {
     }
 }
 
+// MARK: - Extensions -
+
+extension IdentifierIndexedArrayOf {
+    public func map<T: Identifiable>(
+        _ transform: (Element) throws -> T
+    ) rethrows -> IdentifierIndexedArrayOf<T> {
+        try IdentifierIndexedArrayOf<T>(Array(self).map({ try transform($0) }))
+    }
+}
+
 // MARK: - Conformances -
 
 extension IdentifierIndexedArray: CustomStringConvertible {
@@ -107,6 +117,17 @@ extension IdentifierIndexedArray: MutableCollection, MutableSequence, RandomAcce
         }
     }
     
+    public subscript(
+        id identifier: ID,
+        default defaultValue: @autoclosure () -> Element
+    ) -> Element {
+        get {
+            self[id: identifier] ?? defaultValue()
+        } set {
+            self[id: identifier] = newValue
+        }
+    }
+    
     @_disfavoredOverload
     public subscript(id identifier: any Hashable) -> Element? where ID == AnyHashable {
         get {
@@ -183,3 +204,27 @@ extension IdentifierIndexedArray: Encodable where Element: Encodable, Element: I
         try base.map({ $0.value }).encode(to: encoder)
     }
 }
+
+// MARK: - SwiftUI Additions -
+
+#if canImport(SwiftUI)
+
+import SwiftUI
+
+extension Binding {
+    public subscript<Element, ID: Hashable>(
+        id identifier: ID,
+        default defaultValue: @autoclosure @escaping () -> Element
+    ) -> Binding<Element> where Value == IdentifierIndexedArray<Element, ID> {
+        .init(
+            get: {
+                self.wrappedValue[id: identifier, default: defaultValue()]
+            },
+            set: {
+                self.wrappedValue[id: identifier] = $0
+            }
+        )
+    }
+}
+
+#endif

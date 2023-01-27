@@ -48,7 +48,7 @@ extension Optional: DataEncodable where Wrapped: DataEncodable {
     public typealias DataEncodingStrategy = Wrapped.DataEncodingStrategy
 
     public func data(using strategy: DataEncodingStrategy) throws -> Data {
-        return try map { try $0.data(using: strategy) } ?? Data()
+        return try map({ try $0.data(using: strategy) }) ?? Data()
     }
 }
 

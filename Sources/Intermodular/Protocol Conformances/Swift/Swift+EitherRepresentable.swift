@@ -138,22 +138,6 @@ public enum Either7<T, U, V, W, X, Y, Z> {
     case result7(Z)
 }
 
-extension Optional: OptionalProtocol {
-    public typealias EitherValue = Either<Wrapped, Void>
-    
-    public var eitherValue: EitherValue {
-        get {
-            return self ||| ()
-        } set {
-            self = .init(newValue)
-        }
-    }
-    
-    public init(_ eitherValue: EitherValue) {
-        self = eitherValue.leftValue
-    }
-}
-
 extension Result: EitherRepresentable {
     public typealias EitherValue = Either<Success, Failure>
     

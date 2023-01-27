@@ -5,16 +5,18 @@
 import Swift
 
 extension KeyedEncodingContainerProtocol {
-    public mutating func encode(opaque value: Encodable, forKey key: Key) throws {
+    @_disfavoredOverload
+    public mutating func encode(_ value: Encodable, forKey key: Key) throws {
         try value.encode(to: &self, forKey: key)
     }
     
-    public mutating func encodeIfPresent(opaque value: Encodable?, forKey key: Key) throws {
+    @_disfavoredOverload
+    public mutating func encodeIfPresent(_ value: Encodable?, forKey key: Key) throws {
         guard let value = value else {
             return
         }
         
-        try encode(opaque: value, forKey: key)
+        try encode(value, forKey: key)
     }
 }
 

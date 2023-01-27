@@ -8,26 +8,26 @@ import Swift
 public protocol DictionaryProtocol {
     associatedtype DictionaryKey
     associatedtype DictionaryValue
-
+    
     /// Returns the value associated with a given dictionary key.
     func value(forKey _: DictionaryKey) -> DictionaryValue?
-
+    
     /// Accesses the value associated with the given key for reading.
     subscript(_: DictionaryKey) -> DictionaryValue? { get }
 }
 
 public protocol MutableDictionaryProtocol: DictionaryProtocol {
     mutating func setValue(_: DictionaryValue, forKey _: DictionaryKey)
-
+    
     /// Updates the value stored in the dictionary for the given key, or adds a
     /// new key-value pair if the key does not exist.
     @discardableResult
     mutating func updateValue(_: DictionaryValue, forKey _: DictionaryKey) -> DictionaryValue?
-
+    
     /// Removes the value associated with the given key.
     @discardableResult
     mutating func removeValue(forKey _: DictionaryKey) -> DictionaryValue?
-
+    
     /// Accesses the value associated with the given key for reading and writing.
     subscript(key: DictionaryKey) -> DictionaryValue? { get set }
 }
@@ -78,13 +78,32 @@ extension MutableDictionaryProtocol {
         
         return result
     }
-
+    
     public subscript(
         key: DictionaryKey,
         default defaultValue: @autoclosure () -> DictionaryValue
     ) -> DictionaryValue {
         get {
             self[key] ?? defaultValue()
+        } set {
+            self[key] = newValue
+        }
+    }
+    
+    public subscript(
+        key: DictionaryKey,
+        defaultInPlace defaultValue: @autoclosure () -> DictionaryValue
+    ) -> DictionaryValue {
+        mutating get {
+            if let value = self[key] {
+                return value
+            } else {
+                let value = defaultValue()
+                
+                self[key] = value
+                
+                return value
+            }
         } set {
             self[key] = newValue
         }

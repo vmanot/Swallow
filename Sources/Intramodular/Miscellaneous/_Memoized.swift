@@ -6,9 +6,9 @@ import Swift
 
 /// This type is a work-in-progress, **do not use it in production**.
 @propertyWrapper
-public final class _Memoized<EnclosingSelf: AnyObject, Value>: PropertyWrapper {
-    public var computeBaseHash: (EnclosingSelf) -> Int
-    public var computeValue: (EnclosingSelf) -> Value
+public final class _MemoizedValue<EnclosingSelf, Value>: PropertyWrapper {
+    public let computeBaseHash: @Sendable (EnclosingSelf) -> Int
+    public let computeValue: @Sendable (EnclosingSelf) -> Value
     
     var baseHash: Int?
     var computedValue: Value?
@@ -22,7 +22,7 @@ public final class _Memoized<EnclosingSelf: AnyObject, Value>: PropertyWrapper {
     }
     
     public init(
-        _ computeValue: @escaping (EnclosingSelf) -> Value
+        _ computeValue: @escaping @Sendable (EnclosingSelf) -> Value
     ) where EnclosingSelf: Hashable {
         self.computeBaseHash = { $0.hashValue }
         self.computeValue = computeValue
@@ -30,7 +30,7 @@ public final class _Memoized<EnclosingSelf: AnyObject, Value>: PropertyWrapper {
     
     public init<T: Hashable>(
         _ keyPath: KeyPath<EnclosingSelf, T>,
-        _ computeValue: @escaping (T) -> Value
+        _ computeValue: @escaping @Sendable (T) -> Value
     ) {
         self.computeBaseHash = { $0[keyPath: keyPath].hashValue }
         self.computeValue = { computeValue($0[keyPath: keyPath]) }
@@ -39,7 +39,7 @@ public final class _Memoized<EnclosingSelf: AnyObject, Value>: PropertyWrapper {
     public static subscript(
         _enclosingInstance instance: EnclosingSelf,
         wrapped wrappedKeyPath: ReferenceWritableKeyPath<EnclosingSelf, Value>,
-        storage storageKeyPath: ReferenceWritableKeyPath<EnclosingSelf, _Memoized>
+        storage storageKeyPath: ReferenceWritableKeyPath<EnclosingSelf, _MemoizedValue>
     ) -> Value {
         get {
             instance[keyPath: storageKeyPath].compute(for: instance)
@@ -64,12 +64,20 @@ public final class _Memoized<EnclosingSelf: AnyObject, Value>: PropertyWrapper {
     }
 }
 
-extension _Memoized: Hashable {
+// MARK: - Conformances -
+
+extension _MemoizedValue: Equatable {
+    public static func == (lhs: _MemoizedValue, rhs: _MemoizedValue) -> Bool {
+        return true
+    }
+}
+
+extension _MemoizedValue: Hashable {
     public func hash(into hasher: inout Hasher) {
         
     }
-    
-    public static func == (lhs: _Memoized, rhs: _Memoized) -> Bool {
-        return true
-    }
+}
+
+extension Hashable {
+    public typealias _Memoized<Value> = Swallow._MemoizedValue<Self, Value>
 }
