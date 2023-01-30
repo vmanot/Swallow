@@ -152,3 +152,27 @@ extension DictionaryProtocol {
         return self[key] != nil
     }
 }
+
+// MARK: - SwiftUI Additions -
+
+#if canImport(SwiftUI)
+
+import SwiftUI
+
+extension Binding {
+    public subscript(
+        key: Value.DictionaryKey,
+        default defaultValue: @autoclosure @escaping () -> Value.DictionaryValue
+    ) -> Binding<Value.DictionaryValue> where Value: MutableDictionaryProtocol {
+        .init(
+            get: {
+                self.wrappedValue[key, default: defaultValue()]
+            },
+            set: {
+                self.wrappedValue[key] = $0
+            }
+        )
+    }
+}
+
+#endif

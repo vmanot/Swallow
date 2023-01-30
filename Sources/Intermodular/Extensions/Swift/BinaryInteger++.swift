@@ -14,7 +14,7 @@ extension BinaryInteger {
     }
 }
 
-// MARK: clamp
+// MARK: - Clamping
 
 extension BinaryInteger {
     public func clamped(to range: ClosedRange<Self>) -> Self {
@@ -28,7 +28,7 @@ extension BinaryInteger {
     public func clamped(to range: PartialRangeThrough<Self>) -> Self {
         return min(self, range.upperBound)
     }
-
+    
     public mutating func clamp(to range: ClosedRange<Self>) {
         self = self.clamped(to: range)
     }
@@ -42,17 +42,44 @@ extension BinaryInteger {
     }
 }
 
-// MARK: square
+// MARK: - Floored Average
 
 extension BinaryInteger {
-    public func square() -> Self {
-        return self * self
+    // See: https://ai.googleblog.com/2006/06/extra-extra-read-all-about-it-nearly.html?m=1
+    public func flooredAverage(with other: Self) -> Self {
+        let x = self
+        let y = other
+        
+        let (minimum, maximum) = (min(x, y), max(x, y))
+        
+        return minimum + ((maximum - minimum) / 2)
     }
 }
 
-// MARK: squareRoot
+// MARK: - Exponentiation
 
 extension BinaryInteger {
+    public func squared() -> Self {
+        self * self
+    }
+    
+    public func raised(to power: Self) -> Self {
+        func expBySq(_ y: Self, _ x: Self, _ n: Self) -> Self {
+            precondition(n >= 0)
+            if n == 0 {
+                return y
+            } else if n == 1 {
+                return y * x
+            } else if n.isMultiple(of: 2) {
+                return expBySq(y, x * x, n / 2)
+            } else { // n is odd
+                return expBySq(y * x, x * x, (n - 1) / 2)
+            }
+        }
+        
+        return expBySq(1, self, power)
+    }
+    
     public func squareRoot() throws -> Self {
         let root = squareRootOrLower()
         
@@ -80,20 +107,6 @@ extension BinaryInteger {
         }
         
         return low
-    }
-}
-
-// MARK: flooredAverage
-
-extension BinaryInteger {
-    // See: https://ai.googleblog.com/2006/06/extra-extra-read-all-about-it-nearly.html?m=1
-    public func flooredAverage(with other: Self) -> Self {
-        let x = self
-        let y = other
-        
-        let (minimum, maximum) = (min(x, y), max(x, y))
-        
-        return minimum + ((maximum - minimum) / 2)
     }
 }
 
