@@ -29,7 +29,7 @@ extension _opaque_Number {
     ) -> Self? {
         TODO.whole(.fix)
         
-        guard let value = Optional(_flattening: value) else {
+        guard let value = Optional(_unwrapping: value) else {
             return nil
         }
         

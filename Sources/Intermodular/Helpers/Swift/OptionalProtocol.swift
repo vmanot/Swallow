@@ -19,15 +19,16 @@ extension OptionalProtocol {
         Wrapped.self
     }
     
-    public init(_flattening x: Any) where Wrapped == Any {
+    /// Recursively unwraps a possibly optional/type-erased value.
+    public init(_unwrapping x: Any) where Wrapped == Any {
         if let _x = x as? any OptionalProtocol {
             if let _xUnwrapped = _x._wrapped {
-                self.init(_flattening: _xUnwrapped)
+                self.init(_unwrapping: _xUnwrapped)
             } else {
                 self.init(nilLiteral: ())
             }
         } else if let _x = x as? _UnwrappableTypeEraser {
-            self.init(_flattening: _x._base)
+            self.init(_unwrapping: _x._base)
         } else {
             self.init(.some(x))
         }
@@ -70,6 +71,11 @@ public func _getUnwrappedType(
     }
 }
 
+/// Get the unwrapped type of a given value.
+///
+/// Similar to `Swift.type(of:)`, but unwraps optionals and type erasers.
+///
+/// For e.g. `_unwrappedType(of: AnyHashable(1))` would be `Int.self` as opposed to `AnyHashable.self`.
 public func _unwrappedType(
     of x: Any
 ) -> Any.Type {
@@ -88,7 +94,7 @@ public func _unwrappedType(
 
 /// Performs a check at runtime to determine whether a given value is `nil` or not.
 public func _isValueNil(_ value: Any) -> Bool {
-    Optional(_flattening: value).isNil
+    Optional(_unwrapping: value).isNil
 }
 
 // MARK: - Implementations -
@@ -104,11 +110,5 @@ extension Optional: OptionalProtocol {
     
     public init<T: OptionalProtocol>(_ x: T) where T.Wrapped == Wrapped {
         self = x._wrapped
-    }
-}
-
-extension ExpressibleByNilLiteral where Self: OptionalProtocol {
-    public init(nilLiteral: ()) {
-        self.init(Optional<Wrapped>.none)
     }
 }
