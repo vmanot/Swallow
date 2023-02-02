@@ -80,9 +80,9 @@ extension BinaryInteger where Self: DataEncodable, Self.DataEncodingStrategy == 
     @_specialize(where Self == UInt64)
     @inlinable
     public func data(using strategy: DataEncodingStrategy) throws -> Data {
-        return withUnsafeBytes(of: &TrivialRepresentationOf(self).readOnly.value) {
-            .init($0)
-        }
+        var _self = self
+        
+        return withUnsafeBytes(of: &_self, { Data($0) })
     }
 }
 

@@ -134,7 +134,10 @@ extension InitiableBufferPointer {
 
 extension InitiableBufferPointer {
     public static func to<T>(assumingLayoutCompatible value: inout T) -> Self {
-        return .init(start: .to(assumingLayoutCompatible: &value), count: numericCast(MemoryLayout<T>.stride / MemoryLayout<Element>.stride))
+        return .init(
+            start: .to(assumingLayoutCompatible: &value),
+            count: numericCast(MemoryLayout<T>.stride / MemoryLayout<Element>.stride)
+        )
     }
 }
 

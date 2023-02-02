@@ -7,17 +7,20 @@ import Swift
 
 public enum ByteOrder: Hashable, Trivial {
     /// Little endian
-    case significanceAscending 
-    
+    case significanceAscending
     /// Big endian
     case significanceDescending
     
     case unknown
     
     public static var current: ByteOrder {
-        return Bool(strncmp(.to(assumingLayoutCompatible: &Int(0x44434241).readOnly), "ABCD", 4)) ? .significanceDescending : .significanceAscending
+        Int(0x44434241).withUnsafeBytes { bytes in
+            let isBigEndian = Bool(strncmp(bytes.baseAddress!, "ABCD", 4))
+            
+            return isBigEndian ? .significanceDescending : .significanceAscending
+        }
     }
-
+    
     public init() {
         self = .unknown
     }
@@ -25,10 +28,10 @@ public enum ByteOrder: Hashable, Trivial {
 
 extension ByteOrder {
     public var isBigEndian: Trilean {
-        return self == .unknown ? .unknown : .init(self == .significanceDescending)
+        self == .unknown ? .unknown : .init(self == .significanceDescending)
     }
     
     public var isLittleEndian: Trilean {
-        return !isBigEndian
+        !isBigEndian
     }
 }

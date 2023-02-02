@@ -4,7 +4,7 @@
 
 import Swift
 
-public protocol OptionalProtocol: AnyProtocol, ExpressibleByNilLiteral {
+public protocol OptionalProtocol: ExpressibleByNilLiteral {
     associatedtype Wrapped
     
     var _wrapped: Wrapped? { get set }

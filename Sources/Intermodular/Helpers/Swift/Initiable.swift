@@ -4,6 +4,6 @@
 
 import Swift
 
-public protocol Initiable: AnyProtocol {
+public protocol Initiable {
     init()
 }

@@ -4,7 +4,7 @@
 
 import Swift
 
-public protocol ContiguousStorage: AnyProtocol {
+public protocol ContiguousStorage {
     associatedtype Element
     
     func withUnsafeBytes<T>(_: ((UnsafeRawBufferPointer) throws -> T)) rethrows -> T
@@ -14,7 +14,7 @@ public protocol ContiguousStorage: AnyProtocol {
 
 public protocol MutableContiguousStorage: ContiguousStorage {
     mutating func withUnsafeMutableBytes<T>(_: ((UnsafeMutableRawBufferPointer) throws -> T)) rethrows -> T
-
+    
     mutating func withMutableBufferPointer<BP: InitiableMutableBufferPointer, T>(_: ((BP) throws -> T)) rethrows -> T where Element == BP.Element
 }
 
@@ -31,10 +31,10 @@ extension ContiguousStorage {
 }
 
 extension MutableContiguousStorage {
-    public mutating func withUnsafeMutableBytes<T>(_ f: ((UnsafeMutableRawBufferPointer) throws -> T)) rethrows -> T {        
+    public mutating func withUnsafeMutableBytes<T>(_ f: ((UnsafeMutableRawBufferPointer) throws -> T)) rethrows -> T {
         return try withUnsafeMutableBufferPointer({ try f(.init($0)) })
     }
-
+    
     public mutating func withUnsafeMutableBufferPointer<T>(_ f: ((UnsafeMutableBufferPointer<Element>) throws -> T)) rethrows -> T {
         return try withMutableBufferPointer(f)
     }
@@ -48,15 +48,15 @@ extension ContiguousStorage {
     }
     
     public func createCopy() -> UnsafeMutableBufferPointer<Element> {
-        return withUnsafeBufferPointer({ .initializing(from: $0) })
+        withUnsafeBufferPointer({ .initializing(from: $0) })
     }
     
     public func createCopy<BP: InitiableBufferPointer>() -> BP where Element == BP.Element {
-        return .init(createCopy())
+        BP(createCopy())
     }
     
     public func createRawCopy() -> UnsafeMutableRawBufferPointer {
-        return withUnsafeBytes({ .initializing(from: $0) })
+        withUnsafeBytes({ .initializing(from: $0) })
     }
 }
 
@@ -64,10 +64,10 @@ extension ContiguousStorage {
 
 extension InitiableBufferPointer {
     public static func initializing<BPI: ContiguousStorage>(from interface: BPI) -> Self where Element == BPI.Element {
-        return interface.withUnsafeBufferPointer(initializing(from:))
+        interface.withUnsafeBufferPointer(initializing(from:))
     }
     
     public static func initializing<BPI: InitiableBufferPointer & ContiguousStorage>(from interface: BPI) -> Self where Element == BPI.Element {
-        return interface.withUnsafeBufferPointer(initializing(from:))
+        interface.withUnsafeBufferPointer(initializing(from:))
     }
 }

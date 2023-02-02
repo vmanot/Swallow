@@ -5,7 +5,7 @@
 import Swift
 
 /// A type with an associated value.
-public protocol ValueConvertible: AnyProtocol {
+public protocol ValueConvertible {
     /// The type that can be used to represent all values of the conforming
     /// type.
     associatedtype Value

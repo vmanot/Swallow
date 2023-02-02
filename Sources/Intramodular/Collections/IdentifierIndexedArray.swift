@@ -6,7 +6,7 @@ import Swift
 
 public typealias IdentifierIndexedArrayOf<Element: Identifiable> = IdentifierIndexedArray<Element, Element.ID>
 
-public struct IdentifierIndexedArray<Element, ID: Hashable>: AnyProtocol {
+public struct IdentifierIndexedArray<Element, ID: Hashable> {
     private var base: OrderedDictionary<ID, Element>
     private var id: (Element) -> ID
     

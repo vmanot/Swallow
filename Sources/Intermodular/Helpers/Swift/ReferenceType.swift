@@ -5,7 +5,7 @@
 import Swift
 
 /// A reference type (or a wrapper of one).
-public protocol ReferenceType: AnyProtocol {
+public protocol ReferenceType {
     var isUniquelyReferenced: Bool { mutating get }
 }
 

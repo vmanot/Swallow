@@ -5,7 +5,7 @@
 import Darwin
 import Swift
 
-public protocol SimpleIntegerInitiable: AnyProtocol {
+public protocol SimpleIntegerInitiable {
     init(_: UInt8)
     init(_: Int8)
 }

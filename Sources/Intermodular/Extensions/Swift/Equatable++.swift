@@ -17,9 +17,13 @@ extension Equatable {
 extension Trivial  {
     @inlinable
     public func isEqual(to other: Self) -> Bool {
+        var _self = self
+        var _other = other
+        
         return memcmp(
-            .to(assumingLayoutCompatible: &readOnly),
-            .to(assumingLayoutCompatible: &other.readOnly), Self.sizeInBytes
+            .to(assumingLayoutCompatible: &_self),
+            .to(assumingLayoutCompatible: &_other),
+            Self.sizeInBytes
         ) == 0
     }
     

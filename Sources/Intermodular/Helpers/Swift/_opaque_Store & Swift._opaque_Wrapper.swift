@@ -4,7 +4,7 @@
 
 import Swift
 
-public protocol _opaque_Wrapper: AnyProtocol {
+public protocol _opaque_Wrapper {
     
 }
 

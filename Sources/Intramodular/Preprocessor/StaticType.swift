@@ -7,7 +7,7 @@ import Swift
 /// A type that represents a static construct.
 ///
 /// For e.g. `StaticString`.
-public protocol StaticType: AnyProtocol {
+public protocol StaticType {
     
 }
 
