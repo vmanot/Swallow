@@ -5,6 +5,7 @@
 import Foundation
 import Swift
 
+/// A type-erased coding key.
 public struct AnyCodingKey: CodingKey, StringConvertible {
     private enum Storage {
         case string(String)
