@@ -8,7 +8,7 @@ extension Bool: EitherRepresentable {
     public typealias EitherValue = Either<True.Type, False.Type>
     
     public var eitherValue: EitherValue {
-        return self ? .left(<<infer>>) : .right(<<infer>>)
+        self ? .left(True.self) : .right(False.self)
     }
     
     public init(_ eitherValue: EitherValue) {

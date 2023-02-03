@@ -76,41 +76,41 @@ extension Pointer {
 
 extension Pointer {
     public var nativeWordPointerRepresentation: UnsafePointer<NativeWord> {
-        return .init(opaquePointerRepresentation)
+        UnsafePointer<NativeWord>(opaquePointerRepresentation)
     }
     
     public var rawRepresentation: UnsafeRawPointer {
-        return .init(opaquePointerRepresentation)
+        UnsafeRawPointer(opaquePointerRepresentation)
     }
     
     public var mutableRawRepresentation: UnsafeMutableRawPointer {
-        return .init(opaquePointerRepresentation)
+        UnsafeMutableRawPointer(opaquePointerRepresentation)
     }
 }
 
 extension Pointer {
     @inlinable
     public static func allocate(initializingTo pointee: Pointee) -> Self {
-        return .init(UnsafeMutablePointer.allocate(capacity: 1).initializing(to: pointee))
+        Self(UnsafeMutablePointer.allocate(capacity: 1).initializing(to: pointee))
     }
 }
 
 extension Pointer where Stride: BinaryInteger {
     @inlinable
     public static func allocate<N: BinaryInteger>(initializingTo pointee: Pointee, count: N) -> Self {
-        return .init(UnsafeMutablePointer<Pointee>.allocate(capacity: numericCast(count)).initializing(to: pointee, count: count))
+        Self(UnsafeMutablePointer<Pointee>.allocate(capacity: numericCast(count)).initializing(to: pointee, count: count))
     }
 }
 
 extension Pointer {
     @inlinable
     public static func to(_ pointee: inout Pointee) -> Self {
-        return .init(withUnsafeMutablePointer(to: &pointee, id))
+        Self(withUnsafeMutablePointer(to: &pointee, id))
     }
     
     @inlinable
     public static func to<T>(assumingLayoutCompatible value: inout T) -> Self {
-        return .init(UnsafePointer.to(&value).opaquePointerRepresentation)
+        Self(UnsafePointer.to(&value).opaquePointerRepresentation)
     }
 }
 

@@ -11,27 +11,12 @@ public protocol FailableWrapper: ValueConvertible {
 }
 
 /// A type that can be infallibly converted to and from an associated value.
-public protocol Wrapper: _opaque_Wrapper, FailableWrapper {
+public protocol Wrapper: FailableWrapper {
     init(_: Value)
 }
 
-public protocol MutableWrapper: _opaque_MutableWrapper, Wrapper {
+public protocol MutableWrapper: Wrapper {
     var value: Value { get set }
-}
-
-public protocol WrapperWrapper: Wrapper {
-    associatedtype ValueWrapper: Wrapper where ValueWrapper.Value == Value
-    var valueWrapper: ValueWrapper { get }
-    init(_: ValueWrapper)
-}
-
-public protocol MutableWrapperWrapper: MutableWrapper, WrapperWrapper where ValueWrapper: MutableWrapper {
-    var valueWrapper: ValueWrapper { get set }
-}
-
-public protocol MutableWrapperWrapperClass: MutableWrapperWrapper {
-    var valueWrapper: ValueWrapper { get nonmutating set }
-    var value: Value { get nonmutating set }
 }
 
 // MARK: - Implementation -
@@ -39,35 +24,5 @@ public protocol MutableWrapperWrapperClass: MutableWrapperWrapper {
 extension FailableWrapper {
     public init(uncheckedValue value: Value) {
         self = Self(value)!
-    }
-}
-
-extension WrapperWrapper {
-    public var value: Value {
-        return valueWrapper.value
-    }
-    
-    public init(_ value: Value) {
-        self.init(ValueWrapper(value))
-    }
-}
-
-extension MutableWrapperWrapper {
-    public var value: Value {
-        get {
-            return valueWrapper.value
-        } set {
-            valueWrapper.value = newValue
-        }
-    }
-}
-
-extension MutableWrapperWrapperClass where Self: AnyObject {
-    public var value: Value {
-        get {
-            return valueWrapper.value
-        } nonmutating set {
-            valueWrapper.value = newValue
-        }
     }
 }

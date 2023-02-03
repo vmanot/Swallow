@@ -5,12 +5,7 @@
 import Darwin
 import Swift
 
-public protocol SimpleIntegerInitiable {
-    init(_: UInt8)
-    init(_: Int8)
-}
-
-public protocol UnsignedIntegerInitiable: SimpleIntegerInitiable {
+public protocol UnsignedIntegerInitiable {
     init(_: UInt)
     init(_: UInt8)
     init(_: UInt16)
@@ -18,7 +13,7 @@ public protocol UnsignedIntegerInitiable: SimpleIntegerInitiable {
     init(_: UInt64)
 }
 
-public protocol SignedIntegerInitiable: SimpleIntegerInitiable {
+public protocol SignedIntegerInitiable {
     init(_: Int)
     init(_: Int8)
     init(_: Int16)
@@ -27,7 +22,7 @@ public protocol SignedIntegerInitiable: SimpleIntegerInitiable {
 }
 
 public protocol IntegerInitiable: SignedIntegerInitiable, UnsignedIntegerInitiable {
-
+    
 }
 
 // MARK: - Implementation -
@@ -37,17 +32,17 @@ extension UnsignedIntegerInitiable {
     public init(_ value: UInt8) {
         self.init(UInt(use_stdlib_init: value))
     }
-
+    
     @inlinable
     public init(_ value: UInt16) {
         self.init(UInt(use_stdlib_init: value))
     }
-
+    
     @inlinable
     public init(_ value: UInt32) {
         self.init(UInt(use_stdlib_init: value))
     }
-
+    
     @inlinable
     public init(_ value: UInt64) {
         self.init(UInt(use_stdlib_init: value))
@@ -59,17 +54,17 @@ extension SignedIntegerInitiable {
     public init(_ value: Int8) {
         self.init(Int(use_stdlib_init: value))
     }
-
+    
     @inlinable
     public init(_ value: Int16) {
         self.init(Int(use_stdlib_init: value))
     }
-
+    
     @inlinable
     public init(_ value: Int32) {
         self.init(Int(use_stdlib_init: value))
     }
-
+    
     @inlinable
     public init(_ value: Int64) {
         self.init(Int(use_stdlib_init: value))

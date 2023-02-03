@@ -4,9 +4,7 @@
 
 import Swift
 
-///
-///A sequence type that is guaranteed to be non-destroying.
-///
+/// A sequence type that is guaranteed to be non-destroying.
 public protocol NonDestroyingSequence: Countable, Sequence {
     var nonDestructiveCount: Count { get }
     

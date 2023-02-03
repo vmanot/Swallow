@@ -6,13 +6,13 @@ import Swift
 
 public protocol RawValueConvertible {
     associatedtype RawValue
-
+    
     var rawValue: RawValue { get }
 }
 
 public protocol MutableRawValueConvertible {
     associatedtype RawValue
-
+    
     var rawValue: RawValue { get }
 }
 

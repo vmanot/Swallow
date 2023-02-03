@@ -16,14 +16,11 @@ public struct NullTerminatedUTF8String: MutableWrapper {
 }
 
 extension NullTerminatedUTF8String {
-    public struct Iterator: MutableWrapperWrapper {
-        public typealias ValueWrapper = NullTerminatedUTF8String
-        public typealias Value = ValueWrapper.Value
+    public struct Iterator {
+        public var base: NullTerminatedUTF8String
         
-        public var valueWrapper: ValueWrapper
-        
-        public init(_ valueWrapper: ValueWrapper) {
-            self.valueWrapper = valueWrapper
+        public init(base: NullTerminatedUTF8String) {
+            self.base = base
         }
     }
 }
@@ -58,15 +55,15 @@ extension NullTerminatedUTF8String.Iterator: IteratorProtocol {
     public typealias Element = CChar
     
     public mutating func next() -> Element? {
-        guard value[0] != 0 else {
+        guard base[0] != 0 else {
             return nil
         }
         
         defer {
-            value.advance()
+            base.advance()
         }
         
-        return value.pointee
+        return base.pointee
     }
 }
 
@@ -120,7 +117,7 @@ extension NullTerminatedUTF8String: MutablePointer {
     public func advanced(by n: Value.Stride) -> NullTerminatedUTF8String {
         .init(value.advanced(by: n))
     }
-
+    
     public static func allocate(capacity: Stride) -> NullTerminatedUTF8String {
         let resultValue = Value.allocate(capacity: capacity + 1)
         resultValue[capacity] = 0
@@ -130,7 +127,7 @@ extension NullTerminatedUTF8String: MutablePointer {
 
 extension NullTerminatedUTF8String: Sequence {
     public func makeIterator() -> Iterator {
-        return .init(self)
+        .init(base: self)
     }
 }
 

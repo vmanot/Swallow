@@ -9,7 +9,7 @@ public protocol RawPointer: Pointer where Pointee == Byte {
 }
 
 public protocol RawBufferPointer: BufferPointer where BaseAddressPointer: RawPointer {
-
+    
 }
 
 public protocol ConstantRawPointer: ConstantPointer, RawPointer {
@@ -17,7 +17,7 @@ public protocol ConstantRawPointer: ConstantPointer, RawPointer {
 }
 
 public protocol ConstantRawBufferPointer: ConstantBufferPointer, RawBufferPointer {
-
+    
 }
 
 public protocol MutableRawPointer: MutablePointer, RawPointer {
@@ -25,7 +25,7 @@ public protocol MutableRawPointer: MutablePointer, RawPointer {
 }
 
 public protocol MutableRawBufferPointer: MutableBufferPointer, RawBufferPointer {
-
+    
 }
 
 public protocol InitiableMutableRawBufferPointer: InitiableMutableBufferPointer, MutableRawBufferPointer {

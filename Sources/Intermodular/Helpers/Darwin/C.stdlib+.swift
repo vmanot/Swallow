@@ -6,7 +6,7 @@ import Darwin
 import Swift
 
 @inlinable
-public func alloca<T>(_: T.Type = <<infer>>) -> T {
+public func alloca<T>(_: T.Type = T.self) -> T {
     return malloc(MemoryLayout<T>.size).assumingMemoryBound(to: T.self).remove()
 }
 
@@ -16,6 +16,6 @@ public func malloc_zero(_ count: Int) -> UnsafeMutableRawPointer {
 }
 
 @inlinable
-public func alloca_zero<T>(_: T.Type = <<infer>>) -> T {
+public func alloca_zero<T>(_: T.Type = T.self) -> T {
     return malloc_zero(MemoryLayout<T>.size).assumingMemoryBound(to: T.self).remove()
 }

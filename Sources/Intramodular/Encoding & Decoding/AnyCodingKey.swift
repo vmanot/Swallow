@@ -5,7 +5,7 @@
 import Foundation
 import Swift
 
-public struct AnyCodingKey: CodingKey, Identifier, StringConvertible {
+public struct AnyCodingKey: CodingKey, StringConvertible {
     private enum Storage {
         case string(String)
         case integer(Int)

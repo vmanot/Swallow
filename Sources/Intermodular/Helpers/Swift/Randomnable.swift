@@ -32,10 +32,22 @@ extension BoundedRandomnable {
     }
 }
 
+// MARK: - Implementation -
+
+extension Randomnable where Self: RawRepresentable, RawValue: Randomnable {
+    public static func random() -> Self {
+        self.init(rawValue: RawValue.random())!
+    }
+}
+
 // MARK: - Extensions -
 
 extension BoundedRandomnable where Self: Strideable {
-    public static func random(minimum: Self = .minimum, maximum: Self = .maximum, excluding range: Range<Self>) -> Self {
+    public static func random(
+        minimum: Self = .minimum,
+        maximum: Self = .maximum,
+        excluding range: Range<Self>
+    ) -> Self {
         var result: Self
         
         repeat {
@@ -47,7 +59,11 @@ extension BoundedRandomnable where Self: Strideable {
                 return result
     }
     
-    public static func random(minimum: Self = .minimum, maximum: Self = .maximum, excluding element: Self) -> Self {
+    public static func random(
+        minimum: Self = .minimum,
+        maximum: Self = .maximum,
+        excluding element: Self
+    ) -> Self {
         return random(minimum: minimum, maximum: maximum, excluding: Range(element))
     }
 }
