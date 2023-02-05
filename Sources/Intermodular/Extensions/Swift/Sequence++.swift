@@ -550,18 +550,18 @@ extension Sequence where Element: Numeric {
 
 // MARK: distinct
 
-extension Sequence where Element: Hashable {
-    public func distinct() -> AnySequence<Element> {
+extension Sequence {
+    public func distinct<T: Hashable>(by keyPath: KeyPath<Element, T>) -> AnySequence<Element> {
         return AnySequence<Element> { () -> AnyIterator<Element> in
             var iterator = makeIterator()
-            var seen: [Element: Bool] = [:]
+            var seen: [T: Bool] = [:]
             
-            return AnyIterator<Element> {
+            return AnyIterator<Element> { () -> Element? in
                 guard var next = iterator.next() else {
                     return nil
                 }
                 
-                while seen.updateValue(true, forKey: next) == true {
+                while seen.updateValue(true, forKey: next[keyPath: keyPath]) == true {
                     guard let _next = iterator.next() else {
                         return nil
                     }
@@ -574,9 +574,13 @@ extension Sequence where Element: Hashable {
         }
     }
     
+    public func distinct() -> AnySequence<Element> where Element: Hashable {
+        distinct(by: \.hashValue)
+    }
+
     @_disfavoredOverload
-    public func distinct() -> [Element] {
-        Array(self.distinct() as AnySequence)
+    public func distinct() -> [Element] where Element: Hashable {
+        Array(self.distinct(by: \.hashValue))
     }
 }
 
