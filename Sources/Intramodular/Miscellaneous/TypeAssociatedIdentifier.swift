@@ -16,7 +16,7 @@ public struct TypeAssociatedIdentifier<Parent, RawValue: Hashable>: Hashable, Ra
 
 extension TypeAssociatedIdentifier: Codable where RawValue: Codable {
     public init(from decoder: Decoder) throws {
-        try self.init(rawValue: .init(from: decoder))
+        try self.init(rawValue: RawValue(from: decoder))
     }
     
     public func encode(to encoder: Encoder) throws {

@@ -10,17 +10,25 @@ public struct IdentifierIndexedArray<Element, ID: Hashable> {
     private var base: OrderedDictionary<ID, Element>
     private var id: (Element) -> ID
     
-    public init(_ array: [Element] = [], id: @escaping (Element) -> ID) {
-        self.base = OrderedDictionary(uniqueKeysWithValues: array.map({ (key: id($0), value: $0) }))
+    public init(_ elements: some Sequence<Element>, id: @escaping (Element) -> ID) {
+        self.base = OrderedDictionary(uniqueKeysWithValues: elements.map({ (key: id($0), value: $0) }))
         self.id = id
     }
-    
-    public init(_ array: [Element] = [], id: KeyPath<Element, ID>) {
-        self.init(array, id: { $0[keyPath: id] })
+
+    public init(id: @escaping (Element) -> ID) {
+        self.init(Array<Element>(), id: id)
     }
     
-    public init(_ array: [Element]) where Element: Identifiable, Element.ID == ID {
-        self.init(array, id: \.id)
+    public init(_ elements: some Sequence<Element>, id: KeyPath<Element, ID>) {
+        self.init(elements, id: { $0[keyPath: id] })
+    }
+    
+    public init(id: KeyPath<Element, ID>) {
+        self.init(id: { $0[keyPath: id] })
+    }
+    
+    public init(_ elements: some Sequence<Element>) where Element: Identifiable, Element.ID == ID {
+        self.init(elements, id: \.id)
     }
     
     private func _idForElement(_ element: Element) -> ID {
@@ -28,13 +36,26 @@ public struct IdentifierIndexedArray<Element, ID: Hashable> {
     }
 }
 
-// MARK: - Extensions -
+// MARK: - Implementation -
+
+extension IdentifierIndexedArray {
+    public mutating func append(_ element: Element) {
+        self[id: _idForElement(element)] = element
+    }
+}
 
 extension IdentifierIndexedArrayOf {
     public func map<T: Identifiable>(
         _ transform: (Element) throws -> T
     ) rethrows -> IdentifierIndexedArrayOf<T> {
         try IdentifierIndexedArrayOf<T>(Array(self).map({ try transform($0) }))
+    }
+    
+    public func map<T, U: Hashable>(
+        id: KeyPath<T, U>,
+        _ transform: (Element) throws -> T
+    ) rethrows -> IdentifierIndexedArray<T, U> {
+        try IdentifierIndexedArray<T, U>(Array(self).map({ try transform($0) }), id: id)
     }
 }
 

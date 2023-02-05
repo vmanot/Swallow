@@ -3,8 +3,10 @@
 //
 
 import Swift
-
-/// This type is a work-in-progress, **do not use it in production**.
+ 
+/// A memoized value.
+///
+/// This type is a work-in-progress. Do not use this type directly in your code.
 @propertyWrapper
 public final class _MemoizedValue<EnclosingSelf, Value>: PropertyWrapper {
     public let computeBaseHash: @Sendable (EnclosingSelf) -> Int

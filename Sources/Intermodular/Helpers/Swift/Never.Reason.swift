@@ -5,12 +5,16 @@
 import Swift
 
 extension Never {
+    /// A reason for why something returns `Never`.
+    ///
+    /// This type is a work-in-progress. Do not use this type directly in your code.
     public enum Reason: Error {
         case abstract
         case functionFailure
         case illegal
         case impossible
         case irrational
+        case osUnsupported
         case unavailable
         case unimplemented
         case unsupported
@@ -41,12 +45,14 @@ extension Never {
                 fatalError("t'is but impossible", file: file, line: line)
             case .irrational:
                 fatalError("irrational", file: file, line: line)
+            case .osUnsupported:
+                fatalError("\(function) unsupported on this operating-system", file: file, line: line)
             case .unavailable:
                 fatalError("\(function) unavailable", file: file, line: line)
-            case .unsupported:
-                fatalError("\(function) unsupported", file: file, line: line)
             case .unimplemented:
                 fatalError("\(function) unimplemented", file: file, line: line)
+            case .unsupported:
+                fatalError("\(function) unsupported", file: file, line: line)
         }
     }
     
