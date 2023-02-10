@@ -49,6 +49,11 @@ public enum TODO {
     public static var unimplemented: Never {
         fatalError("Unimplemented function or code path")
     }
+    
+    // @available(*, deprecated, message: "This should not be used in production code.")
+    public static var fixMe: Never {
+        fatalError("Unimplemented function or code path")
+    }
 }
 
 var isDebugAssertConfiguration: Bool {
