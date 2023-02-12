@@ -29,6 +29,8 @@ extension OptionalProtocol {
             }
         } else if let _x = x as? _UnwrappableTypeEraser {
             self.init(_unwrapping: _x._base)
+        } else if let _x = x as? _SwallowMetatypeType {
+            self.init(_unwrapping: type(of: _x._base))
         } else {
             self.init(.some(x))
         }
@@ -87,6 +89,8 @@ public func _unwrappedType(
         }
     } else if let _x = x as? _UnwrappableTypeEraser {
         return _unwrappedType(of: _x._base)
+    } else if let _x = x as? _SwallowMetatypeType {
+        return type(of: _x._base)
     } else {
         return type(of: x)
     }
