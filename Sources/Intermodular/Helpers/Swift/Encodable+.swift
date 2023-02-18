@@ -4,10 +4,10 @@
 
 import Swift
 
-public struct EncodableImpl: Encodable {
-    public let impl: ((Encoder) throws -> ())
+public struct EncodableImpl: Encodable, Sendable {
+    public let impl: (@Sendable (Encoder) throws -> ())
     
-    public init(_ impl: (@escaping (Encoder) throws -> ())) {
+    public init(_ impl: (@escaping @Sendable (Encoder) throws -> ())) {
         self.impl = impl
     }
     

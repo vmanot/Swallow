@@ -9,8 +9,8 @@ import CoreGraphics
 import Foundation
 import Swift
 
-public struct AnyNumber: Codable, Hashable {
-    private enum Storage: Codable, Hashable {
+public struct AnyNumber: Codable, Hashable, Sendable {
+    private enum Storage: Codable, Hashable, Sendable {
         case bool(Bool)
         
         case double(Double)
@@ -226,7 +226,7 @@ public struct AnyNumber: Codable, Hashable {
     }
 }
 
-// MARK: - Conformances -
+// MARK: - Conformances
 
 extension AnyNumber: BooleanInitiable {
     public init(_ value: Bool) {
@@ -306,7 +306,7 @@ extension AnyNumber {
     }
 }
 
-// MARK: - Helpers -
+// MARK: - Helpers
 
 extension NSNumber {
     fileprivate func toAnyNumber() -> AnyNumber {

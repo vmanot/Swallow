@@ -18,7 +18,7 @@ public protocol MutableContiguousStorage: ContiguousStorage {
     mutating func withMutableBufferPointer<BP: InitiableMutableBufferPointer, T>(_: ((BP) throws -> T)) rethrows -> T where Element == BP.Element
 }
 
-// MARK: - Implementation -
+// MARK: - Implementation
 
 extension ContiguousStorage {
     public func withUnsafeBytes<T>(_ f: ((UnsafeRawBufferPointer) throws -> T)) rethrows -> T {
@@ -40,7 +40,7 @@ extension MutableContiguousStorage {
     }
 }
 
-// MARK: - Extensions -
+// MARK: - Extensions
 
 extension ContiguousStorage {
     public func copy<BP: InitiableMutableBufferPointer>(to pointer: BP) where Element == BP.Element {
@@ -60,7 +60,7 @@ extension ContiguousStorage {
     }
 }
 
-// MARK: - Helpers -
+// MARK: - Helpers
 
 extension InitiableBufferPointer {
     public static func initializing<BPI: ContiguousStorage>(from interface: BPI) -> Self where Element == BPI.Element {

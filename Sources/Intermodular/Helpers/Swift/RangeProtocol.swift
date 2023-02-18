@@ -26,7 +26,7 @@ public protocol BoundInitiableRangeProtocol: RangeProtocol {
     init(bounds: (lower: Bound, upper: Bound))
 }
 
-// MARK: - Implementation -
+// MARK: - Implementation
 
 extension BoundInitiableRangeProtocol {
     @inlinable
@@ -43,7 +43,7 @@ extension HalfOpenRangeProtocol {
     }
 }
 
-// MARK: - Extensions -
+// MARK: - Extensions
 
 extension BoundInitiableRangeProtocol {
     public init(lowerBound: Bound, upperBound: Bound) {

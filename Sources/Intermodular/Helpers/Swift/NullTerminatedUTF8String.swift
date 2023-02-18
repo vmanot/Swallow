@@ -25,7 +25,7 @@ extension NullTerminatedUTF8String {
     }
 }
 
-// MARK: - Extensions -
+// MARK: - Extensions
 
 extension NullTerminatedUTF8String {
     public var stringValue: String {
@@ -33,7 +33,7 @@ extension NullTerminatedUTF8String {
     }
 }
 
-// MARK: - Conformances -
+// MARK: - Conformances
 
 extension NullTerminatedUTF8String: CustomStringConvertible {
     public var description: String {
@@ -131,7 +131,7 @@ extension NullTerminatedUTF8String: Sequence {
     }
 }
 
-// MARK: - Helpers -
+// MARK: - Helpers
 
 extension String {
     public init(cString: NullTerminatedUTF8String) {

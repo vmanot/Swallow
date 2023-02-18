@@ -42,7 +42,7 @@ public protocol ResizableSetProtocol: DestructivelyMutableSetProtocol, Extensibl
     
 }
 
-// MARK: - Implementation -
+// MARK: - Implementation
 
 extension SequenceInitiableSetProtocol where Element: Hashable {
     public func isSubset<S: Sequence>(of other: S) -> Bool where S.Element == Element {

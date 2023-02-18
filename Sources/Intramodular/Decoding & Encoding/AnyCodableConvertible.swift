@@ -9,7 +9,7 @@ public protocol AnyCodableConvertible {
     func toAnyCodable() throws -> AnyCodable
 }
 
-// MARK: - Conformances -
+// MARK: - Conformances
 
 extension Array: AnyCodableConvertible {
     public func toAnyCodable() throws -> AnyCodable {

@@ -55,7 +55,7 @@ public struct AnyCodingKey: CodingKey, StringConvertible {
     }
 }
 
-// MARK: - Conformances -
+// MARK: - Conformances
 
 extension AnyCodingKey: Codable {
     public init(from decoder: Decoder) throws {

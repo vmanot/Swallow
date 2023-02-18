@@ -14,7 +14,7 @@ public protocol MutableEitherRepresentable: EitherRepresentable, MutableEitherVa
     
 }
 
-// MARK: - Implementation -
+// MARK: - Implementation
 
 extension MutableEitherRepresentable where Self: Initiable {
     public init(_ eitherValue: Either<LeftValue, RightValue>) {
@@ -24,7 +24,7 @@ extension MutableEitherRepresentable where Self: Initiable {
     }
 }
 
-// MARK: - Extensions -
+// MARK: - Extensions
 
 extension EitherRepresentable {
     public init(leftValue: LeftValue) {
@@ -36,7 +36,7 @@ extension EitherRepresentable {
     }
 }
 
-// MARK: - Helpers -
+// MARK: - Helpers
 
 infix operator |||: CompositionPrecedence
 

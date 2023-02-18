@@ -21,7 +21,7 @@ extension ConstantBufferPointer {
     }
 }
 
-// MARK: - Implementation -
+// MARK: - Implementation
 
 extension BufferPointer {
     public var unsafePointerRepresentation: UnsafePointer<Element>? {
@@ -45,7 +45,7 @@ extension BufferPointer {
     }
 }
 
-// MARK: - Helpers -
+// MARK: - Helpers
 
 extension Pointer {
     public init?<BP: MutableBufferPointer>(_ bufferPointer: BP) where BP.Element == Pointee {

@@ -81,7 +81,7 @@ public struct HeterogeneousDictionary<Domain> {
     }
 }
 
-// MARK: - Auxiliary -
+// MARK: - Auxiliary
 
 /// A "namespace" for key properties for use with `HeterogeneousDictionary`'s key-path-based convenience subscript.
 public struct HeterogeneousDictionaryValues<Domain> {

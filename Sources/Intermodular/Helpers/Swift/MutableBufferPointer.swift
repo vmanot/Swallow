@@ -17,7 +17,7 @@ public protocol MutableBufferPointer: BufferPointer, MutableCollection where Bas
     func deallocate()
 }
 
-// MARK: - Implementation -
+// MARK: - Implementation
 
 extension MutableBufferPointer {
     public func assumingMemoryBound<T>(to type: T.Type) -> UnsafeMutableBufferPointer<T> {
@@ -35,24 +35,34 @@ extension MutableBufferPointer where Index == Int {
 }
 
 extension MutableBufferPointer {
-    public func assign<P: Pointer>(from pointer: P, count: Int) where P.Pointee == Element, P.Stride == Int {
-        baseAddress?.assign(from: pointer, count: count)
+    public func update<P: Pointer>(
+        from pointer: P,
+        count: Int
+    ) where P.Pointee == Element, P.Stride == Int {
+        baseAddress?.update(from: pointer, count: count)
     }
     
-    public func assign<P: Pointer>(from pointer: P) where P.Pointee == Element, P.Stride == Int {
-        baseAddress?.assign(from: pointer, count: count)
+    public func update<P: Pointer>(
+        from pointer: P
+    ) where P.Pointee == Element, P.Stride == Int {
+        baseAddress?.update(from: pointer, count: count)
     }
     
-    public func assign<BP: BufferPointer>(from bufferPointer: BP, count: Int) where BP.Element == Element {
+    public func update<BP: BufferPointer>(
+        from bufferPointer: BP,
+        count: Int
+    ) where BP.Element == Element {
         guard let address = bufferPointer.baseAddress else {
             return
         }
         
-        baseAddress?.assign(from: address, count: count)
+        baseAddress?.update(from: address, count: count)
     }
     
-    public func assign<BP: BufferPointer>(from bufferPointer: BP) where BP.Element == Element {
-        assign(from: bufferPointer, count: numericCast(bufferPointer.count))
+    public func assign<BP: BufferPointer>(
+        from bufferPointer: BP
+    ) where BP.Element == Element {
+        update(from: bufferPointer, count: numericCast(bufferPointer.count))
     }
 }
 
@@ -62,7 +72,7 @@ extension MutableBufferPointer {
     }
 }
 
-// MARK: - Extensions -
+// MARK: - Extensions
 
 extension MutableBufferPointer {
     public func deinitialize() {

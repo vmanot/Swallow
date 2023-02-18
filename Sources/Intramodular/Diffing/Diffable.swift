@@ -23,7 +23,7 @@ public enum _ReplaceOrApplyDifference<T: Diffable> {
     case apply(difference: T.Difference)
 }
 
-// MARK: - Implementation -
+// MARK: - Implementation
 
 extension Diffable {
     public mutating func applyUnconditionally(_ difference: Difference) throws {

@@ -26,7 +26,7 @@ public protocol NumberConvertible: NumberInitiable {
     func toNSNumber() -> NSNumber
 }
 
-// MARK: - Implementation -
+// MARK: - Implementation
 
 extension NumberConvertible where Self: _opaque_Number {
     @inlinable

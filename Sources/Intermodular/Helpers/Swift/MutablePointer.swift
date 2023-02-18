@@ -18,8 +18,8 @@ public protocol MutablePointer: Pointer {
     
     func assumingMemoryBound<T>(to _: T.Type) -> UnsafeMutablePointer<T>
     
-    func assign(repeating _: Pointee, count: Int)
-    func assign(from _: UnsafePointer<Pointee>, count: Stride)
+    func update(repeating _: Pointee, count: Int)
+    func update(from _: UnsafePointer<Pointee>, count: Stride)
     
     func initialize(to _: Pointee)
     func initialize(repeating _: Pointee, count: Stride)
@@ -30,7 +30,7 @@ public protocol MutablePointer: Pointer {
     func deallocate()
 }
 
-// MARK: - Implementation -
+// MARK: - Implementation
 
 extension MutablePointer {
     public var pointee: Pointee {
@@ -84,16 +84,24 @@ extension MutablePointer where Stride == Int {
         unsafeMutablePointerRepresentation[offset] = pointee
     }
     
-    public func assign(from pointee: UnsafePointer<Pointee>, count: Stride) {
+    public func update(from pointee: UnsafePointer<Pointee>, count: Stride) {
+        #if compiler(>=5.8)
+        unsafeMutablePointerRepresentation.update(from: pointee, count: count)
+        #else
         unsafeMutablePointerRepresentation.assign(from: pointee, count: count)
+        #endif
     }
     
-    public func assign(repeating pointee: Pointee, count: Stride) {
+    public func update(repeating pointee: Pointee, count: Stride) {
+        #if compiler(>=5.8)
+        unsafeMutablePointerRepresentation.update(repeating: pointee, count: count)
+        #else
         unsafeMutablePointerRepresentation.assign(repeating: pointee, count: count)
+        #endif
     }
     
-    public func assign(to pointee: Pointee) {
-        unsafeMutablePointerRepresentation.assign(repeating: pointee, count: 1)
+    public func update(to pointee: Pointee) {
+        unsafeMutablePointerRepresentation.update(repeating: pointee, count: 1)
     }
     
     public func initialize(repeating pointee: Pointee, count: Stride) {
@@ -101,11 +109,11 @@ extension MutablePointer where Stride == Int {
     }
     
     public func deinitialize(count: Int) -> UnsafeMutableRawPointer {
-        return unsafeMutablePointerRepresentation.deinitialize(count: count)
+        unsafeMutablePointerRepresentation.deinitialize(count: count)
     }
 }
 
-// MARK: - Extensions -
+// MARK: - Extensions
 
 extension MutablePointer {
     public func set(pointee: Pointee) {
@@ -114,11 +122,11 @@ extension MutablePointer {
 }
 
 extension MutablePointer {
-    public func assign<P: Pointer>(from pointer: P, count: Stride) where P.Pointee == Pointee, P.Stride == Stride {
-        assign(from: pointer.unsafePointerRepresentation, count: count)
+    public func update<P: Pointer>(from pointer: P, count: Stride) where P.Pointee == Pointee, P.Stride == Stride {
+        update(from: pointer.unsafePointerRepresentation, count: count)
     }
     
-    public func assign<S: Sequence>(from source: S) where S.Element == Pointee {
+    public func update<S: Sequence>(from source: S) where S.Element == Pointee {
         var _self = self
         var iterator = source.makeIterator()
         
@@ -130,15 +138,17 @@ extension MutablePointer {
 }
 
 extension MutablePointer where Stride == Int {
-    public func assign<BP: BufferPointer>(from bufferPointer: BP) where BP.Element == Pointee, BP.Index == Stride {
+    public func update<BP: BufferPointer>(
+        from bufferPointer: BP
+    ) where BP.Element == Pointee, BP.Index == Stride {
         guard !bufferPointer.isEmpty else {
             return
         }
         
-        assign(from: bufferPointer.baseAddress!, count: bufferPointer.count)
+        update(from: bufferPointer.baseAddress!, count: bufferPointer.count)
     }
     
-    public func assign<C: Collection>(from source: C) where C.Element == Pointee, C.Index == Stride {
+    public func update<C: Collection>(from source: C) where C.Element == Pointee, C.Index == Stride {
         for index in source.indices {
             self[index] = source[index]
         }
@@ -239,8 +249,11 @@ extension MutablePointer {
 }
 
 extension MutablePointer where Stride: BinaryInteger {
-    public func assign<P: Pointer, N: BinaryInteger>(from pointer: P, count: N) where P.Pointee == Pointee {
-        assign(from: .init(pointer), count: numericCast(count))
+    public func update<P: Pointer, N: BinaryInteger>(
+        from pointer: P,
+        count: N
+    ) where P.Pointee == Pointee {
+        update(from: .init(pointer), count: numericCast(count))
     }
     
     public func initialize<N: BinaryInteger>(repeating pointee: Pointee, count: N) {
@@ -254,6 +267,6 @@ extension MutablePointer where Stride: BinaryInteger {
     }
     
     public func deinitialize<N: BinaryInteger>(capacity: N) -> UnsafeMutableRawPointer {
-        return deinitialize(count: numericCast(capacity))
+        deinitialize(count: numericCast(capacity))
     }
 }

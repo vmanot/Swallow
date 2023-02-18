@@ -16,7 +16,7 @@ public protocol BoundedRandomnable: Bounded, Randomnable {
     static func random(maximum: Self) -> Self
 }
 
-// MARK: - Implementation -
+// MARK: - Implementation
 
 extension BoundedRandomnable {
     public static func random() -> Self {
@@ -32,7 +32,7 @@ extension BoundedRandomnable {
     }
 }
 
-// MARK: - Implementation -
+// MARK: - Implementation
 
 extension Randomnable where Self: RawRepresentable, RawValue: Randomnable {
     public static func random() -> Self {
@@ -40,7 +40,7 @@ extension Randomnable where Self: RawRepresentable, RawValue: Randomnable {
     }
 }
 
-// MARK: - Extensions -
+// MARK: - Extensions
 
 extension BoundedRandomnable where Self: Strideable {
     public static func random(

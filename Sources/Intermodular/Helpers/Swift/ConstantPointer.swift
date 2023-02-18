@@ -9,7 +9,7 @@ public protocol ConstantPointer: Pointer {
     func assumingMemoryBound<T>(to _: T.Type) -> UnsafePointer<T>
 }
 
-// MARK: - Implementation -
+// MARK: - Implementation
 
 extension ConstantPointer {
     public init<P: Pointer>(_ pointer: P) where P.Pointee == Pointee {
@@ -31,7 +31,7 @@ extension ConstantPointer {
     }
 }
 
-// MARK: - Helpers -
+// MARK: - Helpers
 
 extension MutablePointer {
     public init<P: ConstantPointer>(mutating pointer: P) where P.Pointee == Pointee {

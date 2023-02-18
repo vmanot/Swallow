@@ -10,7 +10,7 @@ public protocol ShouldNotBeDecodedFromBool: Decodable {
     init?(exactly number: NSNumber)
 }
 
-// MARK: - Conformances -
+// MARK: - Conformances
 
 extension Double: ShouldNotBeDecodedFromBool {
 

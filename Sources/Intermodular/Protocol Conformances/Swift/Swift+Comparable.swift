@@ -11,7 +11,7 @@ public struct AnyComparable: Comparable {
     
     public let base: Any
     
-    public init<T: Comparable>(_ base: T) {
+    public init<T: Comparable>(erasing base: T) {
         func equate(_ x: Any, _ y: Any) -> Bool {
             guard let x = x as? T, let y = y as? T else {
                 return false
@@ -43,14 +43,22 @@ public struct AnyComparable: Comparable {
     }
     
     public static func == (lhs: AnyComparable, rhs: AnyComparable) -> Bool {
-        return lhs.isEqualToImpl(lhs.base, rhs.base)
+        lhs.isEqualToImpl(lhs.base, rhs.base)
     }
     
     public static func < (lhs: AnyComparable, rhs: AnyComparable) -> Bool {
-        return lhs.isLessThanImpl(lhs.base, rhs.base)
+        lhs.isLessThanImpl(lhs.base, rhs.base)
     }
     
     public static func > (lhs: AnyComparable, rhs: AnyComparable) -> Bool {
-        return lhs.isGreaterThanImpl(lhs.base, rhs.base)
+        lhs.isGreaterThanImpl(lhs.base, rhs.base)
+    }
+}
+
+// MARK: - Supplementary API
+
+extension Comparable {
+    public var erasedAsAnyComparable: AnyComparable {
+        .init(erasing: self)
     }
 }

@@ -15,7 +15,7 @@ public protocol ThrowingFunctionInitiable: FunctionInitiable {
     init(_: (@escaping (InitiatingFunctionParameters) throws -> InitiatingFunctionResult))
 }
 
-// MARK: - Implementation -
+// MARK: - Implementation
 
 extension FunctionInitiable where Self: ThrowingFunctionInitiable {
     public init(_ function: (@escaping (InitiatingFunctionParameters) -> InitiatingFunctionResult)) {

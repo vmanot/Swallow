@@ -5,7 +5,7 @@
 import Swift
 
 /// A type-erased error.
-public struct AnyError: CustomDebugStringConvertible, Error, Hashable {
+public struct AnyError: CustomDebugStringConvertible, Error, Hashable, @unchecked Sendable {
     public let base: Error
     
     public var description: String {
@@ -16,10 +16,14 @@ public struct AnyError: CustomDebugStringConvertible, Error, Hashable {
         String(describing: base)
     }
     
-    public init(_ base: Error) {
-        self.base = (base as? AnyError)?.base ?? base
+    public init(erasing error: Error) {
+        self.base = (error as? AnyError)?.base ?? error
     }
     
+    public init(_ base: Error) {
+        self.init(erasing: base)
+    }
+
     public init(description: String) {
         self.init(CustomStringError(description: description))
     }
@@ -45,7 +49,7 @@ extension Array: Error where Element: Error {
     
 }
 
-public struct CustomStringError: Codable, CustomStringConvertible, Error, ExpressibleByStringLiteral, Hashable {
+public struct CustomStringError: Codable, CustomStringConvertible, Error, ExpressibleByStringLiteral, Hashable, Sendable {
     public let description: String
     
     public var localizedDescription: String {
@@ -65,7 +69,7 @@ public struct CustomStringError: Codable, CustomStringConvertible, Error, Expres
     }
 }
 
-public struct EmptyError: Hashable, Error, CustomStringConvertible {
+public struct EmptyError: Hashable, Error, CustomStringConvertible, Sendable {
     public let location: SourceCodeLocation?
     
     public var description: String {
@@ -90,7 +94,11 @@ public struct Erroneous<Value>: Error, Wrapper {
     }
 }
 
-public struct ErrorPair<T: Error, U: Error>: CustomDebugStringConvertible, CustomStringConvertible, Error, Wrapper {
+extension Erroneous: Sendable where Value: Sendable {
+    
+}
+
+public struct ErrorPair<T: Error, U: Error>: CustomDebugStringConvertible, CustomStringConvertible, Error, Wrapper, @unchecked Sendable {
     public typealias Value = (T, U)
     
     public let value: Value

@@ -192,7 +192,7 @@ extension Set: ResizableSetProtocol {
     
 }
 
-// MARK: - Helpers -
+// MARK: - Helpers
 
 public typealias Join3Sequence<C0, C1, C2> = Join2Sequence<Join2Sequence<C0, C1>, C2> where C0: Sequence, C1: Sequence, C2: Sequence, C0.Element == C1.Element, C1.Element == C2.Element
 

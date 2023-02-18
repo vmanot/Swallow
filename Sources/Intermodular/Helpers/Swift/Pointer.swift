@@ -25,7 +25,7 @@ public protocol Pointer: Hashable, OpaquePointerInitiable, Strideable {
     func pointee(at _: Stride) -> Pointee
 }
 
-// MARK: - Implementation -
+// MARK: - Implementation
 
 extension Pointer {
     public var unsafePointerRepresentation: UnsafePointer<Pointee> {
@@ -47,7 +47,7 @@ extension Pointer {
     }
 }
 
-// MARK: - Auxiliary -
+// MARK: - Auxiliary
 
 extension Pointer {
     @inlinable
@@ -65,7 +65,7 @@ extension Pointer {
     }
 }
 
-// MARK: - Extensions -
+// MARK: - Extensions
 
 extension Pointer {
     @inlinable
@@ -114,7 +114,7 @@ extension Pointer {
     }
 }
 
-// MARK: - Helpers -
+// MARK: - Helpers
 
 @inlinable
 public func reinterpretCast<T: Pointer, U: Pointer>(_ pointer: T) -> U {

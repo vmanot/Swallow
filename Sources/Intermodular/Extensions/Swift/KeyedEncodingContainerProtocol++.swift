@@ -21,7 +21,10 @@ extension KeyedEncodingContainerProtocol {
 }
 
 extension KeyedEncodingContainerProtocol {
-    public mutating func encode(using encodeImpl: @escaping (Encoder) throws -> (), forKey key: Key) throws {
+    public mutating func encode(
+        using encodeImpl: @escaping @Sendable (Encoder) throws -> (),
+        forKey key: Key
+    ) throws {
         try encode(EncodableImpl(encodeImpl), forKey: key)
     }
 }

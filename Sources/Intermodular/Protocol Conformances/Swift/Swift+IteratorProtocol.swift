@@ -202,7 +202,7 @@ public enum OneOfTwoIterators<I0: IteratorProtocol, I1: IteratorProtocol>: Itera
     }
 }
 
-// MARK: - Helpers - 
+// MARK: - Helpers 
 
 extension IteratorProtocol {
     @inlinable

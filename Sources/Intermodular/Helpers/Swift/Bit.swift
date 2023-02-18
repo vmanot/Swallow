@@ -15,7 +15,7 @@ public enum Bit: Byte {
     }
 }
 
-// MARK: - Conformances -
+// MARK: - Conformances
 
 extension Bit: Boolean {
     @inlinable
@@ -49,7 +49,7 @@ extension Bit: ExpressibleByIntegerLiteral {
     }
 }
 
-// MARK: - Helpers -
+// MARK: - Helpers
 
 extension ByteTupleConvertible where ByteTupleType == ByteTuple1 {
     @inlinable

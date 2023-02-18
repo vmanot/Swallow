@@ -22,7 +22,7 @@ extension Collection {
     }
 }
 
-// MARK: - Helpers -
+// MARK: - Helpers
 
 public struct AroundElementSequence<LeftSequence: Sequence, Element, RightSequence: Sequence>: Sequence where LeftSequence.Element == RightSequence.Element, LeftSequence.Element == Element {
     public typealias Element = LeftSequence.Element

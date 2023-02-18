@@ -13,7 +13,7 @@ public protocol Countable {
     var count: Count { get }
 }
 
-// MARK: - Helpers -
+// MARK: - Helpers
 
 extension Sequence where Element: Countable {
     public func elementOfLeastCount() -> Element? {

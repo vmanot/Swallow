@@ -19,7 +19,7 @@ extension TopLevelDecoder {
     }
 }
 
-// MARK: - Auxiliary -
+// MARK: - Auxiliary
 
 extension Decodable {
     fileprivate static func decode<Decoder: TopLevelDecoder>(

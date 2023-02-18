@@ -35,7 +35,7 @@ public struct Metatype<T>: CustomStringConvertible, Hashable, @unchecked Sendabl
     }
 }
 
-// MARK: - Auxiliary -
+// MARK: - Auxiliary
 
 public protocol _SwallowMetatypeType {
     var _base: Any.Type { get }

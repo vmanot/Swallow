@@ -19,7 +19,7 @@ public protocol MutablePropertyWrapper: PropertyWrapper {
     var wrappedValue: WrappedValue { get set }
 }
 
-// MARK: - Implementation -
+// MARK: - Implementation
 
 extension ParameterlessPropertyWrapper where WrappedValue: CustomStringConvertible, Self: CustomStringConvertible {
     public var description: String {
@@ -51,7 +51,7 @@ extension ParameterlessPropertyWrapper where WrappedValue: Hashable, Self: Hasha
     }
 }
 
-// MARK: - API -
+// MARK: - API
 
 public struct AnyMutablePropertyWrapper<Value>: MutablePropertyWrapper {
     private var base: any MutablePropertyWrapper

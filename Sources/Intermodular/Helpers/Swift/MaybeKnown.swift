@@ -39,7 +39,7 @@ extension MaybeKnown {
     }
 }
 
-// MARK: - Conformances -
+// MARK: - Conformances
 
 extension MaybeKnown: Codable where Value: Codable {
     public init(from decoder: Decoder) throws {
@@ -98,7 +98,7 @@ extension MaybeKnown {
     }
 }
 
-// MARK: - Helpers -
+// MARK: - Helpers
 
 extension Optional {
     public init(_ value: MaybeKnown<Wrapped>) {

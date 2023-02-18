@@ -35,7 +35,7 @@ public protocol NonDestroyingMutableRandomAccessCollection: NonDestroyingMutable
     
 }
 
-// MARK: - Implementation -
+// MARK: - Implementation
 
 public protocol NonDestroyingMutableSequence: MutableSequence, NonDestroyingSequence {
     

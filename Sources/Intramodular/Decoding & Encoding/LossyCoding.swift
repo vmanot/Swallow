@@ -18,7 +18,7 @@ public struct LossyCoding<Value>: MutablePropertyWrapper, ParameterlessPropertyW
     }
 }
 
-// MARK: - Conformances -
+// MARK: - Conformances
 
 extension LossyCoding: Equatable where Value: Equatable {
     
@@ -56,14 +56,16 @@ extension LossyCoding: Sendable where Value: Sendable {
     
 }
 
-// MARK: - Auxiliary -
+// MARK: - Auxiliary
 
 extension LossyCoding {
     static func _makeDefaultValue() throws -> Value {
-        if let valueType = Value.self as? ExpressibleByNilLiteral.Type {
+        if let valueType = Value.self as? any ExpressibleByNilLiteral.Type {
             return valueType.init(nilLiteral: ()) as! Value
-        } else if let valueType = Value.self as? Initiable.Type {
+        } else if let valueType = Value.self as? any Initiable.Type {
             return valueType.init() as! Value
+        } else if let valueType = Value.self as? any ExpressibleByArrayLiteral.Type {
+            return valueType.init(_emptyArrayLiteral: ()) as! Value
         } else {
             throw Error.failedToMakeDefaultValueForType(Value.self)
         }

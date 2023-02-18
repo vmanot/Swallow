@@ -33,7 +33,7 @@ public struct RelativeIndex: ExpressibleByIntegerLiteral {
     }
 }
 
-// MARK: - Helpers -
+// MARK: - Helpers
 
 extension Collection {
     public subscript(_ index: RelativeIndex) -> Element {

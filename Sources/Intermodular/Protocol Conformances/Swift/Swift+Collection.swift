@@ -96,7 +96,7 @@ public struct SequenceToCollection<S: Sequence>: RandomAccessCollection, Wrapper
     }
 }
 
-// MARK: - Helpers -
+// MARK: - Helpers
 
 public typealias CollectionOfTwo<T> = Join2Collection<CollectionOfOne<T>, CollectionOfOne<T>>
 public typealias CollectionOfThree<T> = Join2Collection<CollectionOfOne<T>, CollectionOfTwo<T>>

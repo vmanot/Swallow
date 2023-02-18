@@ -25,7 +25,7 @@ public protocol IntegerInitiable: SignedIntegerInitiable, UnsignedIntegerInitiab
     
 }
 
-// MARK: - Implementation -
+// MARK: - Implementation
 
 extension UnsignedIntegerInitiable {
     @inlinable

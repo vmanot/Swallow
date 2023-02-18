@@ -14,7 +14,7 @@ public protocol BitPatternConvertible {
     init(bitPattern: BitPattern)
 }
 
-// MARK: - Implementation -
+// MARK: - Implementation
 
 extension BitPatternConvertible where Self: Trivial {
     public init(bitPattern: BitPattern) {

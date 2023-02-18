@@ -129,7 +129,7 @@ extension KeyedValuesOf {
     }
 }
 
-// MARK: - Protocol Conformances -
+// MARK: - Conformances
 
 extension KeyedValuesOf: CustomStringConvertible {
     public var description: String {
@@ -137,7 +137,7 @@ extension KeyedValuesOf: CustomStringConvertible {
     }
 }
 
-// MARK: - Auxiliary -
+// MARK: - Auxiliary
 
 extension KeyedValuesOf {
     /// An error that can be thrown by the `value(for:)` function.

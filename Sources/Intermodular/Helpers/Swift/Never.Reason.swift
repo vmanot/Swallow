@@ -67,7 +67,7 @@ extension Never {
     }
 }
 
-// MARK: - API -
+// MARK: - API
 
 public func fatalError(
     reason: Never.Reason,

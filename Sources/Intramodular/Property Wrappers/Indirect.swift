@@ -39,7 +39,7 @@ public struct Indirect<Value>: ParameterlessPropertyWrapper {
     }
 }
 
-// MARK: - Conformances -
+// MARK: - Conformances
 
 extension Indirect: Encodable where Value: Encodable {
     

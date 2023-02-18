@@ -12,7 +12,7 @@ public protocol ObjectiveCBridgeable: _ObjectiveCBridgeable {
     func bridgeToObjectiveC() throws -> ObjectiveCType
 }
 
-// MARK: - Implementation -
+// MARK: - Implementation
 
 extension ObjectiveCBridgeable {
     @inlinable

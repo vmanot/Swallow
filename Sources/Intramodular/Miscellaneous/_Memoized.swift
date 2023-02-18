@@ -66,7 +66,7 @@ public final class _MemoizedValue<EnclosingSelf, Value>: PropertyWrapper {
     }
 }
 
-// MARK: - Conformances -
+// MARK: - Conformances
 
 extension _MemoizedValue: Equatable {
     public static func == (lhs: _MemoizedValue, rhs: _MemoizedValue) -> Bool {

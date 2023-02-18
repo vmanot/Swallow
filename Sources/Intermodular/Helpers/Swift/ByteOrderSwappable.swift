@@ -32,7 +32,7 @@ public protocol ByteOrderSwappable {
     mutating func swapByteOrderPortableToHost()
 }
 
-// MARK: - Implementation -
+// MARK: - Implementation
 
 extension ByteOrderSwappable {
     @inlinable
@@ -71,7 +71,7 @@ extension FixedWidthInteger where Self: ByteOrderSwappable {
     }
 }
 
-// MARK: - Extensions -
+// MARK: - Extensions
 
 extension ByteOrderSwappable {
     @inlinable

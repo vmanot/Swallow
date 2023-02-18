@@ -46,7 +46,7 @@ public protocol KeyExposingMutableDictionaryProtocol: KeysExposingDictionaryProt
     
 }
 
-// MARK: - Implementation -
+// MARK: - Implementation
 
 extension DictionaryProtocol {
     public func value(forKey key: DictionaryKey) -> DictionaryValue? {
@@ -144,7 +144,7 @@ extension KeysExposingDictionaryProtocol where Self: Sequence, Self.Element == (
     }
 }
 
-// MARK: - Extensions -
+// MARK: - Extensions
 
 extension DictionaryProtocol {
     @inlinable

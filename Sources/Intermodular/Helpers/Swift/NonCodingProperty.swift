@@ -16,7 +16,7 @@ public struct NonCodingProperty<Value: ExpressibleByNilLiteral>: PropertyWrapper
     }
 }
 
-// MARK: - Conformances -
+// MARK: - Conformances
 
 extension NonCodingProperty: Codable {
     public init(from decoder: Decoder) throws {
@@ -40,7 +40,7 @@ extension NonCodingProperty: Hashable  {
     }
 }
 
-// MARK: - Auxiliary -
+// MARK: - Auxiliary
 
 extension KeyedDecodingContainer {
     public func decode<T>(

@@ -122,7 +122,7 @@ extension _opaque_Number {
     }
 }
 
-// MARK: - Extensions -
+// MARK: - Extensions
 
 extension _opaque_Number {
     @inlinable

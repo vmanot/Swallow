@@ -19,7 +19,7 @@ public protocol UTF8Representable {
     mutating func withMutableCString<T>(_ body: ((NullTerminatedUTF8String) throws -> T)) rethrows -> T
 }
 
-// MARK: - Extensions -
+// MARK: - Extensions
 
 extension UTF8Representable {
     public init(utf8String: NullTerminatedUTF8String) {

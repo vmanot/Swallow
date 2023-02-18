@@ -19,7 +19,7 @@ public protocol MutableWrapper: Wrapper {
     var value: Value { get set }
 }
 
-// MARK: - Implementation -
+// MARK: - Implementation
 
 extension FailableWrapper {
     public init(uncheckedValue value: Value) {

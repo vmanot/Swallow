@@ -110,7 +110,7 @@ extension BinaryInteger {
     }
 }
 
-// MARK: - Auxiliary -
+// MARK: - Auxiliary
 
 public enum BinaryIntegerSquareRootComputationError: Error {
     case noPerfectSquare

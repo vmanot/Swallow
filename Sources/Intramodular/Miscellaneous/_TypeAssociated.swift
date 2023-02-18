@@ -4,7 +4,7 @@
 
 import Foundation
 
-public struct TypeAssociatedIdentifier<Parent, RawValue: Hashable>: Hashable, RawRepresentable {
+public struct _TypeAssociated<Parent, RawValue: Hashable>: Hashable, RawRepresentable {
     public let rawValue: RawValue
     
     public init(rawValue: RawValue) {
@@ -12,9 +12,10 @@ public struct TypeAssociatedIdentifier<Parent, RawValue: Hashable>: Hashable, Ra
     }
 }
 
-// MARK: - Conformances -
 
-extension TypeAssociatedIdentifier: Codable where RawValue: Codable {
+// MARK: - Conformances
+
+extension _TypeAssociated: Codable where RawValue: Codable {
     public init(from decoder: Decoder) throws {
         try self.init(rawValue: RawValue(from: decoder))
     }
@@ -24,14 +25,18 @@ extension TypeAssociatedIdentifier: Codable where RawValue: Codable {
     }
 }
 
-extension TypeAssociatedIdentifier: CustomStringConvertible where RawValue: CustomStringConvertible {
+extension _TypeAssociated: CustomStringConvertible where RawValue: CustomStringConvertible {
     public var description: String {
         rawValue.description
     }
 }
 
-extension TypeAssociatedIdentifier: Randomnable where RawValue: Randomnable {
-    public static func random() -> TypeAssociatedIdentifier<Parent, RawValue> {
+extension _TypeAssociated: Randomnable where RawValue: Randomnable {
+    public static func random() -> _TypeAssociated<Parent, RawValue> {
         .init(rawValue: .random())
     }
+}
+
+extension _TypeAssociated: Sendable where RawValue: Sendable {
+    
 }

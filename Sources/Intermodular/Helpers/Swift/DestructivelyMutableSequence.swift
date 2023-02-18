@@ -18,7 +18,7 @@ public protocol ElementRemoveableDestructivelyMutableSequence: DestructivelyMuta
     @discardableResult mutating func remove(_: Element) -> Element?
 }
 
-// MARK: - Implementation -
+// MARK: - Implementation
 
 extension DestructivelyMutableSequence {
     @_disfavoredOverload
@@ -99,7 +99,7 @@ extension DestructivelyMutableSequence where Self: RangeReplaceableCollection {
     }
 }
 
-// MARK: - Extensions -
+// MARK: - Extensions
 
 extension DestructivelyMutableSequence where Element: Equatable {
     public mutating func removeAll(of someElement: Element) {

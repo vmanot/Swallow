@@ -20,7 +20,7 @@ public protocol RandomAccessIndex: BidirectionalIndex, Strideable {
 
 }
 
-// MARK: - Extensions -
+// MARK: - Extensions
 
 extension RandomAccessIndex {
     public static func - (lhs: Self, rhs: Stride) -> Self {

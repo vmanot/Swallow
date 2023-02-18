@@ -9,7 +9,7 @@ public protocol MutableSequence: Sequence {
     mutating func map<S: ExtensibleSequence & Initiable>(mutating iterator: ((inout Element) throws -> S.Element)) rethrows -> S
 }
 
-// MARK: - Implementation -
+// MARK: - Implementation
 
 extension MutableSequence {
     @_disfavoredOverload
@@ -61,7 +61,7 @@ extension MutableSequence where Self: MutableCollection & RangeReplaceableCollec
     }
 }
 
-// MARK: - Extensions -
+// MARK: - Extensions
 
 extension MutableSequence where Element: Equatable {
     public mutating func replace(allOf some: Element, with other: Element) {

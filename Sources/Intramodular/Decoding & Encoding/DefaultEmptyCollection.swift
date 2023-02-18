@@ -15,7 +15,7 @@ public struct DefaultEmptyCollection<Value: RangeReplaceableCollection>: Mutable
     }
 }
 
-// MARK: - Conformances -
+// MARK: - Conformances
 
 extension DefaultEmptyCollection: Equatable where Value: Equatable {
     
@@ -49,7 +49,7 @@ extension DefaultEmptyCollection: Decodable where Value: Decodable {
     }
 }
 
-// MARK: - Auxiliary -
+// MARK: - Auxiliary
 
 extension KeyedDecodingContainer {
     public func decode<C: Decodable & RandomAccessCollection>(

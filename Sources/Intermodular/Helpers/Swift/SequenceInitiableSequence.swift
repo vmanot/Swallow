@@ -24,7 +24,7 @@ public protocol SequenceInitiableSequence: Sequence {
     init<C: Collection>(_: C) where C.Element == Element
 }
 
-// MARK: - Implementation -
+// MARK: - Implementation
 
 extension SequenceInitiableSequence {
     public init(noSequence: ()) {
@@ -82,7 +82,7 @@ extension SequenceInitiableSequence where Self: RangeReplaceableCollection {
     }
 }
 
-// MARK: - Extensions -
+// MARK: - Extensions
 
 extension SequenceInitiableSequence {
     public func prependAll<S: SequenceInitiableSequence>(_ newElement: Element) -> S where S.Element == Element {
@@ -102,7 +102,7 @@ extension SequenceInitiableSequence {
     }
 }
 
-// MARK: - Conformances -
+// MARK: - Conformances
 
 extension SequenceInitiableSequence where Self: ExpressibleByArrayLiteral {
     public init(arrayLiteral elements: Self.Element...) {
@@ -110,7 +110,7 @@ extension SequenceInitiableSequence where Self: ExpressibleByArrayLiteral {
     }
 }
 
-// MARK: - Helpers -
+// MARK: - Helpers
 
 extension Sequence {
     public func _filter<S: SequenceInitiableSequence>(_ includeElement: ((Element) throws -> Bool)) rethrows -> S where S.Element == Element {

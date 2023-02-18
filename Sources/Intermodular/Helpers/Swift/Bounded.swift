@@ -15,7 +15,7 @@ public protocol Bounded: Comparable {
     var isMinimumOrMaximum: Bool { get }
 }
 
-// MARK: - Implementation -
+// MARK: - Implementation
 
 extension Bounded {
     @inlinable

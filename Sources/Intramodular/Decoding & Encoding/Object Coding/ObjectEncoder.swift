@@ -25,13 +25,13 @@ public struct ObjectEncoder: Initiable {
             throw error
         } catch {
             let description = "Unable to encode the given top-level value to Object."
-
+            
             let context = EncodingError.Context(
                 codingPath: [],
                 debugDescription: description,
                 underlyingError: error
             )
-
+            
             throw EncodingError.invalidValue(value, context)
         }
     }
@@ -77,7 +77,7 @@ public struct ObjectEncoder: Initiable {
 
 extension ObjectEncoder {
     public class Encoder: Swift.Encoder {
-        public final var object: NSCoding = [:] as NSCoding
+        public final var object: NSCoding = NSMutableArray() as NSCoding
         
         fileprivate typealias Options = ObjectEncoder.Options
         fileprivate let options: Options
@@ -96,7 +96,7 @@ extension ObjectEncoder {
 extension ObjectEncoder.Encoder {
     public final func container<Key>(keyedBy type: Key.Type) -> KeyedEncodingContainer<Key> {
         if canEncodeNewValue {
-            object = [:] as NSCoding
+            object = [String: Any]() as NSCoding
         } else {
             precondition(
                 object is [String: Any],
@@ -108,7 +108,7 @@ extension ObjectEncoder.Encoder {
     
     public final func unkeyedContainer() -> UnkeyedEncodingContainer {
         if canEncodeNewValue {
-            object = [] as NSCoding
+            object = NSArray() as NSCoding
         } else {
             precondition(
                 object is [Any],
@@ -477,7 +477,7 @@ extension ObjectEncoder.EncodingStrategy where T == URL {
     }
 }
 
-// MARK: - Helpers -
+// MARK: - Helpers
 
 extension Encodable {
     fileprivate func encode(

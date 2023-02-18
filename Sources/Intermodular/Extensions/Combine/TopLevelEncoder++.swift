@@ -15,7 +15,7 @@ extension TopLevelEncoder {
     }
 }
 
-// MARK: - Auxiliary -
+// MARK: - Auxiliary
 
 extension Encodable {
     fileprivate func encode<Encoder: TopLevelEncoder>(using encoder: Encoder) throws -> Encoder.Output {

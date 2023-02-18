@@ -44,7 +44,7 @@ extension UnsafeRawPointer: MutableConvertible {
     public typealias MutableRepresentation = UnsafeMutableRawPointer
 }
 
-// MARK: - Helpers -
+// MARK: - Helpers
 
 extension InitiableBufferPointer where Self: MutableBufferPointer & MutableConvertible, Self.ImmutableRepresentation: InitiableBufferPointer & ConstantBufferPointer, Self.ImmutableRepresentation.Element == Self.Element {
     @inlinable

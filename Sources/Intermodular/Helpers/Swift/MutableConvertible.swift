@@ -17,7 +17,7 @@ public protocol MutableConvertible: _MutableConvertible where ImmutableRepresent
     var mutableRepresentation: MutableRepresentation { get }
 }
 
-// MARK: - Implementation -
+// MARK: - Implementation
 
 extension MutableConvertible where ImmutableRepresentation == Self {
     public var immutableRepresentation: ImmutableRepresentation {

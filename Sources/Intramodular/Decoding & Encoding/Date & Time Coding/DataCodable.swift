@@ -31,7 +31,7 @@ public protocol DataDecodableWithDefaultStrategy: DataDecodable {
 public typealias DataCodable = DataDecodable & DataEncodable
 public typealias DataCodableWithDefaultStrategies = DataDecodableWithDefaultStrategy & DataEncodableWithDefaultStrategy
 
-// MARK: - Extensions -
+// MARK: - Extensions
 
 extension DataEncodableWithDefaultStrategy  {
     public func data() throws -> Data {

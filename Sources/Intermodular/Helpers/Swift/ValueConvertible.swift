@@ -18,7 +18,7 @@ public protocol MutableValueConvertible: ValueConvertible {
     var value: Value { get set }
 }
 
-// MARK: - Extensions -
+// MARK: - Extensions
 
 extension ValueConvertible {
     public func map<T: Wrapper>(_ f: ((Value) throws -> T.Value)) rethrows -> T {

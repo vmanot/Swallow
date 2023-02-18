@@ -44,7 +44,7 @@ public func cast<T, U>(
     return result
 }
 
-// MARK: - Auxiliary -
+// MARK: - Auxiliary
 
 @usableFromInline
 func _runtimeCast<T, U>(_ value: T, to otherType: U.Type) -> U? {

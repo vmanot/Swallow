@@ -174,7 +174,7 @@ extension Result {
     }
 }
 
-// MARK: - Auxiliary -
+// MARK: - Auxiliary
 
 public enum _ResultComparison {
     case success

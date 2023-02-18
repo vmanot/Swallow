@@ -8,7 +8,7 @@ public protocol _UnwrappableTypeEraser {
     var _base: Any { get }
 }
 
-// MARK: - Implementations -
+// MARK: - Implementations
 
 extension AnyHashable: _UnwrappableTypeEraser {
     public var _base: Any {

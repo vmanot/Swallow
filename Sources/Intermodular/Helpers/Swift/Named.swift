@@ -14,7 +14,7 @@ public protocol MutableNamed: Named {
     var name: String { get set }
 }
 
-// MARK: - Conformances -
+// MARK: - Conformances
 
 extension Named where Self: CustomStringConvertible {
     public var description: String {

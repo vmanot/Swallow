@@ -12,7 +12,7 @@ public protocol OptionalProtocol: ExpressibleByNilLiteral {
     init(_: Wrapped?)
 }
 
-// MARK: - Extensions -
+// MARK: - Extensions
 
 extension OptionalProtocol {
     public static var _opaque_Optional_WrappedType: Any.Type {
@@ -61,7 +61,7 @@ extension OptionalProtocol {
     }
 }
 
-// MARK: - Supplementary API -
+// MARK: - Supplementary API
 
 public func _getUnwrappedType(
     from type: Any.Type
@@ -101,7 +101,7 @@ public func _isValueNil(_ value: Any) -> Bool {
     Optional(_unwrapping: value).isNil
 }
 
-// MARK: - Implementations -
+// MARK: - Implementations
 
 extension Optional: OptionalProtocol {
     public var _wrapped: Wrapped? {

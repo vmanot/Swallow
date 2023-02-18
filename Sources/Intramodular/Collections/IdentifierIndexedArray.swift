@@ -14,7 +14,7 @@ public struct IdentifierIndexedArray<Element, ID: Hashable> {
         self.base = OrderedDictionary(uniqueKeysWithValues: elements.map({ (key: id($0), value: $0) }))
         self.id = id
     }
-
+    
     public init(id: @escaping (Element) -> ID) {
         self.init(Array<Element>(), id: id)
     }
@@ -36,7 +36,7 @@ public struct IdentifierIndexedArray<Element, ID: Hashable> {
     }
 }
 
-// MARK: - Implementation -
+// MARK: - Implementation
 
 extension IdentifierIndexedArray {
     public mutating func append(_ element: Element) {
@@ -59,7 +59,7 @@ extension IdentifierIndexedArrayOf {
     }
 }
 
-// MARK: - Conformances -
+// MARK: - Conformances
 
 extension IdentifierIndexedArray: CustomStringConvertible {
     public var description: String {

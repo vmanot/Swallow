@@ -1139,3 +1139,7 @@ extension Array {
     }
     
 }
+
+extension OrderedDictionary: Sendable where Key: Sendable, Value: Sendable {
+    
+}

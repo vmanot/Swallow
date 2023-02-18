@@ -72,7 +72,7 @@ extension Decoder {
     }
 }
 
-// MARK: - Auxiliary -
+// MARK: - Auxiliary
 
 private enum DecodeNilError: Error {
     case failedToDecodeNil

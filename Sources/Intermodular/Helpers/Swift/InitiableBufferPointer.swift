@@ -18,7 +18,7 @@ public protocol InitiableBufferPointer: BufferPointer {
     static func initializing<C: Collection>(from _: C, count: Int) -> Self where C.Element == Element
 }
 
-// MARK: - Implementation -
+// MARK: - Implementation
 
 extension InitiableBufferPointer {
     public static func allocate(capacity: Int) -> Self {
@@ -27,19 +27,40 @@ extension InitiableBufferPointer {
 }
 
 extension InitiableBufferPointer {
-    public static func initializing(from start: BaseAddressPointer, count: Int) -> Self {
+    /// Allocate and initialize a buffer from a given base address and a count.
+    ///
+    /// This copies elements from `start` until `count`.
+    public static func initializing(
+        from start: BaseAddressPointer,
+        count: Int
+    ) -> Self {
         let result = allocate(capacity: count)
 
-        result.baseAddress?.unsafeMutablePointerRepresentation.assign(from: start.unsafePointerRepresentation, count: numericCast(count))
+        #if compiler(>=5.8)
+        result.baseAddress?.unsafeMutablePointerRepresentation.update(
+            from: start.unsafePointerRepresentation,
+            count: numericCast(count)
+        )
+        #else
+        result.baseAddress?.unsafeMutablePointerRepresentation.assign(
+            from: start.unsafePointerRepresentation,
+            count: numericCast(count)
+        )
+        #endif
 
         return result
     }
 
-    public static func initializing<S: Sequence>(from sequence: S) -> Self where S.Element == Element {
-        return initializing(from: sequence.toFauxCollection())
+    public static func initializing<S: Sequence>(
+        from sequence: S
+    ) -> Self where S.Element == Element {
+        initializing(from: Array(sequence))
     }
 
-    public static func initializing<S: Sequence>(from sequence: S, count: Int) -> Self where S.Element == Element {
+    public static func initializing<S: Sequence>(
+        from sequence: S,
+        count: Int
+    ) -> Self where S.Element == Element {
         guard count != 0 else {
             return .init(start: nil, count: 0)
         }
@@ -51,40 +72,62 @@ extension InitiableBufferPointer {
         return .init(start: rawBufferPointer.baseAddress, count: count)
     }
 
-    public static func initializing<C: Collection>(from collection: C) -> Self where C.Element == Element {
-        return initializing(from: collection, count: numericCast(collection.count))
+    public static func initializing<C: Collection>(
+        from collection: C
+    ) -> Self where C.Element == Element {
+        initializing(from: collection, count: numericCast(collection.count))
     }
 
-    public static func initializing<C: Collection>(from collection: C, count: Int) -> Self where C.Element == Element {
-        return initializing(from: AnySequence(collection), count: count)
+    public static func initializing<C: Collection>(
+        from collection: C,
+        count: Int
+    ) -> Self where C.Element == Element {
+        initializing(from: AnySequence(collection), count: count)
     }
 }
 
-// MARK: - Extensions -
+// MARK: - Extensions
 
 extension InitiableBufferPointer {
     public init(start: BaseAddressPointer, count: Int) {
         self.init(start: Optional(start), count: count)
     }
-
-    public init<P: MutablePointer>(start: P, count: Int) where P.Pointee == Element {
+    
+    public init<P: MutablePointer>(
+        start: P,
+        count: Int
+    ) where P.Pointee == Element {
         self.init(start: BaseAddressPointer(start), count: count)
     }
-
-    public init<P: MutablePointer>(start: P?, count: Int) where P.Pointee == Element {
+    
+    public init<P: MutablePointer>(
+        start: P?,
+        count: Int
+    ) where P.Pointee == Element {
         self.init(start: start.map(BaseAddressPointer.init), count: count)
     }
-
-    public init<P: MutablePointer, N: BinaryInteger>(start: P, count: N) where P.Pointee == Element {
+    
+    public init<P: MutablePointer, N: BinaryInteger>(
+        start: P,
+        count: N
+    ) where P.Pointee == Element {
         self.init(start: start, count: numericCast(count))
     }
-
-    public init<P: MutablePointer, N: BinaryInteger>(start: P?, count: N) where P.Pointee == Element {
+    
+    public init<P: MutablePointer, N: BinaryInteger>(
+        start: P?,
+        count: N
+    ) where P.Pointee == Element {
         self.init(start: start, count: numericCast(count))
     }
-
-    public init<BP: MutableBufferPointer>(_ bufferPointer: BP) where BP.Element == Element {
-        self.init(start: BaseAddressPointer(bufferPointer.baseAddress), count: numericCast(bufferPointer.count))
+    
+    public init<BP: MutableBufferPointer>(
+        _ bufferPointer: BP
+    ) where BP.Element == Element {
+        self.init(
+            start: BaseAddressPointer(bufferPointer.baseAddress),
+            count: numericCast(bufferPointer.count)
+        )
     }
 }
 
@@ -92,35 +135,35 @@ extension InitiableBufferPointer where Self: ConstantBufferPointer {
     public init<P: Pointer>(start: P, count: Int) where P.Pointee == Element {
         self.init(start: BaseAddressPointer(start), count: count)
     }
-
+    
     public init<P: Pointer>(start: P?, count: Int) where P.Pointee == Element {
         self.init(start: start.map(BaseAddressPointer.init), count: count)
     }
-
+    
     public init<P: Pointer, N: BinaryInteger>(start: P, count: N) where P.Pointee == Element {
         self.init(start: start, count: numericCast(count))
     }
-
+    
     public init<P: Pointer, N: BinaryInteger>(start: P?, count: N) where P.Pointee == Element {
         self.init(start: start, count: numericCast(count))
     }
-
+    
     public init<P: MutablePointer>(start: P, count: Int) where P.Pointee == Element {
         self.init(start: BaseAddressPointer(start), count: count)
     }
-
+    
     public init<P: MutablePointer>(start: P?, count: Int) where P.Pointee == Element {
         self.init(start: start.map(BaseAddressPointer.init), count: count)
     }
-
+    
     public init<P: MutablePointer, N: BinaryInteger>(start: P, count: N) where P.Pointee == Element {
         self.init(start: start, count: numericCast(count))
     }
-
+    
     public init<P: MutablePointer, N: BinaryInteger>(start: P?, count: N) where P.Pointee == Element {
         self.init(start: start, count: numericCast(count))
     }
-
+    
     public init<BP: BufferPointer>(_ bufferPointer: BP) where BP.Element == Element {
         self.init(start: BaseAddressPointer(bufferPointer.baseAddress), count: numericCast(bufferPointer.count))
     }
@@ -141,7 +184,7 @@ extension InitiableBufferPointer {
     }
 }
 
-// MARK: - Helpers -
+// MARK: - Helpers
 
 @inlinable
 public func reinterpretCast<T: InitiableBufferPointer, U: InitiableBufferPointer>(_ x: T) -> U? {

@@ -27,7 +27,7 @@ public struct Inout<T> {
     }
 }
 
-// MARK: - Conformances -
+// MARK: - Conformances
 
 extension Inout: CustomStringConvertible {
     public var description: String {

@@ -9,7 +9,7 @@ public protocol CoderPrimitive: Codable, Hashable {
     
 }
 
-// MARK: - Conformances -
+// MARK: - Conformances
 
 extension Bool: CoderPrimitive {
     

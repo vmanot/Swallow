@@ -52,7 +52,7 @@ extension Unicode.ByteOrderMark {
     }
 }
 
-// MARK: - API -
+// MARK: - API
 
 /// https://gist.github.com/krzyzanowskim/f2ca3e1e4f6dfd490fc35630b823eaac
 extension String {

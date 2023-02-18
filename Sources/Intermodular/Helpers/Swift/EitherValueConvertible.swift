@@ -17,7 +17,7 @@ public protocol MutableEitherValueConvertible: EitherValueConvertible {
     var eitherValue: Either<LeftValue, RightValue> { get set }
 }
 
-// MARK: - Extensions -
+// MARK: - Extensions
 
 extension EitherValueConvertible {
     public var leftValue: LeftValue? {
@@ -89,7 +89,7 @@ extension EitherValueConvertible where LeftValue == RightValue {
     }
 }
 
-// MARK: - Auxiliary Extensions -
+// MARK: - Auxiliary Extensions
 
 extension EitherValueConvertible {
     @inlinable

@@ -17,7 +17,7 @@ public protocol _opaque_KeyPathType: _opaque_PartialKeyPathType {
     func _opaque_applyKeyPath(on instance: Any) throws -> Any
 }
 
-// MARK: - Implementation -
+// MARK: - Implementation
 
 extension PartialKeyPath: _opaque_PartialKeyPathType {
     public static var _opaque_RootType: Any.Type {

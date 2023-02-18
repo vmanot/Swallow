@@ -14,7 +14,7 @@ struct _CollectionOnly<C: Collection> {
     }
 }
 
-// MARK: - Conformances -
+// MARK: - Conformances
 
 extension _CollectionOnly: Collection {
     typealias Element = Value.Element

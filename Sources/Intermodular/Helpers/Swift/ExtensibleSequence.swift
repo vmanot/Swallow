@@ -62,7 +62,7 @@ public protocol ExtensibleRangeReplaceableCollection: ExtensibleCollection, Rang
     
 }
 
-// MARK: - Implementation -
+// MARK: - Implementation
 
 extension ExtensibleSequence where ElementsAppendResult == Void {
     public mutating func append<S: Sequence>(contentsOf newElements: S) where S.Element == Element {
@@ -90,7 +90,7 @@ extension ExtensibleRangeReplaceableCollection where ElementInsertResult == Void
     }
 }
 
-// MARK: - Extensions -
+// MARK: - Extensions
 
 extension ExtensibleSequence {
     public func inserting(_ newElement: Element) -> Self {
@@ -110,7 +110,7 @@ extension ExtensibleSequence {
     }
 }
 
-// MARK: - Helpers -
+// MARK: - Helpers
 
 extension ExtensibleSequence {
     public static func + (lhs: Element, rhs: Self) -> Self {

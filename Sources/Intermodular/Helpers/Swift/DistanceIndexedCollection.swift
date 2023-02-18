@@ -14,7 +14,7 @@ public struct DistanceIndexedCollection<C: Collection>: Wrapper {
     }
 }
 
-// MARK: - Conformances -
+// MARK: - Conformances
 
 extension DistanceIndexedCollection: Sequence {
     public typealias Element = Iterator.Element
@@ -44,7 +44,7 @@ extension DistanceIndexedCollection: Collection {
     }
 }
 
-// MARK: - Conditional Conformances -
+// MARK: - Conditional Conformances
 
 extension DistanceIndexedCollection: CustomStringConvertible where Value: CustomStringConvertible {
     public var description: String {
@@ -52,7 +52,7 @@ extension DistanceIndexedCollection: CustomStringConvertible where Value: Custom
     }
 }
 
-// MARK: - Helpers -
+// MARK: - Helpers
 
 extension Collection {
     public var distanceIndexed: DistanceIndexedCollection<Self> {

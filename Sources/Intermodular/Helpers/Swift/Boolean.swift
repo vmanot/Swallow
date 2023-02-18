@@ -10,7 +10,7 @@ public protocol Boolean {
     var boolValue: Bool { get }
 }
 
-// MARK: - Extensions -
+// MARK: - Extensions
 
 extension Boolean  {
     public func orThrow(_ error: Error) throws {
@@ -84,13 +84,13 @@ extension Boolean {
     }
 }
 
-// MARK: - Auxiliary -
+// MARK: - Auxiliary
 
 private enum _BooleanAssertionError: Error {
     case isFalse
 }
 
-// MARK: - Helpers -
+// MARK: - Helpers
 
 extension BooleanInitiable {
     public init<T: Boolean>(boolean: T) {

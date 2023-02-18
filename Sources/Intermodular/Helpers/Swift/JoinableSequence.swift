@@ -14,7 +14,7 @@ public protocol JoinableCollection: Collection, JoinableSequence where Index: St
     associatedtype JointSequenceType = Join2Collection<Self, Self>
 }
 
-// MARK: - Implementation -
+// MARK: - Implementation
 
 extension JoinableSequence where JointSequenceType == Join2Sequence<Self, Self> {
     public func join(_ other: Self) -> JointSequenceType {

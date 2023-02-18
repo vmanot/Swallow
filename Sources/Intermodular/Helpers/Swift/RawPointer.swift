@@ -32,7 +32,7 @@ public protocol InitiableMutableRawBufferPointer: InitiableMutableBufferPointer,
     static func allocate(byteCount: Int, alignment: Int) -> Self
 }
 
-// MARK: - Extensions -
+// MARK: - Extensions
 
 extension RawPointer where Stride == Int {
     public func advancedByStride<T>(of type: T.Type) -> Self {

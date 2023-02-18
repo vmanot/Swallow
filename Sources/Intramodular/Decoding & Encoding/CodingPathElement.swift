@@ -11,7 +11,7 @@ public enum CodingPathElement {
     case keyedSuper(AnyCodingKey)
 }
 
-// MARK: - Extensions -
+// MARK: - Extensions
 
 extension CodingPathElement {
     public func toAnyCodingKey() -> AnyCodingKey {
@@ -26,7 +26,7 @@ extension CodingPathElement {
     }
 }
 
-// MARK: - Conformances -
+// MARK: - Conformances
 
 extension CodingPathElement: CodingKey {
     public var stringValue: String {

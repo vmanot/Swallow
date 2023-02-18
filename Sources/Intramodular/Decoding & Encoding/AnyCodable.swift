@@ -5,7 +5,7 @@
 import Foundation
 import Swift
 
-public enum AnyCodable {
+public enum AnyCodable: @unchecked Sendable {
     case none
     case bool(Bool)
     case number(AnyNumber)
@@ -20,7 +20,7 @@ public enum AnyCodable {
     case _lazy(Codable)
 }
 
-// MARK: - Initializers -
+// MARK: - Initializers
 
 extension AnyCodable {
     public init(_ value: Codable) {
@@ -57,7 +57,7 @@ extension AnyCodable {
     }
 }
 
-// MARK: - Extensions -
+// MARK: - Extensions
 
 extension AnyCodable {
     public var value: Any? {
@@ -86,7 +86,7 @@ extension AnyCodable {
     }
 }
 
-// MARK: - Conformances -
+// MARK: - Conformances
 
 extension AnyCodable: AnyCodableConvertible {
     public func toAnyCodable() -> AnyCodable {

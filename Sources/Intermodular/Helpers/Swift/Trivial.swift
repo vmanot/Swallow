@@ -12,7 +12,7 @@ public protocol Trivial: CVarArg, Equatable {
     init(null: Void)
 }
 
-// MARK: - Implementation -
+// MARK: - Implementation
 
 extension Trivial {
     @inlinable
@@ -28,7 +28,7 @@ extension Trivial {
     }
 }
 
-// MARK: - Extensions -
+// MARK: - Extensions
 
 extension Trivial {
     @inlinable
@@ -78,7 +78,7 @@ extension Trivial {
     }
 }
 
-// MARK: - Conformances -
+// MARK: - Conformances
 
 extension CVarArg where Self: Trivial {
     @inlinable
@@ -110,7 +110,7 @@ extension Initiable where Self: Trivial & UnsignedInteger {
     }
 }
 
-// MARK: - Helpers -
+// MARK: - Helpers
 
 public struct TrivialRepresentationOf<Value>: MutableWrapper, Trivial {
     public var value: Value

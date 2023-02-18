@@ -297,10 +297,14 @@ public struct _PolymorphicKeyedDecodingContainer<T: CodingKey>: KeyedDecodingCon
     }
     
     public func decodeIfPresent<T: Decodable>(_ type: T.Type, forKey key: Key) throws -> T?  {
+        guard !(type is Data.Type) else {
+            return try base.decodeIfPresent(T.self, forKey: key)
+        }
+
         guard !(type is Date.Type) else {
             return try base.decodeIfPresent(T.self, forKey: key)
         }
-        
+            
         guard !(type is Optional<Date>.Type) else {
             return try base.decodeIfPresent(T.self, forKey: key)
         }

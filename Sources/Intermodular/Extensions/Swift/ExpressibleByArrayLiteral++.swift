@@ -9,4 +9,8 @@ extension ExpressibleByArrayLiteral {
     public init(_arrayLiteral elements: [Self.ArrayLiteralElement]) {
         self = isovariadic(Self.init(arrayLiteral:))(elements)
     }
+    
+    public init(_emptyArrayLiteral: Void) {
+        self.init(_arrayLiteral: [])
+    }
 }

@@ -36,7 +36,7 @@ extension ObjectSet {
     }
 }
 
-// MARK: - Conformances -
+// MARK: - Conformances
 
 extension ObjectSet: Hashable {
     public func hash(into hasher: inout Hasher) {

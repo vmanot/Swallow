@@ -19,7 +19,7 @@ public protocol Signed: SignedOrUnsigned {
     prefix static func - (_: Self) -> Self
 }
 
-// MARK: - Implementation -
+// MARK: - Implementation
 
 extension Signed {
     @inlinable

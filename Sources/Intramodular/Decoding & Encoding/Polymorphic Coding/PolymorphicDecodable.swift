@@ -12,7 +12,7 @@ public protocol PolymorphicDecodable: AnyObject, Decodable {
     static func resolveSubtype(for _: DecodingTypeDiscriminator) throws -> any PolymorphicDecodable.Type
 }
 
-// MARK: - Implementation -
+// MARK: - Implementation
 
 extension PolymorphicDecodable where DecodingTypeDiscriminator: Swallow.TypeDiscriminator {
     public static func resolveSubtype(
@@ -28,7 +28,7 @@ extension PolymorphicDecodable where Self: TypeDiscriminable, InstanceType == De
     }
 }
 
-// MARK: - Supplementary API -
+// MARK: - Supplementary API
 
 extension Decoder {
     public func _polymorphic() -> _PolymorphicDecoder {
@@ -46,7 +46,7 @@ extension TopLevelDecoder {
     }
 }
 
-// MARK: - Auxiliary -
+// MARK: - Auxiliary
 
 public struct _PolymorphicTopLevelDecoder<Base: TopLevelDecoder>: TopLevelDecoder {
     private let base: Base

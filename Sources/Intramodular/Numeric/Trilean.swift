@@ -12,7 +12,7 @@ public enum Trilean: Int8, Hashable {
 
 public let unknown: Trilean = .unknown
 
-// MARK: - Conformances -
+// MARK: - Conformances
 
 extension Trilean: Boolean {
     @inlinable
@@ -65,7 +65,7 @@ extension Trilean: MutableWrapper {
     }
 }
 
-// MARK: - Auxiliary Extensions -
+// MARK: - Auxiliary Extensions
 
 extension Trilean {
     @inlinable

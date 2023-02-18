@@ -66,7 +66,7 @@ prefix operator %
 prefix operator %=
 
 
-// MARK: - Implementation - 
+// MARK: - Implementation 
 
 @inlinable
 public prefix func + <T: AdditionOperatable>(rhs: T) -> ((T) -> T) {

@@ -15,7 +15,7 @@ extension CollectionDifference {
     }
 }
 
-// MARK: - Auxiliary -
+// MARK: - Auxiliary
 
 extension CollectionDifference.Change {
     public func map<T>(
