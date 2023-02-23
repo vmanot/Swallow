@@ -137,6 +137,10 @@ extension KeyedValuesOf: CustomStringConvertible {
     }
 }
 
+extension KeyedValuesOf: @unchecked Sendable where Wrapped: Sendable {
+    
+}
+
 // MARK: - Auxiliary
 
 extension KeyedValuesOf {
