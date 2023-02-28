@@ -4,7 +4,7 @@
 
 import Swift
 
-public struct EncodableImpl: Encodable, Sendable {
+public struct AnyEncodable: Encodable, Sendable {
     public let impl: (@Sendable (Encoder) throws -> ())
     
     public init(_ impl: (@escaping @Sendable (Encoder) throws -> ())) {

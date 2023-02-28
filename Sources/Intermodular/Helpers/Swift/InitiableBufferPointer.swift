@@ -6,14 +6,14 @@ import Swift
 
 public protocol InitiableBufferPointer: BufferPointer {
     init(start _: BaseAddressPointer?, count: Int)
-
+    
     static func allocate(capacity: Int) -> Self
-
+    
     static func initializing(from _: BaseAddressPointer, count: Int) -> Self
-
+    
     static func initializing<S: Sequence>(from _: S) -> Self where S.Element == Element
     static func initializing<S: Sequence>(from _: S, count: Int) -> Self where S.Element == Element
-
+    
     static func initializing<C: Collection>(from _: C) -> Self where C.Element == Element
     static func initializing<C: Collection>(from _: C, count: Int) -> Self where C.Element == Element
 }
@@ -35,28 +35,28 @@ extension InitiableBufferPointer {
         count: Int
     ) -> Self {
         let result = allocate(capacity: count)
-
-        #if compiler(>=5.8)
+        
+#if compiler(>=5.8)
         result.baseAddress?.unsafeMutablePointerRepresentation.update(
             from: start.unsafePointerRepresentation,
             count: numericCast(count)
         )
-        #else
+#else
         result.baseAddress?.unsafeMutablePointerRepresentation.assign(
             from: start.unsafePointerRepresentation,
             count: numericCast(count)
         )
-        #endif
-
+#endif
+        
         return result
     }
-
+    
     public static func initializing<S: Sequence>(
         from sequence: S
     ) -> Self where S.Element == Element {
         initializing(from: Array(sequence))
     }
-
+    
     public static func initializing<S: Sequence>(
         from sequence: S,
         count: Int
@@ -64,20 +64,20 @@ extension InitiableBufferPointer {
         guard count != 0 else {
             return .init(start: nil, count: 0)
         }
-
+        
         let rawBufferPointer = UnsafeMutableBufferPointer<Element>.allocate(capacity: numericCast(count))
-
+        
         _ = rawBufferPointer.initialize(from: sequence)
-
+        
         return .init(start: rawBufferPointer.baseAddress, count: count)
     }
-
+    
     public static func initializing<C: Collection>(
         from collection: C
     ) -> Self where C.Element == Element {
         initializing(from: collection, count: numericCast(collection.count))
     }
-
+    
     public static func initializing<C: Collection>(
         from collection: C,
         count: Int
@@ -89,29 +89,11 @@ extension InitiableBufferPointer {
 // MARK: - Extensions
 
 extension InitiableBufferPointer {
-    public init(start: BaseAddressPointer, count: Int) {
-        self.init(start: Optional(start), count: count)
-    }
-    
-    public init<P: MutablePointer>(
-        start: P,
-        count: Int
-    ) where P.Pointee == Element {
-        self.init(start: BaseAddressPointer(start), count: count)
-    }
-    
     public init<P: MutablePointer>(
         start: P?,
         count: Int
     ) where P.Pointee == Element {
         self.init(start: start.map(BaseAddressPointer.init), count: count)
-    }
-    
-    public init<P: MutablePointer, N: BinaryInteger>(
-        start: P,
-        count: N
-    ) where P.Pointee == Element {
-        self.init(start: start, count: numericCast(count))
     }
     
     public init<P: MutablePointer, N: BinaryInteger>(
@@ -132,40 +114,15 @@ extension InitiableBufferPointer {
 }
 
 extension InitiableBufferPointer where Self: ConstantBufferPointer {
-    public init<P: Pointer>(start: P, count: Int) where P.Pointee == Element {
-        self.init(start: BaseAddressPointer(start), count: count)
-    }
-    
-    public init<P: Pointer>(start: P?, count: Int) where P.Pointee == Element {
-        self.init(start: start.map(BaseAddressPointer.init), count: count)
-    }
-    
-    public init<P: Pointer, N: BinaryInteger>(start: P, count: N) where P.Pointee == Element {
-        self.init(start: start, count: numericCast(count))
-    }
-    
     public init<P: Pointer, N: BinaryInteger>(start: P?, count: N) where P.Pointee == Element {
-        self.init(start: start, count: numericCast(count))
+        self.init(start: start.map(BaseAddressPointer.init), count: numericCast(count) as Int)
     }
-    
-    public init<P: MutablePointer>(start: P, count: Int) where P.Pointee == Element {
-        self.init(start: BaseAddressPointer(start), count: count)
-    }
-    
-    public init<P: MutablePointer>(start: P?, count: Int) where P.Pointee == Element {
-        self.init(start: start.map(BaseAddressPointer.init), count: count)
-    }
-    
-    public init<P: MutablePointer, N: BinaryInteger>(start: P, count: N) where P.Pointee == Element {
-        self.init(start: start, count: numericCast(count))
-    }
-    
     public init<P: MutablePointer, N: BinaryInteger>(start: P?, count: N) where P.Pointee == Element {
-        self.init(start: start, count: numericCast(count))
+        self.init(start: start.map(BaseAddressPointer.init), count: numericCast(count) as Int)
     }
     
     public init<BP: BufferPointer>(_ bufferPointer: BP) where BP.Element == Element {
-        self.init(start: BaseAddressPointer(bufferPointer.baseAddress), count: numericCast(bufferPointer.count))
+        self.init(start: bufferPointer.baseAddress.map(BaseAddressPointer.init), count: numericCast(bufferPointer.count) as Int)
     }
 }
 
@@ -187,7 +144,7 @@ extension InitiableBufferPointer {
 // MARK: - Helpers
 
 @inlinable
-public func reinterpretCast<T: InitiableBufferPointer, U: InitiableBufferPointer>(_ x: T) -> U? {
+public func _reinterpretCast<T: InitiableBufferPointer, U: InitiableBufferPointer>(_ x: T) -> U? {
     return U.init(
         start: U.BaseAddressPointer(x.baseAddress?.opaquePointerRepresentation),
         count: x.count
@@ -195,7 +152,7 @@ public func reinterpretCast<T: InitiableBufferPointer, U: InitiableBufferPointer
 }
 
 @inlinable
-public func reinterpretCast<T: InitiableBufferPointer, U: InitiableBufferPointer>(_ x: T) -> U {
+public func _reinterpretCast<T: InitiableBufferPointer, U: InitiableBufferPointer>(_ x: T) -> U {
     return U.init(
         start: U.BaseAddressPointer(x.baseAddress?.opaquePointerRepresentation),
         count: (x.count.toDouble() * MemoryLayout<T.Element>.size.toDouble() / MemoryLayout<U.Element>.size.toDouble()).toInt()

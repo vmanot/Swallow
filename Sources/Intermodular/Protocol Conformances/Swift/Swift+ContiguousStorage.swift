@@ -9,7 +9,7 @@ extension Array: MutableContiguousStorage {
         return try withUnsafeBufferPointer({ try body(.init($0)) })
     }
 
-    public mutating func withMutableBufferPointer<BP: InitiableMutableBufferPointer, T>(_ body: ((BP) throws -> T)) rethrows -> T where Element == BP.Element {
+    public mutating func withMutableBufferPointer<BP: InitiableBufferPointer & MutableBufferPointer, T>(_ body: ((BP) throws -> T)) rethrows -> T where Element == BP.Element {
         return try withUnsafeMutableBufferPointer({ (x: inout UnsafeMutableBufferPointer<Element>) in try body(.init(x)) })
     }
 }
@@ -19,7 +19,7 @@ extension ArraySlice: MutableContiguousStorage {
         return try withUnsafeBufferPointer({ try body(.init($0)) })
     }
     
-    public mutating func withMutableBufferPointer<BP: InitiableMutableBufferPointer, T>(_ body: ((BP) throws -> T)) rethrows -> T where Element == BP.Element {
+    public mutating func withMutableBufferPointer<BP: InitiableBufferPointer & MutableBufferPointer, T>(_ body: ((BP) throws -> T)) rethrows -> T where Element == BP.Element {
         return try withUnsafeMutableBufferPointer({ (x: inout UnsafeMutableBufferPointer<Element>) in try body(.init(x)) })
     }
 }
@@ -29,7 +29,7 @@ extension ContiguousArray: MutableContiguousStorage {
         return try withUnsafeBufferPointer({ try body(.init($0)) })
     }
     
-    public mutating func withMutableBufferPointer<BP: InitiableMutableBufferPointer, T>(_ body: ((BP) throws -> T)) rethrows -> T where Element == BP.Element {
+    public mutating func withMutableBufferPointer<BP: InitiableBufferPointer & MutableBufferPointer, T>(_ body: ((BP) throws -> T)) rethrows -> T where Element == BP.Element {
         return try withUnsafeMutableBufferPointer({ (x: inout UnsafeMutableBufferPointer<Element>) in try body(.init(x)) })
     }
 }

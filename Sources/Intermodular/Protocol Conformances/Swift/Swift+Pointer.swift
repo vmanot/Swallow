@@ -6,7 +6,7 @@ import Swift
 
 extension AutoreleasingUnsafeMutablePointer: Pointer {
     public var opaquePointerRepresentation: OpaquePointer {
-        return .init(self)
+        OpaquePointer(self)
     }
     
     public init(_ pointer: OpaquePointer) {
@@ -18,54 +18,62 @@ extension OpaquePointer: ConstantPointer {
     public typealias Pointee = Void
     
     public var pointee: Pointee {
-        return unsafePointerRepresentation.pointee
+        unsafePointerRepresentation.pointee
     }
     
     public var opaquePointerRepresentation: OpaquePointer {
-        return self
+        self
+    }
+    
+    public init?(_ pointer: OpaquePointer?) {
+        guard let pointer = pointer else {
+            return nil
+        }
+        
+        self = pointer
     }
 }
 
 extension UnsafeMutablePointer: MutablePointer {
     public var opaquePointerRepresentation: OpaquePointer {
-        return .init(self)
+        OpaquePointer(self)
     }
     
     public func pointee(at stride: Stride) -> Pointee {
-        return self[stride]
-    }
-}
-
-extension UnsafeMutableRawPointer: MutableRawPointer {
-    public var opaquePointerRepresentation: OpaquePointer {
-        return .init(self)
-    }
-    
-    public subscript(offset: Int) -> Pointee {
-        get {
-            return assumingMemoryBound(to: Pointee.self)[offset]
-        } nonmutating set {
-            assumingMemoryBound(to: Pointee.self)[offset] = newValue
-        }
-    }
-    
-    public static func allocate(capacity: Stride) -> UnsafeMutableRawPointer {
-        return allocate(byteCount: capacity, alignment: MemoryLayout<Pointee>.alignment)
+        self[stride]
     }
 }
 
 extension UnsafePointer: ConstantPointer {
     public var opaquePointerRepresentation: OpaquePointer {
-        return .init(self)
+        OpaquePointer(self)
     }
 }
 
 extension UnsafeRawPointer: ConstantRawPointer {
     public var pointee: Pointee {
-        return unsafePointerRepresentation.pointee
+        unsafePointerRepresentation.pointee
     }
     
     public var opaquePointerRepresentation: OpaquePointer {
-        return .init(self)
+        OpaquePointer(self)
+    }
+}
+
+extension UnsafeMutableRawPointer: MutableRawPointer {
+    public var opaquePointerRepresentation: OpaquePointer {
+        OpaquePointer(self)
+    }
+    
+    public subscript(offset: Int) -> Pointee {
+        get {
+            assumingMemoryBound(to: Pointee.self)[offset]
+        } nonmutating set {
+            assumingMemoryBound(to: Pointee.self)[offset] = newValue
+        }
+    }
+        
+    public static func allocate(capacity: Stride) -> UnsafeMutableRawPointer {
+        allocate(byteCount: capacity, alignment: MemoryLayout<Pointee>.alignment)
     }
 }

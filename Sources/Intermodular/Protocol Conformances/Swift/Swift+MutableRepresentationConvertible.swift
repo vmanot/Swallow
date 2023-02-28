@@ -4,71 +4,71 @@
 
 import Swift
 
-extension UnsafeBufferPointer: MutableConvertible {
+extension UnsafeBufferPointer: MutableRepresentationConvertible {
     public typealias ImmutableRepresentation = UnsafeBufferPointer<Element>
     public typealias MutableRepresentation = UnsafeMutableBufferPointer<Element>
 }
 
-extension UnsafeMutableBufferPointer: MutableConvertible {
+extension UnsafeMutableBufferPointer: MutableRepresentationConvertible {
     public typealias ImmutableRepresentation = UnsafeBufferPointer<Element>
     public typealias MutableRepresentation = UnsafeMutableBufferPointer<Element>
 }
 
-extension UnsafeMutablePointer: MutableConvertible {
+extension UnsafeMutablePointer: MutableRepresentationConvertible {
     public typealias ImmutableRepresentation = UnsafePointer<Pointee>
     public typealias MutableRepresentation = UnsafeMutablePointer<Pointee>
 }
 
-extension UnsafeMutableRawBufferPointer: MutableConvertible {
+extension UnsafeMutableRawBufferPointer: MutableRepresentationConvertible {
     public typealias ImmutableRepresentation = UnsafeRawBufferPointer
     public typealias MutableRepresentation = UnsafeMutableRawBufferPointer
 }
 
-extension UnsafeMutableRawPointer: MutableConvertible {
+extension UnsafeMutableRawPointer: MutableRepresentationConvertible {
     public typealias ImmutableRepresentation = UnsafeRawPointer
     public typealias MutableRepresentation = UnsafeMutableRawPointer
 }
 
-extension UnsafePointer: MutableConvertible {
+extension UnsafePointer: MutableRepresentationConvertible {
     public typealias ImmutableRepresentation = UnsafePointer<Pointee>
     public typealias MutableRepresentation = UnsafeMutablePointer<Pointee>
 }
 
-extension UnsafeRawBufferPointer: MutableConvertible {
+extension UnsafeRawBufferPointer: MutableRepresentationConvertible {
     public typealias ImmutableRepresentation = UnsafeRawBufferPointer
     public typealias MutableRepresentation = UnsafeMutableRawBufferPointer
 }
 
-extension UnsafeRawPointer: MutableConvertible {
+extension UnsafeRawPointer: MutableRepresentationConvertible {
     public typealias ImmutableRepresentation = UnsafeRawPointer
     public typealias MutableRepresentation = UnsafeMutableRawPointer
 }
 
 // MARK: - Helpers
 
-extension InitiableBufferPointer where Self: MutableBufferPointer & MutableConvertible, Self.ImmutableRepresentation: InitiableBufferPointer & ConstantBufferPointer, Self.ImmutableRepresentation.Element == Self.Element {
+extension InitiableBufferPointer where Self: MutableBufferPointer & MutableRepresentationConvertible, Self.ImmutableRepresentation: InitiableBufferPointer & ConstantBufferPointer, Self.ImmutableRepresentation.Element == Self.Element {
     @inlinable
     public var immutableRepresentation: ImmutableRepresentation {
         get {
             return .init(self)
         } set {
-            self = reinterpretCast(newValue)
+            self = _reinterpretCast(newValue)
         }
     }
 }
 
-extension InitiableBufferPointer where Self: MutableConvertible, Self.MutableRepresentation: InitiableMutableBufferPointer {
+extension InitiableBufferPointer where Self: MutableRepresentationConvertible, Self.MutableRepresentation: InitiableBufferPointer & MutableBufferPointer {
     @inlinable
     public var mutableRepresentation: MutableRepresentation {
         get {
-            return reinterpretCast(self)
+            return _reinterpretCast(self)
         } set {
-            self = reinterpretCast(newValue)
+            self = _reinterpretCast(newValue)
         }
     }
 }
 
-extension Pointer where Self: MutableConvertible, Self.ImmutableRepresentation: ConstantPointer {
+extension Pointer where Self: MutableRepresentationConvertible, Self.ImmutableRepresentation: ConstantPointer {
     @inlinable
     public var immutableRepresentation: ImmutableRepresentation {
         get {
@@ -79,7 +79,7 @@ extension Pointer where Self: MutableConvertible, Self.ImmutableRepresentation: 
     }
 }
 
-extension Pointer where Self: MutableConvertible, Self.MutableRepresentation: MutablePointer {
+extension Pointer where Self: MutableRepresentationConvertible, Self.MutableRepresentation: MutablePointer {
     @inlinable
     public var mutableRepresentation: MutableRepresentation {
         get {

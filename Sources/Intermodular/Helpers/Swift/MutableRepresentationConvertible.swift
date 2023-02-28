@@ -4,7 +4,7 @@
 
 import Swift
 
-public protocol _MutableConvertible {
+public protocol _MutableRepresentationConvertible {
     associatedtype ImmutableRepresentation = Self
     associatedtype MutableRepresentation
     
@@ -12,20 +12,20 @@ public protocol _MutableConvertible {
     var mutableRepresentation: MutableRepresentation { get }
 }
 
-public protocol MutableConvertible: _MutableConvertible where ImmutableRepresentation: _MutableConvertible, MutableRepresentation: _MutableConvertible {
+public protocol MutableRepresentationConvertible: _MutableRepresentationConvertible where ImmutableRepresentation: _MutableRepresentationConvertible, MutableRepresentation: _MutableRepresentationConvertible {
     var immutableRepresentation: ImmutableRepresentation { get }
     var mutableRepresentation: MutableRepresentation { get }
 }
 
 // MARK: - Implementation
 
-extension MutableConvertible where ImmutableRepresentation == Self {
+extension MutableRepresentationConvertible where ImmutableRepresentation == Self {
     public var immutableRepresentation: ImmutableRepresentation {
         return self
     }
 }
 
-extension MutableConvertible where MutableRepresentation == Self {
+extension MutableRepresentationConvertible where MutableRepresentation == Self {
     public var mutableRepresentation: MutableRepresentation {
         get {
             return self

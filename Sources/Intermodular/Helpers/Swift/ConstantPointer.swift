@@ -15,14 +15,6 @@ extension ConstantPointer {
     public init<P: Pointer>(_ pointer: P) where P.Pointee == Pointee {
         self.init(pointer.opaquePointerRepresentation)
     }
-    
-    public init?<P: Pointer>(_ pointer: P?) where P.Pointee == Pointee {
-        guard let pointer = pointer else {
-            return nil
-        }
-        
-        self.init(pointer)
-    }
 }
 
 extension ConstantPointer {
@@ -31,18 +23,3 @@ extension ConstantPointer {
     }
 }
 
-// MARK: - Helpers
-
-extension MutablePointer {
-    public init<P: ConstantPointer>(mutating pointer: P) where P.Pointee == Pointee {
-        self.init(pointer.opaquePointerRepresentation)
-    }
-    
-    public init?<P: ConstantPointer>(mutating pointer: P?) where P.Pointee == Pointee {
-        guard let pointer = pointer else {
-            return nil
-        }
-        
-        self.init(mutating: pointer)
-    }
-}

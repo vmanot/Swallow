@@ -5,15 +5,18 @@
 import Swift
 
 extension NonDestroyingSequence {
-    @inlinable
-    public func around(_ predicate: ((Element) throws -> Bool)) rethrows -> AroundElementSequence<SequenceToCollection<Self>.SubSequence, Element, SequenceToCollection<Self>.SubSequence>? {
-        return try toFauxCollection().around(predicate)
+    public func around(
+        _ predicate: ((Element) throws -> Bool)
+    ) rethrows -> AroundElementSequence<SequenceToCollection<Self>.SubSequence, Element, SequenceToCollection<Self>.SubSequence>? {
+        try toFauxCollection().around(predicate)
     }
 }
 
 extension Collection {
     @inlinable
-    public func around(_ predicate: ((Element) throws -> Bool)) rethrows -> AroundElementSequence<SubSequence, Element, SubSequence>? {
+    public func around(
+        _ predicate: ((Element) throws -> Bool)
+    ) rethrows -> AroundElementSequence<SubSequence, Element, SubSequence>? {
         guard let (index, element) = try enumerated().find({ try predicate($1) }) else {
             return nil
         }
@@ -43,4 +46,3 @@ public struct AroundElementSequence<LeftSequence: Sequence, Element, RightSequen
         return left.join(CollectionOfOne(element)).join(right).makeIterator()
     }
 }
-

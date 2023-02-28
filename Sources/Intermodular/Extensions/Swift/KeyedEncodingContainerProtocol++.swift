@@ -25,6 +25,6 @@ extension KeyedEncodingContainerProtocol {
         using encodeImpl: @escaping @Sendable (Encoder) throws -> (),
         forKey key: Key
     ) throws {
-        try encode(EncodableImpl(encodeImpl), forKey: key)
+        try encode(AnyEncodable(encodeImpl), forKey: key)
     }
 }

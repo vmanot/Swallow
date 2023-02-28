@@ -15,7 +15,7 @@ public protocol ContiguousStorage {
 public protocol MutableContiguousStorage: ContiguousStorage {
     mutating func withUnsafeMutableBytes<T>(_: ((UnsafeMutableRawBufferPointer) throws -> T)) rethrows -> T
     
-    mutating func withMutableBufferPointer<BP: InitiableMutableBufferPointer, T>(_: ((BP) throws -> T)) rethrows -> T where Element == BP.Element
+    mutating func withMutableBufferPointer<BP: InitiableBufferPointer & MutableBufferPointer, T>(_: ((BP) throws -> T)) rethrows -> T where Element == BP.Element
 }
 
 // MARK: - Implementation
@@ -43,7 +43,7 @@ extension MutableContiguousStorage {
 // MARK: - Extensions
 
 extension ContiguousStorage {
-    public func copy<BP: InitiableMutableBufferPointer>(to pointer: BP) where Element == BP.Element {
+    public func copy<BP: InitiableBufferPointer & MutableBufferPointer>(to pointer: BP) where Element == BP.Element {
         withUnsafeBufferPointer({ pointer.assign(from: $0) })
     }
     
@@ -51,7 +51,7 @@ extension ContiguousStorage {
         withUnsafeBufferPointer({ .initializing(from: $0) })
     }
     
-    public func createCopy<BP: InitiableBufferPointer>() -> BP where Element == BP.Element {
+    public func createCopy<BP: InitiableBufferPointer & MutableBufferPointer>() -> BP where Element == BP.Element {
         BP(createCopy())
     }
     

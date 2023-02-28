@@ -4,69 +4,79 @@
 
 import Swift
 
-public final class AutodeallocatingUnsafeBufferPointer<T>: ConstantBufferPointer, InitiableBufferPointer {
-    public typealias BaseAddressPointer = Value.BaseAddressPointer
-    public typealias Element = Value.Element
-    public typealias Iterator = Value.Iterator
-    public typealias Index = Value.Index
-    public typealias SubSequence = Value.SubSequence
+public final class AutodeallocatingUnsafeBufferPointer<T>: ConstantBufferPointer {
+    public typealias BaseAddressPointer = UnsafeBufferPointer<T>.BaseAddressPointer
+    public typealias Element = UnsafeBufferPointer<T>.Element
+    public typealias Iterator = UnsafeBufferPointer<T>.Iterator
+    public typealias Index = UnsafeBufferPointer<T>.Index
+    public typealias SubSequence = UnsafeBufferPointer<T>.SubSequence
     public typealias Value = UnsafeBufferPointer<T>
     
-    public var isAutodeallocating: Trilean
-    public var value: Value
+    private let base: UnsafeBufferPointer<T>
+    private let isAutodeallocating: Trilean
     
     public var baseAddress: BaseAddressPointer? {
-        value.baseAddress
+        base.baseAddress
     }
     
     public var startIndex: Index {
-        value.startIndex
+        base.startIndex
     }
     
     public var endIndex: Index {
-        value.endIndex
+        base.endIndex
     }
-
-    public init(_ value: Value, isAutodeallocating: Trilean) {
-        self.value = value
+    
+    public init(
+        _ base: UnsafeBufferPointer<T>,
+        isAutodeallocating: Trilean
+    ) {
+        self.base = base
         self.isAutodeallocating = isAutodeallocating
     }
     
-    public convenience init(_ value: Value) {
-        self.init(value, isAutodeallocating: true)
+    public convenience init<P: Pointer, N: BinaryInteger>(
+        start baseAddress: P?,
+        count: N,
+        isAutodeallocating: Trilean = .unknown
+    ) where P.Pointee == Element {
+        self.init(
+            UnsafeBufferPointer(start: baseAddress, count: count),
+            isAutodeallocating: isAutodeallocating
+        )
     }
     
     public subscript(position: Index) -> Element {
-        value[position]
+        base[position]
     }
     
     public subscript(bounds: Range<Index>) -> SubSequence {
-        value[bounds]
+        base[bounds]
     }
     
     public func makeIterator() -> Iterator {
-        value.makeIterator()
+        base.makeIterator()
     }
     
     deinit {
-        if isAutodeallocating.boolValue {
-            value.unsafeMutablePointerRepresentation?.deallocate()
+        if isAutodeallocating == true {
+            base.unsafeMutablePointerRepresentation?.deallocate()
         }
     }
 }
 
 extension UnsafeBufferPointer: ConstantBufferPointer, InitiableBufferPointer {
-    
+    public typealias BaseAddressPointer = UnsafePointer<Element>
 }
 
-extension UnsafeMutableBufferPointer: InitiableMutableBufferPointer {
-    
-}
-
-extension UnsafeMutableRawBufferPointer: InitiableMutableRawBufferPointer {
-
+extension UnsafeMutableBufferPointer: InitiableBufferPointer & MutableBufferPointer {
+    public typealias BaseAddressPointer = UnsafeMutablePointer<Element>
 }
 
 extension UnsafeRawBufferPointer: ConstantRawBufferPointer, InitiableBufferPointer {
-    
+    public typealias BaseAddressPointer = UnsafeRawPointer
+}
+
+extension UnsafeMutableRawBufferPointer: InitiableMutableRawBufferPointer {
+    public typealias BaseAddressPointer = UnsafeMutableRawPointer
 }

@@ -29,15 +29,15 @@ public protocol Pointer: Hashable, OpaquePointerInitiable, Strideable {
 
 extension Pointer {
     public var unsafePointerRepresentation: UnsafePointer<Pointee> {
-        return .init(opaquePointerRepresentation)
+        UnsafePointer(opaquePointerRepresentation)
     }
     
     public var unsafeMutablePointerRepresentation: UnsafeMutablePointer<Pointee> {
-        return .init(opaquePointerRepresentation)
+        UnsafeMutablePointer(opaquePointerRepresentation)
     }
     
     public func pointee(at stride: Stride) -> Pointee {
-        return advanced(by: stride).pointee
+        advanced(by: stride).pointee
     }
     
     public subscript(offset: Stride) -> Pointee {
@@ -117,21 +117,21 @@ extension Pointer {
 // MARK: - Helpers
 
 @inlinable
-public func reinterpretCast<T: Pointer, U: Pointer>(_ pointer: T) -> U {
+public func _reinterpretCast<T: Pointer, U: Pointer>(_ pointer: T) -> U {
     return U(pointer.opaquePointerRepresentation)
 }
 
 @inlinable
-public func reinterpretCast<T: Pointer, U: Pointer>(_ pointer: T?) -> U {
+public func _reinterpretCast<T: Pointer, U: Pointer>(_ pointer: T?) -> U {
     return U(pointer!.opaquePointerRepresentation)
 }
 
 @inlinable
-public func reinterpretCast<T: Pointer, U: Pointer>(_ pointer: T) -> U? {
+public func _reinterpretCast<T: Pointer, U: Pointer>(_ pointer: T) -> U? {
     return U(pointer.opaquePointerRepresentation)
 }
 
 @inlinable
-public func reinterpretCast<T: Pointer, U: Pointer>(_ pointer: T?) -> U? {
-    return pointer.map(reinterpretCast)
+public func _reinterpretCast<T: Pointer, U: Pointer>(_ pointer: T?) -> U? {
+    return pointer.map(_reinterpretCast)
 }

@@ -28,7 +28,7 @@ public protocol MutableRawBufferPointer: MutableBufferPointer, RawBufferPointer 
     
 }
 
-public protocol InitiableMutableRawBufferPointer: InitiableMutableBufferPointer, MutableRawBufferPointer {
+public protocol InitiableMutableRawBufferPointer: InitiableBufferPointer & MutableBufferPointer, MutableRawBufferPointer {
     static func allocate(byteCount: Int, alignment: Int) -> Self
 }
 

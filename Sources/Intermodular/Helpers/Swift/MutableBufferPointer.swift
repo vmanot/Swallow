@@ -7,7 +7,7 @@ import Swift
 
 public protocol MutableBufferPointer: BufferPointer, MutableCollection where BaseAddressPointer: MutablePointer {
     func assumingMemoryBound<T>(to type: T.Type) -> UnsafeMutableBufferPointer<T>
-
+    
     func initialize<S: Sequence>(from source: S) -> (S.Iterator, Index) where S.Element == Element
     func initialize<C: Collection>(from source: C) -> (C.Iterator, Index) where C.Element == Element
     func initialize<BC: BidirectionalCollection>(from source: BC) -> (BC.Iterator, Index) where BC.Element == Element
@@ -24,17 +24,17 @@ extension MutableBufferPointer {
         let countMultiplier = MemoryLayout<Element>.stride.toDouble() / MemoryLayout<T>.stride.toDouble()
         let newCount = (countMultiplier * (numericCast(count) as Int).toDouble()).toInt()
         
-        return .init(start: baseAddress?.assumingMemoryBound(to: type), count: newCount)
-    }
-}
-
-extension MutableBufferPointer where Index == Int {
-    public func initialize<S: Sequence>(from source: S) -> (S.Iterator, Index) where S.Element == Element {
-        return unsafeMutableBufferPointerRepresentation.initialize(from: source)
+        return UnsafeMutableBufferPointer(start: baseAddress?.assumingMemoryBound(to: type), count: newCount)
     }
 }
 
 extension MutableBufferPointer {
+    public func initialize<S: Sequence>(
+        from source: S
+    ) -> (S.Iterator, Index) where Index == Int, S.Element == Element {
+        unsafeMutableBufferPointerRepresentation.initialize(from: source)
+    }
+    
     public func update<P: Pointer>(
         from pointer: P,
         count: Int
@@ -64,17 +64,11 @@ extension MutableBufferPointer {
     ) where BP.Element == Element {
         update(from: bufferPointer, count: numericCast(bufferPointer.count))
     }
-}
-
-extension MutableBufferPointer {
+    
     public func deinitialize(count: Int) {
         _ = baseAddress?.deinitialize(count: count)
     }
-}
-
-// MARK: - Extensions
-
-extension MutableBufferPointer {
+    
     public func deinitialize() {
         deinitialize(count: count)
     }

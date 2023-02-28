@@ -25,54 +25,22 @@ extension ConstantBufferPointer {
 
 extension BufferPointer {
     public var unsafePointerRepresentation: UnsafePointer<Element>? {
-        return reinterpretCast(baseAddress?.unsafePointerRepresentation)
+        baseAddress?.unsafePointerRepresentation
     }
     
     public var unsafeRawPointerRepresentation: UnsafeRawPointer? {
-        return reinterpretCast(baseAddress)
+        _reinterpretCast(baseAddress)
     }
     
     public var unsafeBufferPointerRepresentation: UnsafeBufferPointer<Element> {
-        return UnsafeBufferPointer(start: UnsafePointer(baseAddress), count: numericCast(count))
+        UnsafeBufferPointer(start: baseAddress.map(UnsafePointer<Element>.init), count: numericCast(count))
     }
     
     public var unsafeMutablePointerRepresentation: UnsafeMutablePointer<Element>? {
-        return reinterpretCast(baseAddress?.unsafeMutablePointerRepresentation)
+        _reinterpretCast(baseAddress?.unsafeMutablePointerRepresentation)
     }
     
     public var unsafeMutableBufferPointerRepresentation: UnsafeMutableBufferPointer<Element> {
-        return UnsafeMutableBufferPointer(start: UnsafeMutablePointer<Element>(baseAddress?.opaquePointerRepresentation), count: numericCast(count))
-    }
-}
-
-// MARK: - Helpers
-
-extension Pointer {
-    public init?<BP: MutableBufferPointer>(_ bufferPointer: BP) where BP.Element == Pointee {
-        self.init(bufferPointer.baseAddress)
-    }
-}
-
-extension ConstantPointer {
-    public init?<BP: BufferPointer>(_ bufferPointer: BP) where BP.Element == Pointee {
-        self.init(bufferPointer.baseAddress)
-    }
-}
-
-extension MutablePointer {
-    public init?<BP: ConstantBufferPointer>(mutating bufferPointer: BP) where BP.Element == Pointee {
-        self.init(mutating: bufferPointer.baseAddress)
-    }
-}
-
-extension UnsafePointer {
-    public func buffer<Integer: BinaryInteger>(withCount count: Integer) -> UnsafeBufferPointer<Pointee> {
-        return UnsafeBufferPointer(start: self, count: count)
-    }
-}
-
-extension UnsafeMutablePointer {
-    public func buffer<Integer: BinaryInteger>(withCount count: Integer) -> UnsafeMutableBufferPointer<Pointee> {
-        return UnsafeMutableBufferPointer(start: self, count: count)
+        UnsafeMutableBufferPointer(start: UnsafeMutablePointer<Element>(baseAddress?.opaquePointerRepresentation), count: numericCast(count))
     }
 }

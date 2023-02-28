@@ -75,16 +75,26 @@ public struct SequenceToCollection<S: Sequence>: RandomAccessCollection, Wrapper
         self.value = value
     }
     
+    public var count: Int {
+        var count = 0
+        
+        for _ in self {
+            count += 1
+        }
+        
+        return count
+    }
+    
     public var startIndex: Index {
-        return 0
+        0
     }
     
     public var endIndex: Index {
-        return AnySequence(self).countElements()
+        count
     }
     
     public var indices: Indices {
-        return .init(bounds: (startIndex, endIndex))
+        .init(bounds: (startIndex, endIndex))
     }
     
     public subscript(index: Index) -> Element {

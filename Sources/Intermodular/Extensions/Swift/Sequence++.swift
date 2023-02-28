@@ -4,17 +4,7 @@
 
 import Swift
 
-extension Sequence {
-    public func countElements() -> Int {
-        var count = 0
-        
-        for _ in self {
-            count += 1
-        }
-        
-        return count
-    }
-}
+// MARK: Grouping
 
 extension Sequence {
     public func group<ID: Hashable>(
@@ -43,16 +33,6 @@ extension Sequence {
         }
         
         return result
-    }
-}
-
-extension Sequence {
-    public func optionalFilter<T>(_ predicate: (T) throws -> Bool) rethrows -> [T?] where Element == T? {
-        return try filter({ try $0.map(predicate) ?? true })
-    }
-    
-    public func optionalMap<T, U>(_ transform: (T) throws -> U) rethrows -> [U?] where Element == T? {
-        return try map({ try $0.map(transform) })
     }
 }
 
@@ -91,39 +71,7 @@ extension Sequence {
     }
 }
 
-// MARK: - concurrentForEach -
-
-extension Sequence where Element: Sendable {
-    public func concurrentForEach(
-        _ operation: @escaping @Sendable (Element) async -> Void
-    ) async {
-        await withTaskGroup(of: Void.self) { group in
-            for element in self {
-                group.addTask {
-                    await operation(element)
-                }
-            }
-            
-            await group.waitForAll()
-        }
-    }
-    
-    public func concurrentForEach(
-        _ operation: @escaping @Sendable (Element) async throws -> Void
-    ) async throws {
-        try await withThrowingTaskGroup(of: Void.self) { group in
-            for element in self {
-                group.addTask {
-                    try await operation(element)
-                }
-            }
-            
-            try await group.waitForAll()
-        }
-    }
-}
-
-// MARK: concurrentMap
+// MARK: Concurrent Iteration
 
 extension Sequence where Element: Sendable {
     /// Returns an array containing the results of mapping the given async closure over
@@ -204,13 +152,33 @@ extension Sequence where Element: Sendable {
             try await body(element)
         }
     }
-}
-
-// MARK: duplicate
-
-extension Sequence {
-    public func duplicates<T: Hashable>(groupedBy keyPath: KeyPath<Element, T>) -> [T: [Element]] {
-        Dictionary(grouping: self, by: { $0[keyPath: keyPath] }).filter({ $1.count > 1 })
+    
+    public func concurrentForEach(
+        _ operation: @escaping @Sendable (Element) async -> Void
+    ) async {
+        await withTaskGroup(of: Void.self) { group in
+            for element in self {
+                group.addTask {
+                    await operation(element)
+                }
+            }
+            
+            await group.waitForAll()
+        }
+    }
+    
+    public func concurrentForEach(
+        _ operation: @escaping @Sendable (Element) async throws -> Void
+    ) async throws {
+        try await withThrowingTaskGroup(of: Void.self) { group in
+            for element in self {
+                group.addTask {
+                    try await operation(element)
+                }
+            }
+            
+            try await group.waitForAll()
+        }
     }
 }
 
@@ -221,16 +189,9 @@ extension Sequence {
     public func zip<S: Sequence>(_ other: S) -> Zip2Sequence<Self, S> {
         return Swift.zip(self, other)
     }
-    
-    public func separated(by separator: Element) -> AnySequence<Element> {
-        guard let first = first else {
-            return .init(noSequence: ())
-        }
-        return .init(CollectionOfOne(first).join(dropFirst().flatMap({ CollectionOfOne(separator).join(CollectionOfOne($0)) })))
-    }
 }
 
-// MARK: minimum/maximum
+// MARK: Minimum/Maximum
 
 extension Sequence where Element: Comparable {
     @inlinable
@@ -244,7 +205,7 @@ extension Sequence where Element: Comparable {
     }
 }
 
-// MARK: reduce
+// MARK: Reducing
 
 extension Sequence {
     @inlinable
@@ -292,9 +253,38 @@ extension Sequence {
     }
 }
 
-// MARK: find
+// MARK: Slicing
 
 extension Sequence {
+    public func interspersed(
+        with separator: Element
+    ) -> AnySequence<Element> {
+        guard let first = first else {
+            return .init(noSequence: ())
+        }
+        
+        return .init(
+            CollectionOfOne(first)
+                .join(
+                    dropFirst()
+                        .flatMap({ CollectionOfOne(separator).join(CollectionOfOne($0)) })
+                )
+        )
+    }
+    
+    public func between(
+        count startIndex: Int,
+        and endIndex: Int
+    ) -> PrefixSequence<DropFirstSequence<Self>> {
+        dropFirst(startIndex).prefix(endIndex - startIndex)
+    }
+    
+    public subscript(
+        between range: Range<Int>
+    ) -> PrefixSequence<DropFirstSequence<Self>> {
+        between(count: range.lowerBound, and: range.upperBound)
+    }
+    
     public func elements(
         between firstPredicate: ((Element) throws -> Bool),
         and lastPredicate: ((Element) throws -> Bool)
@@ -318,8 +308,31 @@ extension Sequence {
         
         return []
     }
+    
+    public func splitBefore(
+        separator isSeparator: (Iterator.Element) throws -> Bool
+    ) rethrows -> [AnySequence<Iterator.Element>] {
+        var result: [AnySequence<Iterator.Element>] = []
+        var subSequence: [Iterator.Element] = []
+        
+        var iterator = self.makeIterator()
+        while let element = iterator.next() {
+            if try isSeparator(element) {
+                if !subSequence.isEmpty {
+                    result.append(AnySequence(subSequence))
+                }
+                subSequence = [element]
+            }
+            else {
+                subSequence.append(element)
+            }
+        }
+        result.append(AnySequence(subSequence))
+        return result
+    }
 }
 
+// MARK: Finding
 
 extension Sequence {
     public func element(before predicate: ((Element) throws -> Bool)) rethrows -> Element? {
@@ -351,9 +364,7 @@ extension Sequence {
         
         return nil
     }
-}
-
-extension Sequence {
+    
     @inlinable
     public func find<T, U>(_ iterator: ((_ take: ((T) -> Void), _ element: Element) throws -> U)) rethrows -> T? {
         var result: T? = nil
@@ -377,73 +388,15 @@ extension Sequence {
 }
 
 extension Sequence {
-    public var isSingleElement: Bool {
-        var iterator = makeIterator()
-        
-        _ = iterator.next()
-        
-        return iterator.next() == nil
-    }
-}
-
-extension Sequence where Element: Equatable {
-    public func allElementsAreEqual(to other: Element) -> Bool {
-        var iterator = makeIterator()
-        
-        while let next = iterator.next() {
-            if next != other {
-                return false
-            }
-        }
-        
-        return true
-    }
-    
-    public func allElementsAreEqual() -> Bool {
-        var iterator = makeIterator()
-        
-        guard let first = iterator.next() else {
-            return true
-        }
-        
-        while let next = iterator.next() {
-            if first != next {
-                return false
-            }
-        }
-        
-        return true
-    }
-}
-
-extension Sequence {
-    public func map<T>(_ f: (@escaping (Element) -> T), everyOther g: (@escaping  (Element) -> T)) -> LazyMapSequenceWithMemoryRecall<Self, Bool, T> {
-        return LazyMapSequenceWithMemoryRecall(base: self, initial: false, transform: { $0 = !$0; return $0 ? f($1) : g($1) })
-    }
-    
-    public func intersperse(at f: ((Element) throws -> Bool)) rethrows -> [[Element]] {
-        var result: [[Element]] = [[]]
-        
-        for element in self {
-            if try f(element) {
-                result += [element]
-                result += []
-            }
-            
-            else {
-                result.mutableLast! += element
-            }
-        }
-        
-        if result.first?.isEmpty ?? false {
-            result.removeFirst()
-        }
-        
-        if result.last?.isEmpty ?? false {
-            result.removeLast()
-        }
-        
-        return result
+    public func map<T>(
+        _ f: (@escaping (Element) -> T),
+        everyOther g: (@escaping (Element) -> T)
+    ) -> LazyMapSequenceWithMemoryRecall<Self, Bool, T> {
+        return LazyMapSequenceWithMemoryRecall(
+            base: self,
+            initial: false,
+            transform: { $0 = !$0; return $0 ? f($1) : g($1) }
+        )
     }
 }
 
@@ -457,21 +410,7 @@ extension Sequence where Element: Equatable {
     public func hasSuffix(_ suffix: Element) -> Bool {
         return last == suffix
     }
-}
-
-// MARK: between
-
-extension Sequence  {
-    public func between(count startIndex: Int, and endIndex: Int) -> PrefixSequence<DropFirstSequence<Self>> {
-        return dropFirst(startIndex).prefix(endIndex - startIndex)
-    }
     
-    public subscript(between range: Range<Int>) -> PrefixSequence<DropFirstSequence<Self>> {
-        return between(count: range.lowerBound, and: range.upperBound)
-    }
-}
-
-extension Sequence where Element: Equatable {
     public func hasPrefix(_ prefix: [Element]) -> Bool {
         var iterator = makeIterator()
         var prefixIterator = prefix.makeIterator()
@@ -509,7 +448,10 @@ extension Sequence where Element: Equatable {
 // MARK: lexicographicallyPrecedes
 
 extension Sequence where Element: Comparable {
-    func lexicographicallyPrecedes<OtherSequence: Sequence>(_ other: OtherSequence, orderingShorterSequencesAfter: ()) -> Bool where OtherSequence.Element == Element {
+    func lexicographicallyPrecedes<OtherSequence: Sequence>(
+        _ other: OtherSequence,
+        orderingShorterSequencesAfter: ()
+    ) -> Bool where OtherSequence.Element == Element {
         var elementsOfFirstSequence = self.makeIterator()
         var elementsOfSecondSequence = other.makeIterator()
         
@@ -531,7 +473,7 @@ extension Sequence where Element: Comparable {
     }
 }
 
-// MARK: sorted
+// MARK: Sorted
 
 extension Sequence {
     public func sorted<T: Comparable>(by keyPath: KeyPath<Element, T>) -> [Element] {
@@ -539,7 +481,7 @@ extension Sequence {
     }
 }
 
-// MARK: sum
+// MARK: Sum
 
 extension Sequence where Element: Numeric {
     @inlinable
@@ -548,9 +490,41 @@ extension Sequence where Element: Numeric {
     }
 }
 
-// MARK: distinct
+// MARK: Uniquing
 
 extension Sequence {
+    public func allElementsAreEqual(to other: Element) -> Bool where Element: Equatable {
+        var iterator = makeIterator()
+        
+        while let next = iterator.next() {
+            if next != other {
+                return false
+            }
+        }
+        
+        return true
+    }
+    
+    public func allElementsAreEqual() -> Bool where Element: Equatable {
+        var iterator = makeIterator()
+        
+        guard let first = iterator.next() else {
+            return true
+        }
+        
+        while let next = iterator.next() {
+            if first != next {
+                return false
+            }
+        }
+        
+        return true
+    }
+    
+    public func duplicates<T: Hashable>(groupedBy keyPath: KeyPath<Element, T>) -> [T: [Element]] {
+        Dictionary(grouping: self, by: { $0[keyPath: keyPath] }).filter({ $1.count > 1 })
+    }
+    
     public func distinct<T: Hashable>(by keyPath: KeyPath<Element, T>) -> AnySequence<Element> {
         return AnySequence<Element> { () -> AnyIterator<Element> in
             var iterator = makeIterator()
@@ -577,35 +551,9 @@ extension Sequence {
     public func distinct() -> AnySequence<Element> where Element: Hashable {
         distinct(by: \.hashValue)
     }
-
+    
     @_disfavoredOverload
     public func distinct() -> [Element] where Element: Hashable {
         Array(self.distinct(by: \.hashValue))
-    }
-}
-
-// MARK: - splitBefore -
-
-extension Sequence {
-    public func splitBefore(
-        separator isSeparator: (Iterator.Element) throws -> Bool
-    ) rethrows -> [AnySequence<Iterator.Element>] {
-        var result: [AnySequence<Iterator.Element>] = []
-        var subSequence: [Iterator.Element] = []
-        
-        var iterator = self.makeIterator()
-        while let element = iterator.next() {
-            if try isSeparator(element) {
-                if !subSequence.isEmpty {
-                    result.append(AnySequence(subSequence))
-                }
-                subSequence = [element]
-            }
-            else {
-                subSequence.append(element)
-            }
-        }
-        result.append(AnySequence(subSequence))
-        return result
     }
 }
