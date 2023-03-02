@@ -24,63 +24,8 @@ extension Substring {
 }
 
 extension Substring {
-    public init(consuming left: Substring, and right: Substring) {
-        assert(left.parent == right.parent)
-        assert(left.bounds <~= right.bounds)
-        
-        self = left.parent[left.bounds.lowerBound..<right.bounds.upperBound]
-    }
-}
-
-extension Substring {
     public func components(separatedBy separator: Character) -> [Substring] {
         return split(whereSeparator: { $0 == separator })
-    }
-    
-    public mutating func extend(upToAndInclusiveOf substring: Substring) {
-        assert(parent.contains(substring: substring))
-        
-        if substring.bounds <~= bounds {
-            self = parent[substring.bounds.lowerBound..<bounds.upperBound]
-        } else {
-            self = parent[bounds.lowerBound..<substring.bounds.upperBound]
-        }
-    }
-}
-
-extension Substring {
-    public var parent: String {
-        fragile {
-            (unsafeBitCast(self, to: Slice<String>.self)).base
-        }
-    }
-}
-
-extension Substring {
-    public func contains(substring: Substring) -> Bool {
-        guard substring.parent == substring.parent else {
-            return false
-        }
-        
-        return bounds.contains(substring.bounds)
-    }
-    
-    public func contains(substring: Substring?) -> Bool {
-        return substring.map({ contains(substring: $0) }) ?? false
-    }
-    
-    public init(across substrings: Substring...) {
-        let parent = substrings.first!.parent
-        
-        assert {
-            substrings.map({ $0.parent }).allElementsAreEqual()
-        }
-        
-        if let first = substrings.first, let last = substrings.last {
-            self = parent[first.startIndex..<last.endIndex]
-        } else {
-            self = parent[parent.startIndex...]
-        }
     }
 }
 

@@ -24,7 +24,10 @@ extension JSONEncoder {
         do {
             return try encode(value)
         } catch {
-            if case let EncodingError.invalidValue(_, context) = error, fragile(context.debugDescription == "Top-level Bool encoded as number JSON fragment.") {
+            if
+                case let EncodingError.invalidValue(_, context) = error,
+                context.debugDescription == "Top-level Bool encoded as number JSON fragment."
+            {
                 return try encode(FragmentEncodingBox(wrappedValue: value))
             } else {
                 throw error

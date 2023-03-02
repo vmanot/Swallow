@@ -5,10 +5,6 @@
 import Swift
 
 extension String {
-    public func contains(substring: Substring) -> Bool {
-        return substring.parent == self && bounds.contains(substring.bounds)
-    }
-    
     public func contains(substring: Substring?) -> Bool {
         return substring.map({ contains(substring: $0) }) ?? false
     }
@@ -48,7 +44,7 @@ extension String {
     public func line(containingSubstring substring: Substring) -> Substring? {
         TODO.whole(.optimize)
         
-        return lines().find({ $0.contains(substring: substring) })
+        return lines().find({ $0.contains(substring) })
     }
 }
 
