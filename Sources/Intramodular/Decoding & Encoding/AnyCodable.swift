@@ -53,7 +53,7 @@ extension AnyCodable {
     }
     
     public init(destructuring value: Codable) throws {
-        self = try ObjectDecoder().decode(AnyCodable.self, from: ObjectEncoder().encode(opaque: value))
+        self = try ObjectDecoder().decode(AnyCodable.self, from: ObjectEncoder().encode(value))
     }
 }
 

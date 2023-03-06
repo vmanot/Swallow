@@ -5,14 +5,10 @@
 import Swift
 
 /// A type-erased equatable value.
-public struct AnyEquatable: _UnwrappableTypeEraser, Equatable {
+public struct AnyEquatable: Equatable {
     private var isEqualToImpl: ((Any, Any) -> Bool)
     
-    public let base: Any
-    
-    public var _base: Any {
-        base
-    }
+    public let base: any Equatable
     
     public init<T: Equatable>(erasing base: T) {
         func equate(_ x: Any, _ y: Any) -> Bool {
@@ -30,6 +26,16 @@ public struct AnyEquatable: _UnwrappableTypeEraser, Equatable {
         return lhs.isEqualToImpl(lhs.base, rhs.base)
     }
 }
+
+// MARK: - Conformances
+
+extension AnyEquatable: _UnwrappableTypeEraser {
+    public func _unwrapBase() -> (any Equatable) {
+        base
+    }
+}
+
+// MARK: - Supplementary API
 
 extension Equatable {
     public func eraseToAnyEquatable() -> AnyEquatable {

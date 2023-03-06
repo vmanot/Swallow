@@ -49,13 +49,6 @@ extension Array: Error where Element: Error {
     
 }
 
-/// A Swift `Error` that represents an assertion failure.
-public struct AssertionFailure: Error {
-    public init() {
-        
-    }
-}
-
 public struct CustomStringError: Codable, CustomStringConvertible, Error, ExpressibleByStringLiteral, Hashable, Sendable {
     public let description: String
     

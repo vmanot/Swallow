@@ -4,6 +4,12 @@
 
 import Swift
 
+extension Sequence {
+    public func first<T>(ofType type: T.Type) -> T? {
+        lazy.compactMap({ $0 as? T }).first
+    }
+}
+
 // MARK: Grouping
 
 extension Sequence {

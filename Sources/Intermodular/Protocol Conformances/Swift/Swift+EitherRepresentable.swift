@@ -65,6 +65,10 @@ extension Either: Comparable where LeftValue: Comparable, RightValue: Comparable
     
 }
 
+extension Either: Sendable where LeftValue: Sendable, RightValue: Sendable {
+    
+}
+
 /// A type representing a choice between one of three types.
 public enum Either3<T, U, V>: EitherRepresentable {
     public typealias EitherValue = Either<Either<T, U>, V>

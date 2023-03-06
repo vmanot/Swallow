@@ -90,3 +90,30 @@ public enum RuntimeCastError: CustomStringConvertible, LocalizedError {
 public func unsafeBitCast<T, U>(_ x: T) -> U {
     return unsafeBitCast(x, to: U.self)
 }
+
+public func __fixed__type(of x: Any) -> Any.Type {
+    let x = _takeOpaqueExistentialUnoptimized(x)
+    
+    func _swift_type<T>(of value: T) -> T.Type {
+        Swift.type(of: value) as T.Type
+    }
+    
+    let firstAttempt = type(of: _takeOpaqueExistentialUnoptimized(x))
+    let secondAttempt = _openExistential(x, do: _swift_type)
+    
+    if firstAttempt != Any.self || firstAttempt != Any.Protocol.self {
+        return firstAttempt
+    } else {
+        assert(secondAttempt != Any.self)
+        assert(secondAttempt != Any.Protocol.self)
+        
+        return secondAttempt
+    }
+}
+
+/// Prevent the compiler from making any optimizations when passing an opaque existential value.
+@_optimize(none)
+@inline(never)
+public func _takeOpaqueExistentialUnoptimized(_ value: Any) -> Any {
+    return value
+}

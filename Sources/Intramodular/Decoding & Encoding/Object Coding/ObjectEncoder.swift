@@ -20,7 +20,7 @@ public struct ObjectEncoder: Initiable {
             
             try container.encode(value)
             
-            return encoder.object
+            return try encoder.object.unwrap()
         } catch let error as EncodingError {
             throw error
         } catch {
@@ -35,17 +35,14 @@ public struct ObjectEncoder: Initiable {
             throw EncodingError.invalidValue(value, context)
         }
     }
-    
-    public func encode(
-        opaque value: Encodable,
-        userInfo: [CodingUserInfoKey: Any] = [:]
-    ) throws -> NSCoding {
-        try value.encode(to: self, userInfo: userInfo)
-    }
-    
+        
     public struct EncodingStrategy<T: Encodable> {
         public typealias Closure = (T, Encoder) throws -> Void
-        public init(closure: @escaping Closure) { self.closure = closure }
+        
+        public init(closure: @escaping Closure) {
+            self.closure = closure
+        }
+        
         fileprivate let closure: Closure
     }
     
@@ -77,12 +74,17 @@ public struct ObjectEncoder: Initiable {
 
 extension ObjectEncoder {
     public class Encoder: Swift.Encoder {
-        public final var object: NSCoding = NSMutableArray() as NSCoding
+        public final var object: NSCoding?
         
         fileprivate typealias Options = ObjectEncoder.Options
+        
         fileprivate let options: Options
         
-        fileprivate init(_ options: Options, _ userInfo: [CodingUserInfoKey: Any], _ codingPath: [CodingKey] = []) {
+        fileprivate init(
+            _ options: Options,
+            _ userInfo: [CodingUserInfoKey: Any],
+            _ codingPath: [CodingKey] = []
+        ) {
             self.options = options
             self.userInfo = userInfo
             self.codingPath = codingPath
@@ -103,7 +105,7 @@ extension ObjectEncoder.Encoder {
                 "Attempt to push new keyed encoding container when already previously encoded at this path."
             )
         }
-        return .init(_KeyedEncodingContainer<Key>(referencing: self))
+        return .init(ObjectEncoder._KeyedEncodingContainer<Key>(referencing: self))
     }
     
     public final func unkeyedContainer() -> UnkeyedEncodingContainer {
@@ -115,7 +117,8 @@ extension ObjectEncoder.Encoder {
                 "Attempt to push new keyed encoding container when already previously encoded at this path."
             )
         }
-        return _UnkeyedEncodingContainer(referencing: self)
+        
+        return ObjectEncoder._UnkeyedEncodingContainer(referencing: self)
     }
     
     public final func singleValueContainer() -> SingleValueEncodingContainer {
@@ -139,121 +142,156 @@ extension ObjectEncoder.Encoder {
         }
     }
     
-    fileprivate func encoder(for key: CodingKey) -> _KeyReferencingEncoder {
-        return .init(referencing: self, key: key)
+    fileprivate func encoder(for key: CodingKey) -> ObjectEncoder._KeyReferencingEncoder {
+        .init(referencing: self, key: key)
     }
     
-    fileprivate func encoder(at index: Int) -> _IndexReferencingEncoder {
-        return .init(referencing: self, at: index)
+    fileprivate func encoder(at index: Int) -> ObjectEncoder._IndexReferencingEncoder {
+        .init(referencing: self, at: index)
     }
     
     private var canEncodeNewValue: Bool {
+        guard let object = object else {
+            return true
+        }
+        
         if let dictionary = object as? [String: Any], dictionary.isEmpty {
             return true
         }
+        
         return false
     }
 }
 
-private class _KeyReferencingEncoder: ObjectEncoder.Encoder {
-    let encoder: ObjectEncoder.Encoder
-    let key: String
-    
-    fileprivate init(referencing encoder: ObjectEncoder.Encoder, key: CodingKey) {
-        self.encoder = encoder
-        self.key = key.stringValue
-        super.init(encoder.options, encoder.userInfo, encoder.codingPath + [key])
+extension ObjectEncoder {
+    fileprivate class _KeyReferencingEncoder: ObjectEncoder.Encoder {
+        let encoder: ObjectEncoder.Encoder
+        let key: String
+        
+        fileprivate init(referencing encoder: ObjectEncoder.Encoder, key: CodingKey) {
+            self.encoder = encoder
+            self.key = key.stringValue
+            
+            super.init(encoder.options, encoder.userInfo, encoder.codingPath + [key])
+        }
+        
+        deinit {
+            encoder.dictionary[key] = object
+        }
     }
     
-    deinit {
-        encoder.dictionary[key] = object
-    }
-}
-
-private class _IndexReferencingEncoder: ObjectEncoder.Encoder {
-    let encoder: ObjectEncoder.Encoder
-    let index: Int
-    
-    fileprivate init(referencing encoder: ObjectEncoder.Encoder, at index: Int) {
-        self.encoder = encoder
-        self.index = index
-        super.init(encoder.options, encoder.userInfo, encoder.codingPath + [_ObjectCodingKey(index: index)])
-    }
-    
-    deinit {
-        encoder.array[index] = object
-    }
-}
-
-private struct _KeyedEncodingContainer<Key: CodingKey>: KeyedEncodingContainerProtocol {
-    private let encoder: ObjectEncoder.Encoder
-    
-    private func encoder(for key: CodingKey) -> _KeyReferencingEncoder {
-        return encoder.encoder(for: key)
+    fileprivate class _IndexReferencingEncoder: ObjectEncoder.Encoder {
+        let encoder: ObjectEncoder.Encoder
+        let index: Int
+        
+        fileprivate init(referencing encoder: ObjectEncoder.Encoder, at index: Int) {
+            self.encoder = encoder
+            self.index = index
+            super.init(encoder.options, encoder.userInfo, encoder.codingPath + [_ObjectCodingKey(index: index)])
+        }
+        
+        deinit {
+            if let object = object {
+                encoder.array[index] = object
+            } else {
+                assertionFailure()
+            }
+        }
     }
     
-    init(referencing encoder: ObjectEncoder.Encoder) {
-        self.encoder = encoder
+    fileprivate struct _KeyedEncodingContainer<Key: CodingKey>: KeyedEncodingContainerProtocol {
+        private let encoder: ObjectEncoder.Encoder
+        
+        private func encoder(for key: CodingKey) -> _KeyReferencingEncoder {
+            return encoder.encoder(for: key)
+        }
+        
+        init(referencing encoder: ObjectEncoder.Encoder) {
+            self.encoder = encoder
+        }
+        
+        var codingPath: [CodingKey] {
+            encoder.codingPath
+        }
+        
+        func encodeNil(forKey key: Key) throws {
+            try encoder(for: key).encodeNil()
+        }
+        
+        func encode<T: CoderPrimitive>(_ value: T, forKey key: Key) throws {
+            try encoder(for: key).encode(value)
+        }
+        
+        func encode<T: Encodable>(_ value: T, forKey key: Key) throws {
+            try encoder(for: key).encode(value)
+        }
+        
+        func nestedContainer<NestedKey>(
+            keyedBy type: NestedKey.Type,
+            forKey key: Key
+        ) -> KeyedEncodingContainer<NestedKey> {
+            return encoder(for: key).container(keyedBy: type)
+        }
+        
+        func nestedUnkeyedContainer(forKey key: Key) -> UnkeyedEncodingContainer {
+            return encoder(for: key).unkeyedContainer()
+        }
+        
+        func superEncoder() -> Swift.Encoder {
+            return encoder(for: _ObjectCodingKey.super)
+        }
+        
+        func superEncoder(forKey key: Key) -> Swift.Encoder {
+            return encoder(for: key)
+        }
     }
     
-    var codingPath: [CodingKey] { return encoder.codingPath }
-    
-    func encodeNil(forKey key: Key) throws {
-        try encoder(for: key).encodeNil()
+    private struct _UnkeyedEncodingContainer: UnkeyedEncodingContainer {
+        private let encoder: ObjectEncoder.Encoder
+        
+        private var currentEncoder: _IndexReferencingEncoder {
+            defer { encoder.array.append("") }
+            return encoder.encoder(at: count)
+        }
+        
+        init(referencing encoder: ObjectEncoder.Encoder) {
+            self.encoder = encoder
+        }
+        
+        var codingPath: [CodingKey] {
+            return encoder.codingPath
+        }
+        
+        var count: Int {
+            return encoder.array.count
+        }
+        
+        func encodeNil() throws {
+            try currentEncoder.encodeNil()
+        }
+        
+        func encode<T: CoderPrimitive>(_ value: T) throws {
+            try currentEncoder.encode(value)
+        }
+        
+        func encode<T: Encodable>(_ value: T) throws {
+            try currentEncoder.encode(value)
+        }
+        
+        func nestedContainer<NestedKey>(
+            keyedBy keyType: NestedKey.Type
+        ) -> KeyedEncodingContainer<NestedKey> {
+            currentEncoder.container(keyedBy: keyType)
+        }
+        
+        func nestedUnkeyedContainer() -> UnkeyedEncodingContainer {
+            currentEncoder.unkeyedContainer()
+        }
+        
+        func superEncoder() -> Swift.Encoder {
+            currentEncoder
+        }
     }
-    
-    func encode<T>(_ value: T, forKey key: Key) throws where T: CoderPrimitive {
-        try encoder(for: key).encode(value)
-    }
-    
-    func encode<T>(_ value: T, forKey key: Key) throws where T: Encodable {
-        try encoder(for: key).encode(value)
-    }
-    
-    func nestedContainer<NestedKey>(
-        keyedBy type: NestedKey.Type,
-        forKey key: Key
-    ) -> KeyedEncodingContainer<NestedKey> {
-        return encoder(for: key).container(keyedBy: type)
-    }
-    
-    func nestedUnkeyedContainer(forKey key: Key) -> UnkeyedEncodingContainer {
-        return encoder(for: key).unkeyedContainer()
-    }
-    
-    func superEncoder() -> Encoder {
-        return encoder(for: _ObjectCodingKey.super)
-    }
-    
-    func superEncoder(forKey key: Key) -> Encoder {
-        return encoder(for: key)
-    }
-}
-
-private struct _UnkeyedEncodingContainer: UnkeyedEncodingContainer {
-    private let encoder: ObjectEncoder.Encoder
-    
-    private var currentEncoder: _IndexReferencingEncoder {
-        defer { encoder.array.append("") }
-        return encoder.encoder(at: count)
-    }
-    
-    init(referencing encoder: ObjectEncoder.Encoder) {
-        self.encoder = encoder
-    }
-    
-    var codingPath: [CodingKey] { return encoder.codingPath }
-    var count: Int { return encoder.array.count }
-    func encodeNil()           throws { try currentEncoder.encodeNil() }
-    func encode<T>(_ value: T) throws where T: CoderPrimitive { try currentEncoder.encode(value) }
-    func encode<T>(_ value: T) throws where T: Encodable { try currentEncoder.encode(value) }
-    
-    func nestedContainer<NestedKey>(keyedBy keyType: NestedKey.Type) -> KeyedEncodingContainer<NestedKey> {
-        return currentEncoder.container(keyedBy: keyType)
-    }
-    
-    func nestedUnkeyedContainer() -> UnkeyedEncodingContainer { return currentEncoder.unkeyedContainer() }
-    func superEncoder() -> Encoder { return currentEncoder }
 }
 
 extension ObjectEncoder.Encoder: SingleValueEncodingContainer {
@@ -269,6 +307,7 @@ extension ObjectEncoder.Encoder: SingleValueEncodingContainer {
     
     public final func encode<T>(_ value: T) throws where T: Encodable {
         assertCanEncodeNewValue()
+        
         if try !applyStrategy(value) {
             try value.encode(to: self)
         }
@@ -284,6 +323,7 @@ extension ObjectEncoder.Encoder: SingleValueEncodingContainer {
     
     private func box<T: Encodable>(_ value: T) throws {
         assertCanEncodeNewValue()
+        
         if try !applyStrategy(value) {
             object = try cast(value, to: NSCoding.self)
         }
