@@ -17,7 +17,7 @@ extension SingleValueDecodingContainer {
 
 extension SingleValueDecodingContainer {
     public func decode(opaque type: Decodable.Type) throws -> Decodable {
-        try type.decode(from: self)
+        try decode(type)
     }
     
     public func decodeIfPresent(opaque type: Decodable.Type) throws -> Decodable? {

@@ -94,6 +94,24 @@ public struct Erroneous<Value>: Error, Wrapper {
     }
 }
 
+extension Erroneous: Codable where Value: Codable {
+    public init(from decoder: Decoder) throws {
+        try self.init(Value(from: decoder))
+    }
+    
+    public func encode(to encoder: Encoder) throws {
+        try value.encode(to: encoder)
+    }
+}
+
+extension Erroneous: Equatable where Value: Equatable {
+    
+}
+
+extension Erroneous: Hashable where Value: Hashable {
+    
+}
+
 extension Erroneous: Sendable where Value: Sendable {
     
 }

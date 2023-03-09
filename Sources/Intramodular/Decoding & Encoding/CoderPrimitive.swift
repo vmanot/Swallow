@@ -6,11 +6,19 @@ import Foundation
 import Swift
 
 public protocol CoderPrimitive: Codable, Hashable {
+    static func _decode(
+        from container: SingleValueDecodingContainer
+    ) throws -> Self
+    
+    static func _decode<Container: UnkeyedDecodingContainer>(
+        from container: inout Container
+    ) throws -> Self
+    
     static func _decode<Key: CodingKey>(
         from container: KeyedDecodingContainer<Key>,
         forKey key: Key
     ) throws -> Self
-
+    
     func _encode<Container: SingleValueEncodingContainer>(
         to container: inout Container
     ) throws
@@ -18,7 +26,7 @@ public protocol CoderPrimitive: Codable, Hashable {
     func _encode<Container: UnkeyedEncodingContainer>(
         to container: inout Container
     ) throws
-
+    
     func _encode<Key: CodingKey>(
         to container: inout KeyedEncodingContainer<Key>,
         forKey key: Key
@@ -28,6 +36,18 @@ public protocol CoderPrimitive: Codable, Hashable {
 // MARK: - Implementations
 
 extension Bool: CoderPrimitive {
+    public static func _decode(
+        from container: SingleValueDecodingContainer
+    ) throws -> Self {
+        try container.decode(Self.self)
+    }
+    
+    public static func _decode<Container: UnkeyedDecodingContainer>(
+        from container: inout Container
+    ) throws -> Self {
+        try container.decode(Self.self)
+    }
+    
     public static func _decode<Key: CodingKey>(
         from container: KeyedDecodingContainer<Key>,
         forKey key: Key
@@ -56,6 +76,18 @@ extension Bool: CoderPrimitive {
 }
 
 extension Double: CoderPrimitive {
+    public static func _decode(
+        from container: SingleValueDecodingContainer
+    ) throws -> Self {
+        try container.decode(Self.self)
+    }
+    
+    public static func _decode<Container: UnkeyedDecodingContainer>(
+        from container: inout Container
+    ) throws -> Self {
+        try container.decode(Self.self)
+    }
+    
     public static func _decode<Key: CodingKey>(
         from container: KeyedDecodingContainer<Key>,
         forKey key: Key
@@ -68,13 +100,13 @@ extension Double: CoderPrimitive {
     ) throws {
         try container.encode(self)
     }
-
+    
     public func _encode<Container: UnkeyedEncodingContainer>(
         to container: inout Container
     ) throws {
         try container.encode(self)
     }
-
+    
     public func _encode<Key: CodingKey>(
         to container: inout KeyedEncodingContainer<Key>,
         forKey key: Key
@@ -84,6 +116,18 @@ extension Double: CoderPrimitive {
 }
 
 extension Float: CoderPrimitive {
+    public static func _decode(
+        from container: SingleValueDecodingContainer
+    ) throws -> Self {
+        try container.decode(Self.self)
+    }
+    
+    public static func _decode<Container: UnkeyedDecodingContainer>(
+        from container: inout Container
+    ) throws -> Self {
+        try container.decode(Self.self)
+    }
+    
     public static func _decode<Key: CodingKey>(
         from container: KeyedDecodingContainer<Key>,
         forKey key: Key
@@ -102,7 +146,7 @@ extension Float: CoderPrimitive {
     ) throws {
         try container.encode(self)
     }
-
+    
     public func _encode<Key: CodingKey>(
         to container: inout KeyedEncodingContainer<Key>,
         forKey key: Key
@@ -112,6 +156,18 @@ extension Float: CoderPrimitive {
 }
 
 extension Int: CoderPrimitive {
+    public static func _decode(
+        from container: SingleValueDecodingContainer
+    ) throws -> Self {
+        try container.decode(Self.self)
+    }
+    
+    public static func _decode<Container: UnkeyedDecodingContainer>(
+        from container: inout Container
+    ) throws -> Self {
+        try container.decode(Self.self)
+    }
+    
     public static func _decode<Key: CodingKey>(
         from container: KeyedDecodingContainer<Key>,
         forKey key: Key
@@ -130,7 +186,7 @@ extension Int: CoderPrimitive {
     ) throws {
         try container.encode(self)
     }
-
+    
     public func _encode<Key: CodingKey>(
         to container: inout KeyedEncodingContainer<Key>,
         forKey key: Key
@@ -140,6 +196,18 @@ extension Int: CoderPrimitive {
 }
 
 extension Int8: CoderPrimitive {
+    public static func _decode(
+        from container: SingleValueDecodingContainer
+    ) throws -> Self {
+        try container.decode(Self.self)
+    }
+    
+    public static func _decode<Container: UnkeyedDecodingContainer>(
+        from container: inout Container
+    ) throws -> Self {
+        try container.decode(Self.self)
+    }
+    
     public static func _decode<Key: CodingKey>(
         from container: KeyedDecodingContainer<Key>,
         forKey key: Key
@@ -158,7 +226,7 @@ extension Int8: CoderPrimitive {
     ) throws {
         try container.encode(self)
     }
-
+    
     public func _encode<Key: CodingKey>(
         to container: inout KeyedEncodingContainer<Key>,
         forKey key: Key
@@ -168,6 +236,18 @@ extension Int8: CoderPrimitive {
 }
 
 extension Int16: CoderPrimitive {
+    public static func _decode(
+        from container: SingleValueDecodingContainer
+    ) throws -> Self {
+        try container.decode(Self.self)
+    }
+    
+    public static func _decode<Container: UnkeyedDecodingContainer>(
+        from container: inout Container
+    ) throws -> Self {
+        try container.decode(Self.self)
+    }
+    
     public static func _decode<Key: CodingKey>(
         from container: KeyedDecodingContainer<Key>,
         forKey key: Key
@@ -186,7 +266,7 @@ extension Int16: CoderPrimitive {
     ) throws {
         try container.encode(self)
     }
-
+    
     public func _encode<Key: CodingKey>(
         to container: inout KeyedEncodingContainer<Key>,
         forKey key: Key
@@ -196,6 +276,18 @@ extension Int16: CoderPrimitive {
 }
 
 extension Int32: CoderPrimitive {
+    public static func _decode(
+        from container: SingleValueDecodingContainer
+    ) throws -> Self {
+        try container.decode(Self.self)
+    }
+    
+    public static func _decode<Container: UnkeyedDecodingContainer>(
+        from container: inout Container
+    ) throws -> Self {
+        try container.decode(Self.self)
+    }
+    
     public static func _decode<Key: CodingKey>(
         from container: KeyedDecodingContainer<Key>,
         forKey key: Key
@@ -214,7 +306,7 @@ extension Int32: CoderPrimitive {
     ) throws {
         try container.encode(self)
     }
-
+    
     public func _encode<Key: CodingKey>(
         to container: inout KeyedEncodingContainer<Key>,
         forKey key: Key
@@ -224,6 +316,18 @@ extension Int32: CoderPrimitive {
 }
 
 extension Int64: CoderPrimitive {
+    public static func _decode(
+        from container: SingleValueDecodingContainer
+    ) throws -> Self {
+        try container.decode(Self.self)
+    }
+    
+    public static func _decode<Container: UnkeyedDecodingContainer>(
+        from container: inout Container
+    ) throws -> Self {
+        try container.decode(Self.self)
+    }
+    
     public static func _decode<Key: CodingKey>(
         from container: KeyedDecodingContainer<Key>,
         forKey key: Key
@@ -242,7 +346,7 @@ extension Int64: CoderPrimitive {
     ) throws {
         try container.encode(self)
     }
-
+    
     public func _encode<Key: CodingKey>(
         to container: inout KeyedEncodingContainer<Key>,
         forKey key: Key
@@ -252,6 +356,18 @@ extension Int64: CoderPrimitive {
 }
 
 extension UInt: CoderPrimitive {
+    public static func _decode(
+        from container: SingleValueDecodingContainer
+    ) throws -> Self {
+        try container.decode(Self.self)
+    }
+    
+    public static func _decode<Container: UnkeyedDecodingContainer>(
+        from container: inout Container
+    ) throws -> Self {
+        try container.decode(Self.self)
+    }
+    
     public static func _decode<Key: CodingKey>(
         from container: KeyedDecodingContainer<Key>,
         forKey key: Key
@@ -270,7 +386,7 @@ extension UInt: CoderPrimitive {
     ) throws {
         try container.encode(self)
     }
-
+    
     public func _encode<Key: CodingKey>(
         to container: inout KeyedEncodingContainer<Key>,
         forKey key: Key
@@ -280,6 +396,18 @@ extension UInt: CoderPrimitive {
 }
 
 extension UInt8: CoderPrimitive {
+    public static func _decode(
+        from container: SingleValueDecodingContainer
+    ) throws -> Self {
+        try container.decode(Self.self)
+    }
+    
+    public static func _decode<Container: UnkeyedDecodingContainer>(
+        from container: inout Container
+    ) throws -> Self {
+        try container.decode(Self.self)
+    }
+    
     public static func _decode<Key: CodingKey>(
         from container: KeyedDecodingContainer<Key>,
         forKey key: Key
@@ -298,7 +426,7 @@ extension UInt8: CoderPrimitive {
     ) throws {
         try container.encode(self)
     }
-
+    
     public func _encode<Key: CodingKey>(
         to container: inout KeyedEncodingContainer<Key>,
         forKey key: Key
@@ -308,6 +436,18 @@ extension UInt8: CoderPrimitive {
 }
 
 extension UInt16: CoderPrimitive {
+    public static func _decode(
+        from container: SingleValueDecodingContainer
+    ) throws -> Self {
+        try container.decode(Self.self)
+    }
+    
+    public static func _decode<Container: UnkeyedDecodingContainer>(
+        from container: inout Container
+    ) throws -> Self {
+        try container.decode(Self.self)
+    }
+    
     public static func _decode<Key: CodingKey>(
         from container: KeyedDecodingContainer<Key>,
         forKey key: Key
@@ -336,6 +476,18 @@ extension UInt16: CoderPrimitive {
 }
 
 extension UInt32: CoderPrimitive {
+    public static func _decode(
+        from container: SingleValueDecodingContainer
+    ) throws -> Self {
+        try container.decode(Self.self)
+    }
+    
+    public static func _decode<Container: UnkeyedDecodingContainer>(
+        from container: inout Container
+    ) throws -> Self {
+        try container.decode(Self.self)
+    }
+    
     public static func _decode<Key: CodingKey>(
         from container: KeyedDecodingContainer<Key>,
         forKey key: Key
@@ -364,13 +516,25 @@ extension UInt32: CoderPrimitive {
 }
 
 extension UInt64: CoderPrimitive {
+    public static func _decode(
+        from container: SingleValueDecodingContainer
+    ) throws -> Self {
+        try container.decode(Self.self)
+    }
+    
+    public static func _decode<Container: UnkeyedDecodingContainer>(
+        from container: inout Container
+    ) throws -> Self {
+        try container.decode(Self.self)
+    }
+    
     public static func _decode<Key: CodingKey>(
         from container: KeyedDecodingContainer<Key>,
         forKey key: Key
     ) throws -> Self {
         try container.decode(Self.self, forKey: key)
     }
-
+    
     public func _encode<Container: SingleValueEncodingContainer>(
         to container: inout Container
     ) throws {
@@ -382,7 +546,7 @@ extension UInt64: CoderPrimitive {
     ) throws {
         try container.encode(self)
     }
-
+    
     public func _encode<Key: CodingKey>(
         to container: inout KeyedEncodingContainer<Key>,
         forKey key: Key
@@ -392,6 +556,18 @@ extension UInt64: CoderPrimitive {
 }
 
 extension String: CoderPrimitive {
+    public static func _decode(
+        from container: SingleValueDecodingContainer
+    ) throws -> Self {
+        try container.decode(Self.self)
+    }
+    
+    public static func _decode<Container: UnkeyedDecodingContainer>(
+        from container: inout Container
+    ) throws -> Self {
+        try container.decode(Self.self)
+    }
+    
     public static func _decode<Key: CodingKey>(
         from container: KeyedDecodingContainer<Key>,
         forKey key: Key
@@ -410,7 +586,7 @@ extension String: CoderPrimitive {
     ) throws {
         try container.encode(self)
     }
-
+    
     public func _encode<Key: CodingKey>(
         to container: inout KeyedEncodingContainer<Key>,
         forKey key: Key
@@ -420,6 +596,22 @@ extension String: CoderPrimitive {
 }
 
 // MARK: - Supplementary API
+
+extension SingleValueDecodingContainer {
+    public func _decodePrimitive<T: CoderPrimitive>(
+        _ type: T.Type
+    ) throws -> T {
+        try type._decode(from: self)
+    }
+}
+
+extension UnkeyedDecodingContainer {
+    public mutating func _decodePrimitive<T: CoderPrimitive>(
+        _ type: T.Type
+    ) throws -> T {
+        try type._decode(from: &self)
+    }
+}
 
 extension KeyedDecodingContainer {
     public func _decodePrimitive<T: CoderPrimitive>(

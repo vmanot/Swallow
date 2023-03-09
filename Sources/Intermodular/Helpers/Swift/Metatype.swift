@@ -37,8 +37,8 @@ public struct Metatype<T>: CustomStringConvertible, Hashable, @unchecked Sendabl
 
 // MARK: - Auxiliary
 
-public protocol _SwallowMetatypeType: _UnwrappableTypeEraser where _UnwrappedBaseType == Any.Type {
-    
+public protocol _SwallowMetatypeType {
+    func _unwrapBase() -> Any.Type
 }
 
 extension Metatype: _UnwrappableTypeEraser {

@@ -13,10 +13,6 @@ extension Decodable {
         return try container.decodeIfPresent(Self.self, forKey: key)
     }
 
-    public static func decode<Container: SingleValueDecodingContainer>(from container: Container) throws -> Self {
-        return try container.decode(Self.self)
-    }
-
     public static func decodeIfPresent<Container: SingleValueDecodingContainer>(from container: Container) throws -> Self? {
         guard !container.decodeNil() else {
             return nil
