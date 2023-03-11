@@ -11,16 +11,17 @@ public func cast<T, U>(
     _ value: T,
     to type: U.Type = U.self,
     file: StaticString = #file,
+    fileID: StaticString = #fileID,
     function: StaticString = #function,
     line: UInt = #line,
     column: UInt = #column
 ) throws -> U {
     guard let result = value as? U else {
         throw RuntimeCastError.invalidTypeCast(
-            from: Swift.type(of: value),
+            from: __fixed__type(of: value),
             to: type,
             value: value,
-            location: .init(file: file, function: function, line: line, column: column)
+            location: .init(file: file, fileID: fileID, function: function, line: line, column: column)
         )
     }
     
@@ -33,6 +34,7 @@ public func cast<T, U>(
     to type: U.Type = U.self,
     default: U,
     file: StaticString = #file,
+    fileID: StaticString = #fileID,
     function: StaticString = #function,
     line: UInt = #line,
     column: UInt = #column
@@ -76,8 +78,15 @@ public enum RuntimeCastError: CustomStringConvertible, LocalizedError {
     
     public var description: String {
         switch self {
-            case let .invalidTypeCast(sourceType, destinationType, _, _):
-                return "Could not cast value of type '\(sourceType)' to '\(destinationType)'"
+            case let .invalidTypeCast(sourceType, destinationType, _, location): do {
+                var description = "Could not cast value of type '\(sourceType)' to '\(destinationType)'"
+                
+                if let file = location.file, file != #file {
+                    description = "\(location): \(description)"
+                }
+                
+                return description
+            }
         }
     }
     
@@ -91,6 +100,8 @@ public func unsafeBitCast<T, U>(_ x: T) -> U {
     return unsafeBitCast(x, to: U.self)
 }
 
+@_optimize(none)
+@inline(never)
 public func __fixed__type(of x: Any) -> Any.Type {
     let x = _takeOpaqueExistentialUnoptimized(x)
     

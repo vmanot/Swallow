@@ -135,12 +135,13 @@ extension Optional {
     @inlinable
     public func unwrap(
         file: StaticString = #file,
+        fileID: StaticString = #fileID,
         function: StaticString = #function,
         line: UInt = #line,
         column: UInt = #column
     ) throws -> Wrapped {
         guard let wrapped = self else {
-            throw UnwrappingError.unexpectedlyFoundNil(at: .init(file: file, function: function, line: line, column: column))
+            throw UnwrappingError.unexpectedlyFoundNil(at: SourceCodeLocation(file: file, fileID: fileID, function: function, line: line, column: column))
         }
         
         return wrapped

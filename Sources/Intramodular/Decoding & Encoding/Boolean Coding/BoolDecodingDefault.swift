@@ -26,7 +26,11 @@ public struct BoolDecodingDefault<Value: _StaticBoolean>: Codable, Hashable {
     public init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
         
-        self.wrappedValue = try container.decodeIfPresent(Bool.self) ?? Value.value
+        if container.decodeNil() {
+            self.wrappedValue = Value.value
+        } else {
+            self.wrappedValue = try container.decode(Bool.self)
+        }
     }
     
     public func encode(to encoder: Encoder) throws {

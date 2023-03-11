@@ -19,6 +19,18 @@ public protocol MutablePropertyWrapper: PropertyWrapper {
     var wrappedValue: WrappedValue { get set }
 }
 
+// MARK: - Extensions
+
+extension ParameterlessPropertyWrapper {
+    public static var _opaque_WrappedValue: Any.Type {
+        WrappedValue.self
+    }
+    
+    public init(_opaque_wrappedValue value: Any) throws {
+        try self.init(wrappedValue: cast(value, to: WrappedValue.self))
+    }
+}
+
 // MARK: - Implementation
 
 extension ParameterlessPropertyWrapper where WrappedValue: CustomStringConvertible, Self: CustomStringConvertible {

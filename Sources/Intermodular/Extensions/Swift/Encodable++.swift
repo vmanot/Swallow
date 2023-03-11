@@ -6,22 +6,27 @@ import Foundation
 import Swift
 
 extension Encodable {
+    @available(*, deprecated)
     public func encode<Container: KeyedEncodingContainerProtocol>(to container: inout Container, forKey key: Container.Key) throws {
         try container.encode(self, forKey: key)
     }
 
+    @available(*, deprecated)
     public func encode<Container: SingleValueEncodingContainer>(to container: inout Container) throws {
         try container.encode(self)
     }
 
+    @available(*, deprecated)
     public func encode(to container: inout SingleValueEncodingContainer) throws {
         try container.encode(self)
     }
 
+    @available(*, deprecated)
     public func encode<Container: UnkeyedEncodingContainer>(to container: inout Container) throws {
         try container.encode(self)
     }
 
+    @available(*, deprecated)
     public func encode(to container: inout UnkeyedEncodingContainer) throws {
         try container.encode(self)
     }

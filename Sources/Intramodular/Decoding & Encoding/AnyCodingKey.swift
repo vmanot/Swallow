@@ -50,12 +50,27 @@ public struct AnyCodingKey: CodingKey, StringConvertible {
         storage = .integer(intValue)
     }
     
-    public init(_ key: CodingKey) {
+    public init(erasing key: CodingKey) {
         storage = .opaque(key)
     }
 }
 
 // MARK: - Conformances
+
+extension AnyCodingKey: _UnwrappableTypeEraser {
+    public func _unwrapBase() -> CodingKey {
+        switch storage {
+            case .string:
+                return AnyStringKey(stringValue: stringValue)
+            case .integer:
+                return AnyStringKey(stringValue: stringValue)
+            case .stringAndInteger:
+                return AnyStringKey(stringValue: stringValue)
+            case .opaque(let key):
+                return key
+        }
+    }
+}
 
 extension AnyCodingKey: Codable {
     public init(from decoder: Decoder) throws {

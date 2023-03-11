@@ -155,7 +155,7 @@ public struct AnyNumber: Codable, Hashable, Sendable {
                 case .integerLiteral(let value):
                     try container.encode(value)
                 case .opaque(let value):
-                    try container.encode(opaque: value)
+                    try container.encode(value)
             }
         }
         

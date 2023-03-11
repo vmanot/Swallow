@@ -12,6 +12,7 @@ extension TODO {
         case complete
         case document
         case fix
+        case maybeFix
         case implement
         case improve
         case modernize

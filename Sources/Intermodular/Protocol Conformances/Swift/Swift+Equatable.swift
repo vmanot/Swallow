@@ -11,15 +11,33 @@ public struct AnyEquatable: Equatable {
     public let base: any Equatable
     
     public init<T: Equatable>(erasing base: T) {
-        func equate(_ x: Any, _ y: Any) -> Bool {
-            guard let x = x as? T, let y = y as? T else {
-                return false
+        if let base = base as? AnyEquatable {
+            self = base
+        } else {
+            func equate(_ x: Any, _ y: Any) -> Bool {
+                guard let x = x as? T, let y = y as? T else {
+                    return false
+                }
+                return x == y
             }
-            return x == y
+            
+            self.isEqualToImpl = equate
+            self.base = base
         }
+    }
+    
+    public init(from x: Any) throws {
+        let x = try cast(x, to: (any Equatable).self)
         
-        self.isEqualToImpl = equate
-        self.base = base
+        self.init(erasing: x)
+    }
+    
+    public static func equate<T>(_ lhs: T, _ rhs: T) -> Bool {
+        do {
+            return try AnyEquatable(from: lhs) == AnyEquatable(from: rhs)
+        } catch {
+            return false
+        }
     }
     
     public static func == (lhs: AnyEquatable, rhs: AnyEquatable) -> Bool {

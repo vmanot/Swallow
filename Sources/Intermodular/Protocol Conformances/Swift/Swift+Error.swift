@@ -80,8 +80,14 @@ public struct EmptyError: Hashable, Error, CustomStringConvertible, Sendable {
         self.location = location
     }
     
-    public init(atFile file: StaticString = #file, function: StaticString = #function, line: UInt = #line, column: UInt = #column) {
-        self.init(location: .exact(.init(file: file, function: function, line: line, column: column)))
+    public init(
+        file: StaticString = #file,
+        fileID: StaticString = #fileID,
+        function: StaticString = #function,
+        line: UInt = #line,
+        column: UInt = #column
+    ) {
+        self.init(location: .exact(.init(file: file, fileID: fileID, function: function, line: line, column: column)))
     }
 }
 

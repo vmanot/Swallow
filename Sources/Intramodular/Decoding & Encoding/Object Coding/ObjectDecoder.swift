@@ -16,7 +16,7 @@ public struct ObjectDecoder: Initiable {
         userInfo: [CodingUserInfoKey: Any] = [:]
     ) throws -> Decodable {
         do {
-            return try ObjectDecoder.Decoder(object, options, userInfo).singleValueContainer().decode(opaque: type)
+            return try ObjectDecoder.Decoder(object, options, userInfo).singleValueContainer().decode(type)
         } catch let error as DecodingError {
             throw error
         } catch {

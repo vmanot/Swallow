@@ -5,33 +5,54 @@
 import Swift
 
 /// A type capable of representing the location of a line of code.
-public enum SourceCodeLocation: CustomStringConvertible, Hashable, Sendable {
+public enum SourceCodeLocation: Hashable, SourceCodeLocationInitiable, Sendable {
     case regular(file: String, line: UInt)
     case exact(Preprocessor.Point)
     case unavailable
+    
+    public var file: String? {
+        switch self {
+            case .regular(let file, _):
+                return file
+            case .exact(let point):
+                return point.file
+            case .unavailable:
+                return nil
+        }
+    }
     
     public init(_ point: Preprocessor.Point) {
         self = .exact(point)
     }
     
-    public init(
-        file: StaticString = #file,
-        function: StaticString = #function,
-        line: UInt = #line,
-        column: UInt? = #column
-    ) {
-        self.init(Preprocessor.Point(file: file, function: function, line: line, column: column))
+    public init(_ location: SourceCodeLocation) {
+        self = location
     }
     
     public init(
-        file: String = #file,
-        function: String = #function,
-        line: UInt = #line,
-        column: UInt? = #column
+        file: StaticString,
+        fileID: StaticString? = nil,
+        function: StaticString,
+        line: UInt,
+        column: UInt?
     ) {
-        self.init(Preprocessor.Point(file: file, function: function, line: line, column: column))
+        self.init(Preprocessor.Point(file: file, fileID: fileID, function: function, line: line, column: column))
     }
     
+    public init(
+        file: String,
+        fileID: String? = nil,
+        function: String,
+        line: UInt,
+        column: UInt?
+    ) {
+        self.init(Preprocessor.Point(file: file, fileID: fileID, function: function, line: line, column: column))
+    }
+}
+
+// MARK: - Conformances
+
+extension SourceCodeLocation: CustomStringConvertible {
     public var description: String {
         switch self {
             case let .regular(file, line):
@@ -41,5 +62,33 @@ public enum SourceCodeLocation: CustomStringConvertible, Hashable, Sendable {
             case .unavailable:
                 return "<unavailable>"
         }
+    }
+}
+
+// MARK: - Auxiliary
+
+public protocol SourceCodeLocationInitiable {
+    init(_ location: SourceCodeLocation)
+}
+
+extension SourceCodeLocationInitiable {
+    public init(
+        file: StaticString,
+        fileID: StaticString? = nil,
+        function: StaticString,
+        line: UInt,
+        column: UInt?
+    ) {
+        self.init(SourceCodeLocation(file: file, fileID: fileID, function: function, line: line, column: column))
+    }
+    
+    public init(
+        file: String,
+        fileID: String? = nil,
+        function: String,
+        line: UInt,
+        column: UInt?
+    ) {
+        self.init(SourceCodeLocation(file: file, fileID: fileID, function: function, line: line, column: column))
     }
 }

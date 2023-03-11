@@ -17,11 +17,11 @@ extension CodingPathElement {
     public func toAnyCodingKey() -> AnyCodingKey {
         switch self {
             case .key(let value):
-                return .init(value)
+                return .init(erasing: value)
             case .super:
                 return .init(stringValue: "super")
             case .keyedSuper(let value):
-                return .init(value)
+                return .init(erasing: value)
         }
     }
 }
