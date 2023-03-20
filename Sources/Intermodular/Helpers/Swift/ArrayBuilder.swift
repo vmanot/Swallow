@@ -53,14 +53,22 @@ open class _SpecializedArrayBuilder<Element> {
     public static func buildBlock(_ elements: Element...) -> [Element] {
         elements
     }
-    
+        
     public static func buildBlock(_ elements: [Element]) -> [Element] {
         elements
     }
-    
+            
     public static func buildIf(_ content: Element?) -> [Element] {
         if let content = content {
             return [content]
+        } else {
+            return []
+        }
+    }
+    
+    public static func buildIf(_ content: [Element]?) -> [Element] {
+        if let content = content {
+            return content
         } else {
             return []
         }
@@ -70,7 +78,41 @@ open class _SpecializedArrayBuilder<Element> {
         [first]
     }
     
+    public static func buildEither(first: [Element]) -> [Element] {
+        first
+    }
+    
     public static func buildEither(second: Element) -> [Element] {
         [second]
+    }
+    
+    public static func buildEither(second: [Element]) -> [Element] {
+        second
+    }
+    
+    public static func buildPartialBlock(
+        first: Element
+    ) -> [Element] {
+        [first]
+    }
+    
+    public static func buildPartialBlock(
+        first: [Element]
+    ) -> [Element] {
+        first
+    }
+    
+    public static func buildPartialBlock(
+        accumulated: [Element],
+        next: Element
+    ) -> [Element] {
+        accumulated + [next]
+    }
+    
+    public static func buildPartialBlock(
+        accumulated: [Element],
+        next: [Element]
+    ) -> [Element] {
+        accumulated + next
     }
 }

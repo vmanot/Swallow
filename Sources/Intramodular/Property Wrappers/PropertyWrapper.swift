@@ -5,7 +5,7 @@
 import Swift
 
 /// A protocol formalizing a `@propertyWrapper`.
-public protocol PropertyWrapper {
+public protocol PropertyWrapper<WrappedValue> {
     associatedtype WrappedValue
     
     var wrappedValue: WrappedValue { get }

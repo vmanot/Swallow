@@ -226,10 +226,20 @@ extension IdentifierIndexedArray: Encodable where Element: Encodable, Element: I
     }
 }
 
-// MARK: - SwiftUI Additions -
+// MARK: - Supplementary API
+
+extension Sequence {
+    @_disfavoredOverload
+    public func map<T: Identifiable>(
+        _ transform: (@escaping (Element) throws -> T)
+    ) rethrows -> IdentifierIndexedArrayOf<T> {
+        IdentifierIndexedArrayOf(try self.lazy.map({ try transform($0) }), id: \.id)
+    }
+}
+
+// MARK: - SwiftUI Additions
 
 #if canImport(SwiftUI)
-
 import SwiftUI
 
 extension Binding {
@@ -247,5 +257,4 @@ extension Binding {
         )
     }
 }
-
 #endif

@@ -149,6 +149,10 @@ extension EitherValueConvertible {
 }
 
 extension EitherValueConvertible {
+    public func reduce<T>(left f: ((LeftValue) throws -> T), right g: ((RightValue) throws -> T)) rethrows -> T {
+        try leftValue.map(f) ?? rightValue.map(g)!
+    }
+    
     public func reduce<T>(_ f: ((LeftValue) throws -> T), _ g: ((RightValue) throws -> T)) rethrows -> T {
         return try leftValue.map(f) ?? rightValue.map(g)!
     }

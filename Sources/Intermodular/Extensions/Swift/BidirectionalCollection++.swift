@@ -34,11 +34,6 @@ extension BidirectionalCollection {
 
 extension BidirectionalCollection {
     @inlinable
-    public var reverseView: ReversedCollection<Self> {
-        return reversed()
-    }
-    
-    @inlinable
     public func reverse(index i: Index) -> Index {
         return index(atDistance: distance(from: i, to: lastIndex))
     }
@@ -50,15 +45,6 @@ extension BidirectionalCollection {
 }
 
 extension BidirectionalCollection where Self: MutableCollection {
-    @inlinable
-    public var reverseView: ReversedCollection<Self> {
-        get {
-            return reversed()
-        } set {
-            self = newValue._base
-        }
-    }
-    
     public subscript(reverse index: Index) -> Element {
         get {
             return self[reverse(index: index)]
@@ -74,11 +60,6 @@ extension BidirectionalCollection where Self: MutableCollection {
         for index in indices.prefix(till: indexToBreakLoopAt) {
             swapAt(index, reverse(index: index))
         }
-    }
-    
-    @inlinable
-    public func reversed() -> Self {
-        return build(self, with: { $0.reverseInPlace() })
     }
 }
 

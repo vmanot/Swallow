@@ -24,7 +24,12 @@ extension TODO {
     }
     
     // @available(*, deprecated, message: "This should not be used in production code.")
-    public static func whole(_ action: Action..., note: String? = nil, file: StaticString = #file, line: UInt = #line) {
+    public static func whole(
+        _ action: Action...,
+        note: String? = nil,
+        file: StaticString = #file,
+        line: UInt = #line
+    ) {
         
     }
     

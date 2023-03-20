@@ -11,7 +11,12 @@ let package = Package(
         .watchOS(.v6)
     ],
     products: [
-        .library(name: "Swallow", targets: ["Swallow"])
+        .library(
+            name: "Swallow",
+            targets: [
+                "Swallow"
+            ]
+        )
     ],
     targets: [
         .target(

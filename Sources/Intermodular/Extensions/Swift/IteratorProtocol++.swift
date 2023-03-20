@@ -14,7 +14,7 @@ extension IteratorProtocol {
     
     @inlinable
     public mutating func exhaust<N: Numeric & Strideable>(
-        _ count: N
+        count: N
     ) -> Element? where N.Stride: SignedInteger {
         var result: Element?
         

@@ -27,9 +27,17 @@ public struct AnyEquatable: Equatable {
     }
     
     public init(from x: Any) throws {
-        let x = try cast(x, to: (any Equatable).self)
-        
-        self.init(erasing: x)
+        do {
+            let x = try cast(x, to: (any Equatable).self)
+            
+            self.init(erasing: x)
+        } catch {
+            if let x = x as? Any.Type {
+                self.init(erasing: ObjectIdentifier(x))
+            } else {
+                throw error
+            }
+        }
     }
     
     public static func equate<T>(_ lhs: T, _ rhs: T) -> Bool {

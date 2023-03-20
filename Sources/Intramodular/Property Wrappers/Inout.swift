@@ -4,26 +4,52 @@
 
 import Swift
 
+@dynamicMemberLookup
 @propertyWrapper
-public struct Inout<T> {
-    public let getter: () -> T
-    public let setter: (T) -> Void
+public struct Inout<Value>: PropertyWrapper {
+    public let get: @Sendable () -> Value
+    public let set: @Sendable (Value) -> Void
     
-    public var wrappedValue: T {
+    public var wrappedValue: Value {
         get {
-            return getter()
+            return get()
         } nonmutating set {
-            setter(newValue)
+            set(newValue)
         }
     }
+    
+    public var projectedValue: Self {
+        self
+    }
         
-    public init(getter: @escaping () -> T, setter: @escaping (T) -> Void) {
-        self.getter = getter
-        self.setter = setter
+    public init(
+        get: @escaping @Sendable () -> Value,
+        set: @escaping @Sendable (Value) -> Void
+    ) {
+        self.get = get
+        self.set = set
     }
     
-    public init(_ getter: @autoclosure @escaping () -> T, _ setter: @escaping (T) -> Void) {
-        self.init(getter: getter, setter: setter)
+    public init(
+        _ get: @autoclosure @escaping @Sendable () -> Value,
+        _ set: @escaping @Sendable (Value) -> Void
+    ) {
+        self.init(get: get, set: set)
+    }
+        
+    public subscript<Subject>(
+        dynamicMember keyPath: WritableKeyPath<Value, Subject>
+    ) -> Inout<Subject> {
+        get {
+            Inout<Subject>(
+                get: {
+                    wrappedValue[keyPath: keyPath]
+                },
+                set: {
+                    wrappedValue[keyPath: keyPath] = $0
+                }
+            )
+        }
     }
 }
 
@@ -34,3 +60,19 @@ extension Inout: CustomStringConvertible {
         String(describing: wrappedValue)
     }
 }
+
+extension Inout: Sendable where Value: Sendable {
+    
+}
+
+// MARK: - SwiftUI Additions
+
+#if canImport(SwiftUI)
+import SwiftUI
+
+extension Binding {
+    public init(_ x: Inout<Value>) {
+        self.init(get: { x.wrappedValue }, set: { x.wrappedValue = $0 })
+    }
+}
+#endif

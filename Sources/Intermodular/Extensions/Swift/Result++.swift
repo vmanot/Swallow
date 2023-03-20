@@ -43,6 +43,15 @@ extension Result {
                 throw error
         }
     }
+    
+    public func get() -> Success where Failure == Never {
+        switch self {
+            case .success(let value):
+                return value
+            case .failure:
+                fatalError()
+        }
+    }
 }
 
 extension Result where Failure == Error {

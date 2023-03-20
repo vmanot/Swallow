@@ -5,7 +5,7 @@
 import Foundation
 import Swift
 
-public protocol _opaque_PartialKeyPathType {
+public protocol _opaque_PartialKeyPathType: AnyKeyPath {
     static var _opaque_RootType: Any.Type { get }
     
     func _opaque_applyPartialKeyPath(on instance: Any) throws -> Any
