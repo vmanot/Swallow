@@ -22,7 +22,10 @@ extension TODO {
         case rethink
         case test
     }
-    
+}
+
+extension TODO {
+    #if DEBUG
     // @available(*, deprecated, message: "This should not be used in production code.")
     public static func whole(
         _ action: Action...,
@@ -32,8 +35,25 @@ extension TODO {
     ) {
         
     }
+    #else
+    public static func whole(
+        _ action: Action...,
+        note: String? = nil
+    ) {
+        
+    }
+    #endif
     
+    #if DEBUG
     // @available(*, deprecated, message: "This should not be used in production code.")
+    public static func whole<T>(
+        _ action: Action...,
+        note: String? = nil,
+        _ body: () throws -> T
+    ) rethrows -> T {
+        try body()
+    }
+    #else
     public static func whole<T>(
         _ action: Action...,
         note: String? = nil,
@@ -43,11 +63,27 @@ extension TODO {
     ) rethrows -> T {
         try body()
     }
+    #endif
     
+    #if DEBUG
     // @available(*, deprecated, message: "This should not be used in production code.")
-    public static func here(_ action: Action..., note: String? = nil, file: StaticString = #file, line: UInt = #line) {
+    public static func here(
+        _ action: Action...,
+        note: String? = nil
+    ) {
         
     }
+    #else
+    // @available(*, deprecated, message: "This should not be used in production code.")
+    public static func here(
+        _ action: Action...,
+        note: String? = nil,
+        file: StaticString = #file,
+        line: UInt = #line
+    ) {
+        
+    }
+    #endif
 }
 
 public enum TODO {

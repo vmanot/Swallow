@@ -288,9 +288,11 @@ extension RangeReplaceableCollection {
         var newSelf = Self.init(capacity: 0); TODO.here(.optimize)
         
         sortedReplacementsAndGapsWithStart.forEach { range, replacement in
-            replacement
-                .map { newSelf.append(contentsOf: $0) }
-                .ifNone { newSelf.append(contentsOf: self[range]) }
+            if let replacement {
+                newSelf.append(contentsOf: replacement)
+            } else {
+                newSelf.append(contentsOf: self[range])
+            }
         }
         
         self = newSelf

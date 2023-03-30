@@ -127,17 +127,17 @@ extension _opaque_Number {
 extension _opaque_Number {
     @inlinable
     public init<T: _opaque_Number>(_ value: T) {
-        self = Self(checked: value).orFatallyThrow("could not cast value of type \(T.self) to \(type(Self.self))")
+        self = Self(checked: value)!; TODO.here(.improve)
     }
     
     @inlinable
     public init<T: _opaque_Number & BinaryInteger>(_ value: T) {
-        self = Self(checked: value).orFatallyThrow("could not cast value of type \(T.self) to \(type(Self.self))")
+        self = Self(checked: value)!; TODO.here(.improve)
     }
     
     @inlinable
     public init<T: _opaque_Number & BinaryFloatingPoint>(_ value: T) {
-        self = Self(checked: value).orFatallyThrow("could not cast value of type \(T.self) to \(type(Self.self))")
+        self = Self(checked: value)!; TODO.here(.improve) 
     }
 }
 

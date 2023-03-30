@@ -7,14 +7,14 @@ import Swift
 
 @propertyWrapper
 public struct LossyCoding<Value>: MutablePropertyWrapper, ParameterlessPropertyWrapper {
-    enum Error: Swift.Error {
-        case failedToMakeDefaultValueForType(Any.Type)
-    }
-    
     public var wrappedValue: Value
     
     public init(wrappedValue: Value) {
         self.wrappedValue = wrappedValue
+    }
+    
+    public init() where Value: Initiable {
+        self.wrappedValue = .init()
     }
 }
 
@@ -59,6 +59,10 @@ extension LossyCoding: Sendable where Value: Sendable {
 // MARK: - Auxiliary
 
 extension LossyCoding {
+    enum Error: Swift.Error {
+        case failedToMakeDefaultValueForType(Any.Type)
+    }
+
     static func _makeDefaultValue() throws -> Value {
         if let valueType = Value.self as? any ExpressibleByNilLiteral.Type {
             return valueType.init(nilLiteral: ()) as! Value

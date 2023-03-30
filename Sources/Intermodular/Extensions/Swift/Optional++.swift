@@ -17,13 +17,6 @@ extension Optional {
     public init(_ wrapped: @autoclosure () -> Optional<Wrapped>, if condition: Bool) {
         self = condition ? wrapped() : nil
     }
-    
-    @inlinable
-    public func ifNone(perform action: (() throws -> ())) rethrows {
-        if self == nil {
-            try action()
-        }
-    }
 }
 
 extension Optional {
@@ -111,23 +104,19 @@ extension Optional {
     }
     
     @inlinable
-    public func unwrapOrThrow(_ error: @autoclosure () throws -> Error) throws -> Wrapped {
+    public func unwrapOrThrow(
+        _ error: @autoclosure () throws -> Error
+    ) throws -> Wrapped {
         if let wrapped = self {
             return wrapped
         } else {
             throw try error()
         }
     }
-    
-    @inlinable
-    public func orFatallyThrow(_ message: @autoclosure () -> String, file: StaticString = #file, line: UInt = #line) -> Wrapped {
-        if let wrapped = self {
-            return wrapped
-        } else {
-            fatalError(message())
-        }
-    }
-    
+}
+
+#if DEBUG
+extension Optional {
     /// Unwraps this `Optional`.
     ///
     /// - Throws: `UnwrappingError` if the instance is `nil`.
@@ -146,7 +135,26 @@ extension Optional {
         
         return wrapped
     }
-    
+}
+#else
+extension Optional {
+    /// Unwraps this `Optional`.
+    ///
+    /// - Throws: `UnwrappingError` if the instance is `nil`.
+    /// - Returns: The unwrapped value of this instance.
+    @inlinable
+    public func unwrap() throws -> Wrapped {
+        guard let wrapped = self else {
+            throw UnwrappingError.unexpectedlyFoundNil(at: .unavailable)
+        }
+        
+        return wrapped
+    }
+}
+#endif
+
+#if DEBUG
+extension Optional {
     /// Force unwraps this `Optional`.
     @inlinable
     public func forceUnwrap(
@@ -158,6 +166,15 @@ extension Optional {
         try! unwrap(file: file, line: line)
     }
 }
+#else
+extension Optional {
+    /// Force unwraps this `Optional`.
+    @inlinable
+    public func forceUnwrap() -> Wrapped {
+        try! unwrap()
+    }
+}
+#endif
 
 extension Optional where Wrapped: Collection {
     public var isNilOrEmpty: Bool {

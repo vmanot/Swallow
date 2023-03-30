@@ -36,28 +36,6 @@ extension Result._CodableRepresentation: Hashable where Success: Hashable, Failu
     
 }
 
-// MARK: - Optional Helpers
-
-extension Optional {
-    public func unwrap<T, U: Error>(
-        file: StaticString = #file,
-        function: StaticString = #function,
-        line: UInt = #line,
-        column: UInt = #column
-    ) throws -> T where Wrapped == Result<T, U> {
-        return try unwrap(file: file, function: function, line: line, column: column).unwrap()
-    }
-    
-    public func unwrap<T>(
-        file: StaticString = #file,
-        function: StaticString = #function,
-        line: UInt = #line,
-        column: UInt = #column
-    ) throws -> T where Wrapped == Result<T, Error> {
-        return try unwrap(file: file, function: function, line: line, column: column).unwrap()
-    }
-}
-
 // MARK: - ResultInitiable
 
 public protocol ResultInitiable {

@@ -42,6 +42,12 @@ extension IdentifierIndexedArray {
     public mutating func append(_ element: Element) {
         self[id: _idForElement(element)] = element
     }
+    
+    public func appending(_ element: Element) -> Self {
+        build(self, with: {
+            $0.append(element)
+        })
+    }
 }
 
 extension IdentifierIndexedArrayOf {

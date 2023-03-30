@@ -39,3 +39,12 @@ public struct BoolDecodingDefault<Value: _StaticBoolean>: Codable, Hashable {
         try container.encode(wrappedValue)
     }
 }
+
+extension KeyedDecodingContainer {
+    public func decode<T: _StaticBoolean>(
+        _ type: BoolDecodingDefault<T>.Type,
+        forKey key: Key
+    ) throws -> BoolDecodingDefault<T> {
+        try decodeIfPresent(type, forKey: key) ?? .init(wrappedValue: T.value)
+    }
+}

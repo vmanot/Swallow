@@ -4,6 +4,24 @@
 
 import Swift
 
+enum CollectionOfOneConversionError: Swift.Error {
+    case hasNoElements
+    case hasMoreThanOneElement
+}
+
+extension Collection {
+    public func toCollectionOfOne() throws -> CollectionOfOne<Element> {
+        switch count {
+            case 0:
+                throw CollectionOfOneConversionError.hasNoElements
+            case 1:
+                return .init(first!)
+            default:
+                throw CollectionOfOneConversionError.hasMoreThanOneElement
+        }
+    }
+}
+
 public enum FirstOrLastCollectionIndex {
     case first
     case last
