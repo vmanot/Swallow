@@ -31,11 +31,11 @@ public struct Join2Collection<C0: Collection, C1: Collection>: Collection, Wrapp
 
 extension Join2Collection {
     public var startIndex: Index {
-        return value.0.startIndex
+        value.0.startIndex
     }
     
     public var endIndex: Index {
-        return value.0.endIndex.advanced(by: value.1.stride)
+        value.0.endIndex.advanced(by: value.1.stride)
     }
     
     public subscript(index: Index) -> Element {
@@ -59,6 +59,14 @@ extension Join2Collection: MutableCollection where C0: MutableCollection, C1: Mu
             }
         }
     }
+}
+
+extension Join2Collection: BidirectionalCollection where C0: BidirectionalCollection, C1: BidirectionalCollection {
+    
+}
+
+extension Join2Collection: RandomAccessCollection where C0: RandomAccessCollection, C1: RandomAccessCollection {
+    
 }
 
 public struct SequenceToCollection<S: Sequence>: RandomAccessCollection, Wrapper {
@@ -123,11 +131,15 @@ extension Sequence {
 }
 
 extension Collection where Index: Strideable {
-    public func join<C: Collection>(_ other: C) -> Join2Collection<Self, C> where C.Element == Element {
+    public func join<C: Collection>(
+        _ other: C
+    ) -> Join2Collection<Self, C> where C.Element == Element {
         return Join2Collection((self, other))
     }
     
-    public func join<C0: Collection, C1: Collection>(_ other0: C0, _ other1: C1) -> Join3Collection<Self, C0, C1> where C0.Element == Element {
+    public func join<C0: Collection, C1: Collection>(
+        _ other0: C0, _ other1: C1
+    ) -> Join3Collection<Self, C0, C1> where C0.Element == Element {
         return join(other0).join(other1)
     }
 }

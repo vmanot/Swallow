@@ -80,38 +80,38 @@ extension Collection {
 extension Collection {
     @inlinable
     public func index(atDistance distance: Int) -> Index {
-        return index(startIndex, offsetBy: distance)
+        index(startIndex, offsetBy: distance)
     }
     
     @inlinable
     public func index(_ index: Index, insetBy distance: Int) -> Index {
-        return self.index(index, offsetBy: -distance)
+        self.index(index, offsetBy: -distance)
     }
     
     @inlinable
     public func index(_ index: Index, offsetByDistanceFromStartIndexFor otherIndex: Index) -> Index {
-        return self.index(index, offsetBy: distanceFromStartIndex(to: otherIndex))
+        self.index(index, offsetBy: distanceFromStartIndex(to: otherIndex))
     }
     
     @inlinable
     public func distanceFromStartIndex(to index: Index) -> Int {
-        return distance(from: startIndex, to: index)
+        distance(from: startIndex, to: index)
     }
     
     @inlinable
     public func range(from range: Range<Int>) -> Range<Index> {
-        return index(atDistance: range.lowerBound)..<index(atDistance: range.upperBound)
+        index(atDistance: range.lowerBound)..<index(atDistance: range.upperBound)
     }
     
     public subscript(atDistance distance: Int) -> Element {
         @inlinable get {
-            return self[index(atDistance: distance)]
+            self[index(atDistance: distance)]
         }
     }
     
     public subscript(betweenDistances distance: Range<Int>) -> SubSequence {
         @inlinable get {
-            return self[index(atDistance: distance.lowerBound)..<index(atDistance: distance.upperBound)]
+            self[index(atDistance: distance.lowerBound)..<index(atDistance: distance.upperBound)]
         }
     }
     
@@ -327,5 +327,15 @@ extension Collection {
     
     public func chunked<C: Collection>(by ranges: C) -> [SubSequence] where C.Element == Range<Index> {
         allSubrangesChunked(by: ranges).map({ self[$0] })
+    }
+}
+
+// MARK: - Concatenation
+
+extension Collection {
+    public func _lazyConcatenate<C: Collection>(
+        with other: C
+    ) -> LazySequence<FlattenSequence<LazyMapSequence<LazySequence<[AnyCollection<Element>]>.Elements, AnyCollection<Self.Element>>>> where C.Element == Element {
+       return [AnyCollection(self), AnyCollection(other)].lazy.flatMap({ $0 })
     }
 }

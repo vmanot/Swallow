@@ -14,21 +14,11 @@ extension RangeReplaceableCollection {
 }
 
 extension RangeReplaceableCollection {
-    @inlinable
-    public subscript(flexible bounds: Range<Index>) -> SubSequence {
-        get {
-            return self[bounds]
-        } set {
-            replaceSubrange(bounds, with: newValue)
-        }
-    }
-    
-    @inlinable
-    public subscript(flexible bounds: Range<Int>) -> SubSequence {
-        get {
-            return self[range(from: bounds)]
-        } set {
-            replaceSubrange(range(from: bounds), with: newValue)
+    public func appending<S: Sequence>(
+        contentsOf other: S
+    ) -> Self where S.Element == Element {
+        build(self) {
+            $0.append(contentsOf: other)
         }
     }
 }
@@ -162,24 +152,22 @@ extension RangeReplaceableCollection {
     public func removing<C: Collection>(at indices: C) -> Self where C.Element == Index {
         return build(self, with: { $0.remove(at: indices) })
     }
-    
-    public mutating func remove(_ predicate: ((Element) throws -> Bool)) rethrows {
-        var indices: [Index] = []
         
-        for (index, element) in enumerated() {
-            try predicate(element) &&-> (indices += index)
-        }
-        
-        remove(at: indices)
-    }
-    
     @discardableResult
-    public func removing(_ predicate: ((Element) throws -> Bool)) rethrows -> Self {
+    public func removingAll(where predicate: ((Element) throws -> Bool)) rethrows -> Self {
         var result = self
         
-        _ = try result.remove(predicate)
+        _ = try result.removeAll(where: predicate)
         
         return result
+    }
+    
+    public mutating func removeDuplicates() where Element: Hashable {
+        var alreadySeen: Set<Element> = []
+        
+        removeAll {
+            !alreadySeen.insert($0).inserted
+        }
     }
 }
 

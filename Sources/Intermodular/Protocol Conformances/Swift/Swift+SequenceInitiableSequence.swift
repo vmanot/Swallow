@@ -4,24 +4,6 @@
 
 import Swift
 
-extension AnyBidirectionalCollection: SequenceInitiableSequence {
-    public init<S: Sequence>(_ sequence: S) where S.Element == Element {
-        self.init(sequence.toFauxCollection())
-    }
-}
-
-extension AnyCollection: SequenceInitiableSequence {
-    public init<S: Sequence>(_ sequence: S) where S.Element == Element {
-        self.init(sequence.toFauxCollection())
-    }
-}
-
-extension AnyRandomAccessCollection: SequenceInitiableSequence {
-    public init<S: Sequence>(_ sequence: S) where S.Element == Element {
-        self.init(sequence.toFauxCollection())
-    }
-}
-
 extension AnySequence: SequenceInitiableSequence {
     
 }

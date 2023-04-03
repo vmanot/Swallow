@@ -232,17 +232,24 @@ extension Sequence {
     }
     
     @inlinable
-    public func reduce<T>(_ initial: T, _ combine: ((T) throws -> ((Element) -> T))) rethrows -> T {
+    public func reduce<T>(
+        _ initial: T,
+        _ combine: ((T) throws -> ((Element) -> T))
+    ) rethrows -> T {
         return try reduce(initial, { try combine($0)($1) })
     }
     
+    @_disfavoredOverload
     @inlinable
     public func reduce<T: ExpressibleByNilLiteral>(_ combine: ((T) throws -> ((Element) -> T))) rethrows -> T {
         return try reduce(nil, { try combine($0)($1) })
     }
     
+    @_disfavoredOverload
     @inlinable
-    public func reduce<T: ExpressibleByNilLiteral>(_ combine: ((T, Element) throws -> T)) rethrows -> T {
+    public func reduce<T: ExpressibleByNilLiteral>(
+        _ combine: ((T, Element) throws -> T)
+    ) rethrows -> T {
         return try reduce(nil, combine)
     }
     
@@ -256,6 +263,25 @@ extension Sequence {
         }
         
         return try dropFirst().reduce(initial(first), combine)
+    }
+
+    public func concatenateAndReduce<T>(
+        _ initialValue: (Element, Element) throws -> T,
+        _ combine: (T, Element) throws -> T
+    ) rethrows -> T? {
+        var iterator = makeIterator()
+        
+        guard let first = iterator.next(), let second = iterator.next() else {
+            return nil
+        }
+        
+        var result = try initialValue(first, second)
+        
+        while let next = iterator.next() {
+            result = try combine(result, next)
+        }
+        
+        return result
     }
 }
 
@@ -481,9 +507,26 @@ extension Sequence where Element: Comparable {
 
 // MARK: Sorted
 
+@frozen public enum _SequenceSortOrder: Hashable, Codable, Sendable {
+    case forward
+    case reverse
+}
+
 extension Sequence {
+    public func sorted<T: Comparable>(
+        by keyPath: KeyPath<Element, T>,
+        order: _SequenceSortOrder
+    ) -> [Element] {
+        switch order {
+            case .forward:
+                return sorted(by: { $0[keyPath: keyPath] < $1[keyPath: keyPath] })
+            case .reverse:
+                return sorted(by: { $0[keyPath: keyPath] > $1[keyPath: keyPath] })
+        }
+    }
+    
     public func sorted<T: Comparable>(by keyPath: KeyPath<Element, T>) -> [Element] {
-        sorted(by: { $0[keyPath: keyPath] < $1[keyPath: keyPath] })
+        sorted(by: keyPath, order: .forward)
     }
 }
 

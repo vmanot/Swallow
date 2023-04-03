@@ -34,6 +34,10 @@ public struct IdentifierIndexedArray<Element, ID: Hashable> {
     private func _idForElement(_ element: Element) -> ID {
         id(element)
     }
+    
+    public func contains(elementIdentifiedBy id: ID) -> Bool {
+        base.containsKey(id)
+    }
 }
 
 // MARK: - Implementation

@@ -4,6 +4,17 @@
 
 import Swift
 
+public func with<V>(
+    _ initialValue: V,
+    modify: (inout V) throws -> ()
+) rethrows -> V {
+    var value = initialValue
+    
+    try modify(&value)
+    
+    return value
+}
+
 @inlinable
 public func build<T>(_ x: T, with f: ((inout T) throws -> ())) rethrows -> T {
     var _x = x

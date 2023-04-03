@@ -10,7 +10,7 @@ public protocol DestructivelyMutableSequence: MutableSequence {
     @_disfavoredOverload
     mutating func map<S: ExtensibleSequence & Initiable>(destructivelyMutating _: ((inout Element?) throws -> S.Element)) rethrows -> S
     mutating func filterInPlace(_: ((Element) throws -> Bool)) rethrows
-    mutating func remove(_: ((Element) throws -> Bool)) rethrows
+    mutating func removeAll(where _: ((Element) throws -> Bool)) rethrows
     mutating func removeAll()
 }
 
@@ -38,7 +38,8 @@ extension DestructivelyMutableSequence {
         try forEach(destructivelyMutating: { try predicate($0!) &&-> ($0 = nil) })
     }
     
-    public mutating func remove(_ predicate: ((Element) throws -> Bool)) rethrows {
+    @_disfavoredOverload
+    public mutating func _removeAll(where predicate: ((Element) throws -> Bool)) rethrows {
         try forEach(destructivelyMutating: {
             (element: inout Element!) in
             
@@ -83,17 +84,7 @@ extension DestructivelyMutableSequence where Self: RangeReplaceableCollection {
             }
         }
     }
-    
-    public mutating func remove(_ predicate: ((Element) throws -> Bool)) rethrows {
-        try forEach(destructivelyMutating: {
-            (element: inout Element!) in
-            
-            if try predicate(element) {
-                element = nil
-            }
-        })
-    }
-    
+        
     public mutating func removeAll() {
         removeAll(keepingCapacity: false)
     }

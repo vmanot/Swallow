@@ -4,6 +4,31 @@
 
 import Swift
 
+public protocol AnyBidirectionalCollectionType<Element>: Collection where Index == AnyBidirectionalCollection<Element>.Index {
+    init<C: BidirectionalCollection>(_ collection: C) where C.Element == Element
+    init(_ collection: AnyBidirectionalCollection<Element>)
+    
+    func eraseToAnyBidirectionalCollection() -> AnyBidirectionalCollection<Element>
+}
+
+extension AnyBidirectionalCollection: AnyBidirectionalCollectionType {
+    public func eraseToAnyBidirectionalCollection() -> AnyBidirectionalCollection<Element> {
+        .init(self)
+    }
+}
+
+extension BidirectionalCollection {
+    public func eraseToAnyBidirectionalCollection() -> AnyBidirectionalCollection<Element> {
+        .init(self)
+    }
+}
+
+extension RandomAccessCollection {
+    public func eraseToAnyRandomAccessCollection() -> AnyRandomAccessCollection<Element> {
+        .init(self)
+    }
+}
+
 enum CollectionOfOneConversionError: Swift.Error {
     case hasNoElements
     case hasMoreThanOneElement
