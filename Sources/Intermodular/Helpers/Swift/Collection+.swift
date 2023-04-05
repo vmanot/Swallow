@@ -17,6 +17,12 @@ extension AnyBidirectionalCollection: AnyBidirectionalCollectionType {
     }
 }
 
+extension Collection {
+    public func eraseToAnyCollection() -> AnyCollection<Element> {
+        .init(self)
+    }
+}
+
 extension BidirectionalCollection {
     public func eraseToAnyBidirectionalCollection() -> AnyBidirectionalCollection<Element> {
         .init(self)
