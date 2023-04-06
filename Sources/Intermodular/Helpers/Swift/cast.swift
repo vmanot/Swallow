@@ -7,6 +7,42 @@ import Foundation
 import Swift
 
 @inlinable
+public func _openExistentialAndCast<T>(
+    _ value: T,
+    to type: Any.Type,
+    file: StaticString = #file,
+    fileID: StaticString = #fileID,
+    function: StaticString = #function,
+    line: UInt = #line,
+    column: UInt = #column
+) throws -> Any {
+    let _type: Any.Type = type
+    
+    func _cast<T>(to type: T.Type) -> Result<Any, Error> {
+        Result(catching: {
+            try cast(value, to: type)
+        })
+    }
+    
+    let result = _openExistential(_type, do: _cast)
+    
+    return try result.get()
+}
+
+@inlinable
+public func _openExistentialAndCast<T, U>(
+    _ value: T,
+    to type: U.Type = U.self,
+    file: StaticString = #file,
+    fileID: StaticString = #fileID,
+    function: StaticString = #function,
+    line: UInt = #line,
+    column: UInt = #column
+) throws -> U {
+    try cast(_openExistentialAndCast(value, to: type as Any.Type), to: type)
+}
+
+@inlinable
 public func cast<T, U>(
     _ value: T,
     to type: U.Type = U.self,

@@ -4,8 +4,62 @@
 
 import Swift
 
+@dynamicMemberLookup
+public enum TODO {
+    public static subscript<T>(
+        dynamicMember action: KeyPath<_Actions, Action>
+    ) -> _CallFunctionAsFunction<T> {
+        _CallFunctionAsFunction()
+    }
+    
+    @_disfavoredOverload
+    public static subscript(
+        dynamicMember action: KeyPath<AbstractReturnValue._InstanceKeyPaths, AbstractReturnValue>
+    ) -> Never {
+        fatalError("Unimplemented function or code path")
+    }
+}
+
+/// I know, terrible fucking name.
+public struct _CallFunctionAsFunction<T> {
+    public init() {
+        
+    }
+    
+    public func callAsFunction(_ fn: () throws -> T) rethrows -> T {
+        try fn()
+    }
+}
+
 /// A strongly typed to-do item.
 extension TODO {
+    public enum AbstractReturnValue {
+        public struct _InstanceKeyPaths {
+            public let unimplemented = AbstractReturnValue.unimplemented
+            public let fixMe = AbstractReturnValue.fixMe
+        }
+        
+        case unimplemented
+        case fixMe
+    }
+    
+    public struct _Actions {
+        public let addressEdgeCase: Action = .addressEdgeCase
+        public let benchmark: Action = .benchmark
+        public let complete: Action = .complete
+        public let document: Action = .document
+        public let fix: Action = .fix
+        public let maybeFix: Action = .maybeFix
+        public let implement: Action = .implement
+        public let improve: Action = .improve
+        public let modernize: Action = .modernize
+        public let optimize: Action = .optimize
+        public let refactor: Action = .refactor
+        public let remove: Action = .remove
+        public let rethink: Action = .rethink
+        public let test: Action = .test
+    }
+    
     public enum Action {
         case addressEdgeCase
         case benchmark
@@ -24,8 +78,8 @@ extension TODO {
     }
 }
 
+#if DEBUG
 extension TODO {
-    #if DEBUG
     // @available(*, deprecated, message: "This should not be used in production code.")
     public static func whole(
         _ action: Action...,
@@ -35,16 +89,20 @@ extension TODO {
     ) {
         
     }
-    #else
+}
+#else
+extension TODO {
     public static func whole(
         _ action: Action...,
         note: String? = nil
     ) {
         
     }
-    #endif
-    
-    #if DEBUG
+}
+#endif
+
+#if DEBUG
+extension TODO {
     // @available(*, deprecated, message: "This should not be used in production code.")
     public static func whole<T>(
         _ action: Action...,
@@ -53,7 +111,9 @@ extension TODO {
     ) rethrows -> T {
         try body()
     }
-    #else
+}
+#else
+extension TODO {
     public static func whole<T>(
         _ action: Action...,
         note: String? = nil,
@@ -63,9 +123,11 @@ extension TODO {
     ) rethrows -> T {
         try body()
     }
-    #endif
-    
-    #if DEBUG
+}
+#endif
+
+#if DEBUG
+extension TODO {
     // @available(*, deprecated, message: "This should not be used in production code.")
     public static func here(
         _ action: Action...,
@@ -73,7 +135,9 @@ extension TODO {
     ) {
         
     }
-    #else
+}
+#else
+extension TODO {
     // @available(*, deprecated, message: "This should not be used in production code.")
     public static func here(
         _ action: Action...,
@@ -83,20 +147,8 @@ extension TODO {
     ) {
         
     }
-    #endif
 }
-
-public enum TODO {
-    // @available(*, deprecated, message: "This should not be used in production code.")
-    public static var unimplemented: Never {
-        fatalError("Unimplemented function or code path")
-    }
-    
-    // @available(*, deprecated, message: "This should not be used in production code.")
-    public static var fixMe: Never {
-        fatalError("Unimplemented function or code path")
-    }
-}
+#endif
 
 var isDebugAssertConfiguration: Bool {
     return undocumented({ _isDebugAssertConfiguration() })

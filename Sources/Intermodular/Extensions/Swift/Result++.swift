@@ -34,16 +34,7 @@ extension Result {
     public func mapFailure<T>(_ transform: ((Failure) throws -> T)) rethrows -> Result<Success, T> {
         return .init(try eitherValue.map(id, transform))
     }
-    
-    public func unwrap() throws -> Success {
-        switch self {
-            case .success(let value):
-                return value
-            case .failure(let error):
-                throw error
-        }
-    }
-    
+        
     public func get() -> Success where Failure == Never {
         switch self {
             case .success(let value):

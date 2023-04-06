@@ -15,3 +15,19 @@ public func withUnsafeContinuation<T, U>(
     
     return (result0, result1)
 }
+
+public func withUnsafeThrowingContinuation<T, U>(
+    _ fn: (UnsafeContinuation<U, Error>) throws -> T
+) async throws -> (T, U) {
+    var result0: Result<T, Error>?
+    
+    let result1 = try await withUnsafeThrowingContinuation { (continuation: UnsafeContinuation<U, Error>) in
+        result0 = Result {
+            try fn(continuation)
+        }
+    }
+    
+    assert(result0 != nil)
+    
+    return (try result0.unwrap().get(), result1)
+}

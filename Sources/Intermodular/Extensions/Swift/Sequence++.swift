@@ -79,7 +79,7 @@ extension Sequence {
 
 // MARK: Concurrent Iteration
 
-extension Sequence where Element: Sendable {
+extension Sequence {
     /// Returns an array containing the results of mapping the given async closure over
     /// the sequence’s elements.
     ///
