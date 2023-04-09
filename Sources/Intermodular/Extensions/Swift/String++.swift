@@ -16,6 +16,15 @@ extension String {
 }
 
 extension String {
+    public static func concatenate(
+        separator: String,
+        @_SpecializedArrayBuilder<String> _ strings: () -> [String]
+    ) -> Self {
+        strings().joined(separator: separator)
+    }
+}
+
+extension String {
     public func numberOfOccurences(of character: Character) -> Int {
         lazy.filter({ $0 == character }).count
     }

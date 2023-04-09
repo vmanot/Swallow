@@ -66,6 +66,7 @@ open class _SpecializedArrayBuilder<Element> {
         }
     }
     
+    @_disfavoredOverload
     public static func buildIf(_ content: [Element]?) -> [Element] {
         if let content = content {
             return content

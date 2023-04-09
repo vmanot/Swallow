@@ -297,7 +297,7 @@ extension AnyCodable: Hashable {
     public func hash(into hasher: inout Hasher) {
         switch self {
             case .none:
-                hasher.combine(Empty())
+                hasher.combine(EmptyValue())
             case .bool(let value):
                 hasher.combine(value)
             case .number(let value):

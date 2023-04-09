@@ -46,7 +46,7 @@ extension Optional where Wrapped: _StaticSwiftType {
     }
 }
 
-// MARK: - Implementations
+// MARK: - Conforming Implementations
 
 public final class _ConcreteSwiftType<T>: _StaticSwiftType {
     public typealias _Type = T

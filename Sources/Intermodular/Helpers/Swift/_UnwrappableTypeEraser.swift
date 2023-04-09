@@ -10,7 +10,7 @@ public protocol _UnwrappableTypeEraser {
     func _unwrapBase() -> _UnwrappedBaseType
 }
 
-// MARK: - Implementations
+// MARK: - Conforming Implementations
 
 extension AnyHashable: _UnwrappableTypeEraser {
     public func _unwrapBase() -> (any Hashable) {

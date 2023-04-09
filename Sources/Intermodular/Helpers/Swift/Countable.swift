@@ -5,7 +5,7 @@
 import Swift
 
 /// A type with an integer count.
-public protocol Countable {
+public protocol Countable<Count> {
     /// A type that can represent the count of the conforming type.
     associatedtype Count: BinaryInteger = Int
 

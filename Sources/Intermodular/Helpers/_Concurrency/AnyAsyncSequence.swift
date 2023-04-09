@@ -32,3 +32,17 @@ public struct AnyAsyncSequence<Element>: AsyncSequence, Sendable {
         _makeAsyncIterator()
     }
 }
+
+// MARK: - Supplementary API
+
+extension AsyncSequence {
+    public func eraseToAnyAsyncSequence() -> AnyAsyncSequence<Element> {
+        .init(self)
+    }
+}
+
+extension Sequence {
+    public func eraseToAnyAsyncSequence() -> AnyAsyncSequence<Element> {
+        .init(self)
+    }
+}

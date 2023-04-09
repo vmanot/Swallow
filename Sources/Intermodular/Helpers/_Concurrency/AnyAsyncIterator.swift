@@ -28,3 +28,22 @@ public struct AnyAsyncIterator<Element>: AsyncIteratorProtocol {
         try await _next()
     }
 }
+
+extension AsyncIteratorProtocol {
+    public func eraseToAnyAsyncIterator() -> AnyAsyncIterator<Element> {
+        .init(self)
+    }
+}
+
+extension AnyAsyncIterator {
+    @_disfavoredOverload
+    @inlinable
+    public func filter(
+        _ isIncluded: @escaping @Sendable (Element) async -> Bool
+    ) -> AnyAsyncIterator {
+        AnyAsyncSequence({ self })
+            .filter(isIncluded)
+            .makeAsyncIterator()
+            .eraseToAnyAsyncIterator()
+    }
+}

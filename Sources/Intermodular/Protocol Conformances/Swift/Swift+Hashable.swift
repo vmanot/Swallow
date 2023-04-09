@@ -11,7 +11,7 @@ extension Either: Hashable where LeftValue: Hashable, RightValue: Hashable {
     }
 }
 
-public struct Empty: Codable, Hashable {
+public struct EmptyValue: Codable, Hashable {
     public init() {
         
     }
