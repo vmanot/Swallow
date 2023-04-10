@@ -8,6 +8,16 @@ extension Sequence {
     public func first<T>(ofType type: T.Type) -> T? {
         lazy.compactMap({ $0 as? T }).first
     }
+    
+    public func firstAndOnly<T>(ofType type: T.Type) throws -> T? {
+        let found = Array(lazy.compactMap({ $0 as? T }))
+        
+        guard !found.isEmpty else {
+            return nil
+        }
+        
+        return try found.toCollectionOfOne().value
+    }
 }
 
 // MARK: Grouping

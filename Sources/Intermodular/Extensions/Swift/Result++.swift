@@ -174,6 +174,25 @@ extension Result {
     }
 }
 
+extension Optional {
+    public static func == <T, U>(
+        lhs: Self, rhs: _ResultComparison
+    ) -> Bool where Wrapped == Result<T, U> {
+        guard let lhs else {
+            return false
+        }
+        
+        switch (lhs, rhs) {
+            case (.success, .success):
+                return true
+            case (.failure, .failure):
+                return true
+            default:
+                return false
+        }
+    }
+}
+
 // MARK: - Auxiliary
 
 public enum _ResultComparison {
