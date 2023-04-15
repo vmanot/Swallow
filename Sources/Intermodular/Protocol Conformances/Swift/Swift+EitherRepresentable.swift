@@ -69,6 +69,30 @@ extension Either: Sendable where LeftValue: Sendable, RightValue: Sendable {
     
 }
 
+extension Either {
+    public enum _Comparison: Hashable, Sendable {
+        case left
+        case right
+        
+        public static func == (lhs: Either<T, U>, rhs: _Comparison) -> Bool {
+            lhs._comparison == rhs
+        }
+        
+        public static func != (lhs: Either<T, U>, rhs: _Comparison) -> Bool {
+             lhs._comparison != rhs
+        }
+    }
+    
+    private var _comparison: _Comparison {
+        switch self {
+            case .left:
+                return .left
+            case .right:
+                return .right
+        }
+    }
+}
+
 extension Result: EitherRepresentable {
     public typealias EitherValue = Either<Success, Failure>
     

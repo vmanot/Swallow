@@ -150,12 +150,12 @@ extension TODO {
 }
 #endif
 
-var isDebugAssertConfiguration: Bool {
-    return undocumented({ _isDebugAssertConfiguration() })
+public var _isDebugAssertConfiguration: Bool {
+    undocumented({ Swift._isDebugAssertConfiguration() })
 }
 
 public func debug(_ body: () -> ()) {
-    if isDebugAssertConfiguration {
+    if _isDebugAssertConfiguration {
         body()
     }
 }

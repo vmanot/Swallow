@@ -33,7 +33,7 @@ public protocol CoderPrimitive: Codable, Hashable {
     ) throws
 }
 
-// MARK: - Conforming Implementations
+// MARK: - Implemented Conformances
 
 extension Bool: CoderPrimitive {
     public static func _decode(

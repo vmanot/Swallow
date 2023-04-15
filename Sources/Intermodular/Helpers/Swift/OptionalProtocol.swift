@@ -82,7 +82,7 @@ public func _isValueNil(_ value: Any) -> Bool {
     Optional(_unwrapping: value).isNil
 }
 
-// MARK: - Conforming Implementations
+// MARK: - Implemented Conformances
 
 extension Optional: OptionalProtocol {
     public var _wrapped: Wrapped? {

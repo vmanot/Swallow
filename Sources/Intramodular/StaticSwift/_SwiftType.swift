@@ -16,6 +16,18 @@ public protocol _StaticSwiftType<_Type, _Metatype> {
     init(_ value: Wrapped) throws
 }
 
+extension _StaticSwiftType {
+    public var _opaque_value: Any.Type {
+        guard let value = value as? Any.Type else {
+            assertionFailure()
+            
+            return Never.self
+        }
+        
+        return value
+    }
+}
+
 // MARK: - Supplementary API
 
 extension _StaticSwiftType {
@@ -46,9 +58,9 @@ extension Optional where Wrapped: _StaticSwiftType {
     }
 }
 
-// MARK: - Conforming Implementations
+// MARK: - Implemented Conformances
 
-public final class _ConcreteSwiftType<T>: _StaticSwiftType {
+public struct _ConcreteSwiftType<T>: _StaticSwiftType {
     public typealias _Type = T
     public typealias _Metatype = T.Type
     
@@ -63,13 +75,15 @@ public final class _ConcreteSwiftType<T>: _StaticSwiftType {
     }
 }
 
-public final class _ExistentialSwiftType<T, T_Type>: _StaticSwiftType {
+public struct _ExistentialSwiftType<T, T_Type>: _StaticSwiftType {
     public typealias _Type = T
     public typealias _Metatype = T_Type
-    
+        
     public let value: T_Type
     
     public init(_ value: T_Type) {
         self.value = value
     }
 }
+
+public typealias _OpaqueExistentialSwiftType = _ExistentialSwiftType<Any, Any.Type>

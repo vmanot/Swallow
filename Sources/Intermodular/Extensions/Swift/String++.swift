@@ -18,9 +18,9 @@ extension String {
 extension String {
     public static func concatenate(
         separator: String,
-        @_SpecializedArrayBuilder<String> _ strings: () -> [String]
-    ) -> Self {
-        strings().joined(separator: separator)
+        @_SpecializedArrayBuilder<String> _ strings: () throws -> [String]
+    ) rethrows -> Self {
+        try strings().joined(separator: separator)
     }
 }
 

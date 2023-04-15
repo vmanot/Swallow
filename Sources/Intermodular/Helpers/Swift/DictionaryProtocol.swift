@@ -5,8 +5,8 @@
 import Swift
 
 /// A dictionary type.
-public protocol DictionaryProtocol {
-    associatedtype DictionaryKey
+public protocol DictionaryProtocol<DictionaryKey, DictionaryValue> {
+    associatedtype DictionaryKey: Hashable
     associatedtype DictionaryValue
     
     /// Returns the value associated with a given dictionary key.
