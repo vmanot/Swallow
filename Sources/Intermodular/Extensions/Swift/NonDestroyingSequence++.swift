@@ -8,7 +8,7 @@ extension NonDestroyingSequence {
     public func around(
         _ predicate: ((Element) throws -> Bool)
     ) rethrows -> AroundElementSequence<SequenceToCollection<Self>.SubSequence, Element, SequenceToCollection<Self>.SubSequence>? {
-        try toFauxCollection().around(predicate)
+        try SequenceToCollection(self).around(predicate)
     }
 }
 

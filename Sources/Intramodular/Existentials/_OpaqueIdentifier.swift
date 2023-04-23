@@ -4,7 +4,7 @@
 
 import Swift
 
-public struct _OpaqueIdentifier: Hashable {
+public struct _OpaqueIdentifier: Hashable, @unchecked Sendable {
     private let sourceType: ObjectIdentifier
     private let _base: AnyHashable
     
@@ -12,7 +12,7 @@ public struct _OpaqueIdentifier: Hashable {
         _base.base as! any Hashable
     }
     
-    public init<T: Identifiable>(from x: T) {
+    public init<T: Identifiable>(from x: T) where T.ID: Sendable {
         self.sourceType = .init(type(of: x))
         self._base = x.id
     }

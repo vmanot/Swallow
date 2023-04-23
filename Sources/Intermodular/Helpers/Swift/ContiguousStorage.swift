@@ -40,26 +40,6 @@ extension MutableContiguousStorage {
     }
 }
 
-// MARK: - Extensions
-
-extension ContiguousStorage {
-    public func copy<BP: InitiableBufferPointer & MutableBufferPointer>(to pointer: BP) where Element == BP.Element {
-        withUnsafeBufferPointer({ pointer.assign(from: $0) })
-    }
-    
-    public func createCopy() -> UnsafeMutableBufferPointer<Element> {
-        withUnsafeBufferPointer({ .initializing(from: $0) })
-    }
-    
-    public func createCopy<BP: InitiableBufferPointer & MutableBufferPointer>() -> BP where Element == BP.Element {
-        BP(createCopy())
-    }
-    
-    public func createRawCopy() -> UnsafeMutableRawBufferPointer {
-        withUnsafeBytes({ .initializing(from: $0) })
-    }
-}
-
 // MARK: - Helpers
 
 extension InitiableBufferPointer {

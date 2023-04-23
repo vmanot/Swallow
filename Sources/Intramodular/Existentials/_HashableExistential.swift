@@ -5,10 +5,10 @@
 import Swift
 
 @propertyWrapper
-public struct _OpaqueExistential<T> {
-    private var base: T
+public struct _HashableExistential<Value> {
+    private var base: Value
     
-    public var wrappedValue: T {
+    public var wrappedValue: Value {
         get {
             self.base
         } set {
@@ -16,11 +16,11 @@ public struct _OpaqueExistential<T> {
         }
     }
     
-    public init(wrappedValue: T) {
+    public init(wrappedValue: Value) {
         self.base = wrappedValue
     }
     
-    public init?(erasing value: Any) where T == any Hashable {
+    public init?(erasing value: Any) where Value == any Hashable {
         if let value = value as? (any Hashable) {
             self.init(erasing: value)
         } else if let value = value as? Any.Type {
@@ -32,16 +32,16 @@ public struct _OpaqueExistential<T> {
         }
     }
     
-    public init(erasing value: any Hashable) where T == any Hashable {
+    public init(erasing value: any Hashable) where Value == any Hashable {
         self.base = value
     }
     
-    public init(erasing value: Any.Type) where T == any Hashable {
+    public init(erasing value: Any.Type) where Value == any Hashable {
         self.base = ObjectIdentifier(value)
     }
 }
 
-extension _OpaqueExistential: Equatable {
+extension _HashableExistential: Equatable {
     public static func == (lhs: Self, rhs: Self) -> Bool {
         guard type(of: lhs.base) == type(of: rhs.base) else {
             assert(!AnyEquatable.equate(lhs.base, rhs.base))
@@ -53,7 +53,7 @@ extension _OpaqueExistential: Equatable {
     }
 }
 
-extension _OpaqueExistential: Hashable {
+extension _HashableExistential: Hashable {
     public func hash(into hasher: inout Hasher) {
         if let base = base as? Any.Type {
             ObjectIdentifier(base).hash(into: &hasher)
@@ -70,4 +70,8 @@ extension _OpaqueExistential: Hashable {
         hasher.combine(ObjectIdentifier(type(of: base)))
         hasher.combine(base)
     }
+}
+
+extension _HashableExistential: @unchecked Sendable {
+    
 }

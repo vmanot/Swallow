@@ -6,7 +6,7 @@
 // Ole Begemann, April 2022
 
 /// A key in a `HeterogeneousDictionary`.
-public protocol HeterogeneousDictionaryKey {
+public protocol HeterogeneousDictionaryKey<Domain> {
     /// The "namespace" the key belongs to. Every `HeterogeneousDictionary` has its associated domain, and only keys belonging to that domain can be stored in the dictionary.
     associatedtype Domain
     /// The type of the values that can be stored under this key in the dictionary.

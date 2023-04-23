@@ -4,6 +4,8 @@
 
 import Swift
 
-public struct None: Codable, Hashable {
-    
+public struct None: Codable, Hashable, Initiable {
+    public init() {
+        
+    }
 }

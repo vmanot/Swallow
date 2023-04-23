@@ -86,19 +86,7 @@ extension SequenceInitiableSequence where Self: RangeReplaceableCollection {
 
 extension SequenceInitiableSequence {
     public func prependAll<S: SequenceInitiableSequence>(_ newElement: Element) -> S where S.Element == Element {
-        return .init(flatMap({ CollectionOfOne(newElement).join(CollectionOfOne($0)) }))
-    }
-    
-    public func intersperse<S: SequenceInitiableSequence>(_ type: S.Type = S.self, _ newElement: Element) -> S where S.Element == Element {
-        guard !isEmpty else {
-            return .init(noSequence: ())
-        }
-        
-        return .init(lazy.flatMap({ CollectionOfOne(newElement).join(CollectionOfOne($0)) }).join(newElement))
-    }
-    
-    public func intersperse(_ newElement: Element) -> [Element] {
-        return intersperse([Element].self, newElement)
+        .init(flatMap({ CollectionOfOne(newElement).join(CollectionOfOne($0)) }))
     }
 }
 

@@ -51,11 +51,3 @@ extension DistanceIndexedCollection: CustomStringConvertible where Value: Custom
         value.description
     }
 }
-
-// MARK: - Helpers
-
-extension Collection {
-    public var distanceIndexed: DistanceIndexedCollection<Self> {
-        .init(self)
-    }
-}

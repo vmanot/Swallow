@@ -475,7 +475,7 @@ extension Sequence where Element: Equatable {
     public func hasSuffix(_ suffix: [Element]) -> Bool {
         var result: Bool = false
         
-        for (element, other) in suffix.zip(self.suffix(suffix.toFauxCollection().count)) {
+        for (element, other) in suffix.zip(self.suffix(suffix.count)) {
             guard element == other else {
                 return false
             }

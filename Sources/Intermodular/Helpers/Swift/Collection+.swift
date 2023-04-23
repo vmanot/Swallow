@@ -51,6 +51,14 @@ extension Collection {
                 throw CollectionOfOneConversionError.hasMoreThanOneElement
         }
     }
+    
+    public func toCollectionOfZeroOrOne() throws -> CollectionOfOne<Element>? {
+        guard !isEmpty else {
+            return nil
+        }
+        
+        return try toCollectionOfOne()
+    }
 }
 
 public enum FirstOrLastCollectionIndex {

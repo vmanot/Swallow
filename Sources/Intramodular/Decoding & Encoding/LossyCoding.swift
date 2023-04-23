@@ -44,7 +44,7 @@ extension LossyCoding: Decodable where Value: Decodable {
             wrappedValue = try container.decode(Value.self)
         } catch {
             if (try? decoder.decodeNil()) ?? false {
-                self.wrappedValue = try Self._makeDefaultValue()
+                self.wrappedValue = try _unsafeDummyValue(forType: Value.self)
             } else {
                 throw error
             }
@@ -58,29 +58,27 @@ extension LossyCoding: Sendable where Value: Sendable {
 
 // MARK: - Auxiliary
 
-extension LossyCoding {
-    enum Error: Swift.Error {
-        case failedToMakeDefaultValueForType(Any.Type)
-    }
-
-    static func _makeDefaultValue() throws -> Value {
-        if let valueType = Value.self as? any ExpressibleByNilLiteral.Type {
-            return valueType.init(nilLiteral: ()) as! Value
-        } else if let valueType = Value.self as? any Initiable.Type {
-            return valueType.init() as! Value
-        } else if let valueType = Value.self as? any ExpressibleByArrayLiteral.Type {
-            return valueType.init(_emptyArrayLiteral: ()) as! Value
-        } else {
-            throw Error.failedToMakeDefaultValueForType(Value.self)
-        }
-    }
-}
-
 extension KeyedDecodingContainer {
     public func decode<T: Decodable>(
         _ type: LossyCoding<T>.Type,
         forKey key: Key
     ) throws -> LossyCoding<T> {
-        try decodeIfPresent(type, forKey: key) ?? .init(wrappedValue: try LossyCoding._makeDefaultValue())
+        try decodeIfPresent(type, forKey: key) ?? .init(wrappedValue: try _unsafeDummyValue(forType: T.self))
     }
+}
+
+public func _unsafeDummyValue<Value>(forType type: Value.Type) throws -> Value {
+    if let valueType = Value.self as? any ExpressibleByNilLiteral.Type {
+        return valueType.init(nilLiteral: ()) as! Value
+    } else if let valueType = Value.self as? any Initiable.Type {
+        return valueType.init() as! Value
+    } else if let valueType = Value.self as? any ExpressibleByArrayLiteral.Type {
+        return valueType.init(_emptyArrayLiteral: ()) as! Value
+    } else {
+        throw _UnsafeDummyValueCreationError.failedToMakeDefaultValueForType(Value.self)
+    }
+}
+
+private enum _UnsafeDummyValueCreationError: Swift.Error {
+    case failedToMakeDefaultValueForType(Any.Type)
 }

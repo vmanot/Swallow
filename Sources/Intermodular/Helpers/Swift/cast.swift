@@ -175,3 +175,22 @@ public func _isValueOfGivenType<Value>(
     
     return _openExistential(type, do: check)
 }
+
+public struct _TypeCastTo2<T, U> {
+    public let base: Any
+    
+    public var first: T {
+        base as! T
+    }
+    
+    public var second: U {
+        base as! U
+    }
+    
+    public init(base: Any) throws {
+        self.base = base
+        
+        _ = try cast(base, to: T.self)
+        _ = try cast(base, to: U.self)
+    }
+}

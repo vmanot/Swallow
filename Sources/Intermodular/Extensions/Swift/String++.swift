@@ -16,6 +16,12 @@ extension String {
 }
 
 extension String {
+    public func delimited(by character: Character) -> String {
+        "\(character)\(self)\(character)"
+    }
+}
+
+extension String {
     public static func concatenate(
         separator: String,
         @_SpecializedArrayBuilder<String> _ strings: () throws -> [String]

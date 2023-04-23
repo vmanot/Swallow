@@ -1144,6 +1144,6 @@ extension OrderedDictionary: Sendable where Key: Sendable, Value: Sendable {
     
 }
 
-extension OrderedDictionary: KeysExposingDictionaryProtocol {
+extension OrderedDictionary: KeysExposingDictionaryProtocol, MutableDictionaryProtocol {
     
 }

@@ -1,4 +1,4 @@
-// swift-tools-version:5.5
+// swift-tools-version:5.7
 
 import PackageDescription
 
@@ -18,15 +18,22 @@ let package = Package(
             ]
         )
     ],
+    dependencies: [
+        .package(url: "https://github.com/apple/swift-collections", branch: "main"),
+    ],
     targets: [
         .target(
             name: "Swallow",
-            dependencies: [],
+            dependencies: [
+                .product(name: "Collections", package: "swift-collections")
+            ],
             path: "Sources"
         ),
         .testTarget(
             name: "SwallowTests",
-            dependencies: ["Swallow"],
+            dependencies: [
+                "Swallow"
+            ],
             path: "Tests"
         )
     ]

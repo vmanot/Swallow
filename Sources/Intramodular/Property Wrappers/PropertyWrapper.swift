@@ -5,7 +5,7 @@
 import Swift
 
 /// A protocol formalizing a `@propertyWrapper`.
-public protocol PropertyWrapper<WrappedValue> {
+public protocol PropertyWrapper<WrappedValue>: CustomDebugStringConvertible {
     associatedtype WrappedValue
     
     var wrappedValue: WrappedValue { get }
@@ -32,6 +32,12 @@ extension ParameterlessPropertyWrapper {
 }
 
 // MARK: - Implementation
+
+extension PropertyWrapper {
+    public var debugDescription: String {
+        String(describing: wrappedValue)
+    }
+}
 
 extension ParameterlessPropertyWrapper where WrappedValue: CustomStringConvertible, Self: CustomStringConvertible {
     public var description: String {

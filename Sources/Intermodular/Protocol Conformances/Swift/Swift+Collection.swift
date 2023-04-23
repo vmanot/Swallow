@@ -124,12 +124,6 @@ public typealias SequenceOfTwo<T> = Join2Sequence<CollectionOfOne<T>, Collection
 
 public typealias Join3Collection<C0, C1, C2> = Join2Collection<Join2Collection<C0, C1>, C2> where C0: Collection, C1: Collection, C2: Collection, C0.Index: Strideable, C0.Element == C1.Element, C1.Element == C2.Element, C0.Index == C1.Index, C1.Index == C2.Index
 
-extension Sequence {
-    public func toFauxCollection() -> SequenceToCollection<Self> {
-        return .init(self)
-    }
-}
-
 extension Collection where Index: Strideable {
     public func join<C: Collection>(
         _ other: C

@@ -6,18 +6,20 @@ import Swift
 
 /// A type with an associated name.
 public protocol Named {
-    var name: String { get }
+    associatedtype Name: CustomStringConvertible
+    
+    var name: Name { get }
 }
 
 /// A type with an associated mutable name.
 public protocol MutableNamed: Named {
-    var name: String { get set }
+    var name: Name { get set }
 }
 
-// MARK: - Conformances
+// MARK: - Implemented Conformances
 
 extension Named where Self: CustomStringConvertible {
     public var description: String {
-        return name
+        name.description
     }
 }

@@ -84,6 +84,24 @@ public struct _BagOfExistentials<Existential> {
     public func contains<T>(type: T.Type) -> Bool {
         self.contains(where: { _isValueOfGivenType($0, type: type) })
     }
+    
+    public func first<T>(ofType type: T.Type) -> T? {
+        self.first(where: { _isValueOfGivenType($0, type: type) }).map({ $0 as! T })
+    }
+    
+    public func firstAndOnly<T>(ofType type: T.Type) throws -> T? {
+        try self.filter({ _isValueOfGivenType($0, type: type) }).firstAndOnly(ofType: type)
+    }
+    
+    public mutating func removeAll<T>(ofType type: T.Type) {
+        removeAll(where: { _isValueOfGivenType($0, type: type) })
+    }
+    
+    public mutating func replaceAll<T>(ofType type: T.Type, with element: Existential) {
+        removeAll(ofType: type)
+        
+        insert(element)
+    }
 }
 
 // MARK: - Conformances
