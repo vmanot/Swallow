@@ -12,8 +12,13 @@ public struct _TypeAssociated<Parent, RawValue: Hashable>: Hashable, RawRepresen
     }
 }
 
-
 // MARK: - Conformances
+
+extension _TypeAssociated: CustomStringConvertible {
+    public var description: String {
+        String(describing: rawValue)
+    }
+}
 
 extension _TypeAssociated: Codable where RawValue: Codable {
     public init(from decoder: Decoder) throws {
@@ -25,9 +30,9 @@ extension _TypeAssociated: Codable where RawValue: Codable {
     }
 }
 
-extension _TypeAssociated: CustomStringConvertible where RawValue: CustomStringConvertible {
-    public var description: String {
-        rawValue.description
+extension _TypeAssociated: Initiable where RawValue: Initiable {
+    public init() {
+        self.init(rawValue: .init())
     }
 }
 

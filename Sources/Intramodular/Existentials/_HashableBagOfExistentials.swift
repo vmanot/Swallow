@@ -1,0 +1,108 @@
+//
+// Copyright (c) Vatsal Manot
+//
+
+import Swift
+
+public struct _HashableBagOfExistentials<Existential> {
+    private var base: _BagOfExistentials<Existential>
+    
+    public init() {
+        self.base = .init()
+    }
+    
+    public init() where Existential == Any {
+        self.base = .init()
+    }
+    
+    public init(_ elements: some Sequence<Existential>) {
+        self.base = .init(elements)
+    }
+        
+    public func all<T>(ofType type: T.Type) -> AnyCollection<T> {
+        base.all(ofType: type)
+    }
+    
+    public mutating func insert(_ element: Existential) {
+        base.insert(element)
+    }
+    
+    public mutating func remove(_ element: Existential) {
+        base.remove(element)
+    }
+    
+    public mutating func removeAll(
+        where shouldBeRemoved: (Existential) throws -> Bool
+    ) rethrows {
+        try base.removeAll(where: shouldBeRemoved)
+    }
+    
+    public func contains(_ element: Existential) -> Bool {
+        base.contains(element)
+    }
+    
+    public func contains<T>(type: T.Type) -> Bool {
+        base.contains(type: type)
+    }
+    
+    public func first<T>(ofType type: T.Type) -> T? {
+        base.first(ofType: type)
+    }
+    
+    public func firstAndOnly<T>(ofType type: T.Type) throws -> T? {
+        try base.firstAndOnly(ofType: type)
+    }
+    
+    public mutating func removeAll<T>(ofType type: T.Type) {
+        base.removeAll(ofType: type)
+    }
+    
+    public mutating func replaceAll<T>(ofType type: T.Type, with element: Existential) {
+        base.replaceAll(ofType: type, with: element)
+    }
+}
+
+// MARK: - Conformances
+
+extension _HashableBagOfExistentials: ExpressibleByArrayLiteral {
+    public init(arrayLiteral elements: Existential...) {
+        self.init(elements)
+    }
+}
+
+extension _HashableBagOfExistentials: Equatable {
+    public static func == (lhs: Self, rhs: Self) -> Bool {
+        do {
+            let lhs = try lhs.map({ try _HashableExistential(erasing: $0).unwrap() })
+            let rhs = try rhs.map({ try _HashableExistential(erasing: $0).unwrap() })
+            
+            return lhs == rhs
+        } catch {
+            assertionFailure()
+            
+            return false
+        }
+    }
+}
+
+extension _HashableBagOfExistentials: Hashable {
+    public func hash(into hasher: inout Hasher) {
+        do {
+            try self.map({ try _HashableExistential(erasing: $0).unwrap() }).hash(into: &hasher)
+        } catch {
+            assertionFailure()
+        }
+    }
+}
+
+extension _HashableBagOfExistentials: Mergable {
+    public func merge(with other: Self) -> Self {
+        Self(AnySequence(self).join(AnySequence(other)))
+    }
+}
+
+extension _HashableBagOfExistentials: Sequence {
+    public func makeIterator() -> AnyIterator<Existential> {
+        base.makeIterator()
+    }
+}

@@ -205,6 +205,36 @@ extension AnyCodable: CustomStringConvertible {
     }
 }
 
+extension AnyCodable: Decoder {
+    public var codingPath: [CodingKey] {
+        []
+    }
+    
+    public var userInfo: [CodingUserInfoKey: Any] {
+        [:]
+    }
+    
+    public func container<Key: CodingKey>(
+        keyedBy type: Key.Type
+    ) throws -> KeyedDecodingContainer<Key> {
+        try _decoder().container(keyedBy: type)
+    }
+    
+    public func unkeyedContainer() throws -> UnkeyedDecodingContainer {
+        try _decoder().unkeyedContainer()
+    }
+    
+    public func singleValueContainer() throws -> SingleValueDecodingContainer {
+        try _decoder().singleValueContainer()
+    }
+    
+    private func _decoder() throws -> ObjectDecoder.Decoder {
+        let decoder = try ObjectDecoder().decode(DecoderUnwrapper.self, from: self).value
+        
+        return try cast(decoder, to: ObjectDecoder.Decoder.self)
+    }
+}
+
 extension AnyCodable: Equatable {
     public static func == (lhs: Self, rhs: Self) -> Bool {
         switch (lhs, rhs) {

@@ -50,6 +50,56 @@ extension Sequence {
         
         return result
     }
+
+    public func _flatMapToTuples<T: Sequence>(
+        by values: (Element) -> T
+    ) -> [(Element, T.Element)] {
+        var result = Array<(Element, T.Element)>()
+        
+        for element in self {
+            result.append(contentsOf: values(element).map({ (element, $0) }))
+        }
+        
+        return result
+    }
+    
+    public func mapToDictionaryWithUniqueKeys<Key: Hashable>(
+        _ uniqueKeys: (Element) throws -> some Sequence<Key>
+    ) rethrows -> [Key: Element] {
+        var result = [Key: Element](minimumCapacity: underestimatedCount)
+        
+        for element in self {
+            let keys = try uniqueKeys(element)
+            
+            for key in keys {
+                guard result[key] == nil else {
+                    assertionFailure()
+                    
+                    continue
+                }
+                
+                result[key] = element
+            }
+        }
+        
+        return result
+    }
+    
+    public func multiplicativelyKeyed<Key: Hashable>(
+        by keys: (Element) throws -> some Sequence<Key>
+    ) rethrows -> [Key: [Element]] {
+        var result = [Key: [Element]](minimumCapacity: underestimatedCount)
+        
+        for element in self {
+            let keys = try keys(element)
+            
+            for key in keys {
+                result[key, default: []].append(element)
+            }
+        }
+        
+        return result
+    }
 }
 
 extension Sequence {
@@ -209,15 +259,69 @@ extension Sequence {
 
 // MARK: Minimum/Maximum
 
+public enum _SequenceMinimumOrMaximum {
+    case minimum
+    case maximum
+}
+
 extension Sequence where Element: Comparable {
     @inlinable
     public var minimum: Element? {
-        return sorted(by: <).first
+        self.min(by: <)
     }
     
     @inlinable
     public var maximum: Element? {
-        return sorted(by: <).last
+        self.max(by: <)
+    }
+}
+
+extension Sequence {
+    public func minOrMax(
+        _ minOrMax: _SequenceMinimumOrMaximum
+    ) -> Element? where Element: Comparable {
+        switch minOrMax {
+            case .minimum:
+                return minimum
+            case .maximum:
+                return maximum
+        }
+    }
+    
+    public func minOrMax<Value: Comparable>(
+        _ minOrMax: _SequenceMinimumOrMaximum,
+        by value: (Element) -> Value
+    ) -> Element? {
+        switch minOrMax {
+            case .minimum:
+                return self.min(by: { value($0) < value($1) })
+            case .maximum:
+                return self.max(by: { value($0) < value($1) })
+        }
+    }
+    
+    public func minOrMax<Value: Comparable>(
+        _ minOrMax: _SequenceMinimumOrMaximum,
+        by keyPath: KeyPath<Element, Value>
+    ) -> Element? {
+        switch minOrMax {
+            case .minimum:
+                return self.min(by: { $0[keyPath: keyPath] < $1[keyPath: keyPath] })
+            case .maximum:
+                return self.max(by: { $0[keyPath: keyPath] < $1[keyPath: keyPath] })
+        }
+    }
+    
+    public func min<Value: Comparable>(
+        by value: (Element) -> Value
+    ) -> Element? {
+        minOrMax(.minimum, by: value)
+    }
+    
+    public func max<Value: Comparable>(
+        by value: (Element) -> Value
+    ) -> Element? {
+        minOrMax(.maximum, by: value)
     }
 }
 

@@ -93,6 +93,7 @@ extension Optional: OptionalProtocol {
         }
     }
     
+    @_disfavoredOverload
     public init<T: OptionalProtocol>(_ x: T) where T.Wrapped == Wrapped {
         self = x._wrapped
     }

@@ -9,18 +9,6 @@ infix operator =??: AssignmentPrecedence
 
 extension Optional {
     @inlinable
-    public init(_ wrapped: @autoclosure () -> Wrapped, if condition: Bool) {
-        self = condition ? wrapped() : nil
-    }
-    
-    @inlinable
-    public init(_ wrapped: @autoclosure () -> Optional<Wrapped>, if condition: Bool) {
-        self = condition ? wrapped() : nil
-    }
-}
-
-extension Optional {
-    @inlinable
     public func map(into wrapped: inout Wrapped) {
         map { wrapped = $0 }
     }

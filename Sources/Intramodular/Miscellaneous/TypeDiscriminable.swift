@@ -10,19 +10,19 @@ public protocol TypeDiscriminable {
     associatedtype InstanceType: Hashable
     
     /// The type discriminator for the value.
-    var type: InstanceType { get }
+    var instanceType: InstanceType { get }
 }
 
 extension Sequence where Element: TypeDiscriminable {
     public func first(
         ofType type: Element.InstanceType
     ) -> Element? {
-        first(where: { $0.type == type })
+        first(where: { $0.instanceType == type })
     }
     
     public func firstAndOnly(
         ofType type: Element.InstanceType
     ) throws -> Element? {
-        try self.lazy.filter({ $0.type == type }).toCollectionOfZeroOrOne()?.value
+        try self.lazy.filter({ $0.instanceType == type }).toCollectionOfZeroOrOne()?.value
     }
 }

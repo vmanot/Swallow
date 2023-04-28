@@ -17,3 +17,37 @@ public func printing<T>(_ item: T) -> T {
     
     return item
 }
+
+public func printEach<T>(
+    @_SpecializedArrayBuilder<T> elements: () throws -> [T]
+) rethrows {
+    let elements = try elements()
+    
+    for element in elements {
+        print(element)
+    }
+}
+
+public func printEach<T>(
+    @_SpecializedArrayBuilder<T> elements: () async throws -> [T]
+) async rethrows {
+    let elements = try await elements()
+    
+    for element in elements {
+        print(element)
+    }
+}
+
+public func _printEachOrError<T>(
+    @_SpecializedArrayBuilder<T> elements: () async throws -> [T]
+) async {
+    do {
+        let elements = try await elements()
+        
+        for element in elements {
+            print(element)
+        }
+    } catch {
+        print(error)
+    }
+}

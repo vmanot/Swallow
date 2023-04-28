@@ -80,7 +80,11 @@ extension MutableCollection {
     
     public subscript(try bounds: Range<Index>) -> SubSequence? {
         get {
-            return Optional(self[bounds], if: contains(bounds))
+            guard contains(bounds) else {
+                return nil
+            }
+            
+            return self[bounds]
         } set {
             if let newValue = newValue, contains(bounds) {
                 self[bounds] = newValue
@@ -108,7 +112,11 @@ extension MutableCollection where Self: RangeReplaceableCollection {
     
     public subscript(try bounds: Range<Index>) -> SubSequence? {
         get {
-            return Optional(self[bounds], if: contains(bounds))
+            guard contains(bounds) else {
+                return nil
+            }
+            
+            return self[bounds]
         } set {
             if let newValue = newValue, contains(bounds) {
                 self[bounds] = newValue

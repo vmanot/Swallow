@@ -20,6 +20,10 @@ public struct _HashableExistential<Value> {
         self.base = wrappedValue
     }
     
+    public init(_unsafelyErasing base: any Hashable) {
+        self.base = base as! Value
+    }
+    
     public init?(erasing value: Any) where Value == any Hashable {
         if let value = value as? (any Hashable) {
             self.init(erasing: value)

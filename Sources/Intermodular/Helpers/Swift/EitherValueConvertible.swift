@@ -135,8 +135,23 @@ extension EitherValueConvertible {
 }
 
 extension EitherValueConvertible {
-    public func map<T, U>(left f: ((LeftValue) throws -> T), right g: ((RightValue) throws -> U)) rethrows -> Either<T, U> {
+    public func map<T, U>(
+        left f: ((LeftValue) throws -> T),
+        right g: ((RightValue) throws -> U)
+    ) rethrows -> Either<T, U> {
         return try leftValue.map(f) ||| rightValue.map(g)!
+    }
+    
+    public func map<T>(
+        left transform: ((LeftValue) throws -> T)
+    ) rethrows -> Either<T, RightValue> {
+        return try leftValue.map(transform) ||| rightValue!
+    }
+    
+    public func map<T>(
+        right transform: ((RightValue) throws -> T)
+    ) rethrows -> Either<LeftValue, T> {
+        return try leftValue ||| transform(rightValue!)
     }
 
     public func map<T, U>(_ f: ((LeftValue) throws -> T), _ g: ((RightValue) throws -> U)) rethrows -> Either<T, U> {

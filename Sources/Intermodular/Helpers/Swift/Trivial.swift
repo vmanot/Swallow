@@ -6,7 +6,7 @@ import Darwin
 import Swift
 
 /// A trivial (Darwin) type.
-public protocol Trivial: CVarArg, Equatable {
+public protocol Trivial: CVarArg, Equatable, Sendable {
     static var null: Self { get }
     
     init(null: Void)
@@ -112,7 +112,7 @@ extension Initiable where Self: Trivial & UnsignedInteger {
 
 // MARK: - Helpers
 
-public struct TrivialRepresentationOf<Value>: MutableWrapper, Trivial {
+public struct _UnsafeTrivialRepresentationOf<Value: Sendable>: MutableWrapper, Trivial {
     public var value: Value
     
     public init(_ value: Value) {

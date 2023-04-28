@@ -6,22 +6,14 @@ import Foundation
 import Swift
 
 public struct ObjectDecoder: Initiable {
-    public init() {
-        
+    fileprivate struct Options {
+        fileprivate var decodingStrategies = DecodingStrategies()
     }
 
-    public func decode(
-        opaque type: Decodable.Type,
-        from object: Any,
-        userInfo: [CodingUserInfoKey: Any] = [:]
-    ) throws -> Decodable {
-        do {
-            return try ObjectDecoder.Decoder(object, options, userInfo).singleValueContainer().decode(type)
-        } catch let error as DecodingError {
-            throw error
-        } catch {
-            throw _dataCorrupted(at: [], "The given data was not valid Object.", error)
-        }
+    fileprivate var options = Options()
+
+    public init() {
+        
     }
     
     public func decode<T: Decodable>(
@@ -29,8 +21,21 @@ public struct ObjectDecoder: Initiable {
         from object: Any,
         userInfo: [CodingUserInfoKey: Any] = [:]
     ) throws -> T {
+        var object = object
+        
+        if let _object = object as? AnyCodable {
+            object = try _object.bridgeToObjectiveC()
+        }
+        
         do {
-            return try ObjectDecoder.Decoder(object, options, userInfo).singleValueContainer().decode(type)
+            return try ObjectDecoder.Decoder(
+                object: object,
+                options: options,
+                userInfo: userInfo,
+                codingPath: []
+            )
+            .singleValueContainer()
+            .decode(type)
         } catch let error as DecodingError {
             throw error
         } catch {
@@ -40,8 +45,12 @@ public struct ObjectDecoder: Initiable {
     
     public struct DecodingStrategy<T: Decodable> {
         public typealias Closure = (Decoder) throws -> T
-        public init(closure: @escaping Closure) { self.closure = closure }
+    
         fileprivate let closure: Closure
+
+        public init(closure: @escaping Closure) {
+            self.closure = closure
+        }
     }
     
     public struct DecodingStrategies {
@@ -62,42 +71,41 @@ public struct ObjectDecoder: Initiable {
     
     /// The strategis to use for decoding values.
     public var decodingStrategies: DecodingStrategies {
-        get { return options.decodingStrategies }
-        set { options.decodingStrategies = newValue }
+        get {
+            return options.decodingStrategies
+        } set {
+            options.decodingStrategies = newValue
+        }
     }
-    
-    fileprivate struct Options {
-        fileprivate var decodingStrategies = DecodingStrategies()
-    }
-    
-    fileprivate var options = Options()
 }
 
 extension ObjectDecoder {
     public struct Decoder: Swift.Decoder {
-        
-        public let object: Any
-        
         fileprivate typealias Options = ObjectDecoder.Options
+
+        public let object: Any
         private let options: Options
-        
-        fileprivate init(_ object: Any,
-                         _ options: Options,
-                         _ userInfo: [CodingUserInfoKey: Any],
-                         _ codingPath: [CodingKey] = []) {
+        public let codingPath: [CodingKey]
+        public let userInfo: [CodingUserInfoKey: Any]
+
+        fileprivate init(
+            object: Any,
+            options: Options,
+            userInfo: [CodingUserInfoKey: Any],
+            codingPath: [CodingKey]
+        ) {
             self.object = object
             self.options = options
             self.userInfo = userInfo
             self.codingPath = codingPath
         }
-        
-        public let codingPath: [CodingKey]
-        public let userInfo: [CodingUserInfoKey: Any]
     }
 }
 
 extension ObjectDecoder.Decoder {
-    public func container<Key>(keyedBy type: Key.Type) throws -> KeyedDecodingContainer<Key> {
+    public func container<Key>(
+        keyedBy type: Key.Type
+    ) throws -> KeyedDecodingContainer<Key> {
         return .init(_KeyedDecodingContainer<Key>(decoder: self, wrapping: try cast()))
     }
     
@@ -105,12 +113,15 @@ extension ObjectDecoder.Decoder {
         return _UnkeyedDecodingContainer(decoder: self, wrapping: try cast())
     }
     
-    public func singleValueContainer() throws -> SingleValueDecodingContainer { return self }
+    public func singleValueContainer() throws -> SingleValueDecodingContainer {
+        return self
+    }
     
     private func applyStrategy<T: Decodable>(_ type: T.Type) throws -> T? {
         if let strategy = options.decodingStrategies[type] ?? options.decodingStrategies[T.self] {
             return try strategy.closure(self)
         }
+        
         return nil
     }
     
@@ -118,6 +129,7 @@ extension ObjectDecoder.Decoder {
         guard let value = object as? T else {
             throw _typeMismatch(at: codingPath, expectation: T.self, reality: object)
         }
+        
         return value
     }
     
@@ -128,13 +140,16 @@ extension ObjectDecoder.Decoder {
             guard number !== kCFBooleanTrue, number !== kCFBooleanFalse else {
                 throw _typeMismatch(at: codingPath, expectation: NSNumber.self, reality: object)
             }
+            
             guard let value = T.init(exactly: number) else {
                 throw _dataCorrupted(at: codingPath, "Parsed number <\(number)> does not fit in \(T.self).")
             }
+            
             return value
         } else if let value = object as? T {
             return value
         }
+        
         throw _typeMismatch(at: codingPath, expectation: T.self, reality: object)
     }
     
@@ -145,16 +160,27 @@ extension ObjectDecoder.Decoder {
             } else if number === kCFBooleanFalse {
                 return false
             }
+            
             throw _typeMismatch(at: codingPath, expectation: type(of: kCFBooleanTrue.self), reality: object)
+            
         } else if let bool = object as? Bool {
             return bool
         }
+        
         throw _typeMismatch(at: codingPath, expectation: Bool.self, reality: object)
     }
     
     /// create a new `_Decoder` instance referencing `object` as `key` inheriting `userInfo`
-    fileprivate func decoder(referencing object: Any, `as` key: CodingKey) -> ObjectDecoder.Decoder {
-        return .init(object, options, userInfo, codingPath + [key])
+    fileprivate func decoder(
+        referencing object: Any,
+        `as` key: CodingKey
+    ) -> ObjectDecoder.Decoder {
+        return .init(
+            object: object,
+            options: options,
+            userInfo: userInfo,
+            codingPath: codingPath + [key]
+        )
     }
 }
 

@@ -194,3 +194,29 @@ public struct _TypeCastTo2<T, U> {
         _ = try cast(base, to: U.self)
     }
 }
+
+extension _TypeCastTo2: @unchecked Sendable where T: Sendable, U: Sendable {
+    
+}
+
+public protocol _ArrayProtocol: Initiable {
+    func _opaque_castElementType(to _: Any.Type) throws -> _ArrayProtocol
+}
+
+extension Array: _ArrayProtocol {
+    public func _opaque_castElementType(to type: Any.Type) throws -> _ArrayProtocol {
+        func castElementType<T>(to elementType: T.Type) throws -> _ArrayProtocol {
+            try map({ try cast($0, to: elementType) })
+        }
+        
+        return try _openExistential(type, do: castElementType)
+    }
+}
+
+public func _makeArrayType(withElementType element: Any.Type) -> _ArrayProtocol.Type {
+    func makeArrayType<T>(from type: T.Type) -> _ArrayProtocol.Type {
+        Array<T>.self
+    }
+    
+    return _openExistential(element, do: makeArrayType)
+}

@@ -239,6 +239,12 @@ extension IdentifierIndexedArray: Encodable where Element: Encodable, Element: I
 // MARK: - Supplementary API
 
 extension Sequence {
+    public func identified<T: Hashable>(
+        by keyPath: KeyPath<Element, T>
+    ) -> IdentifierIndexedArray<Element, T> {
+        IdentifierIndexedArray(self, id: keyPath)
+    }
+
     @_disfavoredOverload
     public func map<T: Identifiable>(
         _ transform: (@escaping (Element) throws -> T)

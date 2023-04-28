@@ -23,8 +23,10 @@ extension PolymorphicDecodable where DecodingTypeDiscriminator: Swallow.TypeDisc
 }
 
 extension PolymorphicDecodable where Self: TypeDiscriminable, InstanceType == DecodingTypeDiscriminator {
-    public static func decodeTypeDiscriminator(from decoder: Decoder) throws -> DecodingTypeDiscriminator {
-        try Self(from: decoder).type
+    public static func decodeTypeDiscriminator(
+        from decoder: Decoder
+    ) throws -> DecodingTypeDiscriminator {
+        try Self(from: decoder).instanceType
     }
 }
 

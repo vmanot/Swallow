@@ -8,7 +8,7 @@ extension Bool: ByteTupleConvertible {
     public typealias ByteTupleType = ByteTuple1
     
     public var _cVarArgEncoding: [NativeWord] {
-        TrivialRepresentationOf(self)._cVarArgEncoding
+        _UnsafeTrivialRepresentationOf(self)._cVarArgEncoding
     }
 }
 

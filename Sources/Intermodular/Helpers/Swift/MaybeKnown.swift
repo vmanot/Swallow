@@ -97,16 +97,3 @@ extension MaybeKnown {
         }
     }
 }
-
-// MARK: - Helpers
-
-extension Optional {
-    public init(_ value: MaybeKnown<Wrapped>) {
-        switch value {
-            case .unknown:
-                self = .none
-            case .known(let value):
-                self = .some(value)
-        }
-    }
-}

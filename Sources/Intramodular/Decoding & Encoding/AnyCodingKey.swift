@@ -109,6 +109,10 @@ extension AnyCodingKey: Equatable {
     public static func == (lhs: Self, rhs: Self) -> Bool {
         lhs.hashValue == rhs.hashValue
     }
+    
+    public static func == (lhs: Self, rhs: any CodingKey) -> Bool {
+        lhs == AnyCodingKey(erasing: rhs)
+    }
 }
 
 extension AnyCodingKey: ExpressibleByIntegerLiteral {

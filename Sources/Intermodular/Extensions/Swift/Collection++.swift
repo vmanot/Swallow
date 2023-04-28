@@ -132,13 +132,21 @@ extension Collection {
 extension Collection {
     public subscript(try index: Index) -> Element? {
         @inlinable get {
-            return Optional(self[index], if: containsIndex(index))
+            guard containsIndex(index) else {
+                return nil
+            }
+
+            return self[index]
         }
     }
     
     public subscript(try bounds: Range<Index>) -> SubSequence? {
         @inlinable get {
-            return Optional(self[bounds], if: contains(bounds))
+            guard contains(bounds) else {
+                return nil
+            }
+            
+            return self[bounds]
         }
     }
 }
@@ -146,7 +154,11 @@ extension Collection {
 extension Collection where Index == Int {
     public subscript(try index: Index) -> Element? {
         @inlinable get {
-            return Optional(self[index], if: containsIndex(index))
+            guard containsIndex(index) else {
+                return nil
+            }
+            
+            return self[index]
         }
     }
 }
