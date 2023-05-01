@@ -5,6 +5,12 @@
 import Swift
 
 extension Sequence {
+    public func eraseToAnySequence() -> AnySequence<Element> {
+        .init(self)
+    }
+}
+
+extension Sequence {
     public func first<T>(ofType type: T.Type) -> T? {
         lazy.compactMap({ $0 as? T }).first
     }
@@ -652,6 +658,12 @@ extension Sequence {
     
     public func sorted<T: Comparable>(by keyPath: KeyPath<Element, T>) -> [Element] {
         sorted(by: keyPath, order: .forward)
+    }
+    
+    public func sorted<T: Comparable>(
+        by transform: (Element) throws -> T
+    ) rethrows -> [Element] {
+        try sorted(by: { try transform($0) < transform($1) })
     }
 }
 

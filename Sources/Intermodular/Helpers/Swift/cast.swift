@@ -220,3 +220,10 @@ public func _makeArrayType(withElementType element: Any.Type) -> _ArrayProtocol.
     
     return _openExistential(element, do: makeArrayType)
 }
+
+/// Prevent the compiler from making any optimizations when passing an opaque existential value.
+@_optimize(none)
+@inline(never)
+public func _strictlyUnoptimized_passOpaqueExistential(_ value: Any) -> Any {
+    return value
+}
