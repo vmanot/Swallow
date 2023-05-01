@@ -140,38 +140,6 @@ public struct CompactSequence<S: Sequence>: Sequence, Wrapper where S.Element: O
     }
 }
 
-public struct PredicatedSequencePrefix<S: Sequence>: Sequence {
-    public typealias Element = S.Element
-    
-    private var base: S
-    
-    public let isTerminator: ((Element) -> Bool)
-    
-    public init(_ base: S, isTerminator: (@escaping (Element) -> Bool)) {
-        self.base = base
-        self.isTerminator = isTerminator
-    }
-    
-    public struct Iterator: IteratorProtocol {
-        private var base: S.Iterator
-        
-        public let isTerminator: ((Element) -> Bool)
-        
-        public init(_ base: S.Iterator, isTerminator: (@escaping (Element) -> Bool)) {
-            self.base = base
-            self.isTerminator = isTerminator
-        }
-        
-        public mutating func next() -> Element? {
-            base.next().flatMap({ !isTerminator($0) ? nil : $0 })
-        }
-    }
-    
-    public func makeIterator() -> Iterator {
-        .init(base.makeIterator(), isTerminator: isTerminator)
-    }
-}
-
 public struct SequenceWrapperMap<S: Sequence, I: IteratorProtocol & Wrapper>: Sequence where I.Value == S.Iterator {
     public typealias Value = S
     
@@ -199,18 +167,6 @@ public typealias Join3Sequence<C0, C1, C2> = Join2Sequence<Join2Sequence<C0, C1>
 extension Sequence where Element: OptionalProtocol {
     public func compact() -> CompactSequence<Self> {
         return .init(self)
-    }
-}
-
-extension Sequence {
-    public func prefix(till isTerminator: (@escaping (Element) -> Bool)) -> PredicatedSequencePrefix<Self> {
-        return PredicatedSequencePrefix(self, isTerminator: isTerminator)
-    }
-}
-
-extension Sequence where Element: Equatable {
-    public func prefix(till element: Element) -> PredicatedSequencePrefix<Self> {
-        return PredicatedSequencePrefix(self, isTerminator: { $0 == element })
     }
 }
 

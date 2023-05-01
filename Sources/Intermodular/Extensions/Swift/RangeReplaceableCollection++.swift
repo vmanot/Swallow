@@ -171,6 +171,71 @@ extension RangeReplaceableCollection {
     }
 }
 
+extension MutableCollection where Self: RangeReplaceableCollection {
+    public mutating func remove<C: Collection>(
+        elementsAtIndices indicesToRemove: C
+    ) where C.Element == Index {
+        guard !indicesToRemove.isEmpty else {
+            return
+        }
+        
+        // Check if the indices are sorted.
+        var isSorted = true
+        var prevIndex = indicesToRemove.first!
+        let secondIndex = indicesToRemove.index(after: indicesToRemove.startIndex)
+        for index in indicesToRemove[secondIndex...] {
+            if index < prevIndex {
+                isSorted = false
+                break
+            }
+            prevIndex = index
+        }
+        
+        if isSorted {
+            remove(elementsAtSortedIndices: indicesToRemove)
+        } else {
+            remove(elementsAtSortedIndices: indicesToRemove.sorted())
+        }
+    }
+    
+    public func removing<C: Collection>(
+        elementsAtIndices indicesToRemove: C
+    ) -> Self where C.Element == Index {
+        build(self) {
+            $0.remove(elementsAtIndices: indicesToRemove)
+        }
+    }
+    
+    private mutating func remove<C: Collection>(
+        elementsAtSortedIndices indicesToRemove: C
+    ) where C.Element == Index {
+        // Shift the elements we want to keep to the left.
+        var destIndex = indicesToRemove.first!
+        precondition(indices.contains(destIndex), "Index out of range")
+        
+        var srcIndex = index(after: destIndex)
+        let previousRemovalIndex = destIndex
+        func shiftLeft(untilIndex index: Index) {
+            precondition(index != previousRemovalIndex, "Duplicate indices")
+            while srcIndex < index {
+                swapAt(destIndex, srcIndex)
+                formIndex(after: &destIndex)
+                formIndex(after: &srcIndex)
+            }
+            formIndex(after: &srcIndex)
+        }
+        let secondIndex = indicesToRemove.index(after: indicesToRemove.startIndex)
+        for removeIndex in indicesToRemove[secondIndex...] {
+            precondition(indices.contains(removeIndex), "Index out of range")
+            shiftLeft(untilIndex: removeIndex)
+        }
+        shiftLeft(untilIndex: endIndex)
+        
+        // Remove the extra elements from the end of the collection.
+        removeSubrange(destIndex..<endIndex)
+    }
+}
+
 extension RangeReplaceableCollection where Element: Equatable {
     @discardableResult
     public mutating func replace(allOf element: Element, with replacement: Element) -> [Element] {

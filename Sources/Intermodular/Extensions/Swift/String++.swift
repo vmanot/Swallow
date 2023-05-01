@@ -38,7 +38,7 @@ extension String {
 
 extension String {
     public func capitalizingFirstLetter() -> String {
-        return prefix(1).uppercased() + String(dropFirst())
+        prefix(1).uppercased() + String(dropFirst())
     }
     
     public mutating func capitalizeFirstLetter() {
@@ -47,19 +47,34 @@ extension String {
 }
 
 extension String {
-    public mutating func replaceSubstring(_ substring: Substring, with replacement: String) {
+    public mutating func replaceSubstring(
+        _ substring: Substring,
+        with replacement: String
+    ) {
         replaceSubrange(substring.bounds, with: replacement)
     }
     
-    public mutating func replace(substrings: [Substring], with string: String) {
-        replaceSubranges(substrings.lazy.map({ $0.bounds }), with: substrings.lazy.map({ _ in string }))
+    public mutating func replace(
+        substrings: [Substring],
+        with string: String
+    ) {
+        replaceSubranges(
+            substrings.lazy.map({ $0.bounds }),
+            with: substrings.lazy.map({ _ in string })
+        )
     }
     
-    public mutating func replace<String: StringProtocol>(occurencesOf target: String, with string: String) {
+    public mutating func replace<String: StringProtocol>(
+        occurencesOf target: String,
+        with string: String
+    ) {
         self = replacingOccurrences(of: target, with: string, options: .literal, range: nil)
     }
     
-    public mutating func replace<String: StringProtocol>(firstOccurenceOf target: String, with string: String) {
+    public mutating func replace<String: StringProtocol>(
+        firstOccurenceOf target: String,
+        with string: String
+    ) {
         TODO.whole(.remove, note: "replace with RangeReplaceableCollection function")
         
         guard let range = range(of: target, options: .literal) else {

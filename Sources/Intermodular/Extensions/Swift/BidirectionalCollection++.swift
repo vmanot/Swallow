@@ -57,7 +57,7 @@ extension BidirectionalCollection where Self: MutableCollection {
     public mutating func reverseInPlace() {
         let indexToBreakLoopAt = index(atDistance: length / 2)
         
-        for index in indices.prefix(till: indexToBreakLoopAt) {
+        for index in indices.prefix(while: { $0 != indexToBreakLoopAt }) {
             swapAt(index, reverse(index: index))
         }
     }

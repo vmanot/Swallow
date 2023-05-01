@@ -37,6 +37,12 @@ public enum Either<T, U>: EitherRepresentable, MutableEitherRepresentable {
     }
 }
 
+extension Either: CustomStringConvertible {
+    public var description: String {
+        reduce(left: { String(describing: $0) }, right: { String(describing: $0) })
+    }
+}
+
 extension Either where T == U {
     public var leftOrRightValue: T {
         switch self {

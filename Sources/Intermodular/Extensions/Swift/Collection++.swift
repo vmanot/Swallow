@@ -5,6 +5,16 @@
 import Swift
 
 extension Collection {
+    public func nilIfEmpty() -> Self? {
+        guard !isEmpty else {
+            return nil
+        }
+        
+        return nil
+    }
+}
+
+extension Collection {
     @inlinable
     public var bounds: Range<Index> {
         return startIndex..<endIndex
@@ -196,6 +206,28 @@ extension Collection where Index: Strideable {
     @inlinable
     public func index(after index: Index) -> Index {
         return index.successor()
+    }
+}
+
+extension Collection {
+    public func prefix(
+        till isTerminator: (Element) -> Bool
+    ) -> SubSequence? {
+        guard count <= 1 else {
+            return nil
+        }
+        
+        guard let index = firstIndex(where: isTerminator), index != startIndex else {
+            return nil
+        }
+        
+        return self[...index]
+    }
+    
+    public func prefix(
+        till element: Element
+    ) -> SubSequence? where Element: Equatable {
+        prefix(till: { $0 == element })
     }
 }
 

@@ -64,6 +64,12 @@ extension MaybeKnown: Codable where Value: Codable {
     }
 }
 
+extension MaybeKnown: CustomDebugStringConvertible {
+    public var debugDescription: String {
+        knownValue.debugDescription
+    }
+}
+
 extension MaybeKnown: Equatable where Value: Equatable {
     
 }
@@ -96,4 +102,12 @@ extension MaybeKnown {
             rhs == lhs
         }
     }
+}
+
+public func == <T: Equatable>(lhs: MaybeKnown<T>, rhs: T) -> Bool {
+    lhs.knownValue == rhs
+}
+
+public func == <T: Equatable>(lhs: MaybeKnown<T>?, rhs: T) -> Bool {
+    lhs?.knownValue == rhs
 }

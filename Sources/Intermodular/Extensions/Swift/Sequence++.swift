@@ -462,6 +462,7 @@ extension Sequence {
         var subSequence: [Iterator.Element] = []
         
         var iterator = self.makeIterator()
+        
         while let element = iterator.next() {
             if try isSeparator(element) {
                 if !subSequence.isEmpty {
@@ -473,7 +474,9 @@ extension Sequence {
                 subSequence.append(element)
             }
         }
+        
         result.append(AnySequence(subSequence))
+        
         return result
     }
 }
@@ -481,7 +484,9 @@ extension Sequence {
 // MARK: Finding
 
 extension Sequence {
-    public func element(before predicate: ((Element) throws -> Bool)) rethrows -> Element? {
+    public func element(
+        before predicate: ((Element) throws -> Bool)
+    ) rethrows -> Element? {
         var last: Element?
         
         for element in self {
@@ -495,7 +500,9 @@ extension Sequence {
         return nil
     }
     
-    public func element(after predicate: ((Element) throws -> Bool)) rethrows -> Element? {
+    public func element(
+        after predicate: ((Element) throws -> Bool)
+    ) rethrows -> Element? {
         var returnNext: Bool = false
         
         for element in self {
@@ -512,12 +519,14 @@ extension Sequence {
     }
     
     @inlinable
-    public func find<T, U>(_ iterator: ((_ take: ((T) -> Void), _ element: Element) throws -> U)) rethrows -> T? {
+    public func find<T>(
+        _ iterator: ((_ take: ((T) -> Void), _ element: Element) throws -> Void)
+    ) rethrows -> T? {
         var result: T? = nil
         var stop: Bool = false
         
         for element in self {
-            _ = try iterator({ stop = true; result = $0 }, element)
+            try iterator({ stop = true; result = $0 }, element)
             
             if stop {
                 break
@@ -528,8 +537,10 @@ extension Sequence {
     }
     
     @inlinable
-    public func find<T: Boolean>(_ predicate: ((Element) throws -> T)) rethrows -> Element? {
-        return try find({ take, element in try predicate(element) &&-> take(element) })
+    public func find<T: Boolean>(
+        _ predicate: ((Element) throws -> T)
+    ) rethrows -> Element? {
+        try find({ take, element in try predicate(element) &&-> take(element) })
     }
 }
 

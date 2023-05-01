@@ -5,6 +5,7 @@
 import Swift
 
 extension Character {
+    public static let backtick: Self = "`"
     public static var newLine: Self = "\n"
     public static let quotationMark: Self = "\""
 }

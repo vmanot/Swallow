@@ -128,6 +128,18 @@ extension IdentifierIndexedArray: MutableCollection, MutableSequence, RandomAcce
         }
     }
     
+    // TODO: Optimize
+    public mutating func move(
+        fromOffsets source: IndexSet,
+        toOffset destination: Int
+    ) {
+        var _self = Array(self)
+        
+        _self.move(fromOffsets: source, toOffset: destination)
+        
+        self = .init(_self, id: self.id)
+    }
+    
     public subscript(id identifier: ID) -> Element? {
         get {
             base.value(forKey: identifier)
@@ -190,6 +202,17 @@ extension IdentifierIndexedArray {
     }
     
     @discardableResult
+    public mutating func remove(elementIdentifiedBy id: ID) -> Element? {
+        guard let element = base[id] else {
+            return nil
+        }
+        
+        remove(element)
+        
+        return element
+    }
+    
+    @discardableResult
     public mutating func update(_ element: Element) -> Element? {
         guard let index = self.index(of: _idForElement(element)) else {
             return nil
@@ -200,6 +223,18 @@ extension IdentifierIndexedArray {
         self[index] = element
         
         return oldElement
+    }
+    
+    /// Updates a given identifiable element if already present, inserts it otherwise.
+    public mutating func upsert(_ element: Element) {
+        if update(element) == nil {
+            append(element)
+        }
+    }
+    
+    /// Updates a given identifiable element if already present, inserts it otherwise.
+    public mutating func upsert<S: Sequence>(contentsOf elements: S) where S.Element == Element {
+        elements.forEach({ upsert($0) })
     }
 }
 
