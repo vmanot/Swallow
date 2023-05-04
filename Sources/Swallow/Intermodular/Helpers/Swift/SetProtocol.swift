@@ -4,7 +4,7 @@
 
 import Swift
 
-public protocol SetProtocol: Sequence {
+public protocol SetProtocol<Element>: Sequence {
     func contains(_: Element) -> Bool
     
     func isSubset(of: Self) -> Bool
