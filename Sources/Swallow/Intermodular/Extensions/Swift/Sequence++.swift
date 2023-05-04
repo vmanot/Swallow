@@ -11,18 +11,44 @@ extension Sequence {
 }
 
 extension Sequence {
+    @_disfavoredOverload
+    public func first<T>(
+        byUnwrapping transform: (Element) throws -> T?
+    ) rethrows -> T? {
+        for element in self {
+            if let match = try transform(element) {
+                return match
+            }
+        }
+        
+        return nil
+    }
+    
+    @_disfavoredOverload
+    public func firstAndOnly<T>(
+        byUnwrapping transform: (Element) throws -> T?
+    ) throws -> T? {
+        var result: T?
+        
+        for element in self {
+            if let match = try transform(element) {
+                guard result == nil else {
+                    throw EmptyError()
+                }
+                
+                result = match
+            }
+        }
+        
+        return nil
+    }
+
     public func first<T>(ofType type: T.Type) -> T? {
-        lazy.compactMap({ $0 as? T }).first
+        first(byUnwrapping: { $0 as? T })
     }
     
     public func firstAndOnly<T>(ofType type: T.Type) throws -> T? {
-        let found = Array(lazy.compactMap({ $0 as? T }))
-        
-        guard !found.isEmpty else {
-            return nil
-        }
-        
-        return try found.toCollectionOfOne().value
+        try firstAndOnly(byUnwrapping: { $0 as? T })
     }
 }
 
@@ -58,12 +84,12 @@ extension Sequence {
     }
 
     public func _flatMapToTuples<T: Sequence>(
-        by values: (Element) -> T
-    ) -> [(Element, T.Element)] {
+        by values: (Element) throws -> T
+    ) rethrows -> [(Element, T.Element)] {
         var result = Array<(Element, T.Element)>()
         
         for element in self {
-            result.append(contentsOf: values(element).map({ (element, $0) }))
+            try result.append(contentsOf: values(element).map({ (element, $0) }))
         }
         
         return result
@@ -335,7 +361,9 @@ extension Sequence {
 
 extension Sequence {
     @inlinable
-    public func reduce(_ combine: ((Element, Element) -> Element)) -> Element? {
+    public func reduce(
+        _ combine: ((Element, Element) throws -> Element)
+    ) rethrows -> Element? {
         var result: Element? = nil
         
         for element in self {
@@ -345,7 +373,7 @@ extension Sequence {
                 continue
             }
             
-            result = combine(lastResult, element)
+            result = try combine(lastResult, element)
         }
         
         return result

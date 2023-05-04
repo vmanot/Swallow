@@ -201,15 +201,22 @@ extension _TypeCastTo2: @unchecked Sendable where T: Sendable, U: Sendable {
 
 public protocol _ArrayProtocol: Initiable {
     func _opaque_castElementType(to _: Any.Type) throws -> _ArrayProtocol
+    func _castElementType<T>(to _: T.Type) throws -> [T]
 }
 
 extension Array: _ArrayProtocol {
-    public func _opaque_castElementType(to type: Any.Type) throws -> _ArrayProtocol {
+    public func _opaque_castElementType(
+        to type: Any.Type
+    ) throws -> _ArrayProtocol {
         func castElementType<T>(to elementType: T.Type) throws -> _ArrayProtocol {
             try map({ try cast($0, to: elementType) })
         }
         
         return try _openExistential(type, do: castElementType)
+    }
+    
+    public func _castElementType<T>(to type: T.Type) throws -> [T] {
+        try map({ try cast($0, to: type) })
     }
 }
 

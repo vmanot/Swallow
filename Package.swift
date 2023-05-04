@@ -26,15 +26,13 @@ let package = Package(
             name: "Swallow",
             dependencies: [
                 .product(name: "Collections", package: "swift-collections")
-            ],
-            path: "Sources"
+            ]
         ),
         .testTarget(
             name: "SwallowTests",
             dependencies: [
                 "Swallow"
-            ],
-            path: "Tests"
+            ]
         )
     ]
 )

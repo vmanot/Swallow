@@ -279,7 +279,7 @@ extension Sequence {
     ) -> IdentifierIndexedArray<Element, T> {
         IdentifierIndexedArray(self, id: keyPath)
     }
-
+    
     @_disfavoredOverload
     public func map<T: Identifiable>(
         _ transform: (@escaping (Element) throws -> T)

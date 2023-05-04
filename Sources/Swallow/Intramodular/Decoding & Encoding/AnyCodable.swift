@@ -86,6 +86,16 @@ extension AnyCodable {
     }
 }
 
+extension AnyCodable {
+    public subscript(key codingKey: AnyCodingKey) -> AnyCodable? {
+        get throws {
+            let value = try cast(self.value, to: [AnyCodingKey: AnyCodable].self)
+            
+            return value[codingKey]
+        }
+    }
+}
+
 // MARK: - Conformances
 
 extension AnyCodable: AnyCodableConvertible {
