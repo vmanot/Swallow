@@ -88,6 +88,7 @@ extension String {
         replace(substrings: substrings, with: "")
     }
     
+    @_disfavoredOverload
     public func trim(prefix: String, suffix: String) -> Substring {
         if hasPrefix(prefix) && hasSuffix(suffix) {
             return dropFirst(prefix.count).dropLast(suffix.count)
