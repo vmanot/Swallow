@@ -124,10 +124,12 @@ extension Substring {
         return self[startIndex...index]
     }
     
+    @_disfavoredOverload
     public func trimming(_ character: Character) -> Substring {
         trimming(leading: character).trimming(trailing: character)
     }
     
+    @_disfavoredOverload
     public func trimmingCharacters(in characterSet: CharacterSet) -> Substring {
         trimmingLeadingCharacters(in: characterSet).trimmingTrailingCharacters(in: characterSet)
     }
