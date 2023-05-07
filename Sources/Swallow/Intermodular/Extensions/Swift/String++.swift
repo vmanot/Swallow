@@ -97,7 +97,6 @@ extension String {
         }
     }
     
-    @_disfavoredOverload
     public func trim(prefix: String, suffix: String) -> String {
         String(trim(prefix: prefix, suffix: suffix) as Substring)
     }
