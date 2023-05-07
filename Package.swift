@@ -14,6 +14,7 @@ let package = Package(
         .library(
             name: "Swallow",
             targets: [
+                "SE0270_RangeSet",
                 "Swallow"
             ]
         )
@@ -22,6 +23,9 @@ let package = Package(
         .package(url: "https://github.com/apple/swift-collections", branch: "main"),
     ],
     targets: [
+        .target(
+            name: "SE0270_RangeSet"
+        ),
         .target(
             name: "Swallow",
             dependencies: [
