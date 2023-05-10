@@ -14,29 +14,6 @@ extension MutableCollection {
     }
 }
 
-extension MutableCollection  {
-    @inlinable
-    public var mutableFirst: Element? {
-        get {
-            return isEmpty ? nil : self.first
-        } set {
-            if !isEmpty {
-                self[startIndex] = newValue!
-            }
-        }
-    }
-    
-    public var mutableLast: Element? {
-        get {
-            return isEmpty ? nil : self.last
-        } set {
-            if !isEmpty {
-                self[lastIndex] = newValue!
-            }
-        }
-    }
-}
-
 extension MutableCollection {
     public mutating func reindexWith<S: Sequence>(_ sequence: S) where S.Element == Element {
         var iterator = sequence.makeIterator()

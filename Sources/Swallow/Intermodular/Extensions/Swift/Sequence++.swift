@@ -40,7 +40,7 @@ extension Sequence {
             }
         }
         
-        return nil
+        return result
     }
 
     public func first<T>(ofType type: T.Type) -> T? {
@@ -147,25 +147,6 @@ extension Sequence {
         }
         
         return nil
-    }
-    
-    @inlinable
-    public var last: Element? {
-        var result: Element?
-        
-        for element in self {
-            result = element
-        }
-        
-        return result
-    }
-    
-    public func element(atCount count: Int) -> Element? {
-        return AnySequence(self).dropFirst(count).last
-    }
-    
-    public func element(atReverseCount count: Int) -> Element? {
-        return AnySequence(self).dropLast(count).last
     }
 }
 
@@ -595,14 +576,10 @@ extension Sequence {
 
 extension Sequence where Element: Equatable {
     public func hasPrefix(_ prefix: Element) -> Bool {
-        return first == prefix
+        first == prefix
     }
-    
-    public func hasSuffix(_ suffix: Element) -> Bool {
-        return last == suffix
-    }
-    
-    public func hasPrefix(_ prefix: [Element]) -> Bool {
+        
+    public func hasPrefix(_ prefix: some Sequence<Element>) -> Bool {
         var iterator = makeIterator()
         var prefixIterator = prefix.makeIterator()
         
@@ -620,26 +597,12 @@ extension Sequence where Element: Equatable {
         
         return true
     }
-    
-    public func hasSuffix(_ suffix: [Element]) -> Bool {
-        var result: Bool = false
-        
-        for (element, other) in suffix.zip(self.suffix(suffix.count)) {
-            guard element == other else {
-                return false
-            }
-            
-            result = true
-        }
-        
-        return result
-    }
 }
 
 // MARK: lexicographicallyPrecedes
 
 extension Sequence where Element: Comparable {
-    func lexicographicallyPrecedes<OtherSequence: Sequence>(
+    public func lexicographicallyPrecedes<OtherSequence: Sequence>(
         _ other: OtherSequence,
         orderingShorterSequencesAfter: ()
     ) -> Bool where OtherSequence.Element == Element {

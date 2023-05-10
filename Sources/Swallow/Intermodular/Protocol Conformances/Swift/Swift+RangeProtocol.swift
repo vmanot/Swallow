@@ -9,15 +9,25 @@ extension ClosedRange: BoundInitiableRangeProtocol, ClosedRangeProtocol {
         self = bounds.lower...bounds.upper
     }
     
+    public func contains(_ other: Range<Bound>) -> Bool {
+        self.lowerBound <= other.lowerBound && self.upperBound >= other.upperBound
+    }
+    
     public func contains(_ other: ClosedRange) -> Bool {
-        return true
-            && other.lowerBound >= lowerBound
-            && other.upperBound <= upperBound
+        self.lowerBound <= other.lowerBound && self.upperBound > other.upperBound
     }
 }
 
-extension Range: BoundInitiableRangeProtocol, HalfOpenRangeProtocol {
+extension Range: BoundInitiableRangeProtocol, NonClosedRangeProtocol {
     public init(bounds: (lower: Bound, upper: Bound)) {
         self = bounds.lower..<bounds.upper
+    }
+    
+    public func contains(_ other: Range<Bound>) -> Bool {
+        self.lowerBound <= other.lowerBound && self.upperBound >= other.upperBound
+    }
+    
+    public func contains(_ other: ClosedRange<Bound>) -> Bool {
+        self.lowerBound <= other.lowerBound && self.upperBound > other.upperBound
     }
 }

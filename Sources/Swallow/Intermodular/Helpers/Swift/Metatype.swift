@@ -54,6 +54,12 @@ public protocol _SwallowMetatypeType {
 }
 
 extension Metatype: _UnwrappableTypeEraser {
+    public init(_erasing base: Any.Type) {
+        assertionFailure()
+        
+        self.init(base as! T)
+    }
+    
     public func _unwrapBase() -> Any.Type {
         value as! Any.Type
     }

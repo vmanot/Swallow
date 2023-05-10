@@ -10,10 +10,13 @@ public protocol RangeProtocol: Equatable {
     var lowerBound: Bound { get }
     var upperBound: Bound { get }
 
-    func contains(_ other: Self) -> Bool
+    /// Returns a Boolean value indicating whether a range is fully contained within `self`.
+    func contains(_ other: Range<Bound>) -> Bool
+    /// Returns a Boolean value indicating whether a range is fully contained within `self`.
+    func contains(_ other: ClosedRange<Bound>) -> Bool
 }
 
-public protocol HalfOpenRangeProtocol: RangeProtocol {
+public protocol NonClosedRangeProtocol: RangeProtocol {
 
 }
 
@@ -35,7 +38,7 @@ extension BoundInitiableRangeProtocol {
     }
 }
 
-extension HalfOpenRangeProtocol {
+extension NonClosedRangeProtocol {
     public func contains(_ other: Self) -> Bool {
         return true
             && (other.lowerBound >= lowerBound) && (other.lowerBound <= upperBound)
@@ -45,13 +48,13 @@ extension HalfOpenRangeProtocol {
 
 // MARK: - Extensions
 
-extension BoundInitiableRangeProtocol {
+extension RangeProtocol where Self: BoundInitiableRangeProtocol {
     public init(lowerBound: Bound, upperBound: Bound) {
         self.init(bounds: (lowerBound, upperBound))
     }
 }
 
-extension HalfOpenRangeProtocol {
+extension RangeProtocol where Self: NonClosedRangeProtocol {
     @inlinable
     public init(_ bound: Bound) where Self: BoundInitiableRangeProtocol, Bound: Strideable {
         self.init(bounds: (lower: bound, upper: bound.successor()))
@@ -67,7 +70,7 @@ extension HalfOpenRangeProtocol {
 infix operator <~=: ComparisonPrecedence
 infix operator >~=: ComparisonPrecedence
 
-public func <~= <T: HalfOpenRangeProtocol>(lhs: T, rhs: T) -> Bool {
+public func <~= <T: NonClosedRangeProtocol>(lhs: T, rhs: T) -> Bool {
     guard lhs.upperBound <= rhs.upperBound else {
         return false
     }
@@ -79,7 +82,7 @@ public func <~= <T: HalfOpenRangeProtocol>(lhs: T, rhs: T) -> Bool {
     return true
 }
 
-public func >~= <T: HalfOpenRangeProtocol>(lhs: T, rhs: T) -> Bool {
+public func >~= <T: NonClosedRangeProtocol>(lhs: T, rhs: T) -> Bool {
     guard lhs.upperBound >= rhs.upperBound else {
         return false
     }
@@ -91,6 +94,6 @@ public func >~= <T: HalfOpenRangeProtocol>(lhs: T, rhs: T) -> Bool {
     return true
 }
 
-public func ..< <T: HalfOpenRangeProtocol & BoundInitiableRangeProtocol>(lhs: T.Bound, rhs: T.Bound) -> T {
+public func ..< <T: NonClosedRangeProtocol & BoundInitiableRangeProtocol>(lhs: T.Bound, rhs: T.Bound) -> T {
     return .init(lowerBound: lhs, upperBound: rhs)
 }

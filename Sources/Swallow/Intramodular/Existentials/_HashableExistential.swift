@@ -24,6 +24,7 @@ public struct _HashableExistential<Value> {
         self.base = base as! Value
     }
     
+    @_disfavoredOverload
     public init?(erasing value: Any) where Value == any Hashable {
         if let value = value as? (any Hashable) {
             self.init(erasing: value)
@@ -61,18 +62,12 @@ extension _HashableExistential: Hashable {
     public func hash(into hasher: inout Hasher) {
         if let base = base as? Any.Type {
             ObjectIdentifier(base).hash(into: &hasher)
-            
-            return
-        }
-        
-        guard let base = base as? (any Hashable) else {
+        } else if let base = base as? (any Hashable) {
+            hasher.combine(ObjectIdentifier(type(of: base)))
+            hasher.combine(base)
+        } else {
             assertionFailure()
-            
-            return
         }
-        
-        hasher.combine(ObjectIdentifier(type(of: base)))
-        hasher.combine(base)
     }
 }
 

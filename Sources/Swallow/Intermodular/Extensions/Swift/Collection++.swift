@@ -15,24 +15,12 @@ extension Collection {
 }
 
 extension Collection {
-    @inlinable
     public var bounds: Range<Index> {
-        return startIndex..<endIndex
-    }
-    
-    @inlinable
-    public var distances: LazyMapCollection<Indices, Int> {
-        return indices.lazy.map(self.distanceFromStartIndex)
-    }
-    
-    @inlinable
-    public var length: Int {
-        return distance(from: startIndex, to: endIndex)
+        startIndex..<endIndex
     }
 }
 
 extension Collection where Index: Strideable {
-    @inlinable
     public var stride: Index.Stride {
         return startIndex.distance(to: endIndex)
     }
@@ -71,62 +59,53 @@ extension Collection {
 }
 
 extension Collection {
-    @inlinable
     public func containsIndex(_ index: Index) -> Bool {
-        return index >= startIndex && index < endIndex
+        index >= startIndex && index < endIndex
     }
     
-    @inlinable
     public func contains(after index: Index) -> Bool {
-        return containsIndex(index) && containsIndex(self.index(after: index))
+        containsIndex(index) && containsIndex(self.index(after: index))
     }
     
-    @inlinable
     public func contains(_ bounds: Range<Index>) -> Bool {
-        return containsIndex(bounds.lowerBound) && containsIndex(index(bounds.upperBound, offsetBy: -1))
+        containsIndex(bounds.lowerBound) && containsIndex(index(bounds.upperBound, offsetBy: -1))
     }
 }
 
 extension Collection {
-    @inlinable
     public func index(atDistance distance: Int) -> Index {
         index(startIndex, offsetBy: distance)
     }
     
-    @inlinable
     public func index(_ index: Index, insetBy distance: Int) -> Index {
         self.index(index, offsetBy: -distance)
     }
     
-    @inlinable
     public func index(_ index: Index, offsetByDistanceFromStartIndexFor otherIndex: Index) -> Index {
         self.index(index, offsetBy: distanceFromStartIndex(to: otherIndex))
     }
     
-    @inlinable
     public func distanceFromStartIndex(to index: Index) -> Int {
         distance(from: startIndex, to: index)
     }
     
-    @inlinable
     public func range(from range: Range<Int>) -> Range<Index> {
         index(atDistance: range.lowerBound)..<index(atDistance: range.upperBound)
     }
     
     public subscript(atDistance distance: Int) -> Element {
-        @inlinable get {
+        get {
             self[index(atDistance: distance)]
         }
     }
     
     public subscript(betweenDistances distance: Range<Int>) -> SubSequence {
-        @inlinable get {
+        get {
             self[index(atDistance: distance.lowerBound)..<index(atDistance: distance.upperBound)]
         }
     }
     
     public subscript(betweenDistances distance: ClosedRange<Int>) -> SubSequence {
-        @inlinable
         get {
             return self[index(atDistance: distance.lowerBound)...index(atDistance: distance.upperBound)]
         }
@@ -141,17 +120,17 @@ extension Collection {
 
 extension Collection {
     public subscript(try index: Index) -> Element? {
-        @inlinable get {
+        get {
             guard containsIndex(index) else {
                 return nil
             }
-
+            
             return self[index]
         }
     }
     
     public subscript(try bounds: Range<Index>) -> SubSequence? {
-        @inlinable get {
+        get {
             guard contains(bounds) else {
                 return nil
             }
@@ -163,7 +142,7 @@ extension Collection {
 
 extension Collection where Index == Int {
     public subscript(try index: Index) -> Element? {
-        @inlinable get {
+        get {
             guard containsIndex(index) else {
                 return nil
             }
@@ -174,38 +153,40 @@ extension Collection where Index == Int {
 }
 
 extension Collection {
-    @inlinable
-    public var lastIndex: Index {
-        try! indices.last.unwrap()
+    public var lastIndex: Index? {
+        guard !isEmpty else {
+            return nil
+        }
+        
+        return self.index(atDistance: self.count - 1)
     }
     
-    @inlinable
+    public var last: Element? {
+        guard let lastIndex else {
+            return nil
+        }
+        
+        return self[lastIndex]
+    }
+    
     public func enumerated() -> LazyMapCollection<Self.Indices, (offset: Self.Index, element: Self.Element)> {
         indices.lazy.map({ (offset: $0, element: self[$0]) })
-    }
-    
-    @inlinable
-    public func index(of predicate: ((Element) throws -> Bool)) rethrows -> Index? {
-        try enumerated().find({ try predicate($1) })?.0
     }
 }
 
 extension Collection where Element: Equatable {
-    @inlinable
     public func indices(of element: Element) -> [Index] {
-        return indices.filter({ self[$0] == element })
+        indices.filter({ self[$0] == element })
     }
 }
 
 extension Collection where Index: Strideable {
-    @inlinable
     public func index(before index: Index) -> Index {
-        return index.predecessor()
+        index.predecessor()
     }
     
-    @inlinable
     public func index(after index: Index) -> Index {
-        return index.successor()
+        index.successor()
     }
 }
 
@@ -213,7 +194,7 @@ extension Collection {
     public func prefix(
         till isTerminator: (Element) -> Bool
     ) -> SubSequence? {
-        guard count <= 1 else {
+        guard count > 1 else {
             return nil
         }
         
@@ -221,7 +202,7 @@ extension Collection {
             return nil
         }
         
-        return self[...index]
+        return self[..<index]
     }
     
     public func prefix(
@@ -232,17 +213,16 @@ extension Collection {
 }
 
 extension Collection {
-    @inlinable
     public func cycle(index: Index) -> Index {
-        if distance(from: lastIndex, to: index) > 0 {
-            return self.index(atDistance: distance(from: lastIndex, to: self.index(index, offsetBy: -1)) % count)
+        if distance(from: lastIndex!, to: index) > 0 {
+            return self.index(atDistance: distance(from: lastIndex!, to: self.index(index, offsetBy: -1)) % count)
         } else {
             return index
         }
     }
     
     public subscript(cycling index: Index) -> Element {
-        @inlinable get {
+        get {
             return self[cycle(index: index)]
         }
     }
@@ -250,7 +230,6 @@ extension Collection {
 
 extension Collection {
     @_disfavoredOverload
-    @inlinable
     public func reduce(_ combine: ((Element, Element) -> Element)) -> Element? {
         guard let first = first else {
             return nil
@@ -288,51 +267,9 @@ extension Collection {
 // MARK: - Subsequencing -
 
 extension Collection {
-    @inlinable
-    public func range(till f: ((Element) throws -> Bool)) rethrows -> Range<Index>? {
-        var lastIndex: Index?
-        
-        for (index, element) in enumerated() {
-            if let lastIndex = lastIndex, try f(element) {
-                return startIndex..<self.index(after: lastIndex)
-            }
-            
-            lastIndex = index
-        }
-        
-        return nil
-    }
-    
-    @inlinable
-    public func range(after f: ((Element) throws -> Bool)) rethrows -> Range<Index>? {
-        return try enumerated().find({ try f($1) }).map({ self.index(after: $0.0)..<endIndex })
-    }
-}
-
-extension Collection {
-    @inlinable
-    public func subsequence(till index: Index) -> SubSequence {
-        self[startIndex..<index]
-    }
-    
-    @inlinable
-    public func subsequence(till f: ((Element) throws -> Bool)) rethrows -> SubSequence? {
-        try range(till: f).map({ self[$0] })
-    }
-    
-    @inlinable
-    public func subsequence(after index: Index) -> SubSequence {
-        self[self.index(after: index)..<endIndex]
-    }
-    
-    @inlinable
-    public func subsequence(after f: ((Element) throws -> Bool)) rethrows -> SubSequence? {
-        return try range(after: f).map({ self[$0] })
-    }
-}
-
-extension Collection {
-    public func allSubrangesChunked<C: Collection>(by ranges: C) -> [Range<Index>] where C.Element == Range<Index> {
+    public func allSubrangesChunked<C: Collection>(
+        by ranges: C
+    ) -> [Range<Index>] where C.Element == Range<Index> {
         guard !ranges.isEmpty else {
             return [startIndex..<endIndex]
         }
@@ -380,6 +317,6 @@ extension Collection {
     public func _lazyConcatenate<C: Collection>(
         with other: C
     ) -> LazySequence<FlattenSequence<LazyMapSequence<LazySequence<[AnyCollection<Element>]>.Elements, AnyCollection<Self.Element>>>> where C.Element == Element {
-       return [AnyCollection(self), AnyCollection(other)].lazy.flatMap({ $0 })
+        return [AnyCollection(self), AnyCollection(other)].lazy.flatMap({ $0 })
     }
 }

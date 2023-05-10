@@ -58,7 +58,13 @@ public struct AnyCodingKey: CodingKey, StringConvertible {
 // MARK: - Conformances
 
 extension AnyCodingKey: _UnwrappableTypeEraser {
-    public func _unwrapBase() -> CodingKey {
+    public typealias _UnwrappedBaseType = any CodingKey
+    
+    public init(_erasing base: _UnwrappedBaseType) {
+        self.init(erasing: base)
+    }
+    
+    public func _unwrapBase() -> _UnwrappedBaseType {
         switch storage {
             case .string:
                 return AnyStringKey(stringValue: stringValue)

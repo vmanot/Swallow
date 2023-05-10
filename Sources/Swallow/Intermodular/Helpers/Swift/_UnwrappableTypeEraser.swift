@@ -7,13 +7,43 @@ import Swift
 public protocol _UnwrappableTypeEraser {
     associatedtype _UnwrappedBaseType
     
+    init(_erasing: _UnwrappedBaseType)
+    
     func _unwrapBase() -> _UnwrappedBaseType
+}
+
+public protocol _UnwrappableHashableTypeEraser: _UnwrappableTypeEraser, Hashable {
+    
+}
+
+// MARK: - Implementation
+
+extension _UnwrappableHashableTypeEraser {
+    public func hash(into hasher: inout Hasher) {
+        guard let base = _HashableExistential(erasing: _unwrapBase()) else {
+            assertionFailure()
+            
+            return
+        }
+        
+        base.hash(into: &hasher)
+    }
+    
+    public static func == (lhs: Self, rhs: Self) -> Bool {
+        AnyEquatable.equate(lhs._unwrapBase(), rhs._unwrapBase())
+    }
 }
 
 // MARK: - Implemented Conformances
 
-extension AnyHashable: _UnwrappableTypeEraser {
-    public func _unwrapBase() -> (any Hashable) {
+extension AnyHashable: _UnwrappableHashableTypeEraser {
+    public typealias _UnwrappedBaseType = any Hashable
+    
+    public init(_erasing base: _UnwrappedBaseType) {
+        self = base.erasedAsAnyHashable
+    }
+    
+    public func _unwrapBase() -> _UnwrappedBaseType {
         base as! (any Hashable)
     }
 }

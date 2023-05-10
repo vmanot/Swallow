@@ -56,6 +56,12 @@ public struct AnyEquatable: Equatable {
 // MARK: - Conformances
 
 extension AnyEquatable: _UnwrappableTypeEraser {
+    public typealias _UnwrappedBaseType = (any Equatable)
+    
+    public init(_erasing base: _UnwrappedBaseType) {
+        self = base.eraseToAnyEquatable()
+    }
+    
     public func _unwrapBase() -> (any Equatable) {
         base
     }

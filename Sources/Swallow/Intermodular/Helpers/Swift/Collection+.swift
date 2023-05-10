@@ -107,7 +107,7 @@ extension Collection {
     }
 }
 
-extension MutableCollection {
+extension MutableCollection where Indices: Collection {
     public subscript(_ index: RelativeIndex) -> Element {
         get {
             lazy.map({ $0 })[index]

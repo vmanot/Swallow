@@ -89,6 +89,11 @@ public struct _BagOfExistentials<Existential> {
         self.first(where: { _isValueOfGivenType($0, type: type) }).map({ $0 as! T })
     }
     
+    @_disfavoredOverload
+    public func first(ofType type: Any.Type) -> Any? {
+        self.first(where: { _isValueOfGivenType($0, type: type) }).map({ $0 as Any })
+    }
+    
     public func firstAndOnly<T>(ofType type: T.Type) throws -> T? {
         try self.filter({ _isValueOfGivenType($0, type: type) }).firstAndOnly(ofType: type)
     }

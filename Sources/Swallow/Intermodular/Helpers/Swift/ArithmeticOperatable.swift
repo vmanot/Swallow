@@ -4,6 +4,11 @@
 
 import Swift
 
+/// A type capable of logical conjunction.
+public protocol LogicalConjunctionOperatable {
+    static func && (lhs: Self, rhs: Self) -> Self
+}
+
 /// A type capable of addition.
 public protocol AdditionOperatable {
     static func + (lhs: Self, rhs: Self) -> Self

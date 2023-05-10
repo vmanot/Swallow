@@ -55,7 +55,7 @@ extension BidirectionalCollection where Self: MutableCollection {
     
     @inlinable
     public mutating func reverseInPlace() {
-        let indexToBreakLoopAt = index(atDistance: length / 2)
+        let indexToBreakLoopAt = index(atDistance: count / 2)
         
         for index in indices.prefix(while: { $0 != indexToBreakLoopAt }) {
             swapAt(index, reverse(index: index))
@@ -63,17 +63,47 @@ extension BidirectionalCollection where Self: MutableCollection {
     }
 }
 
-extension BidirectionalCollection where Element: Equatable {
-    @inlinable
-    public func ends<Suffix: BidirectionalCollection>(with suffix: Suffix) -> Bool where Suffix.Element == Element {
-        guard count >= suffix.count else {
+extension BidirectionalCollection {
+    public func hasSuffix<Suffix: BidirectionalCollection<(Element) -> Bool>>(
+        _ suffix: Suffix
+    ) -> Bool {
+        guard self.count >= suffix.count else {
+            return false
+        }
+
+        var subjectIndex = self.endIndex
+        var suffixIndex = suffix.endIndex
+        
+        while subjectIndex > self.startIndex, suffixIndex > suffix.startIndex {
+            self.formIndex(before: &subjectIndex)
+            suffix.formIndex(before: &suffixIndex)
+            
+            guard suffix[suffixIndex](self[subjectIndex]) else {
+                return false
+            }
+        }
+        
+        guard suffixIndex == suffix.startIndex else {
             return false
         }
         
-        return suffix
-            .reversed()
-            .zip(reversed())
-            .contains(where: { $0.0 == $0.1 })
+        return true
+    }
+    
+    public func hasSuffix<Suffix: BidirectionalCollection<Element>>(
+        _ suffix: Suffix
+    ) -> Bool where Element: Equatable {
+        return hasSuffix(suffix.lazy.map { element in
+            { element == $0 }
+        })
+    }
+    
+    public func hasApproximateSuffix<Suffix: BidirectionalCollection<Element>>(
+        _ suffix: Suffix
+    ) -> Bool where Element: ApproximatelyEquatable {
+        return hasSuffix(suffix.lazy.map { element in
+            { element ~= $0 }
+        })
     }
 }
 
