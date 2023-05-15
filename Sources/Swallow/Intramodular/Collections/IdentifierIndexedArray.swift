@@ -307,5 +307,18 @@ extension Binding {
             }
         )
     }
+    
+    public subscript<Element, ID: Hashable>(
+        unsafelyUnwrappingElementIdentifiedBy identifier: ID
+    ) -> Binding<Element> where Value == IdentifierIndexedArray<Element, ID> {
+        .init(
+            get: {
+                self.wrappedValue[id: identifier]!
+            },
+            set: {
+                self.wrappedValue[id: identifier] = $0
+            }
+        )
+    }
 }
 #endif

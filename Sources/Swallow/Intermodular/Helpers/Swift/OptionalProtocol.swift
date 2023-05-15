@@ -4,7 +4,7 @@
 
 import Swift
 
-public protocol OptionalProtocol: ExpressibleByNilLiteral {
+public protocol OptionalProtocol<Wrapped>: ExpressibleByNilLiteral {
     associatedtype Wrapped
     
     var _wrapped: Wrapped? { get set }
@@ -17,6 +17,10 @@ public protocol OptionalProtocol: ExpressibleByNilLiteral {
 extension OptionalProtocol {
     public static var _opaque_Optional_WrappedType: Any.Type {
         Wrapped.self
+    }
+    
+    init(_opaque_wrappedValue: Any) throws {
+        self.init(try cast(_opaque_wrappedValue, to: Wrapped.self))
     }
     
     /// Recursively unwraps a possibly optional/type-erased value.

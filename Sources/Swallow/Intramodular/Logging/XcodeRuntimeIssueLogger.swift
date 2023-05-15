@@ -89,6 +89,16 @@ public func runtimeIssue(
     )
 }
 
+@_transparent
+public func runtimeIssue(
+    _ error: Error,
+    file: StaticString = #file,
+    line: UInt = #line
+) {
+    runtimeIssue(String(describing: error))
+}
+
+
 // MARK: - Auxiliary
 
 extension XcodeRuntimeIssueLogger {

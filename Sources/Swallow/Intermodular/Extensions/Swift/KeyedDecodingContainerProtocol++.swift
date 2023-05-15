@@ -42,6 +42,23 @@ extension KeyedDecodingContainerProtocol {
         )
     }
     
+    public func _attemptToDecodeIfPresent<T>(
+        opaque type: T.Type,
+        forKey key: Key
+    ) throws -> T {
+        if let type = type as? any OptionalProtocol.Type {
+            let unwrappedType = try cast(type._opaque_Optional_WrappedType, to: any Decodable.Type.self)
+            
+            if let unwrapped = try decodeIfPresent(unwrappedType, forKey: key) {
+                return try cast(type.init(_opaque_wrappedValue: unwrapped), to: T.self)
+            } else {
+                return try cast(type.init(nilLiteral: ()), to: T.self)
+            }
+        } else {
+            return try _attemptToDecode(opaque: type, forKey: key)
+        }
+    }
+    
     public func _attemptToDecode(
         opaque type: Any.Type,
         forKey key: Key

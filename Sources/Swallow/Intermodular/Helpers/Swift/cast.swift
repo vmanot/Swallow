@@ -114,14 +114,24 @@ public enum RuntimeCastError: CustomStringConvertible, LocalizedError {
     
     public var description: String {
         switch self {
-            case let .invalidTypeCast(sourceType, destinationType, _, location): do {
-                var description = "Could not cast value of type '\(sourceType)' to '\(destinationType)'"
-                
-                if let file = location.file, file != #file {
-                    description = "\(location): \(description)"
+            case let .invalidTypeCast(sourceType, destinationType, value, location): do {
+                if let value = Optional(_unwrapping: value) {
+                    var description = "Could not cast \(value) to '\(destinationType)'"
+                    
+                    if let file = location.file, file != #file {
+                        description = "\(location): \(description)"
+                    }
+                    
+                    return description
+                } else {
+                    var description = "Could not cast value of type '\(sourceType)' to '\(destinationType)'"
+                    
+                    if let file = location.file, file != #file {
+                        description = "\(location): \(description)"
+                    }
+                    
+                    return description
                 }
-                
-                return description
             }
         }
     }

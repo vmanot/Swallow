@@ -14,10 +14,10 @@ public struct FailableCoding<Value>: ParameterlessPropertyWrapper {
             try! self._wrappedValue.leftValue ?? Self._makeDefaultValue()
         } set {
             /*guard _wrappedValue.isLeft else {
-                assertionFailure()
-                
-                return
-            }*/
+             assertionFailure()
+             
+             return
+             }*/
             
             _wrappedValue = .left(newValue)
         }
@@ -40,7 +40,7 @@ public struct FailableCoding<Value>: ParameterlessPropertyWrapper {
     public init(wrappedValue: Value) {
         self._wrappedValue = .left(wrappedValue)
     }
-     
+    
     public init() where Value: Initiable {
         self.init(wrappedValue: Value.init())
     }
@@ -90,7 +90,7 @@ extension FailableCoding {
     enum Error: Swift.Error {
         case failedToMakeDefaultValueForType(Any.Type)
     }
-
+    
     static func _makeDefaultValue() throws -> Value {
         if let valueType = Value.self as? any ExpressibleByNilLiteral.Type {
             return valueType.init(nilLiteral: ()) as! Value
@@ -110,9 +110,17 @@ extension KeyedDecodingContainer {
         forKey key: Key
     ) throws -> FailableCoding<T> {
         do {
-            return try decodeIfPresent(type, forKey: key).unwrap()
+            return .init(
+                wrappedValue: try _attemptToDecodeIfPresent(
+                    opaque: T.self,
+                    forKey: key
+                )
+            )
         } catch {
+            runtimeIssue(error)
+            
             return .init(wrappedValue: try FailableCoding._makeDefaultValue())
         }
     }
 }
+
