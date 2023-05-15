@@ -63,7 +63,7 @@ extension _SetOfExistentials {
 }
 
 // MARK: - Conformances
-import AppIntents
+
 extension _SetOfExistentials: Sequence {
     public func makeIterator() -> AnyIterator<Existential> {
         AnyIterator(elements.lazy.map({ $0.value }).makeIterator())

@@ -120,3 +120,37 @@ extension Result: EitherRepresentable {
         }
     }
 }
+
+// MARK: - SwiftUI Additions
+
+#if canImport(SwiftUI)
+import SwiftUI
+
+extension Binding {
+    public func unwrapLeft<L, R>(
+        default defaultValue: L
+    ) -> Binding<L> where Value == Either<L, R> {
+        .init(
+            get: {
+                self.wrappedValue.leftValue ?? defaultValue
+            },
+            set: {
+                self.wrappedValue = .left($0)
+            }
+        )
+    }
+    
+    public func unwrapRight<L, R>(
+        default defaultValue: R
+    ) -> Binding<R> where Value == Either<L, R> {
+        .init(
+            get: {
+                self.wrappedValue.rightValue ?? defaultValue
+            },
+            set: {
+                self.wrappedValue = .right($0)
+            }
+        )
+    }
+}
+#endif

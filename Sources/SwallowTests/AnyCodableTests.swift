@@ -14,7 +14,7 @@ final class AnyCodableTests: XCTestCase {
         
         let data = try ObjectDecoder().decode(AnyCodable.self, from: ObjectEncoder().encode(animals))
         
-        try data.singleValueContainer()
+        XCTAssertNoThrow(try data.singleValueContainer())
     }
 }
 

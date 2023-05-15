@@ -10,7 +10,13 @@ extension Collection {
             return nil
         }
         
-        return nil
+        return self
+    }
+}
+
+extension Optional {
+    public func nilIfEmpty() -> Optional<Wrapped> where Wrapped: Collection {
+        self?.nilIfEmpty()
     }
 }
 

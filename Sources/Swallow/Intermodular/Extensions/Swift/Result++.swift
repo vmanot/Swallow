@@ -43,6 +43,15 @@ extension Result {
                 fatalError()
         }
     }
+    
+    public func get() -> Success.WrappedValue where Success: PropertyWrapper, Failure == Never {
+        switch self {
+            case .success(let value):
+                return value.wrappedValue
+            case .failure:
+                fatalError()
+        }
+    }
 }
 
 extension Result where Failure == Error {

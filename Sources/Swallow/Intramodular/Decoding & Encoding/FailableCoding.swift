@@ -44,6 +44,10 @@ public struct FailableCoding<Value>: ParameterlessPropertyWrapper {
     public init() where Value: Initiable {
         self.init(wrappedValue: Value.init())
     }
+    
+    public init() where Value: ExpressibleByNilLiteral {
+        self.init(wrappedValue: nil)
+    }
 }
 
 // MARK: - Conformances

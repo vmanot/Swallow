@@ -107,10 +107,13 @@ extension RangeReplaceableCollection {
     
     @discardableResult
     public func removing(at index: Index) -> Self {
-        return build(self, with: { $0.remove(at: index) })
+        build(self, with: { $0.remove(at: index) })
     }
     
-    public mutating func remove<S0: Sequence, S1: ExtensibleSequence>(at indices: S0, into result: inout S1) where S0.Element == Index, S1.Element == Element {
+    public mutating func remove<S0: Sequence, S1: ExtensibleSequence>(
+        at indices: S0,
+        into result: inout S1
+    ) where S0.Element == Index, S1.Element == Element {
         var indexOffset: Int = 0
         
         for index in indices {

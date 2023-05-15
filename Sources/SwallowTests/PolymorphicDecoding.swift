@@ -10,76 +10,6 @@ import XCTest
 
 final class PolymorphicDecoding: XCTestCase {
     func test() throws {
-        enum AnimalType: String, Codable, TypeDiscriminator {
-            case lion
-            case monkey
-            
-            func resolveType() -> Any.Type {
-                switch self {
-                    case .lion:
-                        return Lion.self
-                    case .monkey:
-                        return Monkey.self
-                }
-            }
-        }
-        
-        class Animal: Codable, PolymorphicDecodable {
-            let type: AnimalType
-            
-            init(type: AnimalType) {
-                self.type = type
-            }
-            
-            static func decodeTypeDiscriminator(from decoder: Decoder) throws -> AnimalType {
-                try decoder.decode(forKey: AnyStringKey(stringValue: "type"))
-            }
-        }
-        
-        class Lion: Animal {
-            let roars: Bool
-            
-            init(roars: Bool) {
-                self.roars = roars
-                
-                super.init(type: .lion)
-            }
-            
-            required init(from decoder: Decoder) throws {
-                roars = try decoder.decode(forKey: AnyStringKey(stringValue: "roars"))
-                
-                try super.init(from: decoder)
-            }
-            
-            override func encode(to encoder: Encoder) throws {
-                try super.encode(to: encoder)
-                
-                try encoder.encode(roars, forKey: AnyStringKey(stringValue: "roars"))
-            }
-        }
-        
-        class Monkey: Animal {
-            let screeches: Bool
-            
-            init(screeches: Bool) {
-                self.screeches = screeches
-                
-                super.init(type: .monkey)
-            }
-            
-            required init(from decoder: Decoder) throws {
-                screeches = try decoder.decode(forKey: AnyStringKey(stringValue: "screeches"))
-                
-                try super.init(from: decoder)
-            }
-            
-            override func encode(to encoder: Encoder) throws {
-                try super.encode(to: encoder)
-                
-                try encoder.encode(screeches, forKey: AnyStringKey(stringValue: "screeches"))
-            }
-        }
-        
         let animals: [Animal] = [Lion(roars: true), Monkey(screeches: false)]
         
         let encodedAnimals = try JSONEncoder().encode(animals)
@@ -90,5 +20,75 @@ final class PolymorphicDecoding: XCTestCase {
         XCTAssert(type(of: incorrectlyDecodedAnimals[1]) == Animal.self)
         XCTAssert(correctlyDecodedAnimals[0] is Lion)
         XCTAssert(correctlyDecodedAnimals[1] is Monkey)
+    }
+}
+
+private enum AnimalType: String, Codable, TypeDiscriminator {
+    case lion
+    case monkey
+    
+    func resolveType() -> Any.Type {
+        switch self {
+            case .lion:
+                return Lion.self
+            case .monkey:
+                return Monkey.self
+        }
+    }
+}
+
+private class Animal: Codable, PolymorphicDecodable {
+    let type: AnimalType
+    
+    init(type: AnimalType) {
+        self.type = type
+    }
+    
+    static func decodeTypeDiscriminator(from decoder: Decoder) throws -> AnimalType {
+        try decoder.decode(forKey: AnyStringKey(stringValue: "type"))
+    }
+}
+
+private class Lion: Animal {
+    let roars: Bool
+    
+    init(roars: Bool) {
+        self.roars = roars
+        
+        super.init(type: .lion)
+    }
+    
+    required init(from decoder: Decoder) throws {
+        roars = try decoder.decode(forKey: AnyStringKey(stringValue: "roars"))
+        
+        try super.init(from: decoder)
+    }
+    
+    override func encode(to encoder: Encoder) throws {
+        try super.encode(to: encoder)
+        
+        try encoder.encode(roars, forKey: AnyStringKey(stringValue: "roars"))
+    }
+}
+
+private class Monkey: Animal {
+    let screeches: Bool
+    
+    init(screeches: Bool) {
+        self.screeches = screeches
+        
+        super.init(type: .monkey)
+    }
+    
+    required init(from decoder: Decoder) throws {
+        screeches = try decoder.decode(forKey: AnyStringKey(stringValue: "screeches"))
+        
+        try super.init(from: decoder)
+    }
+    
+    override func encode(to encoder: Encoder) throws {
+        try super.encode(to: encoder)
+        
+        try encoder.encode(screeches, forKey: AnyStringKey(stringValue: "screeches"))
     }
 }

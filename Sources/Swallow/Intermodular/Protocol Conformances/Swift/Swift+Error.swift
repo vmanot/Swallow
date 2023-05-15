@@ -29,6 +29,8 @@ public struct AnyError: CustomDebugStringConvertible, Error, Hashable, @unchecke
     }
     
     public func hash(into hasher: inout Hasher) {
+        ObjectIdentifier(type(of: base)).hash(into: &hasher)
+        
         if let value = try? cast(base, to: (any Hashable).self) {
             value.hash(into: &hasher)
         } else {
@@ -69,7 +71,7 @@ public struct CustomStringError: Codable, CustomStringConvertible, Error, Expres
     }
 }
 
-public struct EmptyError: Hashable, Error, CustomStringConvertible, Sendable {
+public struct _PlaceholderError: Hashable, Error, CustomStringConvertible, Sendable {
     public let location: SourceCodeLocation?
     
     public var description: String {
@@ -78,6 +80,8 @@ public struct EmptyError: Hashable, Error, CustomStringConvertible, Sendable {
     
     private init(location: SourceCodeLocation? = nil) {
         self.location = location
+        
+        runtimeIssue("This is a placeholder error and should not be used in production.")
     }
     
     public init(
@@ -87,7 +91,17 @@ public struct EmptyError: Hashable, Error, CustomStringConvertible, Sendable {
         line: UInt = #line,
         column: UInt = #column
     ) {
-        self.init(location: .exact(.init(file: file, fileID: fileID, function: function, line: line, column: column)))
+        self.init(
+            location: .exact(
+                .init(
+                    file: file,
+                    fileID: fileID,
+                    function: function,
+                    line: line,
+                    column: column
+                )
+            )
+        )
     }
 }
 

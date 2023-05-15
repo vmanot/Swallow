@@ -100,3 +100,34 @@ struct ExtractionFailed: Error {
 }
 
 private let lock = OSUnfairLock()
+
+public protocol _CasePathExtracting {
+    
+}
+
+extension _CasePathExtracting {
+    /// Returns the value extracted using the given `CasePath`, or `nil` if the extraction fails.
+    ///
+    /// - Parameter casePath: The `CasePath` to use for extraction.
+    /// - Returns: The value extracted using the given `CasePath`, or `nil` if the extraction fails.
+    public subscript<Value>(casePath path: CasePath<Self, Value>) -> Value? {
+        path.extract(from: self)
+    }
+}
+
+extension Sequence where Element: _CasePathExtracting {
+    public func first<Value>(
+        _ casePath: CasePath<Element, Value>
+    ) -> Value? {
+        first(byUnwrapping: { $0[casePath: casePath] })
+    }
+
+    public func first<T0, T1>(
+        _ first: CasePath<Element, T0>,
+        _ second: CasePath<T0, T1>
+    ) -> T1? {
+        self.first(byUnwrapping: {
+            first.extract(from: $0).flatMap({ second.extract(from: $0) })
+        })
+    }
+}

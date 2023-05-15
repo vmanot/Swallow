@@ -5,7 +5,7 @@
 import Swift
 
 @propertyWrapper
-public struct _HashableExistential<Value> {
+public struct _HashableExistential<Value>: PropertyWrapper {
     private var base: Value
     
     public var wrappedValue: Value {
@@ -15,8 +15,10 @@ public struct _HashableExistential<Value> {
             self.base = newValue
         }
     }
-    
+        
     public init(wrappedValue: Value) {
+        Self._validate(wrappedValue)
+        
         self.base = wrappedValue
     }
     
@@ -43,6 +45,10 @@ public struct _HashableExistential<Value> {
     
     public init(erasing value: Any.Type) where Value == any Hashable {
         self.base = ObjectIdentifier(value)
+    }
+    
+    static func _validate(_ value: Value) {
+        assert(value is any Hashable || value is Any.Type)
     }
 }
 

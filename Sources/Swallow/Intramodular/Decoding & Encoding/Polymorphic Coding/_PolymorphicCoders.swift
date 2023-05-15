@@ -22,7 +22,9 @@ public struct _PolymorphicDecoder: Decoder {
         self.base = base
     }
     
-    public func container<Key: CodingKey>(keyedBy type: Key.Type) throws -> KeyedDecodingContainer<Key> {
+    public func container<Key: CodingKey>(
+        keyedBy type: Key.Type
+    ) throws -> KeyedDecodingContainer<Key> {
         .init(_PolymorphicKeyedDecodingContainer(try base.container(keyedBy: type), parent: self))
     }
     
@@ -37,15 +39,17 @@ public struct _PolymorphicDecoder: Decoder {
 
 /// A proxy for `Decodable` that forces our custom decoder to be used.
 
-protocol _PolymorphicDecodableType: Decodable {
+public protocol _PolymorphicDecodingProxyType: Decodable {
+    associatedtype Value
     
+    var value: Value { get }
 }
 
-internal struct _PolymorphicDecodable<T: Decodable>: _PolymorphicDecodableType {
-    public var value: T
+struct _PolymorphicDecodingProxy<T: Decodable>: _PolymorphicDecodingProxyType {
+    var value: T
     
-    public init(from decoder: Decoder) throws {
-        guard !(T.self is _PolymorphicDecodableType.Type) else {
+    init(from decoder: Decoder) throws {
+        guard !(T.self is any _PolymorphicDecodingProxyType.Type) else {
             self.value = try T.init(from: decoder)
             
             return
@@ -62,6 +66,12 @@ internal struct _PolymorphicDecodable<T: Decodable>: _PolymorphicDecodableType {
         } catch {
             throw error
         }
+    }
+}
+
+extension PolymorphicDecodable {
+    public static func _opaque_polymorphicDecodingProxy() -> any _PolymorphicDecodingProxyType.Type {
+        _PolymorphicDecodingProxy<Self>.self
     }
 }
 

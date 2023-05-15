@@ -33,11 +33,7 @@ public struct Hashable2ple<T: Hashable, U: Hashable>: Hashable, Wrapper {
     public init(_ value: Value) {
         self.value = value
     }
-    
-    public init(_ value0: T, _ value1: U) {
-        self.value = (value0, value1)
-    }
-    
+        
     @inlinable
     public func hash(into hasher: inout Hasher) {
         hasher.combine(value.0)

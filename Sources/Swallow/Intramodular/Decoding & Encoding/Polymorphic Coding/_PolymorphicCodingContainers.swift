@@ -83,7 +83,7 @@ public struct _PolymorphicSingleValueDecodingContainer: SingleValueDecodingConta
     // This is where the magic happens.
     
     public func decode<T: Decodable>(_ type: T.Type) throws -> T {
-        try base.decode(_PolymorphicDecodable<T>.self).value
+        try base.decode(_PolymorphicDecodingProxy<T>.self).value
     }
 }
 
@@ -173,11 +173,11 @@ public struct _PolymorphicUnkeyedDecodingContainer: UnkeyedDecodingContainer {
     }
     
     public mutating func decode<T: Decodable>(_ type: T.Type) throws -> T {
-        try base.decode(_PolymorphicDecodable<T>.self).value
+        try base.decode(_PolymorphicDecodingProxy<T>.self).value
     }
     
     public mutating func decodeIfPresent<T: Decodable>(_ type: T.Type) throws -> T? {
-        try base.decodeIfPresent(_PolymorphicDecodable<T>.self)?.value
+        try base.decodeIfPresent(_PolymorphicDecodingProxy<T>.self)?.value
     }
     
     public mutating func nestedContainer<NestedKey: CodingKey>(keyedBy type: NestedKey.Type) throws -> KeyedDecodingContainer<NestedKey> {
@@ -293,7 +293,7 @@ public struct _PolymorphicKeyedDecodingContainer<T: CodingKey>: KeyedDecodingCon
             return try base.decode(T.self, forKey: key)
         }
         
-        return try base.decode(_PolymorphicDecodable<T>.self, forKey: key).value
+        return try base.decode(_PolymorphicDecodingProxy<T>.self, forKey: key).value
     }
     
     public func decodeIfPresent<T: Decodable>(_ type: T.Type, forKey key: Key) throws -> T?  {
@@ -317,7 +317,7 @@ public struct _PolymorphicKeyedDecodingContainer<T: CodingKey>: KeyedDecodingCon
             return try base.decodeIfPresent(T.self, forKey: key)
         }
         
-        return try base.decodeIfPresent(_PolymorphicDecodable<T>.self, forKey: key)?.value
+        return try base.decodeIfPresent(_PolymorphicDecodingProxy<T>.self, forKey: key)?.value
     }
     
     public func nestedContainer<NestedKey: CodingKey>(keyedBy type: NestedKey.Type, forKey key: Key) throws -> KeyedDecodingContainer<NestedKey>  {

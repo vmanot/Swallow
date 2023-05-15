@@ -5,6 +5,7 @@
 import Combine
 import Swift
 
+/// A type that supports polymoprhic decoding.
 public protocol PolymorphicDecodable: AnyObject, Decodable {
     associatedtype DecodingTypeDiscriminator: Equatable
     
@@ -22,11 +23,11 @@ extension PolymorphicDecodable where DecodingTypeDiscriminator: Swallow.TypeDisc
     }
 }
 
-extension PolymorphicDecodable where Self: TypeDiscriminable, InstanceType == DecodingTypeDiscriminator {
+extension PolymorphicDecodable where Self: TypeDiscriminable, TypeDiscriminator == DecodingTypeDiscriminator {
     public static func decodeTypeDiscriminator(
         from decoder: Decoder
     ) throws -> DecodingTypeDiscriminator {
-        try Self(from: decoder).instanceType
+        try Self(from: decoder).typeDiscriminator
     }
 }
 
@@ -58,7 +59,7 @@ public struct _PolymorphicTopLevelDecoder<Base: TopLevelDecoder>: TopLevelDecode
     }
     
     public func decode<T: Decodable>(_ type: T.Type, from input: Base.Input) throws -> T {
-        try base.decode(_PolymorphicDecodable<T>.self, from: input).value
+        try base.decode(_PolymorphicDecodingProxy<T>.self, from: input).value
     }
 }
 

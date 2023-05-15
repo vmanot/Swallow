@@ -33,7 +33,7 @@ extension Sequence {
         for element in self {
             if let match = try transform(element) {
                 guard result == nil else {
-                    throw EmptyError()
+                    throw _PlaceholderError()
                 }
                 
                 result = match
