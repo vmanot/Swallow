@@ -16,6 +16,10 @@ let package = Package(
             targets: [
                 "Compute",
                 "Diagnostics",
+                "FoundationX",
+                "POSIX",
+                "Runtime",
+                "RuntimeShims",
                 "SE0270_RangeSet",
                 "Swallow"
             ]
@@ -29,12 +33,6 @@ let package = Package(
             name: "SE0270_RangeSet"
         ),
         .target(
-            name: "Swallow",
-            dependencies: [
-                .product(name: "Collections", package: "swift-collections")
-            ]
-        ),
-        .target(
             name: "Compute",
             dependencies: [
                 "Diagnostics",
@@ -46,6 +44,35 @@ let package = Package(
             name: "Diagnostics",
             dependencies: [
                 "Swallow"
+            ]
+        ),
+        .target(
+            name: "POSIX",
+            dependencies: [
+                "Swallow"
+            ]
+        ),
+        .target(
+            name: "FoundationX",
+            dependencies: [
+                "Swallow"
+            ]
+        ),
+        .target(
+            name: "Runtime",
+            dependencies: [
+                "FoundationX",
+                "RuntimeShims",
+                "Swallow"
+            ]
+        ),
+        .target(
+            name: "RuntimeShims"
+        ),
+        .target(
+            name: "Swallow",
+            dependencies: [
+                .product(name: "Collections", package: "swift-collections")
             ]
         ),
         .testTarget(
