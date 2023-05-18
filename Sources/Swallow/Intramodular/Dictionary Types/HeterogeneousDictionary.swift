@@ -6,7 +6,7 @@
 // Ole Begemann, April 2022
 
 /// A key in a `HeterogeneousDictionary`.
-public protocol HeterogeneousDictionaryKey<Domain> {
+public protocol HeterogeneousDictionaryKey<Domain, Value> {
     /// The "namespace" the key belongs to. Every `HeterogeneousDictionary` has its associated domain, and only keys belonging to that domain can be stored in the dictionary.
     associatedtype Domain
     /// The type of the values that can be stored under this key in the dictionary.
@@ -24,21 +24,40 @@ public protocol HeterogeneousDictionaryKey<Domain> {
 /// This type can’t easily conform to `Collection` because `Collection`
 /// assumes a single `Element` type.
 public struct HeterogeneousDictionary<Domain> {
-    private var storage: [ObjectIdentifier: Any]
+    public typealias DictionaryValue = Any
+    
+    fileprivate var storage: [ObjectIdentifier: Any]
     
     public var count: Int {
         self.storage.count
     }
     
+    fileprivate init(storage: [ObjectIdentifier: Any]) {
+        self.storage = storage
+    }
+    
     public init() {
         self.storage = [:]
     }
-    
+}
+
+extension HeterogeneousDictionary {
     public subscript<Key: HeterogeneousDictionaryKey>(
         key: Key.Type
     ) -> Key.Value? where Key.Domain == Domain {
         get {
             self.storage[ObjectIdentifier(key)] as! Key.Value?
+        } set {
+            self.storage[ObjectIdentifier(key)] = newValue
+        }
+    }
+    
+    @_disfavoredOverload
+    public subscript<T>(
+        key: any HeterogeneousDictionaryKey<Domain, T>.Type
+    ) -> T? {
+        get {
+            self.storage[ObjectIdentifier(key)] as! Optional<T>
         } set {
             self.storage[ObjectIdentifier(key)] = newValue
         }
@@ -78,6 +97,22 @@ public struct HeterogeneousDictionary<Domain> {
         } set {
             self[HeterogeneousDictionaryValues()[keyPath: key]] = newValue
         }
+    }
+}
+
+extension HeterogeneousDictionary {
+    public mutating func merge(
+        _ other: Self,
+        uniquingKeysWith combine: (DictionaryValue, DictionaryValue) throws -> DictionaryValue
+    ) rethrows {
+        try storage.merge(other.storage, uniquingKeysWith: combine)
+    }
+    
+    public func merging(
+        _ other: Self,
+        uniquingKeysWith combine: (DictionaryValue, DictionaryValue) throws -> DictionaryValue
+    ) rethrows -> Self {
+        try .init(storage: storage.merging(other.storage, uniquingKeysWith: combine))
     }
 }
 

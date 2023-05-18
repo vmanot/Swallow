@@ -4,13 +4,17 @@
 
 import Swift
 
-public protocol Mergeable {
+public protocol MergeOperatable {
     mutating func mergeInPlace(with other: Self)
     
     func merge(with other: Self) -> Self
 }
 
-extension Mergeable {
+public protocol ThrowingMergeOperatable {
+    static func merge(lhs: Self, rhs: Self) throws -> Self
+}
+
+extension MergeOperatable {
     public mutating func mergeInPlace(with other: Self) {
         self = merge(with: other)
     }

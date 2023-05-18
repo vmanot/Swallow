@@ -11,6 +11,11 @@ public protocol _StaticType {
     
 }
 
+/// A type that specifies a domain.
+public protocol _StaticDomainSpecifying {
+    associatedtype _DomainType
+}
+
 public protocol _StaticValue: _StaticType {
     associatedtype Value
     

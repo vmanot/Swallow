@@ -44,14 +44,22 @@ extension Dictionary {
     public mutating func merge<S: Sequence>(
         uniqueKeysWithValues other: S
     ) where S.Element == (Key, Value) {
-        merge(other, uniquingKeysWith: { lhs, rhs in lhs })
+        merge(other, uniquingKeysWith: { lhs, rhs in
+            assertionFailure()
+            
+            return lhs
+        })
     }
     
     /// Creates a dictionary by merging key-value pairs in a sequence into the dictionary, using a combining closure to determine the value for duplicate keys.
     public func merging<S: Sequence>(
         uniqueKeysWithValues other: S
     ) -> Self where S.Element == (Key, Value) {
-        merging(other, uniquingKeysWith: { lhs, rhs in lhs })
+        merging(other, uniquingKeysWith: { lhs, rhs in
+            assertionFailure()
+            
+            return lhs
+        })
     }
     
     /// Creates a dictionary by merging key-value pairs in a sequence into the dictionary, using a combining closure to determine the value for duplicate keys.

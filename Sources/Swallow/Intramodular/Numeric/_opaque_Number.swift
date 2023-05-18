@@ -94,12 +94,17 @@ extension _opaque_Number {
     }
     
     @inlinable
-    public static func _opaque_Number_init(_ value: Any, isRetry: Bool) -> Self? {
+    public static func _opaque_Number_init(
+        _ value: Any,
+        isRetry: Bool
+    ) -> Self? {
         return _opaque_Number_baseInit(value, isRetry: isRetry)
     }
     
     @inlinable
-    public func _opaque_Number_attemptCast(to type: _opaque_Number.Type) -> _opaque_Number? {
+    public func _opaque_Number_attemptCast(
+        to type: _opaque_Number.Type
+    ) -> _opaque_Number? {
         return type._opaque_Number_init(self, isRetry: true)
     }
     

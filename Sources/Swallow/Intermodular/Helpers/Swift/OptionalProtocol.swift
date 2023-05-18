@@ -86,6 +86,10 @@ public func _isValueNil(_ value: Any) -> Bool {
     Optional(_unwrapping: value).isNil
 }
 
+public func _isTypeOptionalType(_ type: Any.Type) -> Bool {
+    type is any OptionalProtocol.Type
+}
+
 // MARK: - Implemented Conformances
 
 extension Optional: OptionalProtocol {

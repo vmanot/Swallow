@@ -95,7 +95,7 @@ extension _HashableBagOfExistentials: Hashable {
     }
 }
 
-extension _HashableBagOfExistentials: Mergeable {
+extension _HashableBagOfExistentials: MergeOperatable {
     public func merge(with other: Self) -> Self {
         Self(AnySequence(self).join(AnySequence(other)))
     }

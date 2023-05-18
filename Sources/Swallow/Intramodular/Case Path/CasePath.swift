@@ -85,9 +85,11 @@ public struct CasePath<_Root, _Value> {
     }
 }
 
-#if canImport(_Concurrency) && compiler(>=5.5.2)
-extension CasePath: @unchecked Sendable {}
-#endif
+// MARK: - Conformances
+
+extension CasePath: @unchecked Sendable {
+    
+}
 
 extension CasePath: CustomStringConvertible {
     public var description: String {
