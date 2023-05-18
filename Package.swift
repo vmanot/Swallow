@@ -18,6 +18,7 @@ let package = Package(
                 "Diagnostics",
                 "FoundationX",
                 "POSIX",
+                "PythonString",
                 "Runtime",
                 "RuntimeShims",
                 "SE0270_RangeSet",
@@ -47,13 +48,19 @@ let package = Package(
             ]
         ),
         .target(
+            name: "FoundationX",
+            dependencies: [
+                "Swallow"
+            ]
+        ),
+        .target(
             name: "POSIX",
             dependencies: [
                 "Swallow"
             ]
         ),
         .target(
-            name: "FoundationX",
+            name: "PythonString",
             dependencies: [
                 "Swallow"
             ]
@@ -61,6 +68,7 @@ let package = Package(
         .target(
             name: "Runtime",
             dependencies: [
+                "Compute",
                 "FoundationX",
                 "RuntimeShims",
                 "Swallow"
