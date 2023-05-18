@@ -14,6 +14,8 @@ let package = Package(
         .library(
             name: "Swallow",
             targets: [
+                "Compute",
+                "Diagnostics",
                 "SE0270_RangeSet",
                 "Swallow"
             ]
@@ -32,11 +34,25 @@ let package = Package(
                 .product(name: "Collections", package: "swift-collections")
             ]
         ),
+        .target(
+            name: "Compute",
+            dependencies: [
+                "Diagnostics",
+                .product(name: "Collections", package: "swift-collections"),
+                "Swallow"
+            ]
+        ),
+        .target(
+            name: "Diagnostics",
+            dependencies: [
+                "Swallow"
+            ]
+        ),
         .testTarget(
             name: "SwallowTests",
             dependencies: [
                 "Swallow"
             ]
-        )
+        ),
     ]
 )
