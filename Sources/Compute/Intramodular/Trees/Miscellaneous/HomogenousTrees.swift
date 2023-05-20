@@ -53,12 +53,11 @@ public struct LazyMapTree<Base: HomogenousTree, T>: HomogenousTree {
     }
 }
 
-public struct LazyCompactMapTree<Base: HomogenousTree, T>: HomogenousTree {
-    public typealias TreeValue = T
+public struct LazyCompactMapTree<Base: HomogenousTree, TreeValue>: HomogenousTree {
     public typealias Children = LazyMapSequence<LazyFilterSequence<LazyMapSequence<LazySequence<Base.Children>.Elements, Self?>>, Self>
     
     public let base: Base
-    public let transform: (Base) -> T?
+    public let transform: (Base) -> TreeValue?
     public let value: TreeValue
 
     public var children: Children {
@@ -67,7 +66,7 @@ public struct LazyCompactMapTree<Base: HomogenousTree, T>: HomogenousTree {
     
     public init?(
         base: Base,
-        transform: @escaping (Base) -> T?
+        transform: @escaping (Base) -> TreeValue?
     ) {
         guard let value = transform(base) else {
             return nil

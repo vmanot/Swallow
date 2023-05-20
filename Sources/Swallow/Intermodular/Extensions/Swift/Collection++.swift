@@ -198,13 +198,13 @@ extension Collection where Index: Strideable {
 
 extension Collection {
     public func prefix(
-        till isTerminator: (Element) -> Bool
-    ) -> SubSequence? {
+        till isTerminator: (Element) throws -> Bool
+    ) rethrows -> SubSequence? {
         guard count > 1 else {
             return nil
         }
         
-        guard let index = firstIndex(where: isTerminator), index != startIndex else {
+        guard let index = try firstIndex(where: isTerminator), index != startIndex else {
             return nil
         }
         
