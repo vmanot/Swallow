@@ -11,7 +11,7 @@ import Swallow
 public enum CanonicalFileDirectory {
     case desktop
     case applicationSupportFiles
-    case iCloudDriveDocuments(ubiquityContainerIdentifier: String)
+    case iCloudDriveDocuments(containerID: String)
     case securityApplicationGroup(String)
     case ubiquityContainer(String)
     case userDocuments
@@ -20,22 +20,49 @@ public enum CanonicalFileDirectory {
         let fileManager = FileManager.default
         
         switch self {
-            case .desktop:
-                return try fileManager.url(for: .desktopDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
-            case .applicationSupportFiles:
-                return try fileManager.url(for: .applicationSupportDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
-            case .iCloudDriveDocuments(let identifier):
-                return try fileManager.url(forUbiquityContainerIdentifier: identifier).unwrap().appendingDirectoryPathComponent("Documents")
-            case .securityApplicationGroup(let identifier):
-                return try fileManager.containerURL(forSecurityApplicationGroupIdentifier: identifier).unwrap()
-            case .ubiquityContainer(let identifier):
-                return try fileManager.url(forUbiquityContainerIdentifier: identifier).unwrap()
-            case .userDocuments:
-                return try fileManager.url(for: .documentDirectory, in: .userDomainMask)
+            case .desktop: do {
+                return try fileManager
+                    .url(
+                        for: .desktopDirectory,
+                        in: .userDomainMask,
+                        appropriateFor: nil,
+                        create: true
+                    )
+            }
+            case .applicationSupportFiles: do {
+                return try fileManager
+                    .url(
+                        for: .applicationSupportDirectory,
+                        in: .userDomainMask,
+                        appropriateFor: nil,
+                        create: true
+                    )
+            }
+            case .iCloudDriveDocuments(let identifier): do {
+                return try fileManager
+                    .url(
+                        forUbiquityContainerIdentifier: identifier
+                    )
+                    .unwrap()
+                    .appendingDirectoryPathComponent("Documents")
+            }
+            case .securityApplicationGroup(let identifier): do {
+                return try fileManager
+                    .containerURL(forSecurityApplicationGroupIdentifier: identifier)
+                    .unwrap()
+            }
+            case .ubiquityContainer(let identifier): do {
+                return try fileManager
+                    .url(forUbiquityContainerIdentifier: identifier)
+                    .unwrap()
+            }
+            case .userDocuments: do {
+                return try fileManager
+                    .url(for: .documentDirectory, in: .userDomainMask)
+            }
         }
     }
 }
-
 
 extension CanonicalFileDirectory {
     /// Returns the first valid location of the two given operands.
