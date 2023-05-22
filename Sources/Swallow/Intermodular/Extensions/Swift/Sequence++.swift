@@ -55,6 +55,36 @@ extension Sequence {
 // MARK: Grouping
 
 extension Sequence {
+    public func subsequences<T: Equatable>(
+        groupedBy grouping: (Element) throws -> T
+    ) rethrows -> [Array<Element>] {
+        var groups: [Array<Element>] = []
+        var currentGroup: [Element] = []
+        var lastKey: T?
+        
+        for element in self {
+            let key = try grouping(element)
+            
+            if key != lastKey {
+                if !currentGroup.isEmpty {
+                    groups.append(currentGroup)
+                }
+                currentGroup = [element]
+                lastKey = key
+            } else {
+                currentGroup.append(element)
+            }
+        }
+        
+        if !currentGroup.isEmpty {
+            groups.append(currentGroup)
+        }
+        
+        return groups
+    }
+}
+
+extension Sequence {
     public func group<ID: Hashable>(
         by identify: (Element) throws -> ID
     ) rethrows -> [ID: [Element]] {

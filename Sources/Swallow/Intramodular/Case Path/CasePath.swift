@@ -133,3 +133,7 @@ extension Sequence where Element: _CasePathExtracting {
         })
     }
 }
+
+public func ~= <T: _CasePathExtracting, U>(lhs: T, rhs: CasePath<T, U>) -> Bool {
+    lhs[casePath: rhs] != nil
+}

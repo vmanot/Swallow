@@ -20,7 +20,6 @@ let package = Package(
                 "POSIX",
                 "PythonString",
                 "Runtime",
-                "RuntimeShims",
                 "SE0270_RangeSet",
                 "Swallow"
             ]
@@ -70,12 +69,8 @@ let package = Package(
             dependencies: [
                 "Compute",
                 "FoundationX",
-                "RuntimeShims",
                 "Swallow"
             ]
-        ),
-        .target(
-            name: "RuntimeShims"
         ),
         .target(
             name: "Swallow",
