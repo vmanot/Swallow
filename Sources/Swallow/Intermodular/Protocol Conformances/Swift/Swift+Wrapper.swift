@@ -119,14 +119,14 @@ public enum StrongOrWeak<Value: AnyObject> {
                 case .strong(let value):
                     return value
                 case .weak(let valueWrapper):
-                    return valueWrapper.value
+                    return valueWrapper.wrappedValue
             }
         } set {
             switch self {
                 case .strong:
                     self = .strong(newValue)
                 case .weak:
-                    self = .weak(.init(newValue))
+                    self = .weak(.init(wrappedValue: newValue))
             }
         }
     }
@@ -172,11 +172,34 @@ public struct UnsafeWeak<Value: AnyObject>: Wrapper {
     }
 }
 
-public struct Weak<Value: AnyObject>: Wrapper {
-    public private(set) weak var value: Value?
+@propertyWrapper
+public struct Weak<Value>: PropertyWrapper {
+    private weak var _weakWrappedValue: AnyObject?
+    private var _strongWrappedValue: Value?
     
-    public init(_ value: Value?) {
-        self.value = value
+    public var wrappedValue: Value? {
+        get {
+            _weakWrappedValue.map({ $0 as! WrappedValue }) ?? _strongWrappedValue
+        } set {
+            if let newValue {
+                if type(of: newValue) is AnyClass {
+                    _weakWrappedValue = try! cast(newValue, to: AnyObject.self)
+                } else {
+                    _strongWrappedValue = newValue
+                }
+            } else {
+                _weakWrappedValue = nil
+                _strongWrappedValue = nil
+            }
+        }
+    }
+    
+    public init(wrappedValue: Value?) {
+        self.wrappedValue = wrappedValue
+    }
+    
+    public init() {
+        self.init(wrappedValue: nil)
     }
 }
 

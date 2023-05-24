@@ -10,13 +10,15 @@ import Swallow
 /// Written to improve API ergonomics.
 public enum CanonicalFileDirectory {
     case desktop
+    case downloads
+    
     case applicationSupportFiles
     case iCloudDriveDocuments(containerID: String)
     case securityApplicationGroup(String)
     case ubiquityContainer(String)
     case userDocuments
     
-    public func toURL() throws -> URL {
+    public func toURL(sandboxed: Bool = true) throws -> URL {
         let fileManager = FileManager.default
         
         switch self {
@@ -24,6 +26,15 @@ public enum CanonicalFileDirectory {
                 return try fileManager
                     .url(
                         for: .desktopDirectory,
+                        in: .userDomainMask,
+                        appropriateFor: nil,
+                        create: true
+                    )
+            }
+            case .downloads: do {
+                return try fileManager
+                    .url(
+                        for: .downloadsDirectory,
                         in: .userDomainMask,
                         appropriateFor: nil,
                         create: true

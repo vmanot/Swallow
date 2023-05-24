@@ -15,7 +15,7 @@ public protocol TopLevelDataCoder: Sendable {
 // MARK: - Implemented Conformances
 
 public struct PropertyListCoder: TopLevelDataCoder {
-    private let decoder = PropertyListDecoder()
+    private let decoder = _PolymorphicTopLevelDecoder(from: PropertyListDecoder())
     private let encoder = PropertyListEncoder()
     
     public func decode<T: Decodable>(_ type: T.Type, from data: Data) throws -> T {
@@ -34,12 +34,12 @@ extension TopLevelDataCoder where Self == PropertyListCoder {
 }
 
 public struct JSONCoder: TopLevelDataCoder {
-    private let decoder: JSONDecoder
-    private let encoder: JSONEncoder
+    private let decoder: AnyTopLevelDecoder<Data>
+    private let encoder: AnyTopLevelEncoder<Data>
     
     public init(decoder: JSONDecoder, encoder: JSONEncoder) {
-        self.decoder = decoder
-        self.encoder = encoder
+        self.decoder = .init(erasing: decoder._polymorphic())
+        self.encoder = .init(erasing: encoder)
     }
     
     public init() {
@@ -55,7 +55,7 @@ public struct JSONCoder: TopLevelDataCoder {
     }
     
     public func decode<T: Decodable>(_ type: T.Type, from data: Data) throws -> T {
-        try decoder.decode(type, from: data, allowFragments: true)
+        try decoder.decode(type, from: data)
     }
     
     public func encode<T: Encodable>(_ value: T) throws -> Data {
@@ -73,33 +73,7 @@ extension TopLevelDataCoder where Self == JSONCoder {
     }
 }
 
-// MARK: - Supplementary API
-
-extension TopLevelDataCoder {
-    /// Wraps the coder and returns one capable of polymorphic decoding
-    public func _polymorphic() -> _PolymorphicTopLevelDataCoder<Self> {
-        .init(base: self)
-    }
-}
-
 // MARK: - Auxiliary
-
-/// A wrapper coder that allows for polymorphic decoding.
-public struct _PolymorphicTopLevelDataCoder<Coder: TopLevelDataCoder>: TopLevelDataCoder {
-    public var base: Coder
-    
-    fileprivate init(base: Coder) {
-        self.base = base
-    }
-    
-    public func decode<T: Decodable>(_ type: T.Type, from data: Data) throws -> T {
-        try _PolymorphicTopLevelDecoder(from: _TopLevelDecoderFromTopLevelDataCoder(base: base)).decode(type, from: data)
-    }
-    
-    public func encode<T: Encodable>(_ value: T) throws -> Data {
-        try base.encode(value)
-    }
-}
 
 public struct _TopLevelDecoderFromTopLevelDataCoder<Coder: TopLevelDataCoder>: TopLevelDecoder {
     public typealias Input = Data

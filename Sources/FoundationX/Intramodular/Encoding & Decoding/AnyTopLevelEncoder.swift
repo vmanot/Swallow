@@ -5,8 +5,8 @@
 import Combine
 import Swallow
 
-public struct AnyTopLevelEncoder<Output>: TopLevelEncoder {
-    private let _encode: (Encodable) throws -> Output
+public struct AnyTopLevelEncoder<Output>: TopLevelEncoder, Sendable {
+    private let _encode: @Sendable (Encodable) throws -> Output
     
     public init<Encoder: TopLevelEncoder>(
         erasing encoder: Encoder

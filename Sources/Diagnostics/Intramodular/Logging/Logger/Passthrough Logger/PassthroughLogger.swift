@@ -160,7 +160,7 @@ extension PassthroughLogger {
                 case .something(let value):
                     return String(describing: value)
                 case .object(let object):
-                    if let object = object.value {
+                    if let object = object.wrappedValue {
                         return String(describing: object)
                     } else {
                         return "(null)"
@@ -181,7 +181,7 @@ extension PassthroughLogger {
         }
         
         public static func object(_ object: AnyObject) -> Self {
-            Self(content: .object(Weak(object)))
+            Self(content: .object(Weak(wrappedValue: object)))
         }
         
         public static func something(_ thing: Any) -> Self {

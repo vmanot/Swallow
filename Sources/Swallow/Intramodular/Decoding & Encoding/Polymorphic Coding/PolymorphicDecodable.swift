@@ -63,6 +63,10 @@ public struct _PolymorphicTopLevelDecoder<Base: TopLevelDecoder>: TopLevelDecode
     }
 }
 
+extension _PolymorphicTopLevelDecoder: Sendable where Base: Sendable {
+    
+}
+
 protocol _PolymorphicProxyDecodableType: Decodable {
     associatedtype Value
     
