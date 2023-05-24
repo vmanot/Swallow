@@ -58,7 +58,27 @@ extension XcodeRuntimeIssueLogger {
     }
 }
 
-// MARK: - Supplementary API
+// MARK: - API
+
+public struct _RuntimeIssueError: Error {
+    private let base: any Error
+    
+    public var localizedDescription: String {
+        base.localizedDescription
+    }
+    
+    public init(_ error: any Error) {
+        self.base = error
+        
+        runtimeIssue(error)
+    }
+}
+
+extension Error {
+    public func _runtimeIssue() -> _RuntimeIssueError {
+        _RuntimeIssueError(self)
+    }
+}
 
 @_transparent
 public func runtimeIssue(
