@@ -35,12 +35,12 @@ extension Join2Collection {
     }
     
     public var endIndex: Index {
-        value.0.endIndex.advanced(by: value.1.stride)
+        value.0.endIndex.advanced(by: value.1._stride())
     }
     
     public subscript(index: Index) -> Element {
         if index >= value.0.endIndex {
-            return value.1[index.advanced(by: -value.1.stride)]
+            return value.1[index.advanced(by: -value.1._stride())]
         }
         
         return value.0[index]
@@ -53,7 +53,7 @@ extension Join2Collection: MutableCollection where C0: MutableCollection, C1: Mu
             return value.0.lazy.map({ $0 }).join(value.1)[index]
         } set {
             if index >= value.0.endIndex {
-                value.1[index.advanced(by: -value.1.stride)] = newValue
+                value.1[index.advanced(by: -value.1._stride())] = newValue
             } else {
                 value.0[index] = newValue
             }

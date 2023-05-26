@@ -4,6 +4,8 @@
 
 import Swift
 
+// MARK: - nilIfEmpty
+
 extension Collection {
     public func nilIfEmpty() -> Self? {
         guard !isEmpty else {
@@ -20,17 +22,7 @@ extension Optional {
     }
 }
 
-extension Collection {
-    public var bounds: Range<Index> {
-        startIndex..<endIndex
-    }
-}
-
-extension Collection where Index: Strideable {
-    public var stride: Index.Stride {
-        return startIndex.distance(to: endIndex)
-    }
-}
+// MARK: - Consecutive Elements
 
 extension Collection {
     public func consecutives() -> AnySequence<(Element, Element)> {
@@ -64,101 +56,13 @@ extension Collection {
     }
 }
 
-extension Collection {
-    public func containsIndex(_ index: Index) -> Bool {
-        index >= startIndex && index < endIndex
-    }
-    
-    public func contains(after index: Index) -> Bool {
-        containsIndex(index) && containsIndex(self.index(after: index))
-    }
-    
-    public func contains(_ bounds: Range<Index>) -> Bool {
-        containsIndex(bounds.lowerBound) && containsIndex(index(bounds.upperBound, offsetBy: -1))
-    }
-}
+// MARK: - Indexing
 
 extension Collection {
-    public func index(atDistance distance: Int) -> Index {
-        index(startIndex, offsetBy: distance)
+    public var bounds: Range<Index> {
+        startIndex..<endIndex
     }
     
-    public func index(_ index: Index, insetBy distance: Int) -> Index {
-        self.index(index, offsetBy: -distance)
-    }
-    
-    public func index(_ index: Index, offsetByDistanceFromStartIndexFor otherIndex: Index) -> Index {
-        self.index(index, offsetBy: distanceFromStartIndex(to: otherIndex))
-    }
-    
-    public func distanceFromStartIndex(to index: Index) -> Int {
-        distance(from: startIndex, to: index)
-    }
-    
-    public func range(from range: Range<Int>) -> Range<Index> {
-        index(atDistance: range.lowerBound)..<index(atDistance: range.upperBound)
-    }
-    
-    public subscript(atDistance distance: Int) -> Element {
-        get {
-            self[index(atDistance: distance)]
-        }
-    }
-    
-    public subscript(betweenDistances distance: Range<Int>) -> SubSequence {
-        get {
-            self[index(atDistance: distance.lowerBound)..<index(atDistance: distance.upperBound)]
-        }
-    }
-    
-    public subscript(betweenDistances distance: ClosedRange<Int>) -> SubSequence {
-        get {
-            return self[index(atDistance: distance.lowerBound)...index(atDistance: distance.upperBound)]
-        }
-    }
-}
-
-extension Collection {
-    public subscript(after index: Index) -> Element {
-        return self[self.index(after: index)]
-    }
-}
-
-extension Collection {
-    public subscript(try index: Index) -> Element? {
-        get {
-            guard containsIndex(index) else {
-                return nil
-            }
-            
-            return self[index]
-        }
-    }
-    
-    public subscript(try bounds: Range<Index>) -> SubSequence? {
-        get {
-            guard contains(bounds) else {
-                return nil
-            }
-            
-            return self[bounds]
-        }
-    }
-}
-
-extension Collection where Index == Int {
-    public subscript(try index: Index) -> Element? {
-        get {
-            guard containsIndex(index) else {
-                return nil
-            }
-            
-            return self[index]
-        }
-    }
-}
-
-extension Collection {
     public var lastIndex: Index? {
         guard !isEmpty else {
             return nil
@@ -175,26 +79,123 @@ extension Collection {
         return self[lastIndex]
     }
     
+    public func containsIndex(_ index: Index) -> Bool {
+        index >= startIndex && index < endIndex
+    }
+    
+    public func contains(after index: Index) -> Bool {
+        containsIndex(index) && containsIndex(self.index(after: index))
+    }
+    
+    public func contains(_ bounds: Range<Index>) -> Bool {
+        containsIndex(bounds.lowerBound) && containsIndex(index(bounds.upperBound, offsetBy: -1))
+    }
+    
+    public func index(atDistance distance: Int) -> Index {
+        index(startIndex, offsetBy: distance)
+    }
+    
+    public func index(_ index: Index, insetBy distance: Int) -> Index {
+        self.index(index, offsetBy: -distance)
+    }
+    
+    public func index(_ index: Index, offsetByDistanceFromStartIndexFor otherIndex: Index) -> Index {
+        self.index(index, offsetBy: distanceFromStartIndex(to: otherIndex))
+    }
+    
+    public func indices(of element: Element) -> [Index] where Element: Equatable {
+        indices.filter({ self[$0] == element })
+    }
+    
+    public func index(before index: Index) -> Index where Index: Strideable {
+        index.predecessor()
+    }
+    
+    public func index(after index: Index) -> Index where Index: Strideable {
+        index.successor()
+    }
+    
+    public func distanceFromStartIndex(to index: Index) -> Int {
+        distance(from: startIndex, to: index)
+    }
+    
+    public func _stride() -> Index.Stride where Index: Strideable {
+        startIndex.distance(to: endIndex)
+    }
+    
+    public func range(from range: Range<Int>) -> Range<Index> {
+        index(atDistance: range.lowerBound)..<index(atDistance: range.upperBound)
+    }
+}
+
+extension Collection {
+    public subscript(atDistance distance: Int) -> Element {
+        get {
+            self[index(atDistance: distance)]
+        }
+    }
+    
+    public subscript(after index: Index) -> Element {
+        return self[self.index(after: index)]
+    }
+    
+    @inlinable
+    public subscript(try index: Index) -> Element? {
+        get {
+            guard containsIndex(index) else {
+                return nil
+            }
+            
+            return self[index]
+        }
+    }
+    
+    @inlinable
+    public subscript(try index: Index) -> Element? where Index == Int {
+        get {
+            guard containsIndex(index) else {
+                return nil
+            }
+            
+            return self[index]
+        }
+    }
+    
+    @inlinable
+    public subscript(try bounds: Range<Index>) -> SubSequence? {
+        get {
+            guard contains(bounds) else {
+                return nil
+            }
+            
+            return self[bounds]
+        }
+    }
+    
+    @inlinable
+    public func cycle(index: Index) -> Index {
+        if distance(from: lastIndex!, to: index) > 0 {
+            return self.index(atDistance: distance(from: lastIndex!, to: self.index(index, offsetBy: -1)) % count)
+        } else {
+            return index
+        }
+    }
+    
+    @inlinable
+    public subscript(cycling index: Index) -> Element {
+        get {
+            return self[cycle(index: index)]
+        }
+    }
+}
+
+extension Collection {
     public func enumerated() -> LazyMapCollection<Self.Indices, (offset: Self.Index, element: Self.Element)> {
         indices.lazy.map({ (offset: $0, element: self[$0]) })
     }
 }
 
-extension Collection where Element: Equatable {
-    public func indices(of element: Element) -> [Index] {
-        indices.filter({ self[$0] == element })
-    }
-}
-
-extension Collection where Index: Strideable {
-    public func index(before index: Index) -> Index {
-        index.predecessor()
-    }
-    
-    public func index(after index: Index) -> Index {
-        index.successor()
-    }
-}
+// MARK: - Prefixing
 
 extension Collection {
     public func prefix(
@@ -214,21 +215,7 @@ extension Collection {
     }
 }
 
-extension Collection {
-    public func cycle(index: Index) -> Index {
-        if distance(from: lastIndex!, to: index) > 0 {
-            return self.index(atDistance: distance(from: lastIndex!, to: self.index(index, offsetBy: -1)) % count)
-        } else {
-            return index
-        }
-    }
-    
-    public subscript(cycling index: Index) -> Element {
-        get {
-            return self[cycle(index: index)]
-        }
-    }
-}
+// MARK: - Reduction
 
 extension Collection {
     @_disfavoredOverload
@@ -241,7 +228,42 @@ extension Collection {
     }
 }
 
+// MARK: - Splitting
+
 extension Collection {
+    @inlinable
+    public func splitIncludingSeparators(
+        maxSplits: Int = .max,
+        omittingEmptySubsequences: Bool = true,
+        whereSeparator isSeparator: (Self.Element) throws -> Bool
+    ) rethrows -> [Either<SubSequence, Element>] {
+        var result: [Either<SubSequence, Element>] = []
+        var subsequenceStart = startIndex
+        var splitCount = 0
+        
+        for index in indices {
+            if try isSeparator(self[index]) {
+                if !(omittingEmptySubsequences && subsequenceStart == index) {
+                    result.append(.left(self[subsequenceStart..<index]))
+                }
+                
+                result.append(.right(self[index]))
+                subsequenceStart = self.index(after: index)
+                splitCount += 1
+                
+                if splitCount == maxSplits {
+                    break
+                }
+            }
+        }
+        
+        if !(omittingEmptySubsequences && subsequenceStart == endIndex) {
+            result.append(.left(self[subsequenceStart..<endIndex]))
+        }
+        
+        return result
+    }
+    
     public func splittingFirst() -> (head: Element, tail: SubSequence)? {
         guard let head = first else {
             return nil
@@ -263,7 +285,6 @@ extension Collection {
             return (head, tail)
         }
     }
-    
 }
 
 // MARK: - Subsequencing -
