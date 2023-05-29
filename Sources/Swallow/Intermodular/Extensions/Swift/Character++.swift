@@ -6,8 +6,22 @@ import Swift
 
 extension Character {
     public static let backtick: Self = "`"
-    public static var newLine: Self = "\n"
+    public static var newline: Self = "\n"
     public static let quotationMark: Self = "\""
+}
+
+extension String {
+    public static var backtick: Self {
+        Self(Character.backtick)
+    }
+    
+    public static var newline: Self {
+        Self(Character.newline)
+    }
+    
+    public static var quotationMark: Self {
+        Self(Character.quotationMark)
+    }
 }
 
 extension Character {

@@ -28,7 +28,7 @@ extension String {
     }
     
     public func lines(omittingEmpty: Bool = false) -> [Substring] {
-        split(omittingEmptySubsequences: false, whereSeparator: { $0 == Character.newLine })
+        split(omittingEmptySubsequences: false, whereSeparator: { $0 == Character.newline })
     }
     
     public func enumeratedLines() -> [String] {

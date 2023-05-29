@@ -186,15 +186,37 @@ public func _isValueOfGivenType<Value>(
     return _openExistential(type, do: check)
 }
 
+public func cast<T, U, Result>(
+    _ value: inout T,
+    to type: U.Type,
+    _ body: (inout U) -> Result
+) throws -> Result {
+    var _value = try cast(value, to: U.self)
+    
+    let result = body(&_value)
+    
+    value = try cast(_value, to: T.self)
+    
+    return result
+}
+
 public struct _TypeCastTo2<T, U> {
-    public let base: Any
+    public private(set) var base: Any
     
     public var first: T {
-        base as! T
+        get {
+            base as! T
+        } set {
+            base = newValue
+        }
     }
     
     public var second: U {
-        base as! U
+        get {
+            base as! U
+        } set {
+            base = newValue
+        }
     }
     
     public init(base: Any) throws {

@@ -71,6 +71,14 @@ extension Collection {
         return self.index(atDistance: self.count - 1)
     }
     
+    public var second: Element? {
+        guard count > 1 else {
+            return nil
+        }
+        
+        return self[index(self.startIndex, offsetBy: 1)]
+    }
+    
     public var last: Element? {
         guard let lastIndex else {
             return nil
@@ -232,22 +240,23 @@ extension Collection {
 
 extension Collection {
     @inlinable
-    public func splitIncludingSeparators(
+    public func splitIncludingSeparators<Separator>(
         maxSplits: Int = .max,
         omittingEmptySubsequences: Bool = true,
-        whereSeparator isSeparator: (Self.Element) throws -> Bool
-    ) rethrows -> [Either<SubSequence, Element>] {
-        var result: [Either<SubSequence, Element>] = []
+        separator: (Element) throws -> Separator?
+    ) rethrows -> [Either<SubSequence, Separator>] {
+        var result: [Either<SubSequence, Separator>] = []
         var subsequenceStart = startIndex
         var splitCount = 0
         
         for index in indices {
-            if try isSeparator(self[index]) {
+            if let separator = try separator(self[index]) {
                 if !(omittingEmptySubsequences && subsequenceStart == index) {
                     result.append(.left(self[subsequenceStart..<index]))
                 }
                 
-                result.append(.right(self[index]))
+                result.append(.right(separator))
+                
                 subsequenceStart = self.index(after: index)
                 splitCount += 1
                 
@@ -262,6 +271,21 @@ extension Collection {
         }
         
         return result
+    }
+    
+    @inlinable
+    public func splitIncludingSeparators<Separator>(
+        maxSplits: Int = .max,
+        omittingEmptySubsequences: Bool = true,
+        separator: CasePath<Element, Separator>
+    ) -> [Either<SubSequence, Separator>] {
+        splitIncludingSeparators(
+            maxSplits: maxSplits,
+            omittingEmptySubsequences: omittingEmptySubsequences,
+            separator: {
+                separator.extract(from: $0)
+            }
+        )
     }
     
     public func splittingFirst() -> (head: Element, tail: SubSequence)? {
