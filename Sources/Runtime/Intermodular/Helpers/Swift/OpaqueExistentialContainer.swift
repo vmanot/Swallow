@@ -62,18 +62,22 @@ extension OpaqueExistentialContainer {
 extension OpaqueExistentialContainer: MutableContiguousStorage {
     public typealias Element = Byte
     
-    public func withBufferPointer<BP: InitiableBufferPointer, T>(_ body: ((BP) throws -> T)) rethrows -> T where Element == BP.Element {
+    public func withBufferPointer<BP: InitiableBufferPointer, T>(
+        _ body: ((BP) throws -> T)
+    ) rethrows -> T where Element == BP.Element {
         var container = self
         
         return try container.withMutableBufferPointer({ try body($0) })
     }
     
-    @_transparent
-    public mutating func withMutableBufferPointer<BP: InitiableBufferPointer, T>(_ body: ((BP) throws -> T)) rethrows -> T where Element == BP.Element {
+    public mutating func withMutableBufferPointer<BP: InitiableBufferPointer, T>(
+        _ body: ((BP) throws -> T)
+    ) rethrows -> T where Element == BP.Element {
         let result: T
         
         if type.kind == .class {
             let classType: AnyClass = type.base as! AnyClass
+            
             result = try body(BP(start: buffer.value.0, count: class_getInstanceSize(classType)))
         } else if type.kind == .struct || type.kind == .tuple {
             if type.memoryLayout.size > MemoryLayout<Buffer>.size {

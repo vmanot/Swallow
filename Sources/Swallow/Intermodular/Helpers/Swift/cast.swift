@@ -237,6 +237,10 @@ public protocol _ArrayProtocol: Initiable {
 }
 
 extension Array: _ArrayProtocol {
+    public static var _opaque_ArrayProtocol_ElementType: Any.Type {
+        Element.self
+    }
+    
     public func _opaque_castElementType(
         to type: Any.Type
     ) throws -> _ArrayProtocol {
