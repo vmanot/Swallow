@@ -47,7 +47,7 @@ extension KeyedDecodingContainerProtocol {
         forKey key: Key
     ) throws -> T {
         if let type = type as? any OptionalProtocol.Type {
-            let unwrappedType = try cast(type._opaque_Optional_WrappedType, to: any Decodable.Type.self)
+            let unwrappedType = try cast(type._opaque_Optional_WrappedType, to: (any Decodable.Type).self)
             
             if let unwrapped = try decodeIfPresent(unwrappedType, forKey: key) {
                 return try cast(type.init(_opaque_wrappedValue: unwrapped), to: T.self)

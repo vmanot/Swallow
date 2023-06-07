@@ -39,7 +39,7 @@ public struct KeyedValuesOf<Wrapped>: Initiable  {
             preconditionFailure("Type mismatch \(Value.self): \(value)")
         }
     }
-    
+        
     /// Updates the stored value for the given key path.
     ///
     /// - Parameter value: The value to store against `keyPath`.

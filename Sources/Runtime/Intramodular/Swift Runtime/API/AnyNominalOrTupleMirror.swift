@@ -4,13 +4,22 @@
 
 import Swallow
 
-public struct AnyNominalOrTupleMirror: MirrorType, FailableWrapper {
-    public var value: Any
+public protocol _AnyMirrorType<Subject> {
+    associatedtype Subject
+    
+    func _accept(
+        visitor: _AnyMirrorVisitor,
+        at path: [_AnyMirrorPathElement]
+    ) throws
+}
+
+public struct AnyNominalOrTupleMirror<Subject>: _AnyMirrorType, MirrorType {
+    public var subject: Any
     public let typeMetadata: TypeMetadata.NominalOrTuple
     
-    private let _cachedFieldsByName: [AnyStringKey: NominalTypeMetadata.Field]
+    private let _cachedFieldsByName: [AnyCodingKey: NominalTypeMetadata.Field]
     
-    public var supertypeMirror: AnyNominalOrTupleMirror? {
+    public var supertypeMirror: AnyNominalOrTupleMirror<Any>? {
         guard let supertypeMetadata = typeMetadata.supertypeMetadata else {
             return nil
         }
@@ -22,24 +31,23 @@ public struct AnyNominalOrTupleMirror: MirrorType, FailableWrapper {
     }
     
     init(
-        unchecked value: Any,
+        unchecked subject: Any,
         typeMetadata: TypeMetadata.NominalOrTuple
     ) {
-        self.value = value
+        self.subject = subject
         self.typeMetadata = typeMetadata
-        self._cachedFieldsByName = Dictionary(OrderedDictionary(values: typeMetadata.fields, uniquelyKeyedBy: { AnyStringKey(stringValue: $0.name) }))
-    }
-    
-    public init(unchecked value: Value) {
-        self.init(unchecked: value, typeMetadata: .of(value))
-    }
-    
-    public init?(_ value: Value) {
-        guard let _ = TypeMetadata.NominalOrTuple(type(of: value)) else {
-            return nil
-        }
         
-        self.init(unchecked: value)
+        print(typeMetadata)
+        self._cachedFieldsByName = Dictionary(OrderedDictionary(values: typeMetadata.fields, uniquelyKeyedBy: { AnyCodingKey(stringValue: $0.name) }))
+    }
+        
+    public init?(_ subject: Subject) {
+        let _subject = _unwrapExistential(subject)
+        
+        self.init(
+            unchecked: _subject,
+            typeMetadata: .of(_subject)
+        )
     }
 }
 
@@ -64,17 +72,20 @@ extension AnyNominalOrTupleMirror: KeyExposingMutableDictionaryProtocol {
         return .init(supertypeMirror.allFields.join(fields))
     }
     
-    public var keys: [AnyStringKey] {
+    public var keys: [AnyCodingKey] {
         fields.map({ .init(stringValue: $0.name) })
     }
     
-    public var allKeys: [AnyStringKey] {
+    public var allKeys: [AnyCodingKey] {
         allFields.map({ .init(stringValue: $0.name) })
     }
     
+    /// Accesses the value of the given field.
+    ///
+    /// This is **unsafe**.
     public subscript(field: NominalTypeMetadata.Field) -> Any {
         get {
-            return OpaqueExistentialContainer.withUnretainedValue(value) {
+            return OpaqueExistentialContainer.withUnretainedValue(subject) {
                 $0.withUnsafeBytes { bytes in
                     field.type.opaqueExistentialInterface.copyValue(
                         from: bytes.baseAddress?.advanced(by: field.offset)
@@ -84,7 +95,9 @@ extension AnyNominalOrTupleMirror: KeyExposingMutableDictionaryProtocol {
         } set {
             assert(type(of: newValue) == field.type.base)
 
-            OpaqueExistentialContainer.withUnretainedValue(&value) {
+            var _subject: Any = subject
+            
+            OpaqueExistentialContainer.withUnretainedValue(&_subject) {
                 $0.withUnsafeMutableBytes { bytes in
                     field.type.opaqueExistentialInterface.reinitializeValue(
                         at: bytes.baseAddress?.advanced(by: field.offset),
@@ -92,10 +105,12 @@ extension AnyNominalOrTupleMirror: KeyExposingMutableDictionaryProtocol {
                     )
                 }
             }
+            
+            subject = _subject as! Subject
         }
     }
     
-    public subscript(_ key: AnyStringKey) -> Any? {
+    public subscript(_ key: AnyCodingKey) -> Any? {
         get {
             fieldForKey(key).map({ self[$0] })
         } set {
@@ -111,13 +126,13 @@ extension AnyNominalOrTupleMirror: KeyExposingMutableDictionaryProtocol {
         }
     }
     
-    private func fieldForKey(_ key: AnyStringKey) -> NominalTypeMetadata.Field? {
+    private func fieldForKey(_ key: AnyCodingKey) -> NominalTypeMetadata.Field? {
         _cachedFieldsByName[key] ?? typeMetadata.allFields.first(where: { $0.key == key })
     }
 }
 
 extension AnyNominalOrTupleMirror: Sequence {
-    public typealias Element = (key: AnyStringKey, value: Any)
+    public typealias Element = (key: AnyCodingKey, value: Any)
     public typealias Children = AnySequence<Element>
     public typealias AllChildren = AnySequence<Element>
     
@@ -137,3 +152,57 @@ extension AnyNominalOrTupleMirror: Sequence {
         AnyIterator(keys.lazy.map(({ ($0, self[$0]!) })).makeIterator())
     }
 }
+
+public enum _AnyMirrorPathElement: Hashable, Sendable {
+    case field(AnyCodingKey)
+}
+
+public protocol _AnyMirrorVisitor {
+    func shouldVisitChildren<T>(
+        of subject: T,
+        at path: [_AnyMirrorPathElement]
+    ) -> Bool
+    
+    func visit<T>(
+        _ mirror: AnyNominalOrTupleMirror<T>,
+        at path: [_AnyMirrorPathElement]
+    ) throws
+}
+
+extension AnyNominalOrTupleMirror {
+    public func _accept(
+        visitor: _AnyMirrorVisitor,
+        at path: [_AnyMirrorPathElement]
+    ) throws {
+        guard visitor.shouldVisitChildren(of: subject, at: path) else {
+            return
+        }
+        
+        try visitor.visit(self, at: path)
+        
+        for (field, value) in self {
+            guard visitor.shouldVisitChildren(of: value, at: path.appending(.field(field))) else {
+                continue
+            }
+            
+            if let mirror = _AnyNominalOrTupleMirror_init(value) {
+                try mirror._accept(visitor: visitor, at: path.appending(.field(field)))
+            }
+        }
+    }
+}
+
+extension _AnyMirrorVisitor {
+    public func visit<T>(_ mirror: AnyNominalOrTupleMirror<T>) throws {
+        try mirror._accept(visitor: self, at: [])
+    }
+}
+
+private func _AnyNominalOrTupleMirror_init(_ x: Any) -> (any _AnyMirrorType)? {
+    func makeMirror<T>(_ subject: T) -> (any _AnyMirrorType)? {
+        AnyNominalOrTupleMirror(subject)
+    }
+    
+    return _openExistential(x, do: makeMirror)
+}
+

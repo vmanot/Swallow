@@ -19,7 +19,7 @@ extension PolymorphicDecodable where DecodingTypeDiscriminator: Swallow.TypeDisc
     public static func resolveSubtype(
         for discriminator: DecodingTypeDiscriminator
     ) throws -> any PolymorphicDecodable.Type {
-        try cast(discriminator.resolveType(), to: any PolymorphicDecodable.Type.self)
+        try cast(discriminator.resolveType(), to: (any PolymorphicDecodable.Type).self)
     }
 }
 
@@ -81,7 +81,7 @@ fileprivate struct _PolymorphicProxyDecodable<T: PolymorphicDecodable>: _Polymor
         let subtype = try T.resolveSubtype(for: discriminator)
         
         do {
-            let _subtype = try cast(subtype, to: any PolymorphicDecodable.Type.self)
+            let _subtype = try cast(subtype, to: (any PolymorphicDecodable.Type).self)
             let subdiscriminator = try _subtype.decodeTypeDiscriminator(from: decoder)
             
             if let discriminator = discriminator as? any TypeDiscriminator,

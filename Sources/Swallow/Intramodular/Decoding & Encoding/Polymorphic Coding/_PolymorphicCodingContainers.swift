@@ -193,9 +193,7 @@ public struct _PolymorphicUnkeyedDecodingContainer: UnkeyedDecodingContainer {
     }
 }
 
-public struct _PolymorphicKeyedDecodingContainer<T: CodingKey>: KeyedDecodingContainerProtocol {
-    public typealias Key = T
-    
+public struct _PolymorphicKeyedDecodingContainer<Key: CodingKey>: KeyedDecodingContainerProtocol {    
     private var base: KeyedDecodingContainer<Key>
     private var parent: Decoder
     

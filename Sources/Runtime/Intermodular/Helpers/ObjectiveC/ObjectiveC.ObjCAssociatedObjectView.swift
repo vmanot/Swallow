@@ -5,31 +5,31 @@
 import ObjectiveC
 import Swallow
 
-public struct ObjCAssociatedObjectView<T: ObjCObject> {    
-    public let superValue: T
+public struct ObjCAssociatedObjectView<Object: ObjCObject> {
+    public let base: Object
     
-    public init(of superValue: T) {
-        self.superValue = superValue
+    public init(of base: Object) {
+        self.base = base
     }
 }
 
 extension ObjCAssociatedObjectView {
     public func removeAll() {
-        objc_removeAssociatedObjects(superValue)
+        objc_removeAssociatedObjects(base)
     }
 }
 
 extension ObjCAssociatedObjectView {
     public func value<T>(forKey key: ObjCAssociationKey<T>) -> T? {
-        return objc_getAssociatedObject(superValue, key.rawValue) as! T?
+        return objc_getAssociatedObject(base, key.rawValue) as! T?
     }
     
     public func value(forKey key: ObjCAssociationKey<Any>) -> Any? {
-        return objc_getAssociatedObject(superValue, key.rawValue) 
+        return objc_getAssociatedObject(base, key.rawValue) 
     }
     
     public func setValue<T>(_ value: T?, forKey key: ObjCAssociationKey<T>) {
-        objc_setAssociatedObject(superValue, key.rawValue, value as Any?, key.policy.rawValue)
+        objc_setAssociatedObject(base, key.rawValue, value as Any?, key.policy.rawValue)
     }
 
     public subscript<T>(key: ObjCAssociationKey<T>) -> T? {
@@ -42,7 +42,10 @@ extension ObjCAssociatedObjectView {
 }
 
 extension ObjCAssociatedObjectView {
-    public func setValue(_ value: Any?, forKey key: ObjCAssociationKey<Any>) {
-        objc_setAssociatedObject(superValue, key.rawValue, value as AnyObject, key.policy.rawValue)
+    public func setValue(
+        _ value: Any?,
+        forKey key: ObjCAssociationKey<Any>
+    ) {
+        objc_setAssociatedObject(base, key.rawValue, value as AnyObject, key.policy.rawValue)
     }
 }

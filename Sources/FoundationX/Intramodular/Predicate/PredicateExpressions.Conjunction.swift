@@ -4,7 +4,7 @@
 
 import Swallow
 
-extension PredicateExpressions {
+extension PredicateExpressionsX {
     public struct Conjunction<
         LHS: PredicateExpression,
         RHS: PredicateExpression

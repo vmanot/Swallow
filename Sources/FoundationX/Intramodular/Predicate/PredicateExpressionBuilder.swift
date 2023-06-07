@@ -19,8 +19,8 @@ public struct StandardPredicateExpressionOver<LHS: PredicateExpression>: Standar
     }
 }
 
-extension Predicate: StandardPredicateExpressionBuilder {
-    public typealias LHS = PredicateExpressions.Variable<Input>
+extension PredicateX: StandardPredicateExpressionBuilder {
+    public typealias LHS = PredicateExpressionsX.Variable<Input>
     
     public init(expression: (LHS) -> any PredicateExpression<Bool>) {
         self.variable = .init()
@@ -32,7 +32,7 @@ extension StandardPredicateExpressionBuilder {
         _ element: LHS.Output.Element
     ) -> Self where LHS.Output: Sequence, LHS.Output.Element: Equatable {
         .init(expression: {
-            PredicateExpressions.SequenceContains(sequence: $0, element: .value(element))
+            PredicateExpressionsX.SequenceContains(sequence: $0, element: .value(element))
         })
     }
     
@@ -40,7 +40,7 @@ extension StandardPredicateExpressionBuilder {
         _ substring: String
     ) -> Self where LHS: PredicateExpression<String> {
         .init(expression: {
-            PredicateExpressions.StringContainsSubstring(sequence: $0, element: .value(substring))
+            PredicateExpressionsX.StringContainsSubstring(sequence: $0, element: .value(substring))
         })
     }
     
@@ -48,7 +48,7 @@ extension StandardPredicateExpressionBuilder {
         _ suffix: some BidirectionalCollection<LHS.Output.Element>
     ) -> Self where LHS.Output: BidirectionalCollection, LHS.Output.Element: Equatable {
         .init(expression: {
-            PredicateExpressions.CollectionHasSuffix(collection: $0, suffix: .value(suffix))
+            PredicateExpressionsX.CollectionHasSuffix(collection: $0, suffix: .value(suffix))
         })
     }
     
@@ -56,7 +56,7 @@ extension StandardPredicateExpressionBuilder {
         _ suffix: Any.Type...
     ) -> Self where LHS.Output: BidirectionalCollection {
         .init(expression: {
-            PredicateExpressions.CollectionHasPredicatedSuffix(
+            PredicateExpressionsX.CollectionHasPredicatedSuffix(
                 collection: $0,
                 suffix: suffix.map { type in
                     return { (element: LHS.Output.Element) in
@@ -71,7 +71,7 @@ extension StandardPredicateExpressionBuilder {
         _ suffix: LHS.Output.Element._UnwrappedBaseType...
     ) -> Self where LHS.Output: BidirectionalCollection, LHS.Output.Element: _UnwrappableTypeEraser & Equatable {
         .init(expression: {
-            PredicateExpressions.CollectionHasSuffix(
+            PredicateExpressionsX.CollectionHasSuffix(
                 collection: $0,
                 suffix: .value(suffix)
             )
@@ -82,7 +82,7 @@ extension StandardPredicateExpressionBuilder {
         _ suffix: LHS.Output.Element._UnwrappedBaseType...
     ) -> Self where LHS.Output: BidirectionalCollection, LHS.Output.Element: _UnwrappableTypeEraser & ApproximatelyEquatable {
         .init(expression: {
-            PredicateExpressions.CollectionHasApproximateSuffix(
+            PredicateExpressionsX.CollectionHasApproximateSuffix(
                 collection: $0,
                 suffix: .value(suffix)
             )
@@ -93,7 +93,7 @@ extension StandardPredicateExpressionBuilder {
         _ suffix: LHS.Output.Element._UnwrappedBaseType...
     ) -> Self where LHS.Output: BidirectionalCollection, LHS.Output.Element: _UnwrappableTypeEraser & ApproximatelyEquatable & Equatable {
         .init(expression: {
-            PredicateExpressions.CollectionHasApproximateSuffix(
+            PredicateExpressionsX.CollectionHasApproximateSuffix(
                 collection: $0,
                 suffix: .value(suffix)
             )

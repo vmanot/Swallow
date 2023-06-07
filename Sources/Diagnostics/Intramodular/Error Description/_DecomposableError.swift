@@ -10,6 +10,6 @@ public protocol _DecomposableError: Error {
 
 public enum _ErrorDecomposition<Parent: Error> {
     case irreducible(Parent)
-    case semantic(ElementGrouping<Error>)
+    case semantic(AnyElementGrouping<Error>)
     case catchAll(Error)
 }

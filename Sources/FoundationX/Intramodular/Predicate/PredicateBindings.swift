@@ -6,13 +6,13 @@ import Darwin
 import Swallow
 
 public struct PredicateBindings {
-    private var storage: [(id: PredicateExpressions.VariableID, value: Any)]
+    private var storage: [(id: PredicateExpressionsX.VariableID, value: Any)]
     
-    public init<T>(_ variable: (PredicateExpressions.Variable<T>, T)) {
+    public init<T>(_ variable: (PredicateExpressionsX.Variable<T>, T)) {
         self.storage = [(variable.0.key, variable.1)]
     }
     
-    public subscript<T>(_ variable: PredicateExpressions.Variable<T>) -> T? {
+    public subscript<T>(_ variable: PredicateExpressionsX.Variable<T>) -> T? {
         get {
             storage.first {
                 $0.id == variable.key
@@ -39,7 +39,7 @@ public struct PredicateBindings {
         }
     }
     
-    public func binding<T>(_ variable: PredicateExpressions.Variable<T>, to value: T) -> Self {
+    public func binding<T>(_ variable: PredicateExpressionsX.Variable<T>, to value: T) -> Self {
         var mutable = self
         
         mutable[variable] = value

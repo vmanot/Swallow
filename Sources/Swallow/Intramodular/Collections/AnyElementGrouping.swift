@@ -4,7 +4,25 @@
 
 import Swift
 
-public enum ElementGrouping<Element> {
+public protocol ElementGrouping<Element> {
+    associatedtype Element
+    
+    func _eraseToAnyElementGrouping() -> AnyElementGrouping<Element>
+}
+
+extension Array: ElementGrouping {
+    public func _eraseToAnyElementGrouping() -> AnyElementGrouping<Element> {
+        .sequence(self)
+    }
+}
+
+extension Set: ElementGrouping {
+    public func _eraseToAnyElementGrouping() -> AnyElementGrouping<Element> {
+        .set(self)
+    }
+}
+
+public enum AnyElementGrouping<Element> {
     public struct RankedHierarchy {
         public let primary: Element
         public let secondary: Element?

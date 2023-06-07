@@ -18,7 +18,7 @@ public func _openExistentialAndCast<T>(
 ) throws -> Any {
     let _type: Any.Type = type
     
-    func _cast<T>(to type: T.Type) -> Result<Any, Error> {
+    func _cast<U>(to type: U.Type) -> Result<Any, Error> {
         Result(catching: {
             try cast(value, to: type)
         })
@@ -175,6 +175,19 @@ public func _takeOpaqueExistentialUnoptimized(_ value: Any) -> Any {
     return value
 }
 
+
+public func _unwrapExistential(_ value: Any) -> Any {
+    let type = __fixed__type(of: value)
+    
+    do {
+        return try _openExistentialAndCast(value, to: type)
+    } catch {
+        assertionFailure()
+        
+        return value
+    }
+}
+
 public func _isValueOfGivenType<Value>(
     _ value: Value,
     type: Any.Type
@@ -268,5 +281,9 @@ public func _makeArrayType(withElementType element: Any.Type) -> _ArrayProtocol.
 @_optimize(none)
 @inline(never)
 public func _strictlyUnoptimized_passOpaqueExistential(_ value: Any) -> Any {
-    return value
+    func convert<T>(_ x: T) -> Any {
+        x as Any
+    }
+
+    return _openExistential(value, do: convert)
 }

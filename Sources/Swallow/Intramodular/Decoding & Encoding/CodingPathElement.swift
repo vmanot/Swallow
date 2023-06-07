@@ -5,7 +5,7 @@
 import Foundation
 import Swift
 
-public enum CodingPathElement {
+public enum CodingPathElement: Hashable, Sendable {
     case key(AnyCodingKey)
     case `super`
     case keyedSuper(AnyCodingKey)

@@ -18,7 +18,7 @@ public enum CanonicalFileDirectory {
     case ubiquityContainer(String)
     case userDocuments
     
-    public func toURL(sandboxed: Bool = true) throws -> URL {
+    public func toURL() throws -> URL {
         let fileManager = FileManager.default
         
         switch self {
@@ -76,6 +76,14 @@ public enum CanonicalFileDirectory {
 }
 
 extension CanonicalFileDirectory {
+    public static func + (lhs: Self, rhs: String) throws -> URL {
+        try lhs.toURL().appendingPathComponent(rhs)
+    }
+
+    public static func + (lhs: Self, rhs: URL.PathComponent) throws -> URL {
+        try lhs.toURL().appending(rhs)
+    }
+
     /// Returns the first valid location of the two given operands.
     public static func || (lhs: Self, rhs: Self) -> Self {
         do {

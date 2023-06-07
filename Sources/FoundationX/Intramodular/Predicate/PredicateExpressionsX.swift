@@ -4,11 +4,11 @@
 
 import Swallow
 
-public enum PredicateExpressions {
+public enum PredicateExpressionsX {
     
 }
 
-extension PredicateExpressions {
+extension PredicateExpressionsX {
     public struct VariableID: Hashable, Codable, Sendable {
         let id: UInt
         private static let nextID = LockedState(initialState: UInt(0))
@@ -65,7 +65,7 @@ extension PredicateExpressions {
     }
 }
 
-extension PredicateExpressions {
+extension PredicateExpressionsX {
     public struct Map<Base: PredicateExpression, Output>: PredicateExpression {
         public let base: Base
         public let transform: @Sendable (Base.Output) throws -> Output
@@ -87,7 +87,7 @@ extension PredicateExpressions {
 extension PredicateExpression {
     public func map<T>(
         _ expression: @escaping @Sendable (Output) throws -> T
-    ) -> PredicateExpressions.Map<Self, T> {
+    ) -> PredicateExpressionsX.Map<Self, T> {
         .init(base: self, transform: expression)
     }
 }

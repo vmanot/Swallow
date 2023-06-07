@@ -28,6 +28,7 @@ struct FieldRecord {
     private var _mangledTypeName: SwiftRuntimeUnsafeRelativePointer<Int32, Int8>
     private var _fieldName: SwiftRuntimeUnsafeRelativePointer<Int32, UInt8>
     
+    @_transparent
     var isVariable: Bool {
         (fieldRecordFlags & 0x2) == 0x2
     }
@@ -42,6 +43,7 @@ struct FieldRecord {
         String(cString: _mangledTypeName.advanced())
     }
     
+    @_transparent
     mutating func type(
         genericContext: UnsafeRawPointer?,
         genericArguments: UnsafeRawPointer?
@@ -58,6 +60,7 @@ struct FieldRecord {
         return unsafeBitCast(metadataPtr, to: Any.Type.self)
     }
     
+    @_transparent
     private func getSymbolicMangledNameLength(_ base: UnsafeRawPointer) -> Int32 {
         var end = base
         

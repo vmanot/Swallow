@@ -10,7 +10,7 @@ extension TypeMetadata.Nominal {
         public let type: TypeMetadata
         public let offset: Int
         
-        public var key: AnyStringKey {
+        public var key: AnyCodingKey {
             .init(stringValue: name)
         }
         

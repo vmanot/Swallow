@@ -4,7 +4,7 @@
 
 import Swallow
 
-extension PredicateExpressions {
+extension PredicateExpressionsX {
     public struct SequenceContains<
         LHS: PredicateExpression,
         RHS: PredicateExpression
@@ -84,7 +84,7 @@ extension PredicateExpressions {
         public init<E: PredicateExpression>(
             collection: LHS,
             suffix: E
-        ) where LHS.Output.Element: _UnwrappableTypeEraser, E.Output: BidirectionalCollection<LHS.Output.Element._UnwrappedBaseType>, RHS == PredicateExpressions.Map<E, AnyBidirectionalCollection<LHS.Output.Element>> {
+        ) where LHS.Output.Element: _UnwrappableTypeEraser, E.Output: BidirectionalCollection<LHS.Output.Element._UnwrappedBaseType>, RHS == PredicateExpressionsX.Map<E, AnyBidirectionalCollection<LHS.Output.Element>> {
             self.collection = collection
             self.suffix = suffix.map { suffix in
                 suffix
@@ -127,7 +127,7 @@ extension PredicateExpressions {
         public init<E: PredicateExpression>(
             collection: LHS,
             suffix: E
-        ) where LHS.Output.Element: _UnwrappableTypeEraser, E.Output: BidirectionalCollection<LHS.Output.Element._UnwrappedBaseType>, RHS == PredicateExpressions.Map<E, AnyBidirectionalCollection<LHS.Output.Element>> {
+        ) where LHS.Output.Element: _UnwrappableTypeEraser, E.Output: BidirectionalCollection<LHS.Output.Element._UnwrappedBaseType>, RHS == PredicateExpressionsX.Map<E, AnyBidirectionalCollection<LHS.Output.Element>> {
             self.collection = collection
             self.suffix = suffix.map { suffix in
                 suffix

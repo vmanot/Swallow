@@ -16,9 +16,9 @@ public protocol PredicateExpression<Output> {
     func evaluate(_ bindings: PredicateBindings) throws -> Output
 }
 
-public struct Predicate<Input>: PredicateProtocol {
+public struct PredicateX<Input>: PredicateProtocol {
     public var expression: any PredicateExpression<Bool>
-    public let variable: PredicateExpressions.Variable<Input>
+    public let variable: PredicateExpressionsX.Variable<Input>
 
     public func evaluate(_ input: Input) throws -> Bool {
         try expression.evaluate(PredicateBindings((variable, input)))
@@ -28,19 +28,19 @@ public struct Predicate<Input>: PredicateProtocol {
     public static func `where`(
         _ expressions: StandardPredicateExpressionOver<LHS>...
     ) -> Self {
-        let variable = PredicateExpressions.Variable<Input>()
+        let variable = PredicateExpressionsX.Variable<Input>()
         
         return .init(
-            expression: PredicateExpressions._ConjunctionOfMany(expressions: expressions.map({ $0.expression(variable) })),
+            expression: PredicateExpressionsX._ConjunctionOfMany(expressions: expressions.map({ $0.expression(variable) })),
             variable: variable
         )
     }
 
     public static func keyPath<Output>(
         _ keyPath: KeyPath<Input, Output>,
-        _ expression: StandardPredicateExpressionOver<PredicateExpressions.KeyPath<PredicateExpressions.Variable<Input>, Output>>
+        _ expression: StandardPredicateExpressionOver<PredicateExpressionsX.KeyPath<PredicateExpressionsX.Variable<Input>, Output>>
     ) -> Self {
-        let variable = PredicateExpressions.Variable<Input>()
+        let variable = PredicateExpressionsX.Variable<Input>()
         
         return .init(
             expression: expression.expression(.init(root: variable, keyPath: keyPath)),
@@ -49,7 +49,7 @@ public struct Predicate<Input>: PredicateProtocol {
     }
 }
 
-func foo(_ predicate: Predicate<String>) {
+func foo(_ predicate: PredicateX<String>) {
     
 }
 
@@ -62,7 +62,7 @@ func bar() {
 extension PredicateExpression {
     public static func value<T>(
         _ value: T
-    ) -> Self where Self == PredicateExpressions.Value<T> {
+    ) -> Self where Self == PredicateExpressionsX.Value<T> {
         .init(value)
     }
 }
