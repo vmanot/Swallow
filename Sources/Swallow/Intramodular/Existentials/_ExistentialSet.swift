@@ -4,7 +4,7 @@
 
 import Swift
 
-public struct _SetOfExistentials<Existential> {
+public struct _ExistentialSet<Existential>: Hashable {
     private var elements: Set<_Element> = []
     
     fileprivate init(elements: Set<_Element>) {
@@ -38,7 +38,29 @@ public struct _SetOfExistentials<Existential> {
     }
 }
 
-extension _SetOfExistentials {
+extension _ExistentialSet {
+    public var _typeErased: Set<AnyHashable> {
+        get {
+            do {
+                return try Set(lazy.map({ try cast($0, to: (any Hashable).self).erasedAsAnyHashable }))
+            } catch {
+                assertionFailure()
+
+                return []
+            }
+        } set {
+            guard let newValue = try? newValue.map({ try cast($0.base, to: Existential.self) }) else {
+                assertionFailure()
+                
+                return
+            }
+                        
+            self = .init(newValue)
+        }
+    }
+}
+
+extension _ExistentialSet {
     public func first<T>(ofType type: T.Type) -> T? {
         self.first(where: { _isValueOfGivenType($0, type: type) }).map({ $0 as! T })
     }
@@ -64,13 +86,19 @@ extension _SetOfExistentials {
 
 // MARK: - Conformances
 
-extension _SetOfExistentials: Sequence {
+extension _ExistentialSet: Sequence {
     public func makeIterator() -> AnyIterator<Existential> {
         AnyIterator(elements.lazy.map({ $0.value }).makeIterator())
     }
 }
 
-extension _SetOfExistentials: SetProtocol {
+extension _ExistentialSet {
+    public var count: Int {
+        elements.count
+    }
+}
+
+extension _ExistentialSet: SetProtocol {
     public func contains(_ element: Existential) -> Bool {
         elements.contains(.init(element))
     }
@@ -100,7 +128,7 @@ extension _SetOfExistentials: SetProtocol {
     }
 }
 
-extension _SetOfExistentials: ExpressibleByArrayLiteral {
+extension _ExistentialSet: ExpressibleByArrayLiteral {
     public init(arrayLiteral elements: Existential...) {
         self.init(elements)
     }
@@ -108,7 +136,7 @@ extension _SetOfExistentials: ExpressibleByArrayLiteral {
 
 // MARK: - Auxiliary
 
-extension _SetOfExistentials {
+extension _ExistentialSet {
     fileprivate struct _Element: Hashable {
         let value: Existential
         
@@ -131,7 +159,7 @@ extension _SetOfExistentials {
         }
         
         public static func == (lhs: Self, rhs: Self) -> Bool {
-            lhs.type == rhs.type && AnyEquatable.equate(lhs, rhs)
+            lhs.type == rhs.type && AnyEquatable.equate(lhs.value, rhs.value)
         }
     }
 }

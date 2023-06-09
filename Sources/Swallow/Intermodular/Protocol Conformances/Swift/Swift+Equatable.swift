@@ -15,9 +15,13 @@ public struct AnyEquatable: Equatable {
             self = base
         } else {
             func equate(_ x: Any, _ y: Any) -> Bool {
+                assert(!(x is AnyEquatable))
+                assert(!(y is AnyEquatable))
+
                 guard let x = x as? T, let y = y as? T else {
                     return false
                 }
+                
                 return x == y
             }
             
@@ -49,7 +53,7 @@ public struct AnyEquatable: Equatable {
     }
     
     public static func == (lhs: AnyEquatable, rhs: AnyEquatable) -> Bool {
-        return lhs.isEqualToImpl(lhs.base, rhs.base)
+        lhs.isEqualToImpl(lhs.base, rhs.base)
     }
 }
 
