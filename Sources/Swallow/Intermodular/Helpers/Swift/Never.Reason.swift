@@ -16,6 +16,7 @@ extension Never {
             case irrational
             case osUnsupported
             case unavailable
+            case unexpected
             case unimplemented
             case unsupported
         }
@@ -60,6 +61,11 @@ extension Never.Reason {
     @_transparent
     public static var unavailable: Self {
         .init(_base: .unavailable)
+    }
+    
+    @_transparent
+    public static var unexpected: Self {
+        .init(_base: .unexpected)
     }
     
     @_transparent

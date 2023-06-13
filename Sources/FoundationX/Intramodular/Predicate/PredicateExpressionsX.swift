@@ -11,7 +11,8 @@ public enum PredicateExpressionsX {
 extension PredicateExpressionsX {
     public struct VariableID: Hashable, Codable, Sendable {
         let id: UInt
-        private static let nextID = LockedState(initialState: UInt(0))
+        
+        private static let nextID = _LockedState(initialState: UInt(0))
         
         init() {
             self.id = Self.nextID.withLock { value in

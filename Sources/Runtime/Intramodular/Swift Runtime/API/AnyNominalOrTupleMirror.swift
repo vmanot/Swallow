@@ -17,6 +17,11 @@ public struct AnyNominalOrTupleMirror<Subject>: _AnyMirrorType, MirrorType {
     public var subject: Any
     public let typeMetadata: TypeMetadata.NominalOrTuple
     
+    @available(*, deprecated, renamed: "subject")
+    public var value: Any {
+        subject
+    }
+    
     private let _cachedFieldsByName: [AnyCodingKey: NominalTypeMetadata.Field]
     
     public var supertypeMirror: AnyNominalOrTupleMirror<Any>? {
@@ -25,7 +30,7 @@ public struct AnyNominalOrTupleMirror<Subject>: _AnyMirrorType, MirrorType {
         }
         
         return .init(
-            unchecked: self.value as Any,
+            unchecked: subject as Any,
             typeMetadata: supertypeMetadata
         )
     }
@@ -37,7 +42,6 @@ public struct AnyNominalOrTupleMirror<Subject>: _AnyMirrorType, MirrorType {
         self.subject = subject
         self.typeMetadata = typeMetadata
         
-        print(typeMetadata)
         self._cachedFieldsByName = Dictionary(OrderedDictionary(values: typeMetadata.fields, uniquelyKeyedBy: { AnyCodingKey(stringValue: $0.name) }))
     }
         
@@ -55,7 +59,7 @@ public struct AnyNominalOrTupleMirror<Subject>: _AnyMirrorType, MirrorType {
 
 extension AnyNominalOrTupleMirror: CustomStringConvertible {
     public var description: String {
-        return String(describing: value)
+        String(describing: subject)
     }
 }
 
