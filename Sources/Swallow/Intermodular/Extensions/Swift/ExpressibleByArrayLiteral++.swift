@@ -7,7 +7,7 @@ import Swift
 extension ExpressibleByArrayLiteral {
     /// Creates an instance initialized with the given elements.
     public init(_arrayLiteral elements: [Self.ArrayLiteralElement]) {
-        self = _isovariaidc(Self.init(arrayLiteral:))(elements)
+        self = _isovariadic(Self.init(arrayLiteral:))(elements)
     }
     
     public init(_emptyArrayLiteral: Void) {
