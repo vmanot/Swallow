@@ -8,8 +8,18 @@ public protocol SingleValueCache<Value> {
     associatedtype Value
     
     func store(_ value: Value)
-    
     func retrieve() -> Value?
+    func clear()
+}
+
+extension SingleValueCache {
+    public func store(_ value: Value?) {
+        if let value {
+            store(value)
+        } else {
+            clear()
+        }
+    }
 }
 
 extension SingleValueCache {
@@ -33,5 +43,9 @@ public final class InMemorySingleValueCache<Value>: SingleValueCache {
     
     public func retrieve() -> Value? {
         value
+    }
+    
+    public func clear() {
+        value = nil
     }
 }

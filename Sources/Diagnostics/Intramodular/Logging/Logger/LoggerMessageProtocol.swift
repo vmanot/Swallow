@@ -2,9 +2,6 @@
 // Copyright (c) Vatsal Manot
 //
 
-#if canImport(Logging)
-import Logging
-#endif
 #if canImport(os)
 import os.log
 #endif
@@ -20,12 +17,6 @@ public protocol LogMessageProtocol: ExpressibleByStringLiteral, ExpressibleByStr
 }
 
 // MARK: - Implemented Conformances
-
-#if canImport(Logging)
-extension SwiftLogLogger.Message: LogMessageProtocol {
-    
-}
-#endif
 
 #if canImport(os)
 @available(macOS 11.0, iOS 14.0, watchOS 7.0, tvOS 14.0, *)

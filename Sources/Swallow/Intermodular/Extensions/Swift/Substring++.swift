@@ -55,7 +55,7 @@ extension Substring {
     }
     
     public func trimming(trailing character: Character) -> Substring {
-        guard !isEmpty else {
+        guard let lastIndex else {
             return self
         }
         
@@ -107,7 +107,7 @@ extension Substring {
     public func trimmingTrailingCharacters(
         in characterSet: CharacterSet
     ) -> Substring {
-        guard !isEmpty else {
+        guard let lastIndex else {
             return self
         }
         

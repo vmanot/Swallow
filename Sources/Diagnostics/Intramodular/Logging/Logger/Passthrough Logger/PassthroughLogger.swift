@@ -17,6 +17,10 @@ public final class PassthroughLogger: @unchecked Sendable, LoggerProtocol, Obser
         self.base = base
     }
     
+    public var source: Source {
+        base.source
+    }
+    
     public convenience init(source: Source) {
         self.init(base: .init(source: source))
     }
@@ -144,7 +148,7 @@ extension PassthroughLogger {
     public struct Source: CustomStringConvertible {
         public enum Content {
             case sourceCodeLocation(SourceCodeLocation)
-            case logger(any LoggerProtocol)
+            case logger(any LoggerProtocol, scope: AnyLogScope?)
             case something(Any)
             case object(Weak<AnyObject>)
         }
@@ -155,8 +159,20 @@ extension PassthroughLogger {
             switch content {
                 case .sourceCodeLocation(let location):
                     return location.description
-                case .logger(let logger):
-                    return String(describing: logger)
+                case .logger(let logger, let scope):
+                    if let logger = logger as? _PassthroughLogger {
+                        guard let scope else {
+                            assertionFailure()
+                            
+                            return String(describing: logger)
+                        }
+                        
+                        return "\(logger.source.description): \(scope.description)"
+                    } else {
+                        assertionFailure()
+                        
+                        return String(describing: logger)
+                    }
                 case .something(let value):
                     return String(describing: value)
                 case .object(let object):
@@ -169,6 +185,10 @@ extension PassthroughLogger {
         }
         
         private init(content: Content) {
+            if content is any LoggerProtocol {
+                assertionFailure()
+            }
+
             self.content = content
         }
         
@@ -176,12 +196,19 @@ extension PassthroughLogger {
             Self(content: .sourceCodeLocation(location))
         }
         
-        public static func logger(_ logger: any LoggerProtocol) -> Self {
-            Self(content: .logger(logger))
+        public static func logger(
+            _ logger: any LoggerProtocol,
+            scope: AnyLogScope
+        ) -> Self {
+            Self(content: .logger(logger, scope: scope))
         }
         
         public static func object(_ object: AnyObject) -> Self {
-            Self(content: .object(Weak(wrappedValue: object)))
+            if object is any LoggerProtocol {
+                assertionFailure()
+            }
+            
+            return Self(content: .object(Weak(wrappedValue: object)))
         }
         
         public static func something(_ thing: Any) -> Self {

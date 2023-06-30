@@ -22,7 +22,11 @@ public struct _HashableExistential<Value>: PropertyWrapper {
         self.base = wrappedValue
     }
     
-    public init(_unsafelyErasing base: any Hashable) {
+    public init(_unsafelyErasing base: Any) {
+        self.base = base as! Value
+    }
+    
+    public init(_unsafelyErasing base: Any) where Value == any Hashable {
         self.base = base as! Value
     }
     

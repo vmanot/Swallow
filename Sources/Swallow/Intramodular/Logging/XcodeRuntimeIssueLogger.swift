@@ -120,6 +120,14 @@ public func runtimeIssue(
     runtimeIssue(String(describing: error))
 }
 
+@_transparent
+public func runtimeIssue(
+    _ error: Never.Reason,
+    file: StaticString = #file,
+    line: UInt = #line
+) {
+    runtimeIssue(String(describing: error))
+}
 
 // MARK: - Auxiliary
 

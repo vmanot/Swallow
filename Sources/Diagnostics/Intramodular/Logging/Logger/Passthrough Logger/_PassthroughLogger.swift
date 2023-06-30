@@ -15,13 +15,11 @@ final class _PassthroughLogger: LoggerProtocol, @unchecked Sendable {
     typealias LogEntry = PassthroughLogger.LogEntry
     
     private let lock = OSUnfairLock()
-    
     private let parent: _PassthroughLogger?
-    private let source: PassthroughLogger.Source
-    private let scope: PassthroughLoggerScope
-    
-    var configuration: PassthroughLogger.Configuration
-    
+
+    var source: PassthroughLogger.Source
+    var scope: PassthroughLoggerScope
+    var configuration: PassthroughLogger.Configuration    
     var entries: [LogEntry] = []
     
     init(source: Source) {
@@ -33,7 +31,7 @@ final class _PassthroughLogger: LoggerProtocol, @unchecked Sendable {
     
     init(parent: _PassthroughLogger, scope: AnyLogScope) {
         self.parent = parent
-        self.source = .logger(parent)
+        self.source = .logger(parent, scope: scope)
         self.scope = .child(parent: parent.scope, scope: scope)
         self.configuration = parent.configuration
     }

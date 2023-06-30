@@ -141,6 +141,38 @@ extension Optional {
 }
 #endif
 
+extension Optional {
+    @discardableResult
+    public mutating func unwrapOrInitialize(
+        default fallback: () throws -> Wrapped?
+    ) throws -> Wrapped {
+        if let wrapped = self {
+            return wrapped
+        } else {
+            let value = try fallback().unwrap()
+            
+            self = .some(value)
+            
+            return value
+        }
+    }
+    
+    @discardableResult
+    public mutating func unwrapOrInitialize(
+        default fallback: () async throws -> Wrapped?
+    ) async throws -> Wrapped {
+        if let wrapped = self {
+            return wrapped
+        } else {
+            let value = try await fallback().unwrap()
+            
+            self = .some(value)
+            
+            return value
+        }
+    }
+}
+
 #if DEBUG
 extension Optional {
     /// Force unwraps this `Optional`.

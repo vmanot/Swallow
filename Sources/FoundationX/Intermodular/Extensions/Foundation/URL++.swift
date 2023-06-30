@@ -24,6 +24,12 @@ extension URL {
 }
 
 extension URL {
+    public var fileName: String? {
+        lastPathComponent
+    }
+}
+
+extension URL {
     /// The portion of a URL relative to a given base URL.
     public func relativeString(relativeTo baseURL: URL) -> String {
         TODO.whole(.addressEdgeCase, .refactor)

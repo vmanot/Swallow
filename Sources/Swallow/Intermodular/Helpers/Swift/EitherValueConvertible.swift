@@ -142,6 +142,18 @@ extension EitherValueConvertible {
         return try leftValue.map(f) ||| rightValue.map(g)!
     }
     
+    public func flatMap<T, U>(
+        left transformLeft: ((LeftValue) throws -> T?),
+        right transformRight: ((RightValue) throws -> U?)
+    ) rethrows -> Either<T, U>? {
+        switch eitherValue {
+            case .left(let lhs):
+                return try transformLeft(lhs).map({ Either.left($0) })
+            case .right(let rhs):
+                return try transformRight(rhs).map({ Either.right($0) })
+        }
+    }
+    
     public func map<T>(
         left transform: ((LeftValue) throws -> T)
     ) rethrows -> Either<T, RightValue> {

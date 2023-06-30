@@ -86,6 +86,15 @@ public func _isValueNil(_ value: Any) -> Bool {
     Optional(_unwrapping: value).isNil
 }
 
+public func _isValueNil(_ value: Any?) -> Bool {
+    guard let value else {
+        return true
+    }
+    
+    return Optional(_unwrapping: value).isNil
+}
+
+
 public func _isTypeOptionalType(_ type: Any.Type) -> Bool {
     type is any OptionalProtocol.Type
 }

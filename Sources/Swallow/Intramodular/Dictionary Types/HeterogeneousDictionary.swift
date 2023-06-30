@@ -2,6 +2,8 @@
 // Copyright (c) Vatsal Manot
 //
 
+import Swift
+
 // A heterogeneous dictionary with strong types in Swift, https://oleb.net/2022/heterogeneous-dictionary/
 // Ole Begemann, April 2022
 
@@ -26,14 +28,20 @@ public protocol HeterogeneousDictionaryKey<Domain, Value> {
 public struct HeterogeneousDictionary<Domain> {
     public typealias DictionaryValue = Any
     
-    fileprivate var storage: [ObjectIdentifier: Any]
+    fileprivate var storage: [Metatype<Any.Type>: Any]
     
     public var count: Int {
         self.storage.count
     }
     
-    fileprivate init(storage: [ObjectIdentifier: Any]) {
+    fileprivate init(storage: [Metatype<Any.Type>: Any]) {
         self.storage = storage
+    }
+    
+    public init(_unsafeUniqueKeysAndValues elements: [(key: Any.Type, value: Any)]) {
+        self.init(storage: .init(uniqueKeysWithValues: elements.lazy.map {
+            (Metatype($0.key), $0.value)
+        }))
     }
     
     public init() {
@@ -46,9 +54,9 @@ extension HeterogeneousDictionary {
         key: Key.Type
     ) -> Key.Value? where Key.Domain == Domain {
         get {
-            self.storage[ObjectIdentifier(key)] as! Key.Value?
+            self.storage[Metatype<Any.Type>(key)] as! Key.Value?
         } set {
-            self.storage[ObjectIdentifier(key)] = newValue
+            self.storage[Metatype<Any.Type>(key)] = newValue
         }
     }
     
@@ -57,9 +65,9 @@ extension HeterogeneousDictionary {
         key: any HeterogeneousDictionaryKey<Domain, T>.Type
     ) -> T? {
         get {
-            self.storage[ObjectIdentifier(key)] as! Optional<T>
+            self.storage[Metatype<Any.Type>(key)] as! Optional<T>
         } set {
-            self.storage[ObjectIdentifier(key)] = newValue
+            self.storage[Metatype<Any.Type>(key)] = newValue
         }
     }
     
@@ -113,6 +121,20 @@ extension HeterogeneousDictionary {
         uniquingKeysWith combine: (DictionaryValue, DictionaryValue) throws -> DictionaryValue
     ) rethrows -> Self {
         try .init(storage: storage.merging(other.storage, uniquingKeysWith: combine))
+    }
+}
+
+// MARK: - Conformances
+
+extension HeterogeneousDictionary: Sequence {
+    public typealias Element = (key: Any.Type, value: DictionaryValue)
+    
+    public var keys: [Any.Type] {
+        storage.keys.map(\.value)
+    }
+    
+    public func makeIterator() -> AnyIterator<Element> {
+        AnyIterator(storage.lazy.map({ ($0.key.value, $0.value) }).makeIterator())
     }
 }
 

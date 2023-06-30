@@ -153,7 +153,7 @@ fileprivate extension RegularExpression {
         
         var pattern = self.pattern
         
-        pattern.remove(at: pattern.lastIndex)
+        pattern.remove(at: pattern.lastIndex!)
         pattern.removeFirst(3)
         
         return .init(pattern: pattern)

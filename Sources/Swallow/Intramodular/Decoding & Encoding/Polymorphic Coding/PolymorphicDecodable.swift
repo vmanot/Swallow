@@ -52,7 +52,7 @@ extension TopLevelDecoder {
 // MARK: - Auxiliary
 
 public struct _PolymorphicTopLevelDecoder<Base: TopLevelDecoder>: TopLevelDecoder {
-    private let base: Base
+    public let base: Base
     
     public init(from base: Base) {
         self.base = base

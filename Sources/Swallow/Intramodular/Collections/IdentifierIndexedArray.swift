@@ -10,6 +10,10 @@ public struct IdentifierIndexedArray<Element, ID: Hashable> {
     private var base: OrderedDictionary<ID, Element>
     private var id: (Element) -> ID
     
+    public var identifiers: Set<ID> {
+        Set(base.keys)
+    }
+    
     public init(_ elements: some Sequence<Element>, id: @escaping (Element) -> ID) {
         self.base = OrderedDictionary(uniqueKeysWithValues: elements.map({ (key: id($0), value: $0) }))
         self.id = id
@@ -202,7 +206,9 @@ extension IdentifierIndexedArray {
     }
     
     @discardableResult
-    public mutating func remove(elementIdentifiedBy id: ID) -> Element? {
+    public mutating func remove(
+        elementIdentifiedBy id: ID
+    ) -> Element? {
         guard let element = base[id] else {
             return nil
         }
@@ -210,6 +216,14 @@ extension IdentifierIndexedArray {
         remove(element)
         
         return element
+    }
+    
+    public mutating func removeAll(
+        identifiedBy sequence: some Sequence<ID>
+    ) {
+        for element in sequence {
+            remove(elementIdentifiedBy: element)
+        }
     }
     
     @discardableResult

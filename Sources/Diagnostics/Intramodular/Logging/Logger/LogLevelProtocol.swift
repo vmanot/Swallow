@@ -2,9 +2,6 @@
 // Copyright (c) Vatsal Manot
 //
 
-#if canImport(Logging)
-import Logging
-#endif
 #if canImport(os)
 import os.log
 #endif
@@ -95,29 +92,6 @@ public enum ServerLogLevel: String, ServerLogLevelProtocol {
         rawValue
     }
 }
-
-#if canImport(Logging)
-extension SwiftLogLogger.Level: LogLevelProtocol {
-    public var stringValue: String {
-        switch self {
-            case .trace:
-                return "trace"
-            case .debug:
-                return "debug"
-            case .info:
-                return "info"
-            case .notice:
-                return "notice"
-            case .warning:
-                return "warning"
-            case .error:
-                return "error"
-            case .critical:
-                return "critical"
-        }
-    }
-}
-#endif
 
 #if canImport(os)
 extension os.OSLogType: LogLevelProtocol {

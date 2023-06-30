@@ -68,4 +68,3 @@ extension DataEncodable {
         try data(using: try cast(strategy, to: Self.DataEncodingStrategy.self))
     }
 }
-

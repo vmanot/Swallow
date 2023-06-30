@@ -43,6 +43,8 @@ extension LossyCoding: Decodable where Value: Decodable {
         do {
             wrappedValue = try container.decode(Value.self)
         } catch {
+            runtimeIssue(error)
+            
             if (try? decoder.decodeNil()) ?? false {
                 self.wrappedValue = try _unsafeDummyValue(forType: Value.self)
             } else {
@@ -63,7 +65,11 @@ extension KeyedDecodingContainer {
         _ type: LossyCoding<T>.Type,
         forKey key: Key
     ) throws -> LossyCoding<T> {
-        try decodeIfPresent(type, forKey: key) ?? .init(wrappedValue: try _unsafeDummyValue(forType: T.self))
+        if let value = try decodeIfPresent(type, forKey: key) {
+            return value
+        } else {
+            return .init(wrappedValue: try _unsafeDummyValue(forType: T.self))
+        }
     }
 }
 

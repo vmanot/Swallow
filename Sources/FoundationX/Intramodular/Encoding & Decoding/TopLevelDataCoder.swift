@@ -12,11 +12,28 @@ public protocol TopLevelDataCoder: Sendable {
     func encode<T: Encodable>(_ value: T) throws -> Data
 }
 
+extension TopLevelDataCoder {
+    public func decode<T: Decodable>(from data: Data) throws -> T {
+        try decode(T.self, from: data)
+    }
+}
+
 // MARK: - Implemented Conformances
 
 public struct PropertyListCoder: TopLevelDataCoder {
-    private let decoder = _PolymorphicTopLevelDecoder(from: PropertyListDecoder())
-    private let encoder = PropertyListEncoder()
+    public let format: PropertyListSerialization.PropertyListFormat
+    
+    private let decoder: PropertyListDecoder
+    private let encoder: PropertyListEncoder
+    
+    public init(format: PropertyListSerialization.PropertyListFormat = .binary) {
+        self.format = format
+        
+        self.decoder = .init()
+        self.encoder = .init()
+        
+        encoder.outputFormat = format
+    }
     
     public func decode<T: Decodable>(_ type: T.Type, from data: Data) throws -> T {
         try decoder.decode(type, from: data)
@@ -30,6 +47,12 @@ public struct PropertyListCoder: TopLevelDataCoder {
 extension TopLevelDataCoder where Self == PropertyListCoder {
     public static var propertyList: PropertyListCoder {
         PropertyListCoder()
+    }
+    
+    public static func propertyList(
+        format: PropertyListSerialization.PropertyListFormat
+    ) -> PropertyListCoder {
+        PropertyListCoder(format: format)
     }
 }
 

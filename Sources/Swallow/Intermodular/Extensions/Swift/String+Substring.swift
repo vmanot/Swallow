@@ -9,12 +9,16 @@ extension String {
         return substring.map({ contains(substring: $0) }) ?? false
     }
     
-    public subscript(firstSubstring substring: String) -> Substring? {
-        return range(of: substring).map({ self[$0] })
+    public subscript(
+        firstSubstring substring: String
+    ) -> Substring? {
+        range(of: substring).map({ self[$0] })
     }
     
-    public func substrings(separatedBy separator: Character) -> [Substring] {
-        return split(whereSeparator: { $0 == separator })
+    public func substrings(
+        separatedBy separator: Character
+    ) -> [Substring] {
+        split(whereSeparator: { $0 == separator })
     }
     
     public var numberOfLines: Int {

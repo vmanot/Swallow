@@ -117,3 +117,11 @@ open class _SpecializedArrayBuilder<Element> {
         accumulated + next
     }
 }
+
+extension Array {
+    public static func flattening(
+        @_SpecializedArrayBuilder<Element> content: () -> [Element]
+    ) -> Self {
+        content()
+    }
+}

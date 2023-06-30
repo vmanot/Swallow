@@ -198,6 +198,10 @@ public struct Weak<Value>: PropertyWrapper {
         self.wrappedValue = wrappedValue
     }
     
+    public init(_ value: Value?) {
+        self.wrappedValue = value
+    }
+    
     public init() {
         self.init(wrappedValue: nil)
     }

@@ -11,7 +11,11 @@ public struct AnyTopLevelDecoder<Input>: TopLevelDecoder, Sendable {
     public init<Decoder: TopLevelDecoder>(
         erasing decoder: Decoder
     ) where Decoder.Input == Input {
-        self._decode = { try decoder.decode($0, from: $1) }
+        if let decoder = decoder as? AnyTopLevelDecoder {
+            self = decoder
+        } else {
+            self._decode = { try decoder.decode($0, from: $1) }
+        }
     }
     
     public init<Coder: TopLevelDataCoder>(

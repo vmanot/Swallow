@@ -27,7 +27,7 @@ extension CollectionOfOne: Diffable where Element: Equatable {
                         return oldValue
                 }
             }
-
+            
             public var newValue: Element {
                 switch self {
                     case .update(_, let newValue):
@@ -132,7 +132,11 @@ public struct DictionaryDifference<Key: Hashable, Value>: Sequence {
         insertions.isEmpty && updates.isEmpty && removals.isEmpty
     }
     
-    public init(insertions: [Change], updates: [Change], removals: [Change]) {
+    public init(
+        insertions: [Change],
+        updates: [Change],
+        removals: [Change]
+    ) {
         self.insertions = insertions
         self.updates = updates
         self.removals = removals
@@ -290,7 +294,7 @@ extension Set: Diffable {
     
     public func applying(_ difference: Difference) -> Self? {
         var result = self
-         
+        
         result.applyUnconditionally(difference) // FIXME
         
         return result

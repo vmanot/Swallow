@@ -111,7 +111,7 @@ extension LoggerProtocol where LogLevel: ClientLogLevelProtocol {
     }
     
     public func warning(
-        _ message: @autoclosure () -> String,
+        _ warning:  @autoclosure () -> String,
         metadata: [String: Any]? = nil,
         file: String = #file,
         function: String = #function,
@@ -119,7 +119,24 @@ extension LoggerProtocol where LogLevel: ClientLogLevelProtocol {
     ) {
         log(
             level: .warning,
-            message(),
+            warning(),
+            metadata: metadata,
+            file: file,
+            function: function,
+            line: line
+        )
+    }
+    
+    public func warning(
+        _ warning:  @autoclosure () -> Error,
+        metadata: [String: Any]? = nil,
+        file: String = #file,
+        function: String = #function,
+        line: UInt = #line
+    ) {
+        log(
+            level: .warning,
+            String(describing: warning()),
             metadata: metadata,
             file: file,
             function: function,

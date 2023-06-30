@@ -23,6 +23,49 @@ extension RangeReplaceableCollection {
     }
 }
 
+extension RangeReplaceableCollection where Self: BidirectionalCollection & MutableCollection  {
+    public var mutableFirst: Element? {
+        get {
+            first
+        } set {
+            if let newValue {
+                self[startIndex] = newValue
+            } else {
+                self.removeFirst()
+            }
+        }
+    }
+    
+    public var mutableLast: Element? {
+        get {
+            last
+        } set {
+            if let newValue {
+                if let lastIndex = lastIndex {
+                    self[lastIndex] = newValue
+                } else {
+                    self.append(newValue)
+                }
+            } else {
+                _ = popLast()
+            }
+        }
+    }
+    
+    public mutating func mutateFirstAndLast(
+        first mutateFirst: (inout Element?) throws -> Void,
+        last mutateLast: (inout Element?) throws -> Void
+    ) rethrows {
+        let originalCount = count
+        
+        try mutateFirst(&mutableFirst)
+        
+        if originalCount > 1 {
+            try mutateLast(&mutableLast)
+        }
+    }
+}
+
 extension RangeReplaceableCollection {
     @discardableResult
     public mutating func replace(
@@ -278,6 +321,14 @@ extension RangeReplaceableCollection where Element: Identifiable {
     /// Updates a given identifiable element if already present, inserts it otherwise.
     public mutating func updateOrAppend<S: Sequence>(contentsOf elements: S) where S.Element == Element {
         elements.forEach({ updateOrAppend($0) })
+    }
+    
+    public mutating func removeAll(
+        identifiedBy identifiers: some Sequence<Element.ID>
+    ) {
+        let identifiers = Set(identifiers)
+        
+        removeAll(where: { identifiers.contains($0.id) })
     }
 }
 

@@ -6,7 +6,11 @@ import Swift
 
 extension BidirectionalCollection {
     @inlinable
-    public var lastIndex: Index {
+    public var lastIndex: Index? {
+        guard !isEmpty else {
+            return nil
+        }
+
         return index(before: endIndex)
     }
     
@@ -35,6 +39,10 @@ extension BidirectionalCollection {
 extension BidirectionalCollection {
     @inlinable
     public func reverse(index i: Index) -> Index {
+        guard let lastIndex else {
+            return i
+        }
+        
         return index(atDistance: distance(from: i, to: lastIndex))
     }
     
