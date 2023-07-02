@@ -38,7 +38,7 @@ extension RegularExpression {
 extension RegularExpression {
     public func matchRanges(in string: String) -> [Range<String.Index>] {
         (self as NSRegularExpression)
-            .matches(in: string, range: string.nsRangeBounds)
+            .matches(in: string, range: NSRange(string.bounds, in: string))
             .map({ Range($0.range, in: string)! })
     }
     

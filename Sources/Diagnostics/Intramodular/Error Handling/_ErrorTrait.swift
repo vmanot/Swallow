@@ -4,7 +4,7 @@
 
 import Swallow
 
-public protocol _ErrorTrait {
+public protocol _ErrorTrait: Hashable, Sendable {
     
 }
 

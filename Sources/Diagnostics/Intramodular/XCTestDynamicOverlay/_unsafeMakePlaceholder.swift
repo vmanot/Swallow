@@ -58,7 +58,7 @@ extension RangeReplaceableCollection {
     }
 }
 
-private func _placeholder<Result>() -> Result? {
+public func _generatePlaceholder<Result>() -> Result? {
     switch Result.self {
         case let type as _PlaceholderInitiable.Type:
             return type.placeholder as? Result
@@ -78,7 +78,8 @@ private func _placeholder<Result>() -> Result? {
             return type.placeholder as? Result
         case let type as any ExpressibleByIntegerLiteral.Type:
             return type.placeholder as? Result
-        case let type as any ExpressibleByUnicodeScalarLiteral.Type: return type.placeholder as? Result
+        case let type as any ExpressibleByUnicodeScalarLiteral.Type:
+            return type.placeholder as? Result
         default:
             return nil
     }
@@ -86,7 +87,7 @@ private func _placeholder<Result>() -> Result? {
 
 private func _rawRepresentable<Result>() -> Result? {
     func posiblePlaceholder<T: RawRepresentable>(for type: T.Type) -> T? {
-        (_placeholder() as T.RawValue?).flatMap(T.init(rawValue:))
+        (_generatePlaceholder() as T.RawValue?).flatMap(T.init(rawValue:))
     }
     
     return (Result.self as? any RawRepresentable.Type).flatMap {
@@ -102,20 +103,4 @@ private func _caseIterable<Result>() -> Result? {
     return (Result.self as? any CaseIterable.Type).flatMap {
         firstCase(for: $0)
     }
-}
-
-func _unsafeInitializePlaceholder<Result>() -> Result? {
-    if let result = _placeholder() as Result? {
-        return result
-    }
-    
-    if let result = _rawRepresentable() as Result? {
-        return result
-    }
-    
-    if let result = _caseIterable() as Result? {
-        return result
-    }
-    
-    return nil
 }

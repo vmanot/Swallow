@@ -82,11 +82,15 @@ public struct AnyMutablePropertyWrapper<Value>: MutablePropertyWrapper {
         }
     }
     
-    public init<Wrapper: MutablePropertyWrapper>(_ wrapper: Wrapper) where Wrapper.WrappedValue == Value {
+    public init<Wrapper: MutablePropertyWrapper>(
+        _ wrapper: Wrapper
+    ) where Wrapper.WrappedValue == Value {
         self.base = wrapper
     }
     
-    public init<Wrapper: PropertyWrapper>(unsafelyAdapting wrapper: Wrapper) where Wrapper.WrappedValue == Value {
+    public init<Wrapper: PropertyWrapper>(
+        unsafelyAdapting wrapper: Wrapper
+    ) where Wrapper.WrappedValue == Value {
         if let wrapper = wrapper as? any MutablePropertyWrapper {
             self.base = wrapper
         } else {
@@ -106,44 +110,70 @@ extension MutablePropertyWrapper {
 /// Use it while building your own protocol wrapper composition.
 @propertyWrapper
 public struct MutableValueBox<WrappedValue>: MutablePropertyWrapper {
-    private let getWrappedValue: (Self) -> WrappedValue
-    private let setWrappedValue: (inout Self, WrappedValue) -> ()
+    struct Binding {
+        let get: (MutableValueBox) -> WrappedValue
+        let set: (inout MutableValueBox, WrappedValue) -> ()
+    }
     
+    private let binding: Binding
     public var _opaque_wrappedValue: Any
     
     public var wrappedValue: WrappedValue {
         get {
-            getWrappedValue(self)
+            binding.get(self)
         } set {
-            setWrappedValue(&self, newValue)
+            binding.set(&self, newValue)
         }
     }
     
-    public init(wrappedValue: WrappedValue) {
+    public init(
+        wrappedValue: WrappedValue
+    ) {
         _opaque_wrappedValue = wrappedValue
         
-        getWrappedValue = { _self in
-            _self._opaque_wrappedValue as! WrappedValue
-        }
-        
-        setWrappedValue = { _self, newValue in
-            _self._opaque_wrappedValue = newValue
-        }
+        binding = .init(
+            get: { _self in
+                _self._opaque_wrappedValue as! WrappedValue
+            },
+            set: { _self, newValue in
+                _self._opaque_wrappedValue = newValue
+            }
+        )
     }
     
-    public init<Wrapper: MutablePropertyWrapper>(_ wrapper: Wrapper) where Wrapper.WrappedValue == WrappedValue {
+    public init<Wrapper: MutablePropertyWrapper>(
+        _ wrapper: Wrapper
+    ) where Wrapper.WrappedValue == WrappedValue {
         _opaque_wrappedValue = wrapper
         
-        getWrappedValue = { _self in
-            (_self._opaque_wrappedValue as! Wrapper).wrappedValue
-        }
-        
-        setWrappedValue = { _self, newValue in
-            var wrappedValue = _self.wrappedValue as! Wrapper
-            
-            wrappedValue.wrappedValue = newValue
-            
-            _self._opaque_wrappedValue = newValue
+        if isAnyObject(wrapper) {
+            binding = .init(
+                get: { _ in
+                    wrapper.wrappedValue
+                },
+                set: { _, newValue in
+                    var wrapper = wrapper
+                    
+                    wrapper.wrappedValue = newValue
+                }
+            )
+        } else {
+            binding = .init(
+                get: { _self in
+                    (_self._opaque_wrappedValue as! Wrapper).wrappedValue
+                },
+                set: { _self, newValue in
+                    do {
+                        var mutableWrapper = try cast(_self._opaque_wrappedValue, to: Wrapper.self)
+                        
+                        mutableWrapper.wrappedValue = newValue
+                        
+                        _self._opaque_wrappedValue = mutableWrapper
+                    } catch {
+                        assertionFailure(error)
+                    }
+                }
+            )
         }
     }
     
@@ -154,17 +184,18 @@ public struct MutableValueBox<WrappedValue>: MutablePropertyWrapper {
     )  {
         _opaque_wrappedValue = initial
         
-        getWrappedValue = { _self in
-            get(_self._opaque_wrappedValue as! T)
-        }
-        
-        setWrappedValue = { _self, newValue in
-            var initial = _self._opaque_wrappedValue as! T
-            
-            set(&initial, newValue)
-            
-            _self._opaque_wrappedValue = initial
-        }
+        binding = .init(
+            get: { _self in
+                get(_self._opaque_wrappedValue as! T)
+            },
+            set: { _self, newValue in
+                var initial = _self._opaque_wrappedValue as! T
+                
+                set(&initial, newValue)
+                
+                _self._opaque_wrappedValue = initial
+            }
+        )
     }
 }
 

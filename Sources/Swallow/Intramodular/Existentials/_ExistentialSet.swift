@@ -115,6 +115,12 @@ extension _ExistentialSet: SetProtocol {
         elements.insert(.init(element))
     }
     
+    public func inserting(_ element: Existential) -> Self {
+        build(self) {
+            $0.insert(element)
+        }
+    }
+    
     public mutating func remove(_ element: Existential) {
         elements.remove(.init(element))
     }

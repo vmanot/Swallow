@@ -12,8 +12,11 @@ extension Substring {
     ) -> [Range<String.Index>] {
         let location = NSRange(startIndex..<endIndex, in: string).location
         
-        return String(self)
-            .nsRanges(matchedBy: expression)
+        let string = String(self)
+        
+        return string
+            .ranges(matchedBy: expression)
+            .map({ NSRange($0, in: string) })
             .map({ NSRange(location: $0.location + location, length: $0.length) })
             .compactMap({ Range<String.Index>($0, in: string) })
     }

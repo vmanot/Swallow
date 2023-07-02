@@ -13,8 +13,6 @@ extension Never {
             case abstract
             case illegal
             case impossible
-            case irrational
-            case osUnsupported
             case unavailable
             case unexpected
             case unimplemented
@@ -47,17 +45,7 @@ extension Never.Reason {
     public static var impossible: Self {
         .init(_base: .impossible)
     }
-    
-    @_transparent
-    public static var irrational: Self {
-        .init(_base: .irrational)
-    }
-    
-    @_transparent
-    public static var osUnsupported: Self {
-        .init(_base: .osUnsupported)
-    }
-    
+            
     @_transparent
     public static var unavailable: Self {
         .init(_base: .unavailable)
@@ -101,10 +89,6 @@ extension Never {
                 fatalError("illegal", file: file, line: line)
             case .impossible:
                 fatalError("t'is but impossible", file: file, line: line)
-            case .irrational:
-                fatalError("irrational", file: file, line: line)
-            case .osUnsupported:
-                fatalError("\(function) unsupported on this operating-system", file: file, line: line)
             case .unavailable:
                 fatalError("\(function) unavailable", file: file, line: line)
             case .unimplemented:

@@ -5,28 +5,33 @@
 import Swallow
 
 /// Swift's `Error` protocol is too basic.
-public protocol _ErrorX: Hashable, Swift.Error {
-    init?(_catchAll: AnyError) throws
+public protocol _ErrorX: _ErrorTraitsBuilding, Hashable, Swift.Error {
+    var traits: ErrorTraits { get }
     
-    func decomposeError() -> _ErrorDecomposition<Self>?
+    init?(_catchAll error: AnyError) throws
 }
 
+public protocol _SubsystemDomainError: _ErrorX {
+    init(_catchAll error: AnyError)
+}
+
+// MARK: - Default Implementation
+
 extension _ErrorX {
+    public var traits: ErrorTraits {
+        []
+    }
+    
+    public init?(_catchAll error: AnyError) throws {
+        throw Never.Reason.unavailable
+    }
+    
     public init?(_catchAll error: any Error) throws {
-       try self.init(_catchAll: .init(erasing: error))
+        try self.init(_catchAll: .init(erasing: error))
     }
 }
 
-public enum _ErrorDecomposition<Parent: Swift.Error> {
-    case semantic(AnyElementGrouping<Swift.Error>)
-    case catchAll(AnyError)
-}
-
-extension _ErrorX {
-    public func decomposeError() -> _ErrorDecomposition<Self>? {
-        nil
-    }
-}
+// MARK: - API
 
 public func _withErrorType<E: _ErrorX, R>(
     _ type: E.Type,
@@ -63,5 +68,17 @@ public func _withErrorType<E: _ErrorX, R>(
     
     return try _withErrorType(type) {
         try result.get()
+    }
+}
+
+// MARK: - Implemented Conformances
+
+extension AnyError: _ErrorX {
+    public var traits: ErrorTraits {
+        (base as? (any _ErrorX))?.traits ?? []
+    }
+    
+    public init?(_catchAll error: AnyError) throws {
+        self.init(erasing: error)
     }
 }

@@ -6,6 +6,50 @@ import Swift
 import SwiftUI
 
 @resultBuilder
+public struct _NaiveArrayBuilder<Element> {
+    public static func buildBlock() -> [Element] {
+        []
+    }
+    
+    public static func buildBlock(_ element: Element) -> [Element] {
+        [element]
+    }
+    
+    public static func buildBlock(_ elements: Element...) -> [Element] {
+        elements
+    }
+        
+    public static func buildIf(_ content: Element?) -> [Element] {
+        if let content = content {
+            return [content]
+        } else {
+            return []
+        }
+    }
+    
+    public static func buildEither(first: Element) -> [Element] {
+        [first]
+    }
+    
+    public static func buildEither(second: Element) -> [Element] {
+        [second]
+    }
+    
+    public static func buildPartialBlock(
+        first: Element
+    ) -> [Element] {
+        [first]
+    }
+        
+    public static func buildPartialBlock(
+        accumulated: [Element],
+        next: Element
+    ) -> [Element] {
+        accumulated + [next]
+    }
+}
+
+@resultBuilder
 open class ArrayBuilder {
     public static func buildBlock<Element>() -> [Element] {
         []

@@ -6,11 +6,31 @@ import Swift
 
 @propertyWrapper
 public struct _HashableExistential<Value>: PropertyWrapper {
+    struct _HashablePlaceholderNil: ExpressibleByNilLiteral, Hashable, Sendable {
+        init() {
+            
+        }
+        
+        init(nilLiteral: ()) {
+            self.init()
+        }
+    }
+    
     private var base: Value
     
     public var wrappedValue: Value {
         get {
-            self.base
+            if base is _HashablePlaceholderNil {
+                do {
+                    return try _initializeNilLiteral(ofType: Value.self)
+                } catch {
+                    assertionFailure(error)
+                    
+                    return base
+                }
+            } else {
+                return self.base
+            }
         } set {
             self.base = newValue
         }
@@ -36,6 +56,8 @@ public struct _HashableExistential<Value>: PropertyWrapper {
             self.init(erasing: value)
         } else if let value = value as? Any.Type {
             self.init(erasing: value)
+        } else if _isValueNil(value) {
+            self.init(erasing: _HashablePlaceholderNil())
         } else {
             assertionFailure("Unsupported value: \(value)")
             
@@ -52,7 +74,19 @@ public struct _HashableExistential<Value>: PropertyWrapper {
     }
     
     static func _validate(_ value: Value) {
-        assert(value is any Hashable || value is Any.Type)
+        guard !(value is _HashablePlaceholderNil) else {
+            return
+        }
+        
+        guard value is any Hashable || value is Any.Type else {
+            if _isValueNil(value) {
+                return
+            } else {
+                assertionFailure()
+                
+                return
+            }
+        }
     }
 }
 
@@ -75,8 +109,10 @@ extension _HashableExistential: Hashable {
         } else if let base = base as? (any Hashable) {
             hasher.combine(ObjectIdentifier(type(of: base)))
             hasher.combine(base)
+        } else if _isValueNil(base) {
+            _HashablePlaceholderNil().hash(into: &hasher)
         } else {
-            assertionFailure()
+            assertionFailure("unsupported type \(type(of: base))")
         }
     }
 }

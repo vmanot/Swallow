@@ -20,6 +20,16 @@ public func _expectedToNotThrow<T>(_ fn: () throws -> T?) -> T? {
     }
 }
 
+public func _expectedToNotThrow<T>(_ fn: () async throws -> T?) async -> T? {
+    do {
+        return try await fn()
+    } catch {
+        runtimeIssue(error)
+        
+        return nil
+    }
+}
+
 @_disfavoredOverload
 public func _expectedToNotThrowExpression<T>(_ fn: @autoclosure () throws -> T?) -> T? {
     do {

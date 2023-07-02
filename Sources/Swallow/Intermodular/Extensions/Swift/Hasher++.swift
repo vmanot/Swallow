@@ -31,7 +31,7 @@ extension Hasher {
         hasher.combine(first)
         hasher.combine(second)
         hasher.combine(third)
-
+        
         return hasher.finalize()
     }
     
@@ -43,7 +43,7 @@ extension Hasher {
         hasher.combine(second)
         hasher.combine(third)
         hasher.combine(fourth)
-
+        
         return hasher.finalize()
     }
     

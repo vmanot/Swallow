@@ -46,7 +46,7 @@ extension RegularExpression {
     ) -> [[Range<String.Index>?]] {
         var matches: [[Range<String.Index>?]] = []
         
-        (self as NSRegularExpression).enumerateMatches(in: string, options: options, range: string.nsRangeBounds) { result, flags, stop in
+        (self as NSRegularExpression).enumerateMatches(in: string, options: options, range: NSRange(string.bounds, in: string)) { result, flags, stop in
             if let result = result {
                 matches.append(result.ranges(in: string))
             }
@@ -66,7 +66,7 @@ extension RegularExpression {
         in string: String,
         options: NSRegularExpression.MatchingOptions = []
     ) -> [Range<String.Index>?] {
-        (self as NSRegularExpression).firstMatch(in: string, options: options, range: string.nsRangeBounds)?.ranges(in: string) ?? []
+        (self as NSRegularExpression).firstMatch(in: string, options: options, range: NSRange(string.bounds, in: string))?.ranges(in: string) ?? []
     }
     
     public func captureFirstGroups(

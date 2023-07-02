@@ -62,26 +62,6 @@ extension XcodeRuntimeIssueLogger {
 
 // MARK: - API
 
-public struct _RuntimeIssueError: Error {
-    private let base: any Error
-    
-    public var localizedDescription: String {
-        base.localizedDescription
-    }
-    
-    public init(_ error: any Error) {
-        self.base = error
-        
-        runtimeIssue(error)
-    }
-}
-
-extension Error {
-    public func _runtimeIssue() -> _RuntimeIssueError {
-        _RuntimeIssueError(self)
-    }
-}
-
 @_transparent
 public func runtimeIssue(
     _ warningFormat: StaticString,
@@ -112,21 +92,27 @@ public func runtimeIssue(
 }
 
 @_transparent
+@discardableResult
 public func runtimeIssue(
     _ error: Error,
     file: StaticString = #file,
     line: UInt = #line
-) {
+) -> Error {
     runtimeIssue(String(describing: error))
+    
+    return error
 }
 
 @_transparent
+@discardableResult
 public func runtimeIssue(
     _ error: Never.Reason,
     file: StaticString = #file,
     line: UInt = #line
-) {
+) -> Error {
     runtimeIssue(String(describing: error))
+    
+    return error
 }
 
 // MARK: - Auxiliary

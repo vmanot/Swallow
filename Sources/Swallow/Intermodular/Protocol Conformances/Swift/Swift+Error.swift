@@ -20,7 +20,7 @@ public struct AnyError: CustomDebugStringConvertible, Error, Hashable, @unchecke
         self.base = (error as? AnyError)?.base ?? error
     }
     
-    public init(_ base: Error) {
+    init(_ base: Error) {
         self.init(erasing: base)
     }
 

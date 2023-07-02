@@ -108,9 +108,9 @@ extension UserDefault {
             get {
                 object[keyPath: storageKeyPath].wrappedValue
             } set {
-                object[keyPath: storageKeyPath].wrappedValue = newValue
-                
                 object.objectWillChange.send()
+
+                object[keyPath: storageKeyPath].wrappedValue = newValue
             }
         }
         

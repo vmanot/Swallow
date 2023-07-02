@@ -16,18 +16,22 @@ import Swift
 /// }
 /// ```
 @propertyWrapper
-public struct BoolDecodingDefault<Value: _StaticBoolean>: Codable, Hashable {
+public struct BoolDecodingDefault<DefaultValue: _StaticBoolean>: Codable, Hashable {
     public var wrappedValue: Bool
     
     public init(wrappedValue: Bool) {
         self.wrappedValue = wrappedValue
     }
     
+    public init() {
+        self.wrappedValue = DefaultValue.value
+    }
+    
     public init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
         
         if container.decodeNil() {
-            self.wrappedValue = Value.value
+            self.wrappedValue = DefaultValue.value
         } else {
             self.wrappedValue = try container.decode(Bool.self)
         }

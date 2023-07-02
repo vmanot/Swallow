@@ -6,12 +6,10 @@ import Foundation
 import Swallow
 
 extension String {
-    public func ranges(matchedBy expression: RegularExpression) -> [Range<String.Index>] {
+    public func ranges(
+        matchedBy expression: RegularExpression
+    ) -> [Range<String.Index>] {
         expression.matchRanges(in: self)
-    }
-    
-    public func nsRanges(matchedBy expression: RegularExpression) -> [NSRange] {
-        (expression as NSRegularExpression).matches(in: self, range: nsRangeBounds).map({ $0.range })
     }
 }
 
