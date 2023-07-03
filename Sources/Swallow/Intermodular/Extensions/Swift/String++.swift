@@ -18,13 +18,29 @@ extension String {
     public subscript(
         _utf16Range range: Range<Int>
     ) -> Substring {
-        let nsRange = NSRange(location: range.lowerBound, length: range.upperBound - range.lowerBound)
-        
-        return self[Range(nsRange, in: self)!]
+        self[_fromUTF16Range(range)!]
+    }
+    
+    public subscript(
+        _utf16Range range: PartialRangeFrom<Int>
+    ) -> Substring {
+        self[_fromUTF16Range(range)!]
     }
     
     public var _utf16Bounds: Range<Int> {
         _toUTF16Range(bounds)
+    }
+    
+    public func _fromUTF16Range(
+        _ range: Range<Int>
+    ) -> Range<String.Index>? {
+        Range(NSRange(location: range.lowerBound, length: range.upperBound - range.lowerBound), in: self)
+    }
+    
+    public func _fromUTF16Range(
+        _ range: PartialRangeFrom<Int>
+    ) -> Range<String.Index>? {
+        _fromUTF16Range(range.lowerBound..<_toUTF16Range(bounds).upperBound)
     }
     
     public func _toUTF16Range(

@@ -64,7 +64,7 @@ extension ObjCTypeEncoding: CustomStringConvertible {
     }
 }
 
-extension ObjCTypeEncoding: StringInitiable, StringConvertible {
+extension ObjCTypeEncoding: StringInitializable, StringConvertible {
     public var stringValue: String {
         return value
     }

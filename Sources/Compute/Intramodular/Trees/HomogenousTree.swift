@@ -73,7 +73,7 @@ extension HomogenousTree {
                     )
                 }
             }
-            .reduce({ try $0.merge(with: $1) })
+            .reduce({ try $0.merging($1) })
         
         guard let result else {
             return try buildPartial(self)
@@ -89,7 +89,7 @@ extension HomogenousTree {
         let result = try children
             .compactMap { child -> T? in
                 if child.children.isEmpty {
-                    return try buildPartial(child).reduce({ try $0.merge(with: $1) })
+                    return try buildPartial(child).reduce({ try $0.merging($1) })
                 } else {
                     return try child.reduceBottomUp(
                         buildPartial: buildPartial,
@@ -97,10 +97,10 @@ extension HomogenousTree {
                     )
                 }
             }
-            .reduce({ try $0.merge(with: $1) })
+            .reduce({ try $0.merging($1) })
         
         guard let result else {
-            return try buildPartial(self).reduce({ try $0.merge(with: $1) })
+            return try buildPartial(self).reduce({ try $0.merging($1) })
         }
         
         return try combine((self, result))

@@ -17,6 +17,22 @@ extension Dictionary {
         return result
     }
     
+    public func compactMapKeys<T: Hashable>(
+        _ transform: (Key) throws -> T?
+    ) rethrows -> [T: Value] {
+        var result = Dictionary<T, Value>(minimumCapacity: count)
+        
+        for (key, value) in self {
+            guard let transformedKey = try transform(key) else {
+                continue
+            }
+            
+            result[transformedKey] = value
+        }
+        
+        return result
+    }
+    
     public func mapKeysAndValues<T: Hashable, U>(
         _ transformKey: (Key) throws -> T,
         _ transformValue: (Value) throws -> U

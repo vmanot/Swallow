@@ -86,6 +86,10 @@ extension _ExistentialSet {
 
 // MARK: - Conformances
 
+extension _ExistentialSet: Sendable where Element: Sendable {
+    
+}
+
 extension _ExistentialSet: Sequence {
     public func makeIterator() -> AnyIterator<Existential> {
         AnyIterator(elements.lazy.map({ $0.value }).makeIterator())

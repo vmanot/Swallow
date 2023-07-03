@@ -5,7 +5,7 @@
 import Foundation
 import Swallow
 
-public struct RegularExpression: Initiable {
+public struct RegularExpression: Hashable, Initiable {
     public var pattern: String
     public var options: Options
     
@@ -16,6 +16,11 @@ public struct RegularExpression: Initiable {
     
     public init() {
         self.init(pattern: .init())
+    }
+    
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(pattern)
+        hasher.combine(options.rawValue)
     }
 }
 
@@ -177,7 +182,7 @@ extension RegularExpression: ObjectiveCBridgeable {
     }
 }
 
-extension RegularExpression: StringInitiable, StringRepresentable {
+extension RegularExpression: StringRepresentable {
     public var stringValue: String {
         pattern
     }

@@ -5,7 +5,7 @@
 import Foundation
 import Swift
 
-public protocol StringConvertible {
+public protocol StringConvertible: Hashable {
     var stringValue: String { get }
 }
 
@@ -13,12 +13,8 @@ public protocol MutableStringConvertible: StringConvertible {
     var stringValue: String { get set }
 }
 
-public protocol FailableStringInitiable {
+public protocol StringInitializable {
     init?(stringValue: String)
 }
 
-public protocol StringInitiable: FailableStringInitiable {
-    init(stringValue: String)
-}
-
-public typealias StringRepresentable = FailableStringInitiable & StringConvertible
+public typealias StringRepresentable = StringInitializable & StringConvertible

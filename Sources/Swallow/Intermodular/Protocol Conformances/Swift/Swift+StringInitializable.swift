@@ -4,7 +4,7 @@
 
 import Swift
 
-extension Character: FailableStringInitiable {
+extension Character: StringInitializable {
     public init?(stringValue: String) {
         guard stringValue.count == 1 else {
             return nil
@@ -14,13 +14,13 @@ extension Character: FailableStringInitiable {
     }
 }
 
-extension String: StringInitiable {
+extension String: StringInitializable {
     public init(stringValue: String) {
         self = stringValue
     }
 }
 
-extension UnicodeScalar: FailableStringInitiable {
+extension UnicodeScalar: StringInitializable {
     public init?(stringValue: String) {
         self.init(stringValue)
     }
