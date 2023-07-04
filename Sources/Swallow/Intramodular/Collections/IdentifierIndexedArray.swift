@@ -77,13 +77,13 @@ extension IdentifierIndexedArrayOf {
 
 extension IdentifierIndexedArray: CustomStringConvertible {
     public var description: String {
-        Array(base).description
+        "IdentifierIndexedArray<\(Element.self)>"
     }
 }
 
 extension IdentifierIndexedArray: CustomDebugStringConvertible {
     public var debugDescription: String {
-        Array(base).debugDescription
+        "IdentifierIndexedArray<\(Element.self)>"
     }
 }
 

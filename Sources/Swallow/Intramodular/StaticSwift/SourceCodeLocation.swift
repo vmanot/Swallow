@@ -36,7 +36,15 @@ public enum SourceCodeLocation: Hashable, SourceCodeLocationInitiable, Sendable 
         line: UInt,
         column: UInt?
     ) {
-        self.init(Preprocessor.Point(file: file, fileID: fileID, function: function, line: line, column: column))
+        self.init(
+            Preprocessor.Point(
+                file: file,
+                fileID: fileID,
+                function: function,
+                line: line,
+                column: column
+            )
+        )
     }
     
     public init(
@@ -46,7 +54,15 @@ public enum SourceCodeLocation: Hashable, SourceCodeLocationInitiable, Sendable 
         line: UInt,
         column: UInt?
     ) {
-        self.init(Preprocessor.Point(file: file, fileID: fileID, function: function, line: line, column: column))
+        self.init(
+            Preprocessor.Point(
+                file: file,
+                fileID: fileID,
+                function: function,
+                line: line,
+                column: column
+            )
+        )
     }
 }
 

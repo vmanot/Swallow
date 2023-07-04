@@ -25,21 +25,29 @@ public struct HashableImplOnly<Value: Hashable>: Hashable {
     }
 }
 
-public struct Hashable2ple<T: Hashable, U: Hashable>: Hashable, Wrapper {
-    public typealias Value = (T, U)
+public struct Hashable2ple<T0: Hashable, T1: Hashable>: Hashable, Wrapper {
+    public let value: (T0, T1)
     
-    public let value: Value
-    
-    public init(_ value: Value) {
+    @inline(__always)
+    public init(_ value: (T0, T1)) {
         self.value = value
     }
         
-    @inlinable
+    @inline(__always)
+    public init<A, B>(_ value: (T0, A, B)) where T1 == Hashable2ple<A, B> {
+        let first = value.0
+        let next = Hashable2ple<A, B>((value.1, value.2))
+        
+        self.init((first, next))
+    }
+    
+    @inline(__always)
     public func hash(into hasher: inout Hasher) {
         hasher.combine(value.0)
         hasher.combine(value.1)
     }
     
+    @inline(__always)
     public static func == (lhs: Self, rhs: Self) -> Bool {
         lhs.value.0 == rhs.value.0 && lhs.value.1 == rhs.value.1
     }

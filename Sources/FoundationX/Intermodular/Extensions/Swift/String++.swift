@@ -44,24 +44,27 @@ extension String {
         count: Int
     ) -> AttributedString {
         var string = AttributedString(localized: string)
-        var morphology = Morphology()
-        let number: Morphology.GrammaticalNumber
-        
-        switch count {
-            case 0:
-                number = .zero
-            case 1:
-                number = .singular
-            default:
-                number = .plural
+
+        return _memoize(uniquingWith: (string, count)) {
+            var morphology = Morphology()
+            let number: Morphology.GrammaticalNumber
+            
+            switch count {
+                case 0:
+                    number = .zero
+                case 1:
+                    number = .singular
+                default:
+                    number = .plural
+            }
+            
+            morphology.number = number
+            
+            string.inflect = InflectionRule(morphology: morphology)
+            
+            let formattedResult = string.inflected()
+            
+            return formattedResult
         }
-        
-        morphology.number = number
-        
-        string.inflect = InflectionRule(morphology: morphology)
-        
-        let formattedResult = string.inflected()
-        
-        return formattedResult
     }
 }
