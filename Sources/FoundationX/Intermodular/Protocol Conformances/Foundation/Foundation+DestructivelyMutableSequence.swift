@@ -6,13 +6,13 @@ import Foundation
 import Swallow
 
 extension NSMutableArray: DestructivelyMutableSequence {
-    public func forEach<T>(mutating iterator: ((inout Element) throws -> T)) rethrows {
+    public func _forEach<T>(mutating iterator: ((inout Element) throws -> T)) rethrows {
         for (index, _) in enumerated() {
             _ = try iterator(&self[index])
         }
     }
     
-    public func forEach<T>(
+    public func _forEach<T>(
         destructivelyMutating iterator: ((inout Element?) throws -> T)
     ) rethrows {
         TODO.whole(.test)
@@ -38,7 +38,7 @@ extension NSMutableArray: DestructivelyMutableSequence {
 }
 
 extension NSMutableData: MutableSequence {
-    public func forEach<T>(mutating iterator: ((inout Element) throws -> T)) rethrows {
+    public func _forEach<T>(mutating iterator: ((inout Element) throws -> T)) rethrows {
         for (index, _) in enumerated() {
             _ = try iterator(&self[_position: index])
         }
@@ -46,11 +46,11 @@ extension NSMutableData: MutableSequence {
 }
 
 extension NSMutableSet: DestructivelyMutableSequence {
-    public func forEach<T>(mutating iterator: ((inout Element) throws -> T)) rethrows {
-        try forEach(destructivelyMutating: { try iterator(&$0!) })
+    public func _forEach<T>(mutating iterator: ((inout Element) throws -> T)) rethrows {
+        try _forEach(destructivelyMutating: { try iterator(&$0!) })
     }
     
-    public func forEach<T>(
+    public func _forEach<T>(
         destructivelyMutating iterator: ((inout Element?) throws -> T)
     ) rethrows {
         for element in self {

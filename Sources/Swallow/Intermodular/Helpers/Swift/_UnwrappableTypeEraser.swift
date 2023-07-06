@@ -90,3 +90,13 @@ public func _unwrapPossiblyTypeErasedValue(
         return _x as Any
     }
 }
+
+public func _unwrapPossibleTypeEraser<T>(
+    _ x: T
+) -> Any {
+    if let eraser = x as? (any _UnwrappableTypeEraser) {
+        return eraser._unwrapBase()
+    } else {
+        return x
+    }
+}

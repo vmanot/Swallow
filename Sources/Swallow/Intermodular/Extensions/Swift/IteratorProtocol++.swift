@@ -25,13 +25,23 @@ extension IteratorProtocol {
     
     @inlinable
     public func exhausting() -> Self {
-        return build(self, with: { $0.exhaust() })
+        build(self, with: { $0.exhaust() })
     }
 }
 
 extension IteratorProtocol {
     @inlinable
     public func makeSequence() -> IteratorSequence<Self> {
-        return .init(self)
+        .init(self)
+    }
+}
+
+extension IteratorProtocol {
+    public func _opaque_eraseToAnyIterator() -> any IteratorProtocol {
+        AnyIterator(self)
+    }
+
+    public func eraseToAnyIterator() -> AnyIterator<Element> {
+        AnyIterator(self)
     }
 }

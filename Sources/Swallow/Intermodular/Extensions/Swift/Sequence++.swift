@@ -50,6 +50,12 @@ extension Sequence {
     public func firstAndOnly<T>(ofType type: T.Type) throws -> T? {
         try firstAndOnly(byUnwrapping: { $0 as? T })
     }
+    
+    public func firstAndOnly(
+        where predicate: (Element) throws -> Bool
+    ) throws -> Element? {
+        try firstAndOnly(byUnwrapping: { try predicate($0) ? $0 : nil })
+    }
 }
 
 // MARK: Grouping
@@ -206,6 +212,21 @@ extension Sequence {
         }
         
         return Array(result)
+    }
+    
+    public func asyncFlatMap<T: Sequence>(
+        _ transform: @Sendable (Element) async throws -> T
+    ) async rethrows -> [T.Element] {
+        let initialCapacity = underestimatedCount
+        var result = Array<T.Element>()
+        
+        result.reserveCapacity(initialCapacity)
+        
+        for element in self {
+            try await result.append(contentsOf: transform(element))
+        }
+        
+        return result
     }
     
     /// Returns an array containing the results of mapping the given async closure over
@@ -675,6 +696,12 @@ extension Sequence {
             case .reverse:
                 return sorted(by: { $0[keyPath: keyPath] > $1[keyPath: keyPath] })
         }
+    }
+    
+    public func sorted(
+        order: _SequenceSortOrder
+    ) -> [Element] where Element: Comparable {
+        sorted(by: \.self, order: order)
     }
     
     public func sorted<T: Comparable>(by keyPath: KeyPath<Element, T>) -> [Element] {

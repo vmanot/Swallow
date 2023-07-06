@@ -232,7 +232,9 @@ extension BidirectionalMap: ElementRemoveableDestructivelyMutableSequence {
         }
     }
     
-    public mutating func forEach<T>(mutating body: ((inout Element) throws -> T)) rethrows {
+    public mutating func _forEach<T>(
+        mutating body: ((inout Element) throws -> T)
+    ) rethrows {
         for (key, value) in self {
             var keyValuePair: Element = (key, value)
             
@@ -242,7 +244,9 @@ extension BidirectionalMap: ElementRemoveableDestructivelyMutableSequence {
         }
     }
     
-    public mutating func forEach<T>(destructivelyMutating iterator: ((inout Element?) throws -> T)) rethrows {
+    public mutating func _forEach<T>(
+        destructivelyMutating iterator: ((inout Element?) throws -> T)
+    ) rethrows {
         for element in self {
             var _element: Element! = element
             

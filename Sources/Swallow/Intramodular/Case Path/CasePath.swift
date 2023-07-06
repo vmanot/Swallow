@@ -4,11 +4,24 @@
 
 import Swift
 
+public protocol _CasePath_Type {
+    associatedtype Root
+    associatedtype Value
+    
+    func extract(from root: Root) -> Value?
+}
+
+extension _CasePath_Type {
+    public func _opaque_extract<T>(from root: T) throws -> Any? {
+        try extract(from: cast(root, to: Root.self))
+    }
+}
+
 /// A path that supports embedding a value in a root and attempting to extract a root's embedded
 /// value.
 ///
 /// This type defines key path-like semantics for enum cases.
-public struct CasePath<_Root, _Value> {
+public struct CasePath<_Root, _Value>: _CasePath_Type {
     public typealias Root = _Root
     public typealias Value = _Value
     
@@ -63,9 +76,14 @@ public struct CasePath<_Root, _Value> {
         _ root: inout Root,
         _ body: (inout Value) throws -> Result
     ) throws -> Result {
-        guard var value = self.extract(from: root) else { throw ExtractionFailed() }
+        guard var value = self.extract(from: root) else {
+            throw ExtractionFailed()
+        }
+        
         let result = try body(&value)
+        
         root = self.embed(value)
+        
         return result
     }
     
@@ -123,7 +141,7 @@ extension Sequence where Element: _CasePathExtracting {
     ) -> Value? {
         first(byUnwrapping: { $0[casePath: casePath] })
     }
-
+    
     public func first<T0, T1>(
         _ first: CasePath<Element, T0>,
         _ second: CasePath<T0, T1>

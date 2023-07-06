@@ -42,7 +42,7 @@ extension RecursiveTreeProtocol {
     ) where Self: MutableRecursiveTree & HomogenousTree {
         body(&value)
         
-        children.forEach(mutating: { child in
+        children._forEach(mutating: { child in
             child.forEachDepthFirst(mutating: body)
         })
     }

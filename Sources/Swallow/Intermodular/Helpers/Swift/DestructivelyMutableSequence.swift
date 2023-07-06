@@ -6,9 +6,15 @@ import Swift
 
 public protocol DestructivelyMutableSequence: MutableSequence {
     @_disfavoredOverload
-    mutating func forEach<T>(destructivelyMutating _: ((inout Element?) throws -> T)) rethrows
+    mutating func _forEach<T>(
+        destructivelyMutating _: ((inout Element?) throws -> T)
+    ) rethrows
+    
     @_disfavoredOverload
-    mutating func map<S: ExtensibleSequence & Initiable>(destructivelyMutating _: ((inout Element?) throws -> S.Element)) rethrows -> S
+    mutating func _map<S: ExtensibleSequence & Initiable>(
+        destructivelyMutating _: ((inout Element?) throws -> S.Element)
+    ) rethrows -> S
+    
     mutating func filterInPlace(_: ((Element) throws -> Bool)) rethrows
     mutating func removeAll(where _: ((Element) throws -> Bool)) rethrows
     mutating func removeAll()
@@ -22,10 +28,12 @@ public protocol ElementRemoveableDestructivelyMutableSequence: DestructivelyMuta
 
 extension DestructivelyMutableSequence {
     @_disfavoredOverload
-    public mutating func map<S: ExtensibleSequence & Initiable>(destructivelyMutating iterator: ((inout Element?) throws -> S.Element)) rethrows -> S {
+    public mutating func _map<S: ExtensibleSequence & Initiable>(
+        destructivelyMutating iterator: ((inout Element?) throws -> S.Element)
+    ) rethrows -> S {
         var result = S()
         
-        try forEach(destructivelyMutating: {
+        try _forEach(destructivelyMutating: {
             (element: inout Element?) in
             
             result += try iterator(&element)
@@ -34,13 +42,21 @@ extension DestructivelyMutableSequence {
         return result
     }
     
-    public mutating func filterInPlace(_ predicate: ((Element) throws -> Bool)) rethrows {
-        try forEach(destructivelyMutating: { try predicate($0!) &&-> ($0 = nil) })
+    public mutating func filterInPlace(
+        _ predicate: ((Element) throws -> Bool)
+    ) rethrows {
+        try _forEach(destructivelyMutating: {
+            guard try predicate($0!) else {
+                $0 = nil
+                
+                return
+            }
+        })
     }
     
     @_disfavoredOverload
     public mutating func _removeAll(where predicate: ((Element) throws -> Bool)) rethrows {
-        try forEach(destructivelyMutating: {
+        try _forEach(destructivelyMutating: {
             (element: inout Element!) in
             
             if try predicate(element) {
@@ -50,12 +66,14 @@ extension DestructivelyMutableSequence {
     }
     
     public mutating func removeAll() {
-        forEach(destructivelyMutating: { $0 = nil })
+        _forEach(destructivelyMutating: { $0 = nil })
     }
 }
 
 extension DestructivelyMutableSequence where Self: RangeReplaceableCollection {
-    public mutating func forEach<T>(destructivelyMutating iterator: ((inout Element?) throws -> T)) rethrows {
+    public mutating func _forEach<T>(
+        destructivelyMutating iterator: ((inout Element?) throws -> T)
+    ) rethrows {
         var indexOffset: Int = 0
         
         for (index, element) in enumerated() {
@@ -93,8 +111,8 @@ extension DestructivelyMutableSequence where Self: RangeReplaceableCollection {
 // MARK: - Extensions
 
 extension DestructivelyMutableSequence where Element: Equatable {
-    public mutating func removeAll(of someElement: Element) {
-        forEach(destructivelyMutating: { $0 == someElement &&-> ($0 = nil) })
+    public mutating func removeAll(of element: Element) {
+        filterInPlace({ $0 != element })
     }
     
     public static func -= (lhs: inout Self, rhs: Element) {
@@ -108,9 +126,17 @@ extension DestructivelyMutableSequence where Element: Equatable {
     public static func - (lhs: Self, rhs: Element) -> Self {
         return lhs.removing(allOf: rhs)
     }
-    
-    public mutating func remove<S: Sequence>(contentsOf sequence: S) where S.Element == Element {
-        forEach(destructivelyMutating: { sequence.contains($0!) &&-> ($0 = nil) })
+}
+
+extension DestructivelyMutableSequence where Element: Hashable {
+    public mutating func remove<S: Sequence>(
+        contentsOf sequence: S
+    ) where S.Element == Element {
+        let set = Set(sequence)
+
+        filterInPlace {
+            !set.contains($0)
+        }
     }
     
     public static func -= <S: Sequence>(lhs: inout Self, rhs: S) where S.Element == Element {

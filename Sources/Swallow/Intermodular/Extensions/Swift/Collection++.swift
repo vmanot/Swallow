@@ -206,6 +206,14 @@ extension Collection {
 // MARK: - Prefixing
 
 extension Collection {
+    public func prefix(_ maxLength: Int?) -> SubSequence {
+        if let maxLength {
+            return self.prefix(maxLength)
+        } else {
+            return self[startIndex..<endIndex]
+        }
+    }
+
     public func prefix(
         till isTerminator: (Element) throws -> Bool
     ) rethrows -> SubSequence? {

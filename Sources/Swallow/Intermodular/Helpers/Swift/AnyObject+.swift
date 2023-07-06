@@ -5,6 +5,14 @@
 import ObjectiveC
 import Swift
 
+public protocol _FinalClassAnyObject {
+    
+}
+
+extension _FinalClassAnyObject {
+    public typealias _Self = _FinalClassAnyObject
+}
+
 public func isClass(_ type: Any.Type) -> Bool {
     let result = type is AnyClass
     

@@ -110,7 +110,9 @@ extension Bag: CustomDebugStringConvertible {
 }
 
 extension Bag: Sequence {
-    public func forEach(_ action: ((Element) throws -> Void)) rethrows {
+    public func forEach(
+        _ action: ((Element) throws -> Void)
+    ) rethrows {
         try value0.map(action)
         
         guard !onlyFastPath else {
@@ -121,15 +123,17 @@ extension Bag: Sequence {
         try dictionary?.values.forEach(action)
     }
     
-    public mutating func forEach(mutating action: ((inout Element) throws -> Void)) rethrows {
+    public mutating func _forEach(
+        mutating action: ((inout Element) throws -> Void)
+    ) rethrows {
         try value0.mutate(action)
         
         guard !onlyFastPath else {
             return
         }
         
-        try pairs.forEach(mutating: { try action(&$0.value )})
-        try dictionary?.forEach(mutating: { try action(&$0.value) })
+        try pairs._forEach(mutating: { try action(&$0.value )})
+        try dictionary?._forEach(mutating: { try action(&$0.value) })
     }
     
     public func makeIterator() -> AnyIterator<Element> {

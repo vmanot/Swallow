@@ -11,11 +11,15 @@ extension ArraySlice: DestructivelyMutableSequence {
 }
 
 extension Dictionary: ElementRemoveableDestructivelyMutableSequence {
-    public mutating func forEach<T>(mutating iterator: ((inout Element) throws -> T)) rethrows {
-        try forEach(destructivelyMutating: { (element: inout Element!) in try iterator(&element!) })
+    public mutating func _forEach<T>(
+        mutating iterator: ((inout Element) throws -> T)
+    ) rethrows {
+        try _forEach(destructivelyMutating: { (element: inout Element!) in
+            try iterator(&element!)
+        })
     }
     
-    public mutating func forEach<T>(
+    public mutating func _forEach<T>(
         destructivelyMutating iterator: ((inout Element?) throws -> T)
     ) rethrows {
         for element in self {
@@ -45,15 +49,15 @@ extension Dictionary: ElementRemoveableDestructivelyMutableSequence {
 }
 
 extension Set: DestructivelyMutableSetProtocol {
-    public mutating func forEach<T>(mutating iterator: ((inout Element) throws -> T)) rethrows {
-        try forEach(destructivelyMutating: { try iterator(&$0!) })
+    public mutating func _forEach<T>(
+        mutating iterator: ((inout Element) throws -> T)
+    ) rethrows {
+        try _forEach(destructivelyMutating: { try iterator(&$0!) })
     }
     
-    public mutating func removeAll(where shouldBeRemoved: ((Element) throws -> Bool)) rethrows {
-        try _removeAll(where: shouldBeRemoved)
-    }
-
-    public mutating func forEach<T>(destructivelyMutating body: ((inout Element?) throws -> T)) rethrows {
+    public mutating func _forEach<T>(
+        destructivelyMutating body: ((inout Element?) throws -> T)
+    ) rethrows {
         for element in self {
             var newElement: Element! = element
             
@@ -67,6 +71,12 @@ extension Set: DestructivelyMutableSetProtocol {
                 }
             }
         }
+    }
+    
+    public mutating func removeAll(
+        where shouldBeRemoved: ((Element) throws -> Bool)
+    ) rethrows {
+        try _removeAll(where: shouldBeRemoved)
     }
 }
 
