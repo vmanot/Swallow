@@ -20,13 +20,11 @@ public protocol _UnwrappableHashableTypeEraser: _UnwrappableTypeEraser, Hashable
 
 extension _UnwrappableHashableTypeEraser {
     public func hash(into hasher: inout Hasher) {
-        guard let base = _HashableExistential(erasing: _unwrapBase()) else {
-            assertionFailure()
-            
-            return
+        do {
+            try _HashableExistential(erasing: _unwrapBase()).hash(into: &hasher)
+        } catch {
+            assertionFailure(error)
         }
-        
-        base.hash(into: &hasher)
     }
     
     public static func == (lhs: Self, rhs: Self) -> Bool {

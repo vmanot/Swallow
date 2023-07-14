@@ -85,7 +85,7 @@ extension RecursiveCollection where Self: BidirectionalCollection {
     public func recurrableIndexComparisonMap<T>(_ f: ((_ left: RecursiveIndex?, _ current: RecursiveIndex, _ right: RecursiveIndex?) -> T)) -> RecursiveArray<T> {
         var result: RecursiveArray<T> = []
         
-        for (index, element) in enumerated() {
+        for (index, element) in _enumerated() {
             var left: RecursiveIndex?
             var right: RecursiveIndex?
             
@@ -134,7 +134,7 @@ extension RecursiveCollection {
     public func recursivelyEnumerated() -> [(RecursiveIndex, Unit)] {
         var result: [(RecursiveIndex, Unit)] = []
         
-        for (index, element) in enumerated() {
+        for (index, element) in _enumerated() {
             if let unit = element.leftValue {
                 result += (recurrableIndex(from: index), unit)
             }

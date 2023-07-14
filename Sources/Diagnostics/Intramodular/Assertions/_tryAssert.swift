@@ -4,9 +4,34 @@
 
 import Swallow
 
-public func _tryAssert(_ condition: Bool, message: String? = nil) throws {
+@usableFromInline
+enum _AssertionFailureError: Error {
+    case assertionFailed(SourceCodeLocation)
+}
+
+@inline(__always)
+public func _tryAssert(
+    _ condition: Bool,
+    message: String? = nil,
+    file: StaticString = #file,
+    function: StaticString = #function,
+    line: UInt = #line
+) throws {
     guard condition else {
-        throw _PlaceholderError()
+        throw _AssertionFailureError.assertionFailed(.init(file: file, function: function, line: line, column: nil))
+    }
+}
+
+@inline(__always)
+public func _tryAssert(
+    message: String? = nil,
+    _ condition: () throws -> Bool,
+    file: StaticString = #file,
+    function: StaticString = #function,
+    line: UInt = #line
+) throws {
+    guard try condition() else {
+        throw _AssertionFailureError.assertionFailed(.init(file: file, function: function, line: line, column: nil))
     }
 }
 
@@ -15,7 +40,9 @@ public func _expectedToNotThrow<T>(_ fn: () throws -> T?) -> T? {
         return try fn()
     } catch {
         runtimeIssue(error)
-        
+
+        assertionFailure(error)
+
         return nil
     }
 }
@@ -25,6 +52,8 @@ public func _expectedToNotThrow<T>(_ fn: () async throws -> T?) async -> T? {
         return try await fn()
     } catch {
         runtimeIssue(error)
+        
+        assertionFailure(error)
         
         return nil
     }
@@ -48,6 +77,8 @@ public func _expectedToNotThrowExpression<T>(_ fn: @autoclosure () async throws 
     } catch {
         runtimeIssue(error)
         
+        assertionFailure(error)
+        
         return nil
     }
 }
@@ -59,6 +90,8 @@ public func _runtimeIssueOnError<T>(
         return try fn()
     } catch {
         runtimeIssue(error)
+        
+        assertionFailure(error)
         
         throw error
     }
@@ -72,6 +105,8 @@ public func _runtimeIssueOnError<T>(
     } catch {
         runtimeIssue(error)
         
+        assertionFailure(error)
+
         throw error
     }
 }

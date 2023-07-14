@@ -17,7 +17,7 @@ public protocol ComplexNumeric: Numeric {
 
 public protocol Quaternion: Numeric {
     associatedtype Real: Numeric
-    associatedtype Imaginary: TupleOf3 where Imaginary.TupleElement: Numeric
+    associatedtype Imaginary
     
     var real: Real { get }
     var imaginary: Imaginary { get }

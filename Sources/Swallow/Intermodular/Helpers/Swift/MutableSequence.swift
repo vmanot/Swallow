@@ -45,7 +45,7 @@ extension MutableSequence where Self: RangeReplaceableCollection {
     public mutating func _forEach<T>(
         mutating iterator: ((inout Element) throws -> T)
     ) rethrows {
-        for (index, element) in enumerated() {
+        for (index, element) in _enumerated() {
             var oldElementWasMutated = false
             
             var newElement = element {

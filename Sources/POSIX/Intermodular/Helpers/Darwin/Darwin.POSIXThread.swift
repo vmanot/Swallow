@@ -72,11 +72,7 @@ extension POSIXThread {
     public func detach() throws {
         try pthread_try({ pthread_detach(try value.unwrap()) })
     }
-    
-    public static func exit<T>(_ x: inout T) throws {
-        pthread_exit(&x)
-    }
-    
+        
     public static func exit() throws {
         pthread_exit(nil)
     }

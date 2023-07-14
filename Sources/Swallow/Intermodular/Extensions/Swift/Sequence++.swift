@@ -421,7 +421,9 @@ extension Sequence {
     
     @_disfavoredOverload
     @inlinable
-    public func reduce<T: ExpressibleByNilLiteral>(_ combine: ((T) throws -> ((Element) -> T))) rethrows -> T {
+    public func reduce<T: ExpressibleByNilLiteral>(
+        _ combine: ((T) throws -> ((Element) -> T))
+    ) rethrows -> T {
         return try reduce(nil, { try combine($0)($1) })
     }
     

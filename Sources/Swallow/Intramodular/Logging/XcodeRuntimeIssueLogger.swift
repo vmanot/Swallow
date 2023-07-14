@@ -10,7 +10,7 @@ import _SwiftOSOverlayShims
 
 public struct XcodeRuntimeIssueLogger {
     /// Returns the shared default runtime issue logger with a generic category.
-    public static let `default` = Self(category: "Runtime issues")
+    public static let `default` = Self(category: "runtime-warning")
     
     private static let commonSubsystem = "com.apple.runtime-issues"
     
@@ -18,7 +18,7 @@ public struct XcodeRuntimeIssueLogger {
     let log: OSLog
     @usableFromInline
     let callsiteCache = CallsiteCache()
-        
+    
     /// Initializes a custom runtime issue logger with a custom category.
     public init(category: StaticString) {
         self.log = OSLog(subsystem: Self.commonSubsystem, category: String(_staticString: category))
@@ -89,6 +89,8 @@ public func runtimeIssue(
         line: line,
         vaList: message()
     )
+    
+    debugPrint(message())
 }
 
 @_transparent
@@ -122,9 +124,13 @@ extension XcodeRuntimeIssueLogger {
         for i in 0..<_dyld_image_count() {
             // Technically any system framework would work, but this was inspired by SwiftUI's use
             // of runtime issues to report non-fatal but unexpected behavior.
-            guard let name = _dyld_get_image_name(i).flatMap(String.init(utf8String:)), name.contains("SwiftUI") else { continue }
+            guard let name = _dyld_get_image_name(i).flatMap(String.init(utf8String:)), name.hasSuffix("/SwiftUI") else {
+                continue
+            }
+            
             return UnsafeRawPointer(_dyld_get_image_header(i))
         }
+        
         return nil
     }()
     

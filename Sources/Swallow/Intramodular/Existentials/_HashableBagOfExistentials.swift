@@ -18,7 +18,7 @@ public struct _HashableBagOfExistentials<Existential> {
     public init(_ elements: some Sequence<Existential>) {
         self.base = .init(elements)
     }
-        
+    
     public func all<T>(ofType type: T.Type) -> AnyCollection<T> {
         base.all(ofType: type)
     }
@@ -73,8 +73,8 @@ extension _HashableBagOfExistentials: ExpressibleByArrayLiteral {
 extension _HashableBagOfExistentials: Equatable {
     public static func == (lhs: Self, rhs: Self) -> Bool {
         do {
-            let lhs = try lhs.map({ try _HashableExistential(erasing: $0).unwrap() })
-            let rhs = try rhs.map({ try _HashableExistential(erasing: $0).unwrap() })
+            let lhs = try lhs.map({ try _HashableExistential(erasing: $0) })
+            let rhs = try rhs.map({ try _HashableExistential(erasing: $0) })
             
             return lhs == rhs
         } catch {
@@ -88,7 +88,7 @@ extension _HashableBagOfExistentials: Equatable {
 extension _HashableBagOfExistentials: Hashable {
     public func hash(into hasher: inout Hasher) {
         do {
-            try self.map({ try _HashableExistential(erasing: $0).unwrap() }).hash(into: &hasher)
+            try self.map({ try _HashableExistential(erasing: $0) }).hash(into: &hasher)
         } catch {
             assertionFailure()
         }

@@ -52,7 +52,7 @@ extension Collection {
     }
     
     public func consecutivesAllowingHalfEmptyPairs() -> LazyMapSequence<LazyMapSequence<Self.Indices, (offset: Self.Index, element: Self.Element)>, (Self.Element, Self.Element?)> {
-        return enumerated().map({ ($0.1, self[try: self.index(after: $0.0)]) })
+        _enumerated().map({ ($0.1, self[try: self.index(after: $0.0)]) })
     }
 }
 
@@ -198,7 +198,8 @@ extension Collection {
 }
 
 extension Collection {
-    public func enumerated() -> LazyMapCollection<Self.Indices, (offset: Self.Index, element: Self.Element)> {
+    @_disfavoredOverload
+    public func _enumerated() -> LazyMapCollection<Self.Indices, (offset: Self.Index, element: Self.Element)> {
         indices.lazy.map({ (offset: $0, element: self[$0]) })
     }
 }
@@ -322,6 +323,12 @@ extension Collection {
 // MARK: - Subsequencing -
 
 extension Collection {
+    public func chunked(by chunkSize: Int) -> [Self.SubSequence] {
+        return stride(from: 0, to: count, by: chunkSize).map {
+            self[index(atDistance: $0)..<index(atDistance: Swift.min($0 + chunkSize, self.count))]
+        }
+    }
+
     public func allSubrangesChunked<C: Collection>(
         by ranges: C
     ) -> [Range<Index>] where C.Element == Range<Index> {
@@ -332,7 +339,7 @@ extension Collection {
         var result: [Range<Index>] = []
         var lastRange: Range<Index>? = nil
         
-        for (index, range) in ranges.enumerated() {
+        for (index, range) in ranges._enumerated() {
             if index == ranges.startIndex {
                 if range.lowerBound == startIndex {
                     result.append(range)
@@ -361,7 +368,9 @@ extension Collection {
         return result
     }
     
-    public func chunked<C: Collection>(by ranges: C) -> [SubSequence] where C.Element == Range<Index> {
+    public func chunked<C: Collection>(
+        by ranges: C
+    ) -> [SubSequence] where C.Element == Range<Index> {
         allSubrangesChunked(by: ranges).map({ self[$0] })
     }
 }

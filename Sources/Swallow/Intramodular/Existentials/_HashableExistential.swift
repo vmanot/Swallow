@@ -35,11 +35,19 @@ public struct _HashableExistential<Value>: PropertyWrapper {
             self.base = newValue
         }
     }
+    
+    public var projectedValue: Self {
+        self
+    }
         
     public init(wrappedValue: Value) {
         Self._validate(wrappedValue)
         
         self.base = wrappedValue
+    }
+    
+    enum InitializationError: Error {
+        case unsupportedValue(Any)
     }
     
     public init(_unsafelyErasing base: Any) {
@@ -51,7 +59,7 @@ public struct _HashableExistential<Value>: PropertyWrapper {
     }
     
     @_disfavoredOverload
-    public init?(erasing value: Any) where Value == any Hashable {
+    public init(erasing value: Any) throws where Value == any Hashable {
         if let value = value as? (any Hashable) {
             self.init(erasing: value)
         } else if let value = value as? Any.Type {
@@ -59,9 +67,9 @@ public struct _HashableExistential<Value>: PropertyWrapper {
         } else if _isValueNil(value) {
             self.init(erasing: _HashablePlaceholderNil())
         } else {
-            assertionFailure("Unsupported value: \(value)")
+            assertionFailure()
             
-            return nil
+            throw InitializationError.unsupportedValue(value)
         }
     }
     

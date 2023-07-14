@@ -59,6 +59,12 @@ extension IdentifierIndexedArray {
 }
 
 extension IdentifierIndexedArrayOf {
+    public func sorted(
+        by areInIncreasingOrder: (Self.Element, Self.Element) throws -> Bool
+    ) rethrows -> Self {
+        IdentifierIndexedArray(try sorted(by: areInIncreasingOrder) as Array, id: id)
+    }
+    
     public func map<T: Identifiable>(
         _ transform: (Element) throws -> T
     ) rethrows -> IdentifierIndexedArrayOf<T> {

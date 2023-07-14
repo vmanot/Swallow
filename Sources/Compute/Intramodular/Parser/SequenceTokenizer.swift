@@ -23,7 +23,7 @@ public struct SequenceTokenizer<S: NonDestroyingCollection> where S.SubSequence:
         var possibleTokens: [(S.Index, S.SubSequence)] = []
         var ranges: [S.Index] = []
         
-        for (index, element) in sequence.enumerated() {
+        for (index, element) in sequence._enumerated() {
             if isTokenPrefix(element) {
                 possibleTokens.append((index, sequence[index..<sequence.index(after: index)]))
             }

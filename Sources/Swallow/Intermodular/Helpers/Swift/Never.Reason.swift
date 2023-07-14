@@ -33,17 +33,20 @@ extension Never {
 extension Never.Reason {
     @_transparent
     public static var abstract: Self {
-        .init(_base: .abstract)
+        assertionFailure()
+        
+        return .init(_base: .abstract)
     }
-    
-    @_transparent
+
     public static var illegal: Self {
         .init(_base: .illegal)
     }
     
     @_transparent
     public static var impossible: Self {
-        .init(_base: .impossible)
+        assertionFailure()
+
+        return .init(_base: .impossible)
     }
             
     @_transparent
@@ -58,7 +61,9 @@ extension Never.Reason {
     
     @_transparent
     public static var unimplemented: Self {
-        .init(_base: .unimplemented)
+        assertionFailure()
+        
+        return .init(_base: .unimplemented)
     }
     
     @_transparent

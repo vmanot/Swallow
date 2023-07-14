@@ -137,6 +137,32 @@ extension KeyedValuesOf: CustomStringConvertible {
     }
 }
 
+extension KeyedValuesOf: Diffable {
+    public struct Difference {
+        let source: KeyedValuesOf<Wrapped>
+        let destination: KeyedValuesOf<Wrapped>
+        
+        public func contains<T>(_ keyPath: WritableKeyPath<Wrapped, T>) -> Bool {
+            let lhs = try? source.value(for: keyPath)
+            let rhs = try? destination.value(for: keyPath)
+
+            return AnyEquatable.equate(lhs, rhs)
+        }
+    }
+    
+    public func difference(from source: KeyedValuesOf<Wrapped>) -> Difference {
+        Difference(source: source, destination: self)
+    }
+    
+    public func applying(_ difference: Difference) -> Self? {
+        fatalError(reason: .unimplemented)
+    }
+    
+    public static func diff(_ lhs: Wrapped, _ rhs: Wrapped) -> Difference {
+        .init(source: .init(from: lhs), destination: .init(from: rhs))
+    }
+}
+
 extension KeyedValuesOf: @unchecked Sendable where Wrapped: Sendable {
     
 }

@@ -4,14 +4,14 @@
 
 import Swift
 
-public struct AnyIdentifiable: Identifiable {
-    public let base: any Identifiable
+public struct AnyIdentifiable<ID>: Identifiable {
+    public let base: any Identifiable<ID>
     
     public var id: AnyHashable {
         base.id.erasedAsAnyHashable
     }
     
-    public init(erasing base: any Identifiable) {
+    public init(erasing base: any Identifiable<ID>) {
         self.base = base
     }
 }

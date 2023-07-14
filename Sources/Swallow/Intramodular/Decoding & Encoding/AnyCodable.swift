@@ -94,6 +94,12 @@ extension AnyCodable {
             return value[codingKey]
         }
     }
+    
+    public subscript(key codingKey: String) -> AnyCodable? {
+        get throws {
+            try self[key: AnyCodingKey(stringValue: codingKey)]
+        }
+    }
 }
 
 // MARK: - Conformances

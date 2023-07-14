@@ -8,7 +8,9 @@ public protocol Diffable {
     associatedtype Difference
     
     /// Returns the difference needed to produce the receiver from the given instance.
-    func difference(from _: Self) -> Difference
+    ///
+    /// i.e. self is the destination, the given instance is the source.
+    func difference(from source: Self) -> Difference
     
     /// Applies the given difference to the receiver.
     ///

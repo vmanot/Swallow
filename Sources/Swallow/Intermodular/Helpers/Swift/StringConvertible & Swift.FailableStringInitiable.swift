@@ -18,3 +18,15 @@ public protocol StringInitializable {
 }
 
 public typealias StringRepresentable = StringInitializable & StringConvertible
+
+// MARK: - Implementation
+
+extension StringInitializable where Self: RawRepresentable<String> & StringConvertible {
+    public var stringValue: String {
+        self.rawValue
+    }
+    
+    public init?(stringValue: String) {
+        self.init(rawValue: stringValue)
+    }
+}

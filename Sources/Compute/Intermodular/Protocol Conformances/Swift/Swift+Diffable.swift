@@ -181,14 +181,14 @@ public struct DictionaryDifference<Key: Hashable, Value>: Sequence {
 extension Dictionary: Diffable where Value: Equatable {
     public typealias Difference = DictionaryDifference<Key, Value>
     
-    public func difference(from other: Dictionary) -> Difference {
+    public func difference(from source: Dictionary) -> Difference {
         var insertions: [Difference.Change] = []
         var updates: [Difference.Change] = []
         var removals: [Difference.Change] = []
         
         var checkedPairs = self
         
-        for (otherKey, otherValue) in other {
+        for (otherKey, otherValue) in source {
             if let value = checkedPairs[otherKey] {
                 if value != otherValue {
                     updates += .update(key: otherKey, value: value)

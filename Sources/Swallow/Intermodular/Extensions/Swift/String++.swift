@@ -32,6 +32,12 @@ extension String {
     }
     
     public func _fromUTF16Range(
+        _ range: NSRange
+    ) -> Range<String.Index>? {
+        Range(range, in: self)
+    }
+    
+    public func _fromUTF16Range(
         _ range: Range<Int>
     ) -> Range<String.Index>? {
         Range(NSRange(location: range.lowerBound, length: range.upperBound - range.lowerBound), in: self)
@@ -203,27 +209,28 @@ extension String {
 
 extension String {
     public func _componentsWithRanges(
-        separatedBy separator: String
-    ) -> [(String, Range<String.Index>)] {
+        separatedBy separator: String)
+    -> [(String, Range<String.Index>)] {
         var ranges: [(String, Range<String.Index>)] = []
-        var currentRangeStart = self.startIndex
+        var currentRangeStart = startIndex
         
-        while let separatorRange = self.range(of: separator, options: [], range: currentRangeStart..<self.endIndex) {
+        while let separatorRange = range(of: separator, options: [], range: currentRangeStart..<endIndex) {
             let componentRange = currentRangeStart..<separatorRange.lowerBound
-            ranges.append((
-                String(self[componentRange]),
-                componentRange
-            ))
+            let component = String(self[componentRange])
+            
+            ranges.append((component, componentRange))
+            
             currentRangeStart = separatorRange.upperBound
         }
-        ranges.append((
-            String(self[currentRangeStart..<self.endIndex]),
-            currentRangeStart..<self.endIndex
-        ))
+        
+        let remainingComponentRange = currentRangeStart..<endIndex
+        let remainingComponent = String(self[remainingComponentRange])
+        
+        ranges.append((remainingComponent, remainingComponentRange))
         
         return ranges
     }
-
+    
     public func splitInHalf(separator: String) -> (String, String) {
         let range = range(of: separator, range: nil, locale: nil)
         
@@ -234,5 +241,32 @@ extension String {
         }
         
         return (self, "")
+    }
+    
+    public func substrings(
+        separatedBy characterSet: CharacterSet
+    ) -> [Substring] {
+        var result: [Substring] = []
+        var start = self.startIndex
+        
+        while start < self.endIndex {
+            if let range = self.rangeOfCharacter(from: characterSet, options: [], range: start..<self.endIndex) {
+                if range.lowerBound != start {
+                    result.append(self[start..<range.lowerBound])
+                }
+                
+                if range.upperBound < self.endIndex {
+                    start = range.upperBound
+                } else {
+                    break
+                }
+            } else {
+                result.append(self[start..<self.endIndex])
+                
+                break
+            }
+        }
+        
+        return result
     }
 }
