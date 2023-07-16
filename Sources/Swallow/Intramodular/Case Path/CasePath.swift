@@ -139,7 +139,7 @@ extension Sequence where Element: _CasePathExtracting {
     public func first<Value>(
         _ casePath: CasePath<Element, Value>
     ) -> Value? {
-        first(byUnwrapping: { $0[casePath: casePath] })
+        first(byUnwrapping: { casePath.extract(from: $0) })
     }
     
     public func first<T0, T1>(
@@ -149,6 +149,22 @@ extension Sequence where Element: _CasePathExtracting {
         self.first(byUnwrapping: {
             first.extract(from: $0).flatMap({ second.extract(from: $0) })
         })
+    }
+}
+
+extension Sequence  {
+    public func compactMap<Value>(
+        _ path: CasePath<Element, Value>
+    ) -> [Value] {
+        Array<Value>(lazy.compactMap({ path.extract(from: $0) }))
+    }
+}
+
+extension Set {
+    public func compactMap<Value>(
+        _ path: CasePath<Element, Value>
+    ) -> Set<Value> {
+        Set<Value>(lazy.compactMap({ path.extract(from: $0) }))
     }
 }
 

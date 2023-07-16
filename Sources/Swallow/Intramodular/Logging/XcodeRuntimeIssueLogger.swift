@@ -84,7 +84,7 @@ public func runtimeIssue(
     line: UInt = #line
 ) {
     XcodeRuntimeIssueLogger.default.raise(
-        "%@",
+        "%{public}s",
         file: file,
         line: line,
         vaList: message()

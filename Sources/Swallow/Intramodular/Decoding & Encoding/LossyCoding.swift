@@ -13,6 +13,10 @@ public struct LossyCoding<Value>: MutablePropertyWrapper, ParameterlessPropertyW
         self.wrappedValue = wrappedValue
     }
     
+    public init(initialValue: Value) {
+        self.wrappedValue = initialValue
+    }
+    
     public init() where Value: Initiable {
         self.wrappedValue = .init()
     }

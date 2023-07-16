@@ -56,16 +56,16 @@ final class _PassthroughLogger: LoggerProtocol, @unchecked Sendable {
             level: level,
             message: message()
         )
-        
-        parent?.entries.append(entry)
-        
+                
         if _isDebugBuild {
             if configuration.dumpToConsole || PassthroughLogger.GlobalConfiguration.dumpToConsole {
                 print("[\(source.description)] \(message())")
             }
         }
 
-        lock.withCriticalScope {
+        lock.withCriticalScope {            
+            parent?.entries.append(entry)
+
             entries.append(entry)
         }
     }

@@ -41,8 +41,6 @@ public func _expectedToNotThrow<T>(_ fn: () throws -> T?) -> T? {
     } catch {
         runtimeIssue(error)
 
-        assertionFailure(error)
-
         return nil
     }
 }
@@ -52,9 +50,7 @@ public func _expectedToNotThrow<T>(_ fn: () async throws -> T?) async -> T? {
         return try await fn()
     } catch {
         runtimeIssue(error)
-        
-        assertionFailure(error)
-        
+                
         return nil
     }
 }
@@ -76,9 +72,7 @@ public func _expectedToNotThrowExpression<T>(_ fn: @autoclosure () async throws 
         return try await fn()
     } catch {
         runtimeIssue(error)
-        
-        assertionFailure(error)
-        
+                
         return nil
     }
 }
@@ -90,9 +84,7 @@ public func _runtimeIssueOnError<T>(
         return try fn()
     } catch {
         runtimeIssue(error)
-        
-        assertionFailure(error)
-        
+                
         throw error
     }
 }
@@ -105,8 +97,6 @@ public func _runtimeIssueOnError<T>(
     } catch {
         runtimeIssue(error)
         
-        assertionFailure(error)
-
         throw error
     }
 }

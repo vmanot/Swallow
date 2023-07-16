@@ -38,6 +38,12 @@ extension ObjectSet {
 
 // MARK: - Conformances
 
+extension ObjectSet: Countable {
+    public var count: Int {
+        storage.count
+    }
+}
+
 extension ObjectSet: Hashable {
     public func hash(into hasher: inout Hasher) {
         hasher.combine(storage)

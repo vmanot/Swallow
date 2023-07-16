@@ -244,7 +244,7 @@ extension Sequence {
     /// - Returns: An array containing the transformed elements of this sequence.
     public func concurrentMap<T: Sendable>(
         priority: TaskPriority? = nil,
-        _ transform: @Sendable @escaping (Element) async throws -> T
+        @_implicitSelfCapture _ transform: @Sendable @escaping (Element) async throws -> T
     ) async rethrows -> [T] {
         try await withThrowingTaskGroup(of: (Int, T).self) { group in
             enumerated().forEach { element in
@@ -284,7 +284,7 @@ extension Sequence {
     }
     
     public func concurrentForEach(
-        _ operation: @escaping @Sendable (Element) async -> Void
+        @_implicitSelfCapture _ operation: @escaping @Sendable (Element) async -> Void
     ) async {
         await withTaskGroup(of: Void.self) { group in
             for element in self {
@@ -298,7 +298,7 @@ extension Sequence {
     }
     
     public func concurrentForEach(
-        _ operation: @escaping @Sendable (Element) async throws -> Void
+        @_implicitSelfCapture _ operation: @escaping @Sendable (Element) async throws -> Void
     ) async throws {
         try await withThrowingTaskGroup(of: Void.self) { group in
             for element in self {
