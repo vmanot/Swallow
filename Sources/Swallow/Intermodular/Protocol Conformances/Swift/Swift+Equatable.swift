@@ -71,7 +71,7 @@ extension AnyEquatable: _UnwrappableTypeEraser {
     }
 }
 
-// MARK: - Supplementary API
+// MARK: - Supplementary
 
 extension Equatable {
     public func eraseToAnyEquatable() -> AnyEquatable {

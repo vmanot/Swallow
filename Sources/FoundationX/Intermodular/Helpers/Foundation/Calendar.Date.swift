@@ -98,7 +98,7 @@ extension DateComponents {
 
 // MARK: - SwiftUI -
 
-#if canImport(SwiftUI)
+#if canImport(SwiftUI) && swift(<5.9)
 
 import SwiftUI
 

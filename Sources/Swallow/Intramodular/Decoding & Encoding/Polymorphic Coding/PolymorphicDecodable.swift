@@ -31,7 +31,7 @@ extension PolymorphicDecodable where Self: TypeDiscriminable, TypeDiscriminator 
     }
 }
 
-// MARK: - Supplementary API
+// MARK: - Supplementary
 
 extension Decoder {
     public func _polymorphic() -> _PolymorphicDecoder {

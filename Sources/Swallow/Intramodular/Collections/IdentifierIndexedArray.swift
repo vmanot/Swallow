@@ -331,7 +331,7 @@ extension IdentifierIndexedArray: Encodable where Element: Encodable, Element: I
     }
 }
 
-// MARK: - Supplementary API
+// MARK: - Supplementary
 
 extension Sequence {
     public func identified<T: Hashable>(

@@ -635,7 +635,7 @@ extension UUID: CoderPrimitive {
     }
 }
 
-// MARK: - Supplementary API
+// MARK: - Supplementary
 
 extension SingleValueDecodingContainer {
     public func _decodePrimitive<T: CoderPrimitive>(

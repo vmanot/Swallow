@@ -68,7 +68,7 @@ extension AnyComparable {
     }
 }
 
-// MARK: - Supplementary API
+// MARK: - Supplementary
 
 extension Comparable {
     public var erasedAsAnyComparable: AnyComparable {

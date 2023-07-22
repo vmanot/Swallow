@@ -241,7 +241,7 @@ extension Version: Hashable {
     }
 }
 
-// MARK: - Supplementary API
+// MARK: - Supplementary
 
 extension Bundle {
     /// The marketing version number of the bundle.

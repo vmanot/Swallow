@@ -69,7 +69,7 @@ extension OptionalProtocol {
     }
 }
 
-// MARK: - Supplementary API
+// MARK: - Supplementary
 
 public func _getUnwrappedType(
     from type: Any.Type

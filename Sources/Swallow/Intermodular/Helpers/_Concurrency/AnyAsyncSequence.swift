@@ -33,7 +33,7 @@ public struct AnyAsyncSequence<Element>: AsyncSequence, Sendable {
     }
 }
 
-// MARK: - Supplementary API
+// MARK: - Supplementary
 
 extension AsyncSequence {
     public func eraseToAnyAsyncSequence() -> AnyAsyncSequence<Element> {

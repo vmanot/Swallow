@@ -28,7 +28,7 @@ extension _StaticSwiftType {
     }
 }
 
-// MARK: - Supplementary API
+// MARK: - Supplementary
 
 extension _StaticSwiftType {
     public static func concrete<T>(
