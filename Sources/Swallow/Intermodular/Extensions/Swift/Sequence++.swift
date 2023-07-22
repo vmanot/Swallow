@@ -275,6 +275,13 @@ extension Sequence {
         }
     }
     
+    public func concurrentFlatMap<T: Sequence>(
+        priority: TaskPriority? = nil,
+        @_implicitSelfCapture _ transform: @Sendable @escaping (Element) async throws -> T
+    ) async rethrows -> [T.Element] where T.Element: Sendable {
+        try await concurrentMap(transform).flatMap({ $0 })
+    }
+
     public func asyncForEach(
         _ body: @Sendable (Element) async throws -> Void
     ) async rethrows {
@@ -472,20 +479,41 @@ extension Sequence {
 extension Sequence {
     public func interspersed(
         with separator: Element
-    ) -> AnySequence<Element> {
+    ) -> AnyRandomAccessCollection<Element> {
         guard let first = first else {
-            return .init(noSequence: ())
+            return AnyRandomAccessCollection(EmptyCollection())
         }
         
-        return .init(
-            CollectionOfOne(first)
-                .join(
-                    dropFirst()
-                        .flatMap({ CollectionOfOne(separator).join(CollectionOfOne($0)) })
-                )
+        return AnyRandomAccessCollection(
+            CollectionOfOne(first).join(
+                self.dropFirst().flatMap {
+                    CollectionOfOne(separator).join(CollectionOfOne($0))
+                }
+            )
         )
     }
     
+    public func interspersed(
+        with separator: Element,
+        where shouldSeparate: (Element) -> Bool
+    ) -> AnyRandomAccessCollection<Element> {
+        guard let first = first else {
+            return AnyRandomAccessCollection(EmptyCollection())
+        }
+        
+        return AnyRandomAccessCollection(
+            CollectionOfOne(first).join(
+                self.dropFirst().flatMap { element in
+                    if shouldSeparate(element) {
+                        return CollectionOfOne(separator).join(CollectionOfOne(element)).eraseToAnyRandomAccessCollection()
+                    } else {
+                        return CollectionOfOne(element).eraseToAnyRandomAccessCollection()
+                    }
+                }
+            )
+        )
+    }
+
     public func between(
         count startIndex: Int,
         and endIndex: Int

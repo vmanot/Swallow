@@ -82,7 +82,9 @@ public struct RecursiveAdjacencyMapElement<C: BidirectionalCollection & Recursiv
 }
 
 extension RecursiveCollection where Self: BidirectionalCollection {
-    public func recurrableIndexComparisonMap<T>(_ f: ((_ left: RecursiveIndex?, _ current: RecursiveIndex, _ right: RecursiveIndex?) -> T)) -> RecursiveArray<T> {
+    public func recurrableIndexComparisonMap<T>(
+        _ f: ((_ left: RecursiveIndex?, _ current: RecursiveIndex, _ right: RecursiveIndex?) -> T)
+    ) -> RecursiveArray<T> {
         var result: RecursiveArray<T> = []
         
         for (index, element) in _enumerated() {

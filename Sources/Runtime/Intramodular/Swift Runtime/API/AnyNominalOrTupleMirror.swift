@@ -16,13 +16,13 @@ public protocol _AnyMirrorType<Subject> {
 public struct AnyNominalOrTupleMirror<Subject>: _AnyMirrorType, MirrorType {
     public var subject: Any
     public let typeMetadata: TypeMetadata.NominalOrTuple
+        
+    private let _cachedFieldsByName: [AnyCodingKey: NominalTypeMetadata.Field]
     
     @available(*, deprecated, renamed: "subject")
     public var value: Any {
-        subject
+        fatalError()
     }
-    
-    private let _cachedFieldsByName: [AnyCodingKey: NominalTypeMetadata.Field]
     
     public var supertypeMirror: AnyNominalOrTupleMirror<Any>? {
         guard let supertypeMetadata = typeMetadata.supertypeMetadata else {
@@ -35,23 +35,54 @@ public struct AnyNominalOrTupleMirror<Subject>: _AnyMirrorType, MirrorType {
         )
     }
     
-    init(
+    private init(
         unchecked subject: Any,
         typeMetadata: TypeMetadata.NominalOrTuple
     ) {
         self.subject = subject
         self.typeMetadata = typeMetadata
         
-        self._cachedFieldsByName = Dictionary(OrderedDictionary(values: typeMetadata.fields, uniquelyKeyedBy: { AnyCodingKey(stringValue: $0.name) }))
+        var mirror: Mirror!
+        
+        self._cachedFieldsByName = Dictionary(
+            OrderedDictionary(
+                values: typeMetadata.fields.map { field in
+                    if field.type._isInvalid {
+                        mirror = mirror ?? Mirror(reflecting: subject)
+                        
+                        guard let element = mirror.children.first(where: { $0.label == field.name }) else {
+                            assertionFailure()
+                            
+                            return field
+                        }
+                                                
+                        return .init(
+                            name: field.name,
+                            type: TypeMetadata(Swift.type(of: element.value)),
+                            offset: field.offset
+                        )
+                    } else {
+                        return field
+                    }
+                },
+                uniquelyKeyedBy: { AnyCodingKey(stringValue: $0.name) }
+            )
+        )
     }
         
-    public init?(_ subject: Subject) {
-        let _subject = _unwrapExistential(subject)
+    init?(_subject subject: Any) {
+        func _typeMetadataFromValue<T>(_ x: T) -> TypeMetadata.NominalOrTuple? {
+            TypeMetadata.NominalOrTuple(type(of: x))
+        }
         
         self.init(
-            unchecked: _subject,
-            typeMetadata: .of(_subject)
+            unchecked: subject,
+            typeMetadata: _openExistential(subject, do: _typeMetadataFromValue) ?? TypeMetadata.NominalOrTuple.of(subject)
         )
+    }
+    
+    public init?(_ subject: Subject) {
+        self.init(_subject: _unwrapExistential(subject))
     }
 }
 
@@ -63,7 +94,7 @@ extension AnyNominalOrTupleMirror: CustomStringConvertible {
     }
 }
 
-extension AnyNominalOrTupleMirror: KeyExposingMutableDictionaryProtocol {
+extension AnyNominalOrTupleMirror {
     public var fields: [NominalTypeMetadata.Field] {
         typeMetadata.fields
     }
@@ -89,6 +120,18 @@ extension AnyNominalOrTupleMirror: KeyExposingMutableDictionaryProtocol {
     /// This is **unsafe**.
     public subscript(field: NominalTypeMetadata.Field) -> Any {
         get {
+            if fields.count == 1, fields.first!.type.kind == .existential, typeMetadata.memoryLayout.size == MemoryLayout<Any>.size {
+                let mirror = Mirror(reflecting: subject)
+                
+                assert(mirror.children.count == 1)
+                
+                let child = mirror.children.first!
+                
+                assert(child.label == field.key.stringValue)
+                
+                return child.value
+            }
+            
             return OpaqueExistentialContainer.withUnretainedValue(subject) {
                 $0.withUnsafeBytes { bytes in
                     field.type.opaqueExistentialInterface.copyValue(
@@ -114,16 +157,14 @@ extension AnyNominalOrTupleMirror: KeyExposingMutableDictionaryProtocol {
         }
     }
     
-    public subscript(_ key: AnyCodingKey) -> Any? {
+    public subscript(_ key: AnyCodingKey) -> Any {
         get {
-            fieldForKey(key).map({ self[$0] })
+            self[fieldForKey(key)!]
         } set {
             guard let field = fieldForKey(key) else {
+                assertionFailure()
+                
                 return
-            }
-            
-            guard let newValue = newValue else {
-                return assertionFailure()
             }
             
             self[field] = newValue
@@ -153,7 +194,7 @@ extension AnyNominalOrTupleMirror: Sequence {
     }
     
     public func makeIterator() -> AnyIterator<Element> {
-        AnyIterator(keys.lazy.map(({ ($0, self[$0]!) })).makeIterator())
+        AnyIterator(keys.lazy.map(({ ($0, self[$0]) })).makeIterator())
     }
 }
 
@@ -183,14 +224,16 @@ extension AnyNominalOrTupleMirror {
         }
         
         try visitor.visit(self, at: path)
-        
-        for (field, value) in self {
-            guard visitor.shouldVisitChildren(of: value, at: path.appending(.field(field))) else {
+                
+        for (field, childValue) in self {
+            let fieldPath = path.appending(.field(field))
+            
+            guard visitor.shouldVisitChildren(of: childValue, at: fieldPath) else {
                 continue
             }
             
-            if let mirror = _AnyNominalOrTupleMirror_init(value) {
-                try mirror._accept(visitor: visitor, at: path.appending(.field(field)))
+            if let childMirror = _AnyNominalOrTupleMirror_init(childValue) {
+                try childMirror._accept(visitor: visitor, at: fieldPath)
             }
         }
     }

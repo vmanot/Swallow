@@ -52,7 +52,9 @@ extension BinaryInteger {
         
         let (minimum, maximum) = (min(x, y), max(x, y))
         
-        return minimum + ((maximum - minimum) / 2)
+        let difference = (maximum - minimum)
+        
+        return minimum + (difference / 2)
     }
 }
 

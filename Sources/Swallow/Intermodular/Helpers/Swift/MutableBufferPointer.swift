@@ -20,7 +20,9 @@ public protocol MutableBufferPointer: BufferPointer, MutableCollection where Bas
 // MARK: - Implementation
 
 extension MutableBufferPointer {
-    public func assumingMemoryBound<T>(to type: T.Type) -> UnsafeMutableBufferPointer<T> {
+    public func assumingMemoryBound<T>(
+        to type: T.Type
+    ) -> UnsafeMutableBufferPointer<T> {
         let countMultiplier = MemoryLayout<Element>.stride.toDouble() / MemoryLayout<T>.stride.toDouble()
         let newCount = (countMultiplier * (numericCast(count) as Int).toDouble()).toInt()
         

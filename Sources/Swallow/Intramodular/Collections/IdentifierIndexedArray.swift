@@ -193,24 +193,64 @@ extension IdentifierIndexedArray: MutableCollection, MutableSequence, RandomAcce
     public func index(of id: ID) -> Int? {
         base.index(forKey: id)
     }
+    
+    public func index(ofElementIdentifiedBy id: ID) -> Int? {
+        base.index(forKey: id)
+    }
 }
 
 extension IdentifierIndexedArray {
-    public mutating func replaceSubrange<C: Collection>(
-        _ subrange: Range<Int>,
-        with newElements: C
-    ) where C.Element == Element {
+    private mutating func _naivelyModifyBase(
+        _ operation: (inout [(key: ID, value: Element)]) throws -> Void
+    ) rethrows {
         var _base = Array(base)
         
-        _base.replaceSubrange(subrange, with: newElements.map({ (_idForElement($0), $0) }))
+        try operation(&_base)
         
         self.base = .init(uniqueKeysWithValues: _base)
+    }
+    
+    public mutating func replaceSubrange<C: Collection>(
+        _ subrange: Range<Index>,
+        with newElements: C
+    ) where C.Element == Element {
+        let _id = self._idForElement
+        
+        _naivelyModifyBase {
+            $0.replaceSubrange(subrange, with: newElements.map({ (_id($0), $0) }))
+        }
+    }
+    
+    public mutating func removeAll(
+        where shouldBeRemoved: (Element) throws -> Bool
+    ) rethrows {
+        try _naivelyModifyBase {
+            try $0.removeAll(where: { try shouldBeRemoved($0.value) })
+        }
+    }
+
+    public mutating func removeSubrange(
+        _ subrange: Range<Index>
+    ) {
+        _naivelyModifyBase {
+            $0.removeSubrange(subrange)
+        }
     }
     
     public mutating func remove(_ element: Element) {
         self[id: _idForElement(element)] = nil
     }
     
+    public mutating func removeAll(after index: Index) {
+        guard index < endIndex else {
+            return
+        }
+        
+        let rangeToRemove = index.advanced(by: 1)..<endIndex
+        
+        removeSubrange(rangeToRemove)
+    }
+
     @discardableResult
     public mutating func remove(
         elementIdentifiedBy id: ID

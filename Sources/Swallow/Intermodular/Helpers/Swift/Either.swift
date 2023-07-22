@@ -53,9 +53,19 @@ extension Either where LeftValue: Collection, RightValue: Collection {
 
 // MARK: - Conformances
 
-extension Either: CustomStringConvertible {
+extension Either: CustomDebugStringConvertible, CustomStringConvertible {
     public var description: String {
-        reduce(left: { String(describing: $0) }, right: { String(describing: $0) })
+        reduce(
+            left: { String(describing: $0) },
+            right: { String(describing: $0) }
+        )
+    }
+    
+    public var debugDescription: String {
+        reduce(
+            left: { "Either.left(\(String(describing: $0)))" },
+            right: { "Either.right(\(String(describing: $0)))" }
+        )
     }
 }
 

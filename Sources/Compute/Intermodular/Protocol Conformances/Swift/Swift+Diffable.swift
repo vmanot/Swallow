@@ -270,25 +270,28 @@ extension Result: Diffable where Success: Diffable {
 
 extension Set: Diffable {
     public struct Difference: Hashable {
-        public var inserted: Set
-        public var removed: Set
+        public var insertions: Set<Element>
+        public var removals: Set<Element>
         
-        public init(inserted: Set, removed: Set) {
-            self.inserted = inserted
-            self.removed = removed
+        public init(insertions: Set, removals: Set) {
+            self.insertions = insertions
+            self.removals = removals
         }
         
         public func map<T>(
             _ transform: (Element) throws -> T
         ) rethrows -> Set<T>.Difference {
-            try .init(inserted: Set<T>(inserted.map(transform)), removed: Set<T>(inserted.map(transform)))
+            try Set<T>.Difference(
+                insertions: Set<T>(insertions.map(transform)),
+                removals: Set<T>(removals.map(transform))
+            )
         }
     }
     
     public func difference(from other: Self) -> Difference {
         return Difference(
-            inserted: subtracting(other),
-            removed: other.subtracting(self)
+            insertions: subtracting(other),
+            removals: other.subtracting(self)
         )
     }
     
@@ -301,8 +304,8 @@ extension Set: Diffable {
     }
     
     public mutating func applyUnconditionally(_ difference: Difference) {
-        formUnion(difference.inserted)
-        subtract(difference.removed)
+        formUnion(difference.insertions)
+        subtract(difference.removals)
     }
 }
 

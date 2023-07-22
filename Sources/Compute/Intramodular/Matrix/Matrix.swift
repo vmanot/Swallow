@@ -70,11 +70,11 @@ extension Matrix: MutableRowMajorRectangularCollection {
     }
     
     public var columns: Columns {
-        return (0..<rowCount).lazy.map({ rowIndex in
+        return (0..<rowCount).lazy.map { (rowIndex: Int) -> LazyMapSequence<LazySequence<(Range<Int>)>.Elements, Element> in
             (0..<columnCount).lazy.map { columnIndex in
                 storage[(columnCount * rowIndex) + columnIndex]
             }
-        })
+        }
     }
     
     public func index(forRow rowIndex: Rows.Index, column columnIndex: Columns.Index) -> Int {

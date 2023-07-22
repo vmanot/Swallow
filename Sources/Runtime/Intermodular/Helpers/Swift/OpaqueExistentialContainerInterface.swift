@@ -25,6 +25,7 @@ extension OpaqueExistentialContainerInterface {
         _ body: ((UnsafeRawBufferPointer) throws -> T)
     ) rethrows -> T {
         var _value = value as! Self
+        
         return try withUnsafeBytes(of: &_value, body)
     }
     
@@ -190,9 +191,19 @@ extension OpaqueExistentialContainer: UnmanagedProtocol {
             let type = TypeMetadata.of(value)
             let buffer = Buffer((unsafeBitCast(try! cast(value, to: AnyObject.self)), nil, nil))
             
-            return .init(buffer: buffer, type: type)
+            return .init(buffer: buffer, type: type!)
         } else {
-            return unsafeBitCast(value)
+            var result = unsafeBitCast(value, to: OpaqueExistentialContainer.self)
+            
+            guard result.type.base != Any.self else {
+                result = unsafeBitCast(_unwrapExistential(value), to: OpaqueExistentialContainer.self)
+                
+                assert(result.type.base != Any.self)
+                
+                return result
+            }
+            
+            return result
         }
     }
     
@@ -227,6 +238,10 @@ extension TypeMetadata {
         
         let container = ProtocolTypeContainer(type: base, witnessTable: 0)
         
-        return unsafeBitCast(container, to: OpaqueExistentialContainerInterface.Type.self)
+        let interface = unsafeBitCast(container, to: OpaqueExistentialContainerInterface.Type.self)
+        
+        assert(interface as Any.Type == base)
+        
+        return interface
     }
 }

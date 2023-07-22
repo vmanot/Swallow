@@ -15,7 +15,7 @@ public protocol _SubsystemDomainError: _ErrorX {
     init(_catchAll error: AnyError)
 }
 
-// MARK: - Default Implementation
+// MARK: - Implementation
 
 extension _ErrorX {
     public var traits: ErrorTraits {
@@ -32,6 +32,12 @@ extension _ErrorX {
 }
 
 // MARK: - API
+
+extension _ErrorX {
+    public static func _catchAll(_ error: Never.Reason) -> Self! {
+        try? Self(_catchAll: error)
+    }
+}
 
 public func _withErrorType<E: _ErrorX, R>(
     _ type: E.Type,

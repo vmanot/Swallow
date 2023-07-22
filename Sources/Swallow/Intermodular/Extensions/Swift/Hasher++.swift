@@ -5,6 +5,13 @@
 import Swift
 
 extension Hasher {
+    /// Why the fuck doesn't Swift already have this?! Hashes for `Hasher` aren't meant to be persistent.
+    public mutating func combine<T>(_ type: T.Type) {
+        combine(ObjectIdentifier(type))
+    }
+}
+
+extension Hasher {
     @inlinable
     public static func finalizedHashValue<T: Hashable>(for value: T) -> Int {
         var hasher = Hasher()

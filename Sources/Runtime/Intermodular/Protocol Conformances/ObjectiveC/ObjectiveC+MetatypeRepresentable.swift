@@ -21,7 +21,7 @@ extension ObjCTypeEncoding: MetatypeRepresentable {
     }
 }
 
-extension ObjCClass: NominalTypeMetadataType {
+extension ObjCClass: NominalTypeMetadata_Type {
     public var isSwiftObject: Bool {
         final class _DummyClass { }
         

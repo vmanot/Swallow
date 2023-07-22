@@ -139,7 +139,7 @@ fileprivate extension RegularExpression {
     var compoundContainerType: CompoundContainerType? {
         if pattern.count >= 3, (pattern[try: pattern.startIndex..<pattern.index(pattern.startIndex, offsetBy: 3)] == "(?:") && (pattern.last == Character(")")) {
             return .nonCapturing
-        } else if pattern.first == Character("(") && pattern.last == Character(")") {
+        } else if (pattern.first == Character("(")) && (pattern.last == Character(")")) {
             return .capturing
         } else {
             return nil

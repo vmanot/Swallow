@@ -12,6 +12,16 @@ public protocol _UnwrappableTypeEraser {
     func _unwrapBase() -> _UnwrappedBaseType
 }
 
+extension _UnwrappableTypeEraser {
+    public static var _opaque_UnwrappedBaseType: Any.Type {
+        _UnwrappedBaseType.self
+    }
+    
+    public init(_opaque_erasing x: Any) throws {
+        self.init(_erasing: try cast(x, to: _UnwrappedBaseType.self))
+    }
+}
+
 public protocol _UnwrappableHashableTypeEraser: _UnwrappableTypeEraser, Hashable {
     
 }

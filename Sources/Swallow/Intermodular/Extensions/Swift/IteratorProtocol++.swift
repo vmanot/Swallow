@@ -45,3 +45,15 @@ extension IteratorProtocol {
         AnyIterator(self)
     }
 }
+
+extension AnyIterator {
+    public func eraseToAnyIterator() -> Self {
+        self
+    }
+}
+
+extension Sequence {
+    public func _opaque_makeAndEraseIterator() -> Any {
+        makeIterator()._opaque_eraseToAnyIterator()
+    }
+}

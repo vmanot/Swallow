@@ -71,12 +71,22 @@ extension MutableDictionaryProtocol {
         return result
     }
     
-    public mutating func removeValue(forKey key: DictionaryKey) -> DictionaryValue? {
+    public mutating func removeValue(
+        forKey key: DictionaryKey
+    ) -> DictionaryValue? {
         let result = self[key]
         
         self[key] = nil
         
         return result
+    }
+    
+    public mutating func removeValues(
+        forKeys keysToBeRemoved: some Sequence<DictionaryKey>
+    ) {
+        for key in keysToBeRemoved {
+            self.removeValue(forKey: key)
+        }
     }
     
     public subscript(

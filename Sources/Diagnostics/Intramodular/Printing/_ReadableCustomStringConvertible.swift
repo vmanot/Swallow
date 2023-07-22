@@ -2,6 +2,7 @@
 // Copyright (c) Vatsal Manot
 //
 
+import Foundation
 import Swallow
 
 public struct _ReadableCustomStringConvertible<Subject>: CustomDebugStringConvertible, CustomStringConvertible {
@@ -13,10 +14,12 @@ public struct _ReadableCustomStringConvertible<Subject>: CustomDebugStringConver
     
     public var description: String {
         guard let base = Optional(_unwrapping: base) else {
-            return "nil"
+            return "Optional<\(Metatype(Subject.self))>(nil)"
         }
         
-        if let base = base as? CustomStringConvertible {
+        if let base = base as? _AbbreviatedDescriptionConvertible {
+            return base._abbreviatedDescription
+        } else if let base = base as? CustomStringConvertible {
             return base.description
         } else {
             return Metatype(type(of: base)).name
@@ -32,7 +35,7 @@ public struct _ReadableCustomStringConvertible<Subject>: CustomDebugStringConver
 
 extension _ReadableCustomStringConvertible: HashEquatable {
     public func hash(into hasher: inout Hasher) {
-        if let base = base as? AnyHashable {
+        if let base = base as? (any Hashable) {
             base.hash(into: &hasher)
         } else {
             hasher.combine(String(describing: base))

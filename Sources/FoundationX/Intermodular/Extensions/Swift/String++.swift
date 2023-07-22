@@ -6,7 +6,12 @@ import Foundation
 import Swallow
 
 extension String {
-    public init?<BP: RawBufferPointer>(bytesNoCopy bytes: BP, encoding: String.Encoding, freeWhenDone: Bool) {
+    @_disfavoredOverload
+    public init?<BP: RawBufferPointer>(
+        bytesNoCopy bytes: BP,
+        encoding: String.Encoding,
+        freeWhenDone: Bool
+    ) {
         guard !bytes.isEmpty else {
             return nil
         }
@@ -40,12 +45,12 @@ extension String {
 @available(macOS 13, iOS 16, tvOS 16, watchOS 9, *)
 extension String {
     public static func _pluralize(
-        _ string: String.LocalizationValue,
+        _ string: String,
         count: Int
     ) -> AttributedString {
-        var string = AttributedString(localized: string)
+        _memoize(uniquingWith: (string, count)) {
+            var string = AttributedString(localized: String.LocalizationValue(stringLiteral: string))
 
-        return _memoize(uniquingWith: (string, count)) {
             var morphology = Morphology()
             let number: Morphology.GrammaticalNumber
             

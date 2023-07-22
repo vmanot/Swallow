@@ -89,6 +89,10 @@ struct _GloballyMemoizedValues {
         @usableFromInline
         var storage: [Int: Any] = [:]
         
+        init() {
+            
+        }
+        
         @inline(__always)
         @usableFromInline
         subscript<Key: Hashable, Result>(
@@ -109,7 +113,7 @@ struct _GloballyMemoizedValues {
         }
     }
     
-    private static var lock = OSUnfairLock()
+    private static let lock = OSUnfairLock()
     private static var storage: [SourceCodeLocation: _KeyValueMap] = [:]
     
     @inline(__always)
@@ -117,7 +121,7 @@ struct _GloballyMemoizedValues {
     static subscript(_ location: SourceCodeLocation) -> _KeyValueMap {
         get {
             lock.withCriticalScope {
-                storage[location, default: .init()]
+                storage[location, defaultInPlace: .init()]
             }
         }
     }

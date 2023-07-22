@@ -43,7 +43,7 @@ extension Double: AnyCodableConvertible {
 
 extension Float: AnyCodableConvertible {
     public func toAnyCodable() -> AnyCodable {
-        .number(.init(Double(self)))
+        .number(AnyNumber(Double(self)))
     }
 }
 

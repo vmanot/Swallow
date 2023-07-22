@@ -8,17 +8,25 @@ import Swallow
 @frozen
 public struct OpaqueExistentialContainer: CustomDebugStringConvertible {
     @frozen
-    public struct Buffer: MutableWrapper, Trivial {
+    public struct Buffer: Wrapper, Trivial {
         public typealias Value = (UnsafeMutableRawPointer?, UnsafeMutableRawPointer?, UnsafeMutableRawPointer?)
         
-        public var value: Value
+        public var pointer0: UnsafeMutableRawPointer?
+        public var pointer1: UnsafeMutableRawPointer?
+        public var pointer2: UnsafeMutableRawPointer?
+        
+        public var value: (UnsafeMutableRawPointer?, UnsafeMutableRawPointer?, UnsafeMutableRawPointer?) {
+            (pointer0, pointer1, pointer2)
+        }
         
         public init(_ value: Value) {
-            self.value = value
+            self.pointer0 = value.0
+            self.pointer1 = value.1
+            self.pointer2 = value.2
         }
         
         public init() {
-            value = (nil, nil, nil)
+            self.init((nil, nil, nil))
         }
     }
     
@@ -26,7 +34,7 @@ public struct OpaqueExistentialContainer: CustomDebugStringConvertible {
         case runtimeCastError
     }
     
-    public static var headerSize: Int {
+    public static var existentialHeaderSize: Int {
         if CPU.Architecture.is64Bit {
             return 16
         } else {
@@ -70,21 +78,34 @@ extension OpaqueExistentialContainer: MutableContiguousStorage {
         return try container.withMutableBufferPointer({ try body($0) })
     }
     
+    // TODO: Optimize, especially the `type.kind == .existential` case.
     public mutating func withMutableBufferPointer<BP: InitiableBufferPointer, T>(
         _ body: ((BP) throws -> T)
     ) rethrows -> T where Element == BP.Element {
+        assert(MemoryLayout<BP.BaseAddressPointer.Pointee>.size == MemoryLayout<Byte>.size)
+        
         let result: T
         
         if type.kind == .class {
             let classType: AnyClass = type.base as! AnyClass
-            
+                        
             result = try body(BP(start: buffer.value.0, count: class_getInstanceSize(classType)))
         } else if type.kind == .struct || type.kind == .tuple {
             if type.memoryLayout.size > MemoryLayout<Buffer>.size {
-                result = try body(BP(start: buffer.value.0?.advanced(by: OpaqueExistentialContainer.headerSize), count: type.memoryLayout.size))
+                result = try body(BP(start: buffer.value.0?.advanced(by: OpaqueExistentialContainer.existentialHeaderSize), count: type.memoryLayout.size))
             } else {
                 result = try buffer.withUnsafeMutableBytes({ try body(BP(start: $0.baseAddress, count: type.memoryLayout.size)) })
             }
+        } else if type.kind == .existential {
+            var _value = self.takeUnretainedValue()
+            
+            let result = try type.opaqueExistentialInterface.withUnsafeMutableBytesOfValue(of: &_value) {
+                try body(.init($0))
+            }
+            
+            self = .passUnretained(_value)
+            
+            return result
         } else {
             fatalError("unsupported kind: \(type.kind)")
         }
@@ -103,8 +124,12 @@ extension OpaqueExistentialContainer: ObjCCodable {
         
         if let buffer = buffer {
             if let type = type.base as? ObjCCodable.Type {
-                let value: Any = type.init(decodingObjCValueFromRawBuffer: buffer, encoding: encoding)
-                self = .passUnretained(value)
+                self = .passUnretained(
+                    type.init(
+                        decodingObjCValueFromRawBuffer: buffer,
+                        encoding: encoding
+                    )
+                )
             } else {
                 self.init(copyingBytesOfValueAt: buffer, type: type)
             }

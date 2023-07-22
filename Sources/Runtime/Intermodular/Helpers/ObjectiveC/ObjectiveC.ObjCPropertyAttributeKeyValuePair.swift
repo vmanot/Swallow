@@ -27,7 +27,7 @@ extension ObjCPropertyAttributeKeyValuePair: Hashable {
 extension ObjCPropertyAttributeKeyValuePair: Named {
     public var name: String {
         get {
-            return String(utf8String: value.name)
+            String(utf8String: value.name)
         } set {
             value.name = .init(newValue.nullTerminatedUTF8String())
         }

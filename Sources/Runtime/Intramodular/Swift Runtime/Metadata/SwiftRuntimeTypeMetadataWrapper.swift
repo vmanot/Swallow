@@ -4,7 +4,7 @@
 
 import Swallow
 
-protocol SwiftRuntimeTypeMetadataWrapper: TypeMetadataType {
+protocol SwiftRuntimeTypeMetadataWrapper: _TypeMetadata_Type {
     associatedtype SwiftRuntimeTypeMetadata: SwiftRuntimeTypeMetadataProtocol
     
     var metadata: SwiftRuntimeTypeMetadata { get }

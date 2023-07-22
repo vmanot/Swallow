@@ -11,7 +11,7 @@ public protocol SetProtocol<Element>: Countable, Sequence {
     func isSuperset(of _: Self) -> Bool
 }
 
-public protocol SequenceInitiableSetProtocol: SequenceInitiableSequence, SetProtocol {
+public protocol SequenceInitiableSetProtocol<Element>: SequenceInitiableSequence, SetProtocol {
     func isSubset<S: Sequence>(of _: S) -> Bool where S.Element == Element
     func isSubset<C: Collection>(of _: C) -> Bool where C.Element == Element
     func isSuperset<S: Sequence>(of _: S) -> Bool where S.Element == Element
@@ -26,19 +26,19 @@ public protocol SequenceInitiableSetProtocol: SequenceInitiableSequence, SetProt
     func union(_: Self) -> Self
 }
 
-public protocol MutableSetProtocol: MutableSequence, SetProtocol {
+public protocol MutableSetProtocol<Element>: MutableSequence, SetProtocol {
     
 }
 
-public protocol ExtensibleSetProtocol: ExtensibleSequence, SetProtocol {
+public protocol ExtensibleSetProtocol<Element>: ExtensibleSequence, SetProtocol {
     
 }
 
-public protocol DestructivelyMutableSetProtocol: DestructivelyMutableSequence, ElementRemoveableDestructivelyMutableSequence, MutableSetProtocol {
+public protocol DestructivelyMutableSetProtocol<Element>: DestructivelyMutableSequence, ElementRemoveableDestructivelyMutableSequence, MutableSetProtocol {
     mutating func remove<S: Sequence>(contentsOf _: S) where S.Element == Element
 }
 
-public protocol ResizableSetProtocol: DestructivelyMutableSetProtocol, ExtensibleSetProtocol, ResizableSequence, SequenceInitiableSetProtocol {
+public protocol ResizableSetProtocol<Element>: DestructivelyMutableSetProtocol, ExtensibleSetProtocol, ResizableSequence, SequenceInitiableSetProtocol {
     
 }
 

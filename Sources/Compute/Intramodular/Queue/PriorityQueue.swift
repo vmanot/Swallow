@@ -20,7 +20,10 @@ public struct PriorityQueue<T: Comparable> {
     }
     
     public init(ascending: Bool = false, startingValues: [Element] = []) {
-        self.init(order: ascending ? { $0 > $1 } : { $0 < $1 }, startingValues: startingValues)
+        self.init(
+            order: ascending ? { (x: T, y: T) in x > y } : { (x: T, y: T) in x < y },
+            startingValues: startingValues
+        )
     }
 
     public init(order: @escaping (Element, Element) -> Bool, startingValues: [Element] = []) {

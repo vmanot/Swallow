@@ -102,19 +102,33 @@ extension _ExistentialSet {
     }
 }
 
-extension _ExistentialSet: SetProtocol {
+extension _ExistentialSet: SequenceInitiableSetProtocol {
     public func contains(_ element: Existential) -> Bool {
         elements.contains(.init(element))
-    }
-    
-    public func isSuperset(of other: Self) -> Bool {
-        elements.isSuperset(of: other.elements)
     }
     
     public func isSubset(of other: Self) -> Bool {
         elements.isSubset(of: other.elements)
     }
     
+    public func isSubset(of other: some Sequence<Existential>) -> Bool  {
+        isSubset(of: Self(other))
+    }
+    
+    public func isSuperset(of other: Self) -> Bool {
+        elements.isSuperset(of: other.elements)
+    }
+    
+    public func isSuperset(of other: some Sequence<Existential>) -> Bool {
+        isSuperset(of: Self(other))
+    }
+    
+    public func intersection(
+        _ other: some Sequence<Existential>
+    ) -> Self {
+        Self(elements: elements.intersection(Self(other).elements))
+    }
+        
     public mutating func insert(_ element: Existential) {
         elements.insert(.init(element))
     }
@@ -131,6 +145,10 @@ extension _ExistentialSet: SetProtocol {
     
     public func union(_ other: Self) -> Self {
         Self(elements: elements.union(other.elements))
+    }
+    
+    public func union(_ other: some Sequence<Existential>) -> Self {
+        union(Self(other))
     }
     
     public func intersection(_ other: Self) -> Self {

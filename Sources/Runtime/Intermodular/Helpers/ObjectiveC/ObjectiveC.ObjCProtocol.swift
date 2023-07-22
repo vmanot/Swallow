@@ -168,7 +168,7 @@ extension ObjCClass {
             .flatMap { $0.adoptedProtocols }
             .flatMap({ $0.allInstanceMethods })
 
-        let result = nil
+        let result: LazySequence<FlattenSequence<LazyMapSequence<LazySequence<AnyRandomAccessCollection<ObjCProtocol>>.Elements, AnyRandomAccessCollection<ObjCMethodDescription>>>>.Element? = nil
             ?? allInstanceMethods.find({ $0.selector == selector })
             ?? allAdoptedInstanceMethods.find({ $0.selector == selector })
 

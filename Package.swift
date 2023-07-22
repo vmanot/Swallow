@@ -14,6 +14,7 @@ let package = Package(
         .library(
             name: "Swallow",
             targets: [
+                "_LoremIpsum",
                 "Compute",
                 "Diagnostics",
                 "FoundationX",
@@ -30,7 +31,7 @@ let package = Package(
     ],
     targets: [
         .target(
-            name: "SE0270_RangeSet"
+            name: "_LoremIpsum"
         ),
         .target(
             name: "Compute",
@@ -38,31 +39,36 @@ let package = Package(
                 "Diagnostics",
                 .product(name: "Collections", package: "swift-collections"),
                 "Swallow"
-            ]
+            ],
+            swiftSettings: []
         ),
         .target(
             name: "Diagnostics",
             dependencies: [
                 "Swallow"
-            ]
+            ],
+            swiftSettings: []
         ),
         .target(
             name: "FoundationX",
             dependencies: [
                 "Swallow"
-            ]
+            ],
+            swiftSettings: []
         ),
         .target(
             name: "POSIX",
             dependencies: [
                 "Swallow"
-            ]
+            ],
+            swiftSettings: []
         ),
         .target(
             name: "PythonString",
             dependencies: [
                 "Swallow"
-            ]
+            ],
+            swiftSettings: []
         ),
         .target(
             name: "Runtime",
@@ -70,13 +76,18 @@ let package = Package(
                 "Compute",
                 "FoundationX",
                 "Swallow"
-            ]
+            ],
+            swiftSettings: []
+        ),
+        .target(
+            name: "SE0270_RangeSet"
         ),
         .target(
             name: "Swallow",
             dependencies: [
                 .product(name: "Collections", package: "swift-collections")
-            ]
+            ],
+            swiftSettings: []
         ),
         .testTarget(
             name: "SwallowTests",

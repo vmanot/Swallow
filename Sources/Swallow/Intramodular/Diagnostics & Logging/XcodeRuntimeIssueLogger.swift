@@ -180,8 +180,8 @@ struct HashedStaticString: Hashable {
     }
     
     static func == (lhs: Self, rhs: Self) -> Bool {
-        lhs.base.withUTF8Buffer { lhs in
-            rhs.base.withUTF8Buffer { rhs in
+        lhs.base.withUTF8Buffer { (lhs: UnsafeBufferPointer<UInt8>) in
+            rhs.base.withUTF8Buffer { (rhs: UnsafeBufferPointer<UInt8>) in
                 zip(lhs, rhs).first(where: { $0.0 != $0.1 }) == nil
             }
         }

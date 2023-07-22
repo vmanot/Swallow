@@ -55,6 +55,7 @@ extension MutablePointer {
         self.init(mutating: pointer)
     }
     
+    @_transparent
     public func assumingMemoryBound<T>(to type: T.Type) -> UnsafeMutablePointer<T> {
         return mutableRawRepresentation.assumingMemoryBound(to: type)
     }

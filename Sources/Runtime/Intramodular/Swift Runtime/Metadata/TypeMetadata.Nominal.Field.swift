@@ -14,7 +14,11 @@ extension TypeMetadata.Nominal {
             .init(stringValue: name)
         }
         
-        public init(name: String, type: TypeMetadata, offset: Int) {
+        public init(
+            name: String,
+            type: TypeMetadata,
+            offset: Int
+        ) {
             self.name = name
             self.type = type
             self.offset = offset

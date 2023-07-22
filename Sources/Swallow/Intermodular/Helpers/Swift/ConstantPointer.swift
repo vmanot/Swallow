@@ -18,6 +18,7 @@ extension ConstantPointer {
 }
 
 extension ConstantPointer {
+    @_transparent
     public func assumingMemoryBound<T>(to type: T.Type) -> UnsafePointer<T> {
         return (unsafeMutablePointerRepresentation.assumingMemoryBound(to: type) as UnsafeMutablePointer<T>).unsafePointerRepresentation
     }

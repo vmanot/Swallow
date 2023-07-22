@@ -30,7 +30,7 @@ infix operator ~<<
 
 @inlinable
 public func ~<< <T: BitshiftOperable>(lhs: T, rhs: T) -> T where T: BinaryInteger & Trivial {
-    return (lhs << rhs) | (lhs >> (.init(T.sizeInBits) - rhs))
+    return (lhs << rhs) | (lhs >> (T(T.sizeInBits) - rhs))
 }
 
 infix operator ~<<=
@@ -44,7 +44,7 @@ infix operator >>~
 
 @inlinable
 public func >>~ <T: BitshiftOperable>(lhs: T, rhs: T) -> T where T: BinaryInteger & Trivial {
-    return (lhs >> rhs) | (lhs << (.init(T.sizeInBits) - rhs))
+    return (lhs >> rhs) | (lhs << (T(T.sizeInBits) - rhs))
 }
 
 infix operator >>~=

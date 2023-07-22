@@ -4,7 +4,7 @@
 
 import Swift
 
-public protocol SequenceInitiableSequence: Sequence {
+public protocol SequenceInitiableSequence<Element>: Sequence {
     init(noSequence: ())
     
     init(repeating _: Element, count: Int)

@@ -11,7 +11,9 @@ extension NSNumber {
             return result as Decimal
         }
         
-        switch String(cString: objCType) {
+        let type = String(cString: objCType)
+        
+        switch type {
             case "c":
                 return self as! CChar
             case "i":

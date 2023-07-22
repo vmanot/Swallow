@@ -144,6 +144,36 @@ extension Optional {
 extension Optional {
     @discardableResult
     public mutating func unwrapOrInitialize(
+        default fallback: () throws -> Wrapped
+    ) rethrows -> Wrapped {
+        if let wrapped = self {
+            return wrapped
+        } else {
+            let value = try fallback()
+            
+            self = .some(value)
+            
+            return value
+        }
+    }
+    
+    @discardableResult
+    public mutating func unwrapOrInitialize(
+        default fallback: () async throws -> Wrapped
+    ) async rethrows -> Wrapped {
+        if let wrapped = self {
+            return wrapped
+        } else {
+            let value = try await fallback()
+            
+            self = .some(value)
+            
+            return value
+        }
+    }
+
+    @discardableResult
+    public mutating func unwrapOrInitialize(
         default fallback: () throws -> Wrapped?
     ) throws -> Wrapped {
         if let wrapped = self {

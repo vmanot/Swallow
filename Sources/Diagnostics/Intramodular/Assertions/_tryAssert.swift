@@ -10,6 +10,7 @@ enum _AssertionFailureError: Error {
 }
 
 @inline(__always)
+@_transparent
 public func _tryAssert(
     _ condition: Bool,
     message: String? = nil,
@@ -23,6 +24,7 @@ public func _tryAssert(
 }
 
 @inline(__always)
+@_transparent
 public func _tryAssert(
     message: String? = nil,
     _ condition: () throws -> Bool,
@@ -35,6 +37,7 @@ public func _tryAssert(
     }
 }
 
+@_transparent
 public func _expectedToNotThrow<T>(_ fn: () throws -> T?) -> T? {
     do {
         return try fn()
@@ -45,6 +48,7 @@ public func _expectedToNotThrow<T>(_ fn: () throws -> T?) -> T? {
     }
 }
 
+@_transparent
 public func _expectedToNotThrow<T>(_ fn: () async throws -> T?) async -> T? {
     do {
         return try await fn()
@@ -56,6 +60,7 @@ public func _expectedToNotThrow<T>(_ fn: () async throws -> T?) async -> T? {
 }
 
 @_disfavoredOverload
+@_transparent
 public func _expectedToNotThrowExpression<T>(_ fn: @autoclosure () throws -> T?) -> T? {
     do {
         return try fn()
@@ -67,6 +72,7 @@ public func _expectedToNotThrowExpression<T>(_ fn: @autoclosure () throws -> T?)
 }
 
 @_disfavoredOverload
+@_transparent
 public func _expectedToNotThrowExpression<T>(_ fn: @autoclosure () async throws -> T?) async -> T? {
     do {
         return try await fn()
@@ -77,6 +83,7 @@ public func _expectedToNotThrowExpression<T>(_ fn: @autoclosure () async throws 
     }
 }
 
+@_transparent
 public func _runtimeIssueOnError<T>(
     _ fn: () throws -> T
 ) throws -> T {
@@ -89,6 +96,7 @@ public func _runtimeIssueOnError<T>(
     }
 }
 
+@_transparent
 public func _runtimeIssueOnError<T>(
     _ fn: () async throws -> T
 ) async throws -> T {
@@ -98,5 +106,29 @@ public func _runtimeIssueOnError<T>(
         runtimeIssue(error)
         
         throw error
+    }
+}
+
+@_transparent
+public func _catchAndMapError<Error: Swift.Error, Result>(
+    to error: @autoclosure() -> Error,
+    operation: () throws -> Result
+) throws -> Result {
+    do {
+        return try operation()
+    } catch {
+        throw error
+    }
+}
+
+@_transparent
+public func _catchAndMapError<Error: Swift.Error, Result>(
+    to error: @autoclosure () -> Error,
+    operation: () async throws -> Result
+) async throws -> Result {
+    do {
+        return try await operation()
+    } catch(_) {
+        throw error()
     }
 }
