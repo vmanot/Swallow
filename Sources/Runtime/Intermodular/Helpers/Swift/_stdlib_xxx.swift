@@ -29,3 +29,8 @@ public func _swift_getTypeByMangledNameInContext(
 
 @_silgen_name("swift_getTypeContextDescriptor")
 public func _swift_getTypeContextDescriptor(_ metadata: UnsafeRawPointer?) -> UnsafeRawPointer?
+
+@_silgen_name("swift_isClassType")
+public func _swift_isClassType(
+    _ type: Any.Type
+) -> Bool

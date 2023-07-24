@@ -181,12 +181,17 @@ extension RangeReplaceableCollection {
         return build(self, with: { $0.remove(at: indices) })
     }
     
-    public mutating func remove<C0: Collection, C1: ExtensibleCollection>(at indices: C0, into result: inout C1) where C0.Element == Index, C1.Element == Element {
+    public mutating func remove<C0: Collection, C1: ExtensibleCollection>(
+        at indices: C0,
+        into result: inout C1
+    ) where C0.Element == Index, C1.Element == Element {
         remove(at: AnySequence(indices), into: &result)
     }
     
     @discardableResult
-    public mutating func remove<C: Collection>(at indices: C) -> [Element] where C.Element == Index {
+    public mutating func remove<C: Collection>(
+        at indices: C
+    ) -> [Element] where C.Element == Index {
         var result: [Element] = .init(capacity: indices.count)
         
         remove(at: indices, into: &result)
@@ -195,12 +200,16 @@ extension RangeReplaceableCollection {
     }
     
     @discardableResult
-    public func removing<C: Collection>(at indices: C) -> Self where C.Element == Index {
-        return build(self, with: { $0.remove(at: indices) })
+    public func removing<C: Collection>(
+        at indices: C
+    ) -> Self where C.Element == Index {
+        build(self, with: { $0.remove(at: indices) })
     }
         
     @discardableResult
-    public func removingAll(where predicate: ((Element) throws -> Bool)) rethrows -> Self {
+    public func removingAll(
+        where predicate: ((Element) throws -> Bool)
+    ) rethrows -> Self {
         var result = self
         
         _ = try result.removeAll(where: predicate)
@@ -208,6 +217,24 @@ extension RangeReplaceableCollection {
         return result
     }
     
+    public mutating func remove<T>(
+        byUnwrapping transform: (Element) throws -> T?
+    ) rethrows -> [T] {
+        var indicesToRemove: [Index] = []
+        var result: [T] = []
+        
+        for (index, element) in self._enumerated() {
+            if let transformed = try transform(element) {
+                indicesToRemove.append(index)
+                result.append(transformed)
+            }
+        }
+        
+        remove(at: indicesToRemove)
+        
+        return result
+    }
+
     public mutating func removeDuplicates() where Element: Hashable {
         var alreadySeen: Set<Element> = []
         

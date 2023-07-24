@@ -60,7 +60,7 @@ extension ObjCTypeEncoding: AdditionOperatable {
 
 extension ObjCTypeEncoding: CustomStringConvertible {
     public var description: String {
-        return describe(value)
+        String(describing: value)
     }
 }
 

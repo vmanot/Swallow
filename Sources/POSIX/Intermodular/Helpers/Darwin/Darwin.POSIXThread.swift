@@ -98,7 +98,7 @@ extension POSIXThread {
 
 extension POSIXThread: CustomStringConvertible {
     public var description: String {
-        return describe(name)
+        String(describing: name)
     }
 }
 

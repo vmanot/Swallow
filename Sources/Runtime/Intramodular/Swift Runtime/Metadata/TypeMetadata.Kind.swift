@@ -30,7 +30,7 @@ extension TypeMetadata {
         case errorObject
         case `class`
         
-        public init(rawValue: RawValue) {
+        public init?(rawValue: RawValue) {
             switch rawValue {
                 case 1:
                     self = .struct
@@ -89,7 +89,7 @@ extension TypeMetadata {
                 case (1 | Flags.kindIsNonType | Flags.kindIsRuntimePrivate):
                     self = .errorObject
                 default:
-                    self = .class
+                    return nil
             }
         }
     }
@@ -98,8 +98,43 @@ extension TypeMetadata {
 // MARK: - Helpers
 
 extension TypeMetadata {
+    private var _contextDescriptorFlags: SwiftRuntimeContextDescriptorFlags {
+        unsafeBitCast(self, to: UnsafePointer<SwiftRuntimeContextDescriptorFlags>.self).pointee
+    }
+    
     public var kind: TypeMetadata.Kind {
-        return TypeMetadata.Kind(rawValue: unsafeBitCast(base, to: UnsafePointer<Int>.self)[0])
+        if let _kind = _contextDescriptorFlags.kind {
+            switch _kind {
+                case .module:
+                    break
+                case .`extension`:
+                    break
+                case .anonymous:
+                    break
+                case .`protocol`:
+                    break
+                case .opaqueType:
+                    break
+                case .`class`:
+                    return .class
+                case .`struct`:
+                    break
+                case .`enum`:
+                    break
+            }
+        }
+        
+        guard let kind = TypeMetadata.Kind(rawValue: unsafeBitCast(base, to: UnsafePointer<Int>.self)[0]) else {
+            if _swift_isClassType(base) {
+                return .class
+            } else {
+                assertionFailure()
+                
+                return .class
+            }
+        }
+        
+        return kind
     }
     
     public var typed: Any {

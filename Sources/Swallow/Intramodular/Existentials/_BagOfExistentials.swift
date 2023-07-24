@@ -111,6 +111,12 @@ public struct _BagOfExistentials<Existential> {
 
 // MARK: - Conformances
 
+extension _BagOfExistentials: CustomDebugStringConvertible {
+    public var debugDescription: String {
+        Array(self).debugDescription
+    }
+}
+
 extension _BagOfExistentials: Sequence {
     public func makeIterator() -> AnyIterator<Existential> {
         allElements.makeIterator()

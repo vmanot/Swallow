@@ -24,13 +24,43 @@ extension TypeMetadata {
     }
 }
 
-/*extension TypeMetadata {
-    public func conforms(to type: Any.Type) -> Bool {
-        guard let protocolType = TypeMetadata.Existential(type) else {
-            return false
+extension TypeMetadata {
+    public func conforms(to testType: Any.Type) -> Bool {
+        func _conformsToType<A>(
+            _ type: A.Type
+        ) -> Bool {
+            self.base is A.Type
         }
         
+        func _conformsToMetatype<A>(
+            _ type: A.Type
+        ) -> Bool {
+            self.base is A
+        }
+        
+        if _openExistential(testType, do: _conformsToType) {
+            return true
+        }
+        
+        if let existentialMetatype = swift_getExistentialMetatypeMetadata(testType) {
+            if _openExistential(existentialMetatype, do: _conformsToMetatype) {
+                return true
+            }
+        }
+
+        guard let protocolType = TypeMetadata.Existential(testType) else {
+            return false
+        }
+
         return _conformsToProtocol(base, protocolType.metadata.metadata.pointee.protocolDescriptorVector) != nil
+    }
+}
+
+extension Metatype {
+    public func conforms<U>(
+        to other: Metatype<U>
+    ) -> Bool {
+        TypeMetadata(_unwrapBase()).conforms(to: other._unwrapBase())
     }
 }
 
@@ -39,4 +69,9 @@ private func _conformsToProtocol(
     _ type: Any.Type,
     _ protocolDescriptor: UnsafeMutablePointer<SwiftRuntimeProtocolContextDescriptor>
 ) -> UnsafeRawPointer?
-*/
+
+
+@_silgen_name("swift_getExistentialMetatypeMetadata")
+private func swift_getExistentialMetatypeMetadata(
+    _ instanceType: Any.Type
+) -> Any.Type?

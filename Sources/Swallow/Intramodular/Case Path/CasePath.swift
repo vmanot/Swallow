@@ -115,9 +115,31 @@ extension CasePath: CustomStringConvertible {
     }
 }
 
+extension CasePath: _PartiallyEquatable {
+    public func isNotEqual(to other: Self) -> Bool? {
+        if let lhs = self as? CasePath<Root, Void>, let rhs = other as? CasePath<Root, Void> {
+            let _lhs = lhs.embed(())
+            
+            guard _lhs is (any Equatable) else {
+                return nil
+            }
+            
+            let _rhs = rhs.embed(())
+        
+            let isEqual = AnyEquatable.equate(_lhs, _rhs)
+            
+            return !isEqual
+        } else {
+            return nil
+        }
+    }
+}
+
 struct ExtractionFailed: Error {
     
 }
+
+// MARK: - Auxiliary
 
 private let lock = OSUnfairLock()
 

@@ -57,27 +57,6 @@ public struct AnyCodingKey: CodingKey, StringConvertible {
 
 // MARK: - Conformances
 
-extension AnyCodingKey: _UnwrappableTypeEraser {
-    public typealias _UnwrappedBaseType = any CodingKey
-    
-    public init(_erasing base: _UnwrappedBaseType) {
-        self.init(erasing: base)
-    }
-    
-    public func _unwrapBase() -> _UnwrappedBaseType {
-        switch storage {
-            case .string:
-                return AnyStringKey(stringValue: stringValue)
-            case .integer:
-                return AnyStringKey(stringValue: stringValue)
-            case .stringAndInteger:
-                return AnyStringKey(stringValue: stringValue)
-            case .opaque(let key):
-                return key
-        }
-    }
-}
-
 extension AnyCodingKey: Codable {
     public init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
@@ -105,7 +84,11 @@ extension AnyCodingKey: Codable {
     }
 }
 
-extension AnyCodingKey: CustomStringConvertible {
+extension AnyCodingKey: CustomDebugStringConvertible, CustomStringConvertible {
+    public var debugDescription: String {
+        stringValue.debugDescription
+    }
+
     public var description: String {
         stringValue
     }
@@ -136,5 +119,26 @@ extension AnyCodingKey: ExpressibleByStringLiteral {
 extension AnyCodingKey: Hashable {
     public func hash(into hasher: inout Hasher) {
         stringValue.hash(into: &hasher)
+    }
+}
+
+extension AnyCodingKey: _UnwrappableTypeEraser {
+    public typealias _UnwrappedBaseType = any CodingKey
+    
+    public init(_erasing base: _UnwrappedBaseType) {
+        self.init(erasing: base)
+    }
+    
+    public func _unwrapBase() -> _UnwrappedBaseType {
+        switch storage {
+            case .string:
+                return AnyStringKey(stringValue: stringValue)
+            case .integer:
+                return AnyStringKey(stringValue: stringValue)
+            case .stringAndInteger:
+                return AnyStringKey(stringValue: stringValue)
+            case .opaque(let key):
+                return key
+        }
     }
 }

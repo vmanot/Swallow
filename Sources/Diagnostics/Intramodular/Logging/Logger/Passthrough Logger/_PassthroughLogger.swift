@@ -16,11 +16,13 @@ final class _PassthroughLogger: LoggerProtocol, @unchecked Sendable {
     
     private let lock = OSUnfairLock()
     private let parent: _PassthroughLogger?
-
+    
     var source: PassthroughLogger.Source
     var scope: PassthroughLoggerScope
-    var configuration: PassthroughLogger.Configuration    
+    var configuration: PassthroughLogger.Configuration
     var entries: [LogEntry] = []
+    
+    private lazy var _platformLogger = OSLogger(subsystem: Bundle.main.bundleIdentifier!, category: "Diagnostics")
     
     init(source: Source) {
         self.parent = nil
@@ -56,16 +58,14 @@ final class _PassthroughLogger: LoggerProtocol, @unchecked Sendable {
             level: level,
             message: message()
         )
-                
-        if _isDebugBuild {
-            if configuration.dumpToConsole || PassthroughLogger.GlobalConfiguration.dumpToConsole {
-                print("[\(source.description)] \(message())")
-            }
+        
+        if configuration.dumpToConsole || PassthroughLogger.Configuration.global.dumpToConsole {
+            _platformLogger._log(level: level, message().description)
         }
 
-        lock.withCriticalScope {            
+        lock.withCriticalScope {
             parent?.entries.append(entry)
-
+            
             entries.append(entry)
         }
     }

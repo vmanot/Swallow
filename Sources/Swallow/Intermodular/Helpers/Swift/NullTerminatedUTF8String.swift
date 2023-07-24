@@ -37,7 +37,7 @@ extension NullTerminatedUTF8String {
 
 extension NullTerminatedUTF8String: CustomStringConvertible {
     public var description: String {
-        return describe(stringValue)
+        String(describing: stringValue)
     }
 }
 

@@ -4,9 +4,10 @@
 
 import Swallow
 
+@frozen
 public struct TypeMetadata: _TypeMetadata_Type {
     public let base: Any.Type
-    
+        
     public var _isInvalid: Bool {
         String(describing: base).contains("<<< invalid type >>>")
     }
@@ -17,6 +18,12 @@ public struct TypeMetadata: _TypeMetadata_Type {
 }
 
 // MARK: - Conformances
+
+extension TypeMetadata: CustomStringConvertible {
+    public var description: String {
+        String(describing: base)
+    }
+}
 
 extension TypeMetadata: MetatypeRepresentable {
     public init(metatype: Any.Type) {

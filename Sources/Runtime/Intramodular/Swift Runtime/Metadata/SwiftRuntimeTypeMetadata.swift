@@ -29,11 +29,11 @@ struct SwiftRuntimeTypeMetadata<MetadataLayout: SwiftRuntimeTypeMetadataLayout>:
     }
     
     var kind: SwiftRuntimeTypeKind {
-        return .init(rawValue: metadata.pointee.kind)
+        .init(rawValue: metadata.pointee.kind)
     }
     
     var valueWitnessTable: UnsafePointer<SwiftRuntimeValueWitnessTable> {
-        return metadata.pointee.valueWitnessTable
+        metadata.pointee.valueWitnessTable
     }
 }
 

@@ -221,33 +221,12 @@ extension PassthroughLogger {
     }
     
     public struct Configuration {
-        public var dumpToConsole: Bool = false
-    }
-}
-
-extension PassthroughLogger {
-    enum GlobalConfiguration {
-        @TaskLocal
-        static var dumpToConsole: Bool = false
-    }
-}
-
-extension PassthroughLogger {
-    /// Executes the given closure and dumps any `PassthroughLogger` logged messages to the console during its execution.
-    public static func dump(
-        _ body: () throws -> Void
-    ) rethrows {
-        try Self.GlobalConfiguration.$dumpToConsole.withValue(true) {
-            try body()
-        }
-    }
-    
-    /// Executes the given asynchronous closure and dumps any `PassthroughLogger` logged messages to the console during its execution.
-    public static func dump(
-        _ body: () async throws -> Void
-    ) async rethrows {
-        try await Self.GlobalConfiguration.$dumpToConsole.withValue(true) {
-            try await body()
+        @TaskLocal static var global = Self()
+        
+        public var dumpToConsole: Bool
+        
+        public init(dumpToConsole: Bool = _isDebugAssertConfiguration) {
+            self.dumpToConsole = dumpToConsole
         }
     }
 }

@@ -15,3 +15,23 @@ public struct AnyIdentifiable<ID>: Identifiable {
         self.base = base
     }
 }
+
+public struct _ObjectIdentifierIdentified<Object>: Hashable {
+    public let base: Object
+
+    public var id: ObjectIdentifier {
+        ObjectIdentifier(try! cast(base, to: AnyObject.self))
+    }
+    
+    public init(_ base: Object) {
+        self.base = base
+    }
+    
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+    }
+    
+    public static func == (lhs: Self, rhs: Self) -> Bool {
+        lhs.id.hashValue == rhs.id.hashValue
+    }
+}

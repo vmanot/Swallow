@@ -37,8 +37,8 @@ public final class ObjCMethodSendIntercept: ObjCMethodIntercept {
 
         super.init(object: object, selector: selector)
 
-        object.objc_withCriticalScope {
-            $0.methodSendIntercepts[selector, default: .init()].append(self)
+        objc_sync(object) {
+            object.methodSendIntercepts[selector, default: .init()].append(self)
         }
     }
 
@@ -47,8 +47,12 @@ public final class ObjCMethodSendIntercept: ObjCMethodIntercept {
     }
 
     public override func invalidate() {
-        _ = object?.objc_withCriticalScope {
-            $0.methodSendIntercepts[selector]?.remove(self)
+        guard let object else {
+            return
+        }
+        
+        objc_sync(object) {
+            object.methodSendIntercepts[selector]?.remove(self)
         }
     }
 }
@@ -63,8 +67,8 @@ public final class ObjCMethodInvocationIntercept: ObjCMethodIntercept {
 
         super.init(object: object, selector: selector)
 
-        object.objc_withCriticalScope {
-            $0.methodInvocationIntercepts[selector, default: .init()].append(self)
+        objc_sync(object) {
+            object.methodInvocationIntercepts[selector, default: .init()].append(self)
         }
     }
 
@@ -73,8 +77,12 @@ public final class ObjCMethodInvocationIntercept: ObjCMethodIntercept {
     }
 
     public override func invalidate() {
-        _ = object?.objc_withCriticalScope {
-            $0.methodInvocationIntercepts[selector]?.remove(self)
+        guard let object else {
+            return
+        }
+        
+        objc_sync(object) {
+            object.methodInvocationIntercepts[selector]?.remove(self)
         }
     }
 }

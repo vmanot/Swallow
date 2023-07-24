@@ -12,8 +12,14 @@ public struct ObjCAssociationKey<Value> {
         return storage.value
     }
     
-    public init(policy: ObjCAssociationPolicy) {
-        self.storage = .init(policy)
+    public init(
+        policy: ObjCAssociationPolicy = .retain,
+        file: StaticString = #file,
+        line: UInt = #line
+    ) {
+        self.storage = _memoize(uniquingWith: (policy, file.description, line)) {
+            ReferenceBox(policy)
+        }
     }
 }
 
@@ -28,12 +34,6 @@ extension ObjCAssociationKey: Equatable {
 extension ObjCAssociationKey: Hashable {
     public func hash(into hasher: inout Hasher) {
         hasher.combine(rawValue)
-    }
-}
-
-extension ObjCAssociationKey: Initiable {
-    public init() {
-        self.init(policy: .retain)
     }
 }
 

@@ -19,6 +19,7 @@ public struct Metatype<T>: CustomStringConvertible, Hashable, @unchecked Sendabl
     }
     
     public init(_ value: T) {
+        #if DEBUG
         guard let _ = value as? Any.Type else {
             self.value = value
             
@@ -26,7 +27,8 @@ public struct Metatype<T>: CustomStringConvertible, Hashable, @unchecked Sendabl
             
             return
         }
-        
+        #endif
+
         self.value = value
     }
     

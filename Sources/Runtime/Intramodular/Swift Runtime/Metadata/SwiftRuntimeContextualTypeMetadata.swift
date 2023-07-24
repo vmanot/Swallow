@@ -8,7 +8,7 @@ import Swallow
 extension SwiftRuntimeTypeMetadata where MetadataLayout: SwiftRuntimeContextualTypeMetadataLayout {
     @usableFromInline
     var isGeneric: Bool {
-        (metadata.pointee.contextDescriptor.pointee.flags & 0x80) != 0
+        metadata.pointee.contextDescriptor.pointee.flags.contains(.generic)
     }
     
     @usableFromInline

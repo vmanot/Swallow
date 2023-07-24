@@ -49,6 +49,18 @@ public func _expectedToNotThrow<T>(_ fn: () throws -> T?) -> T? {
 }
 
 @_transparent
+@_disfavoredOverload
+public func _expectedToNotThrow<T>(_ fn: () throws -> T) throws -> T {
+    do {
+        return try fn()
+    } catch {
+        runtimeIssue(error)
+        
+        throw error
+    }
+}
+
+@_transparent
 public func _expectedToNotThrow<T>(_ fn: () async throws -> T?) async -> T? {
     do {
         return try await fn()

@@ -35,13 +35,3 @@ public struct CustomStringConvertibleOnly: CustomDebugStringConvertible, CustomS
         return (value as? CustomStringConvertible)?.description ?? String(describing: value)
     }
 }
-
-// MARK:
-
-public func describe<T: CustomStringConvertible>(_ some: T) -> String {
-    return some.description
-}
-
-public func describe(_ some: Any) -> String {
-    return .init(describing: some)
-}

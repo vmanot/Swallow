@@ -98,6 +98,14 @@ public struct _HashableExistential<Value>: PropertyWrapper {
     }
 }
 
+// MARK: - Conformances
+
+extension _HashableExistential: CustomStringConvertible {
+    public var description: String {
+        String(describing: wrappedValue)
+    }
+}
+
 extension _HashableExistential: Equatable {
     public static func == (lhs: Self, rhs: Self) -> Bool {
         guard type(of: lhs.base) == type(of: rhs.base) else {

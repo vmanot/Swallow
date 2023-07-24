@@ -7,7 +7,7 @@ import Swift
 struct SwiftRuntimeStructContextDescriptor: SwiftRuntimeContextDescriptor {
     typealias FieldTypeAccessor = @convention(c) (UnsafePointer<Int>) -> UnsafePointer<Int>
     
-    var flags: Int32
+    var flags: Flags
     var parent: Int32
     var mangledName: SwiftRuntimeUnsafeRelativePointer<Int32, CChar>
     var accessFunctionPtr: SwiftRuntimeUnsafeRelativePointer<Int32, UnsafeRawPointer>

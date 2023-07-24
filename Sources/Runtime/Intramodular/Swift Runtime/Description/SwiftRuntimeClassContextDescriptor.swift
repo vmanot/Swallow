@@ -6,7 +6,7 @@ import Swift
 
 @usableFromInline
 struct SwiftRuntimeClassContextDescriptor: SwiftRuntimeContextDescriptor {
-    var flags: Int32
+    var flags: Flags
     var parent: Int32
     var mangledName: SwiftRuntimeUnsafeRelativePointer<Int32, CChar>
     var fieldTypesAccessor: SwiftRuntimeUnsafeRelativePointer<Int32, Int>
