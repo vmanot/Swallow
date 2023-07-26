@@ -52,6 +52,8 @@ public func _withErrorType<E: _ErrorX, R>(
             let wrappedError: Error
             
             do {
+                runtimeIssue(error)
+                
                 wrappedError = try E(_catchAll: error).unwrap()
             } catch(let wrappingError) {
                 assertionFailure(wrappingError)

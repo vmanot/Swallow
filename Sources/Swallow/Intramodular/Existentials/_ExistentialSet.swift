@@ -5,6 +5,8 @@
 import Swift
 
 public struct _ExistentialSet<Existential>: Hashable {
+    public typealias Element = Existential
+    
     private var elements: Set<_Element> = []
     
     fileprivate init(elements: Set<_Element>) {

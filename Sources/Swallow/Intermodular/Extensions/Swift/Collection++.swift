@@ -384,3 +384,12 @@ extension Collection {
         return [AnyCollection(self), AnyCollection(other)].lazy.flatMap({ $0 })
     }
 }
+
+// MARK: - Intersection
+
+extension Collection {
+    /// The intersection of all the elements in this collection.
+    public func _intersection<T>() -> Set<T> where Element == Set<T> {
+        Set._intersection(self)
+    }
+}

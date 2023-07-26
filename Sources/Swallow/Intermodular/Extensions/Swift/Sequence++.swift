@@ -785,11 +785,15 @@ extension Sequence {
         return true
     }
     
-    public func duplicates<T: Hashable>(groupedBy keyPath: KeyPath<Element, T>) -> [T: [Element]] {
+    public func duplicates<T: Hashable>(
+        groupedBy keyPath: KeyPath<Element, T>
+    ) -> [T: [Element]] {
         Dictionary(grouping: self, by: { $0[keyPath: keyPath] }).filter({ $1.count > 1 })
     }
     
-    public func distinct<T: Hashable>(by keyPath: KeyPath<Element, T>) -> AnySequence<Element> {
+    public func distinct<T: Hashable>(
+        by hashable: @escaping (Element) -> T
+    ) -> AnySequence<Element> {
         return AnySequence<Element> { () -> AnyIterator<Element> in
             var iterator = makeIterator()
             var seen: [T: Bool] = [:]
@@ -799,7 +803,7 @@ extension Sequence {
                     return nil
                 }
                 
-                while seen.updateValue(true, forKey: next[keyPath: keyPath]) == true {
+                while seen.updateValue(true, forKey: hashable(next)) == true {
                     guard let _next = iterator.next() else {
                         return nil
                     }
@@ -811,7 +815,13 @@ extension Sequence {
             }
         }
     }
-    
+
+    public func distinct<T: Hashable>(
+        by keyPath: KeyPath<Element, T>
+    ) -> AnySequence<Element> {
+        distinct(by: { $0[keyPath: keyPath] })
+    }
+        
     public func distinct() -> AnySequence<Element> where Element: Hashable {
         distinct(by: \.hashValue)
     }

@@ -12,6 +12,7 @@ extension KeyedDecodingContainerProtocol {
     }
     
     public func decode<T: Decodable>(
+        _ type: T.Type = T.self,
         forKey key: Key,
         default defaultValue: @autoclosure () -> T
     ) throws -> T {
@@ -19,6 +20,7 @@ extension KeyedDecodingContainerProtocol {
     }
 
     public func decodeIfPresent<T: Decodable & OptionalProtocol>(
+        _ type: T.Type = T.self,
         forKey key: Key
     ) throws -> T where T.Wrapped: Decodable {
         .init(try decodeIfPresent(T.Wrapped.self, forKey: key))

@@ -4,7 +4,8 @@
 
 import Swift
 
-public func withUnsafeContinuation<T, U>(
+@_disfavoredOverload
+public func withAsyncUnsafeContinuation<T, U>(
     _ fn: (UnsafeContinuation<U, Never>) -> T
 ) async -> (T, U) {
     var result0: T!
@@ -16,7 +17,21 @@ public func withUnsafeContinuation<T, U>(
     return (result0, result1)
 }
 
-public func withUnsafeThrowingContinuation<T, U>(
+@_disfavoredOverload
+public func withUnsafeThrowingContinuation<T>(
+    _ fn: (UnsafeContinuation<T, Error>) throws -> Void
+) async throws -> T {
+    try await withUnsafeThrowingContinuation { (continuation: UnsafeContinuation<T, Error>) in
+        do {
+            try fn(continuation)
+        } catch {
+            continuation.resume(throwing: error)
+        }
+    }
+}
+
+@_disfavoredOverload
+public func withAsyncUnsafeThrowingContinuation<T, U>(
     _ fn: (UnsafeContinuation<U, Error>) throws -> T
 ) async throws -> (T, U) {
     var result0: Result<T, Error>?

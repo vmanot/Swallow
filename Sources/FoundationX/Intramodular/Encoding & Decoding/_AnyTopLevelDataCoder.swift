@@ -6,8 +6,16 @@ import Combine
 import Foundation
 import Swallow
 
+public protocol _AnyDataCodableCoder {
+    func decode<T>(_ type: T.Type, from data: Data) throws -> T
+    func encode<T>(_ value: T) throws -> Data
+}
+
 public enum _AnyTopLevelDataCoder: Sendable {
-    case dataCodableType(any DataCodable.Type, strategy: (decoding: any Sendable, encoding: any Sendable))
+    case dataCodableType(
+        any DataCodable.Type,
+        strategy: (decoding: any Sendable, encoding: any Sendable)
+    )
     case topLevelDataCoder(TopLevelDataCoder, forType: Codable.Type)
     
     var type: Any.Type {
@@ -41,7 +49,7 @@ extension _AnyTopLevelDataCoder: TopLevelDataCoder {
     public func encode<T>(_ value: T) throws -> Data {
         switch self {
             case .dataCodableType(let type, let strategy): do {
-                let value = try _openExistentialAndCast(value, to: type) as! (any DataCodable)
+                let value = try _opaque_openExistentialAndCast(value, to: type) as! (any DataCodable)
                 
                 return try value._opaque_data(using: strategy.encoding)
             }
@@ -56,6 +64,20 @@ extension _AnyTopLevelDataCoder: TopLevelDataCoder {
 }
 
 // MARK: - Auxiliary
+
+struct _DataCodableCoder<Output: DataCodable> {
+    let type: Output.Type
+    let decodingStrategy: Output.DataDecodingStrategy
+    let encodingStrategy: Output.DataEncodingStrategy
+    
+    public func decode<T>(_ type: T.Type, from data: Data) throws -> T {
+        try cast(self.type.init(data: data, using: decodingStrategy))
+    }
+    
+    public func encode<T>(_ value: T) throws -> Data {
+        try cast(value, to: type).data(using: encodingStrategy)
+    }
+}
 
 extension DataDecodable {
     fileprivate static func _opaque_init(data: Data, strategy: Any) throws -> Self {

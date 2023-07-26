@@ -13,11 +13,12 @@ public protocol _TypeIterableStaticNamespaceType: _StaticNamespaceType {
     associatedtype _NamespaceChildType: _StaticSwiftType = _OpaqueExistentialSwiftType
     
     @ArrayBuilder
-    static var _allNamespaceChildren: [_NamespaceChildType._Metatype] { get }
+    static var _allNamespaceTypes: [_NamespaceChildType._Metatype] { get }
 }
 
 extension _TypeIterableStaticNamespaceType {
-    public static var _opaque_allNamespaceChildren: [Any.Type] {
-        _allNamespaceChildren.map({ $0 as! Any.Type })
+    @_spi(Internal)
+    public static var _opaque_allNamespaceTypes: [Any.Type] {
+        _allNamespaceTypes.map({ $0 as! Any.Type })
     }
 }

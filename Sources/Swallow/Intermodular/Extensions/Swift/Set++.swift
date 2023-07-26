@@ -5,12 +5,6 @@
 import Swift
 
 extension Set {
-    public func intersects(with other: Set) -> Bool {
-        !intersection(other).isEmpty
-    }
-}
-
-extension Set {
     public func _mapToSet<T>(
         _ transform: (Element) throws -> T
     ) rethrows -> Set<T> {
@@ -28,5 +22,27 @@ extension Set {
         _ transform: (Element) throws -> T
     ) rethrows -> Set<T> {
         try _mapToSet(transform)
+    }
+}
+
+extension Set {
+    public func intersects(with other: Set) -> Bool {
+        !intersection(other).isEmpty
+    }
+    
+    static func _intersection(
+        _ sets: some Collection<Set<Element>>
+    ) -> Set<Element> {
+        guard !sets.isEmpty else {
+            return []
+        }
+        
+        var result = Set(sets.first!)
+        
+        for set in sets.dropFirst() {
+            result = result.intersection(set)
+        }
+        
+        return result
     }
 }

@@ -7,7 +7,7 @@ import Foundation
 import Swift
 
 @inlinable
-public func _openExistentialAndCast<T>(
+public func _opaque_openExistentialAndCast<T>(
     _ value: T,
     to type: Any.Type,
     file: StaticString = #file,
@@ -39,7 +39,7 @@ public func _openExistentialAndCast<T, U>(
     line: UInt = #line,
     column: UInt = #column
 ) throws -> U {
-    try cast(_openExistentialAndCast(value, to: type as Any.Type), to: type)
+    try cast(_opaque_openExistentialAndCast(value, to: type as Any.Type), to: type)
 }
 
 @inlinable
@@ -180,7 +180,7 @@ public func _unwrapExistential(_ value: Any) -> Any {
     let type = __fixed__type(of: value)
     
     do {
-        return try _openExistentialAndCast(value, to: type)
+        return try _opaque_openExistentialAndCast(value, to: type)
     } catch {
         assertionFailure()
         

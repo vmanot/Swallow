@@ -13,10 +13,12 @@ public protocol _UnwrappableTypeEraser {
 }
 
 extension _UnwrappableTypeEraser {
+    @_spi(Internal)
     public static var _opaque_UnwrappedBaseType: Any.Type {
         _UnwrappedBaseType.self
     }
     
+    @_spi(Internal)
     public init(_opaque_erasing x: Any) throws {
         self.init(_erasing: try cast(x, to: _UnwrappedBaseType.self))
     }
@@ -106,5 +108,32 @@ public func _unwrapPossibleTypeEraser<T>(
         return eraser._unwrapBase()
     } else {
         return x
+    }
+}
+
+public func _castTypeErasingIfNeeded<T, U>(
+    _ value: T,
+    to type: U.Type = U.self,
+    file: StaticString = #file,
+    fileID: StaticString = #fileID,
+    function: StaticString = #function,
+    line: UInt = #line,
+    column: UInt = #column
+) throws -> U {
+    do {
+        if let result = value as? U {
+            return result
+        } else if let type = type as? any _UnwrappableTypeEraser.Type {
+            return try cast(type.init(_opaque_erasing: value), to: U.self)
+        } else {
+            throw Never.Reason.unsupported
+        }
+    } catch {
+        throw RuntimeCastError.invalidTypeCast(
+            from: __fixed__type(of: value),
+            to: type,
+            value: value,
+            location: .init(file: file, fileID: fileID, function: function, line: line, column: column)
+        )
     }
 }

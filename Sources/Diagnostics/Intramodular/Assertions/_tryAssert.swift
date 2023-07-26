@@ -123,7 +123,19 @@ public func _runtimeIssueOnError<T>(
 
 @_transparent
 public func _catchAndMapError<Error: Swift.Error, Result>(
-    to error: @autoclosure() -> Error,
+    to error: @autoclosure () -> Error,
+    operation: () throws -> Result
+) throws -> Result {
+    do {
+        return try operation()
+    } catch {
+        throw error
+    }
+}
+
+@_transparent
+public func _catchAndMapError<Error: Swift.Error, Result>(
+    to error: (AnyError) -> Error,
     operation: () throws -> Result
 ) throws -> Result {
     do {
