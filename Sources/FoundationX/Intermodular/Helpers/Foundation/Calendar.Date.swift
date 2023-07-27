@@ -98,10 +98,9 @@ extension DateComponents {
 
 // MARK: - SwiftUI -
 
-#if canImport(SwiftUI) && swift(<5.9)
-
+#if canImport(SwiftUI)
 import SwiftUI
-
+#if swift(<5.9)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 extension DatePicker {
@@ -215,4 +214,118 @@ extension DatePicker where Label == Text {
     }
 }
 
+#else
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+extension DatePicker {
+    public init(
+        selection: Binding<Calendar.Date>,
+        in calendar: Calendar = .current,
+        @ViewBuilder label: () -> Label
+    ) {
+        self.init(
+            selection: Binding(
+                get: { Date(from: selection.wrappedValue, in: calendar) },
+                set: { selection.wrappedValue = Calendar.Date(from: $0, in: calendar) }
+            ),
+            displayedComponents: [.date],
+            label: label
+        )
+    }
+    
+    public init(
+        selection: Binding<Calendar.Date>,
+        across range: ClosedRange<Calendar.Date>,
+        in calendar: Calendar = .current,
+        @ViewBuilder label: () -> Label
+    ) {
+        self.init(
+            selection: Binding(
+                get: { Date(from: selection.wrappedValue, in: calendar) },
+                set: { selection.wrappedValue = Calendar.Date(from: $0, in: calendar) }
+            ),
+            in: ClosedRange(
+                lowerBound: .init(from: range.lowerBound, in: calendar),
+                upperBound: .init(from: range.upperBound, in: calendar)
+            ),
+            displayedComponents: [.date],
+            label: label
+        )
+    }
+}
+
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+extension DatePicker where Label == Text {
+    public init(
+        _ titleKey: LocalizedStringKey,
+        selection: Binding<Calendar.Date>,
+        in calendar: Calendar = .current
+    ) {
+        self.init(
+            titleKey,
+            selection: Binding(
+                get: { Date(from: selection.wrappedValue, in: calendar) },
+                set: { selection.wrappedValue = Calendar.Date(from: $0, in: calendar) }
+            ),
+            displayedComponents: [.date]
+        )
+    }
+    
+    public init<S: StringProtocol>(
+        _ title: S,
+        selection: Binding<Calendar.Date>,
+        in calendar: Calendar = .current
+    ) {
+        self.init(
+            title,
+            selection: Binding(
+                get: { Date(from: selection.wrappedValue, in: calendar) },
+                set: { selection.wrappedValue = Calendar.Date(from: $0, in: calendar) }
+            ),
+            displayedComponents: [.date]
+        )
+    }
+    
+    public init(
+        _ titleKey: LocalizedStringKey,
+        selection: Binding<Calendar.Date>,
+        across range: ClosedRange<Calendar.Date>,
+        in calendar: Calendar = .current
+    ) {
+        self.init(
+            titleKey,
+            selection: Binding(
+                get: { Date(from: selection.wrappedValue, in: calendar) },
+                set: { selection.wrappedValue = Calendar.Date(from: $0, in: calendar) }
+            ),
+            in: ClosedRange(
+                lowerBound: .init(from: range.lowerBound, in: calendar),
+                upperBound: .init(from: range.upperBound, in: calendar)
+            ),
+            displayedComponents: [.date]
+        )
+    }
+    
+    public init<S: StringProtocol>(
+        _ title: S,
+        selection: Binding<Calendar.Date>,
+        across range: ClosedRange<Calendar.Date>,
+        in calendar: Calendar = .current
+    ) {
+        self.init(
+            title,
+            selection: Binding(
+                get: { Date(from: selection.wrappedValue, in: calendar) },
+                set: { selection.wrappedValue = Calendar.Date(from: $0, in: calendar) }
+            ),
+            in: ClosedRange(
+                lowerBound: .init(from: range.lowerBound, in: calendar),
+                upperBound: .init(from: range.upperBound, in: calendar)
+            ),
+            displayedComponents: [.date]
+        )
+    }
+}
+#endif
 #endif

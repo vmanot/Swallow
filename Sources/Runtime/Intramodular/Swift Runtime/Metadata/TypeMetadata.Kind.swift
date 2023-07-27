@@ -102,6 +102,10 @@ extension TypeMetadata {
         unsafeBitCast(self, to: UnsafePointer<SwiftRuntimeContextDescriptorFlags>.self).pointee
     }
     
+    private var _kind: TypeMetadata.Kind? {
+        TypeMetadata.Kind(rawValue: unsafeBitCast(base, to: UnsafePointer<Int>.self)[0])
+    }
+    
     public var kind: TypeMetadata.Kind {
         if let _kind = _contextDescriptorFlags.kind {
             switch _kind {
@@ -124,10 +128,24 @@ extension TypeMetadata {
             }
         }
         
-        guard let kind = TypeMetadata.Kind(rawValue: unsafeBitCast(base, to: UnsafePointer<Int>.self)[0]) else {
+        guard let kind = _kind else {
             if _swift_isClassType(base) {
                 return .class
             } else {
+                let _baseMetatype = Swift.type(of: base)
+                
+                if TypeMetadata(_baseMetatype)._kind == .existentialMetatype {
+                    return .existential
+                } else if TypeMetadata(_baseMetatype)._kind == .metatype {
+                    if let _kind = self._kind {
+                        return _kind
+                    } else if let _maybeExistentialMetatype = _swift_getExistentialMetatypeMetadata(base) {
+                        if TypeMetadata(_maybeExistentialMetatype)._kind == .existentialMetatype {
+                            return .existential
+                        }
+                    }
+                }
+
                 assertionFailure()
                 
                 return .class

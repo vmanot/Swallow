@@ -42,7 +42,7 @@ extension TypeMetadata {
             return true
         }
         
-        if let existentialMetatype = swift_getExistentialMetatypeMetadata(testType) {
+        if let existentialMetatype = _swift_getExistentialMetatypeMetadata(testType) {
             if _openExistential(existentialMetatype, do: _conformsToMetatype) {
                 return true
             }
@@ -65,13 +65,12 @@ extension Metatype {
 }
 
 @_silgen_name("swift_conformsToProtocol")
-private func _conformsToProtocol(
+func _conformsToProtocol(
     _ type: Any.Type,
     _ protocolDescriptor: UnsafeMutablePointer<SwiftRuntimeProtocolContextDescriptor>
 ) -> UnsafeRawPointer?
 
-
 @_silgen_name("swift_getExistentialMetatypeMetadata")
-private func swift_getExistentialMetatypeMetadata(
+func _swift_getExistentialMetatypeMetadata(
     _ instanceType: Any.Type
 ) -> Any.Type?

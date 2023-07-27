@@ -83,6 +83,11 @@ extension _HashableExistentialArray: ExtensibleSequence, MutableCollection, Muta
         )
     }
     
+    @discardableResult
+    public mutating func removeFirst(of element: Element) -> Element? {
+        base.removeFirst(of: _HashableExistential(_unsafelyErasing: element))?.wrappedValue
+    }
+
     public mutating func removeAll(of element: Element) {
         base.removeAll(of: _HashableExistential(_unsafelyErasing: element))
     }

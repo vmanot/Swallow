@@ -144,7 +144,11 @@ extension RangeReplaceableCollection {
 
 extension RangeReplaceableCollection {
     @discardableResult
-    public mutating func remove(at first: Index, _ second: Index, _ rest: Index...) -> [Element] {
+    public mutating func remove(
+        at first: Index,
+        _ second: Index,
+        _ rest: Index...
+    ) -> [Element] {
         return remove(at: [first, second] + rest)
     }
     
@@ -168,7 +172,9 @@ extension RangeReplaceableCollection {
     
     @_disfavoredOverload
     @discardableResult
-    public mutating func remove<S: Sequence>(at indices: S) -> [Element] where S.Element == Index {
+    public mutating func remove<S: Sequence>(
+        at indices: S
+    ) -> [Element] where S.Element == Index {
         var result: [Element] = []
         
         remove(at: indices, into: &result)
@@ -206,6 +212,17 @@ extension RangeReplaceableCollection {
         build(self, with: { $0.remove(at: indices) })
     }
         
+    @discardableResult
+    public mutating func removeFirst(
+        of element: Element
+    ) -> Element? where Element: Equatable {
+        guard let index = firstIndex(where: { $0 == element }) else {
+            return nil
+        }
+                
+        return self.remove(at: [index]).first!
+    }
+
     @discardableResult
     public func removingAll(
         where predicate: ((Element) throws -> Bool)
