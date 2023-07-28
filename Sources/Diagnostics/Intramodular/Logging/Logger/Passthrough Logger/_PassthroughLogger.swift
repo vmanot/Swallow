@@ -22,7 +22,13 @@ final class _PassthroughLogger: LoggerProtocol, @unchecked Sendable {
     var configuration: PassthroughLogger.Configuration
     var entries: [LogEntry] = []
     
-    private lazy var _platformLogger = OSLogger(subsystem: Bundle.main.bundleIdentifier!, category: "Diagnostics")
+    private lazy var _platformLogger: OSLoggerProtocol? = {
+        if #available(macOS 11.0, iOS 14.0, watchOS 7.0, tvOS 14.0, *) {
+            return OSLogger(subsystem: Bundle.main.bundleIdentifier!, category: "Diagnostics")
+        } else {
+            return nil
+        }
+    }()
     
     init(source: Source) {
         self.parent = nil
@@ -60,9 +66,13 @@ final class _PassthroughLogger: LoggerProtocol, @unchecked Sendable {
         )
         
         if configuration.dumpToConsole || PassthroughLogger.Configuration.global.dumpToConsole {
-            _platformLogger._log(level: level, message().description)
+            if #available(macOS 11.0, iOS 14.0, watchOS 7.0, tvOS 14.0, *) {
+                if let _platformLogger = _platformLogger as? OSLogger {
+                    _platformLogger._log(level: level, message().description)
+                }
+            }
         }
-
+        
         lock.withCriticalScope {
             parent?.entries.append(entry)
             

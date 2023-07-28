@@ -8,16 +8,29 @@ import Swift
 import os
 import OSLog
 
-@available(macOS 11.0, iOS 14.0, watchOS 7.0, tvOS 14.0, *)
 protocol OSLoggerProtocol {
+    @available(macOS 11.0, iOS 14.0, watchOS 7.0, tvOS 14.0, *)
     func log(level: OSLogType, _ message: OSLogMessage)
     
+    @available(macOS 11.0, iOS 14.0, watchOS 7.0, tvOS 14.0, *)
     func debug(_ message: OSLogMessage)
+    
+    @available(macOS 11.0, iOS 14.0, watchOS 7.0, tvOS 14.0, *)
     func info(_ message: OSLogMessage)
+    
+    @available(macOS 11.0, iOS 14.0, watchOS 7.0, tvOS 14.0, *)
     func notice(_ message: OSLogMessage)
+    
+    @available(macOS 11.0, iOS 14.0, watchOS 7.0, tvOS 14.0, *)
     func warning(_ message: OSLogMessage)
+    
+    @available(macOS 11.0, iOS 14.0, watchOS 7.0, tvOS 14.0, *)
     func error(_ message: OSLogMessage)
+    
+    @available(macOS 11.0, iOS 14.0, watchOS 7.0, tvOS 14.0, *)
     func fault(_ message: OSLogMessage)
+    
+    @available(macOS 11.0, iOS 14.0, watchOS 7.0, tvOS 14.0, *)
     func critical(_ message: OSLogMessage)
 }
 
