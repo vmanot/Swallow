@@ -6,16 +6,6 @@ import Swift
 
 @propertyWrapper
 public struct _HashableExistential<Value>: PropertyWrapper {
-    struct _HashablePlaceholderNil: ExpressibleByNilLiteral, Hashable, Sendable {
-        init() {
-            
-        }
-        
-        init(nilLiteral: ()) {
-            self.init()
-        }
-    }
-    
     private var base: Value
     
     public var wrappedValue: Value {
@@ -39,61 +29,58 @@ public struct _HashableExistential<Value>: PropertyWrapper {
     public var projectedValue: Self {
         self
     }
-        
+    
     public init(wrappedValue: Value) {
         Self._validate(wrappedValue)
         
         self.base = wrappedValue
     }
     
-    enum InitializationError: Error {
-        case unsupportedValue(Any)
-    }
-    
-    public init(_unsafelyErasing base: Any) {
-        self.base = base as! Value
-    }
-    
-    public init(_unsafelyErasing base: Any) where Value == any Hashable {
-        self.base = base as! Value
-    }
-    
-    @_disfavoredOverload
-    public init(erasing value: Any) throws where Value == any Hashable {
-        if let value = value as? (any Hashable) {
-            self.init(erasing: value)
-        } else if let value = value as? Any.Type {
-            self.init(erasing: value)
-        } else if _isValueNil(value) {
-            self.init(erasing: _HashablePlaceholderNil())
-        } else {
-            assertionFailure()
-            
-            throw InitializationError.unsupportedValue(value)
-        }
-    }
-    
-    public init(erasing value: any Hashable) where Value == any Hashable {
-        self.base = value
-    }
-    
-    public init(erasing value: Any.Type) where Value == any Hashable {
-        self.base = ObjectIdentifier(value)
-    }
-    
-    static func _validate(_ value: Value) {
+    private static func _validate(_ value: Value) {
         guard !(value is _HashablePlaceholderNil) else {
             return
         }
         
-        guard value is any Hashable || value is Any.Type else {
-            if _isValueNil(value) {
-                return
-            } else {
-                assertionFailure()
+        switch value {
+            case is any Hashable:
+                break
+            case is Any.Type:
+                break
+            case is Void:
+                break
+            case is _HashablePlaceholderNil:
+                break
+            default:
+                guard _isValueNil(value) else {
+                    return
+                }
                 
-                return
-            }
+                assertionFailure()
+        }
+    }
+}
+
+extension _HashableExistential {
+    fileprivate enum InitializationError: Error {
+        case unsupportedValue(Any)
+    }
+    
+    @_disfavoredOverload
+    public init(erasing value: Any) throws where Value == any Hashable {
+        switch value {
+            case let value as any Hashable:
+                self.init(wrappedValue: value)
+            case let value as Any.Type:
+                self.init(wrappedValue: ObjectIdentifier(value))
+            case is Void:
+                self.init(wrappedValue: None())
+            default:
+                if _isValueNil(value) {
+                    // TODO: Assert value is an existential type.
+                    self.init(wrappedValue: _HashablePlaceholderNil())
+                } else {
+                    throw InitializationError.unsupportedValue(value)
+                }
         }
     }
 }
@@ -120,19 +107,41 @@ extension _HashableExistential: Equatable {
 
 extension _HashableExistential: Hashable {
     public func hash(into hasher: inout Hasher) {
-        if let base = base as? Any.Type {
+        if let base = base as? None {
+            hasher.combine(base)
+        } else if let base = base as? _HashablePlaceholderNil {
+            hasher.combine(base)
+        } else if let base = base as? Any.Type {
             ObjectIdentifier(base).hash(into: &hasher)
         } else if let base = base as? (any Hashable) {
             hasher.combine(ObjectIdentifier(type(of: base)))
             hasher.combine(base)
-        } else if _isValueNil(base) {
-            _HashablePlaceholderNil().hash(into: &hasher)
         } else {
-            assertionFailure("unsupported type \(type(of: base))")
+            if _isValueNil(base) {
+                _HashablePlaceholderNil().hash(into: &hasher)
+            } else if base is Void {
+                hasher.combine(None())
+            } else {
+                assertionFailure("unsupported type \(type(of: base))")
+            }
         }
     }
 }
 
 extension _HashableExistential: @unchecked Sendable {
     
+}
+
+// MARK: - Auxiliary
+
+extension _HashableExistential {
+    fileprivate struct _HashablePlaceholderNil: ExpressibleByNilLiteral, Hashable, Sendable {
+        init() {
+            
+        }
+        
+        init(nilLiteral: ()) {
+            self.init()
+        }
+    }
 }

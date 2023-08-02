@@ -143,7 +143,7 @@ extension Optional {
 
 extension Optional {
     @discardableResult
-    public mutating func unwrapOrInitialize(
+    public mutating func unwrapOrInitializeInPlace(
         default fallback: () throws -> Wrapped
     ) rethrows -> Wrapped {
         if let wrapped = self {
@@ -158,7 +158,7 @@ extension Optional {
     }
     
     @discardableResult
-    public mutating func unwrapOrInitialize(
+    public mutating func unwrapOrInitializeInPlace(
         default fallback: () async throws -> Wrapped
     ) async rethrows -> Wrapped {
         if let wrapped = self {
@@ -173,7 +173,7 @@ extension Optional {
     }
 
     @discardableResult
-    public mutating func unwrapOrInitialize(
+    public mutating func unwrapOrInitializeInPlace(
         default fallback: () throws -> Wrapped?
     ) throws -> Wrapped {
         if let wrapped = self {
@@ -188,7 +188,7 @@ extension Optional {
     }
     
     @discardableResult
-    public mutating func unwrapOrInitialize(
+    public mutating func unwrapOrInitializeInPlace(
         default fallback: () async throws -> Wrapped?
     ) async throws -> Wrapped {
         if let wrapped = self {

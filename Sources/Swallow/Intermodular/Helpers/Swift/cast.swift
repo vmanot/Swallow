@@ -54,7 +54,7 @@ public func cast<T, U>(
 ) throws -> U {
     guard let result = value as? U else {
         throw RuntimeCastError.invalidTypeCast(
-            from: __fixed__type(of: value),
+            from: __fixed_type(of: value),
             to: type,
             value: value,
             location: .init(file: file, fileID: fileID, function: function, line: line, column: column)
@@ -148,7 +148,13 @@ public func unsafeBitCast<T, U>(_ x: T) -> U {
 
 @_optimize(none)
 @inline(never)
-public func __fixed__type(of x: Any) -> Any.Type {
+public func __fixed_type<T>(of x: T) -> Any.Type {
+    __fixed_type(ofOpaque: x)
+}
+
+@_optimize(none)
+@inline(never)
+private func __fixed_type(ofOpaque x: Any) -> Any.Type {
     let x = _takeOpaqueExistentialUnoptimized(x)
     
     func _swift_type<T>(of value: T) -> T.Type {
@@ -175,9 +181,8 @@ public func _takeOpaqueExistentialUnoptimized(_ value: Any) -> Any {
     return value
 }
 
-
 public func _unwrapExistential(_ value: Any) -> Any {
-    let type = __fixed__type(of: value)
+    let type = __fixed_type(of: value)
     
     do {
         return try _opaque_openExistentialAndCast(value, to: type)

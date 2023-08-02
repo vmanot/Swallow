@@ -62,7 +62,11 @@ extension ObjCObject {
 
 extension ObjCObject {
     public func keepAlive<T>(_ value: T) {
-        associateRuntimeValue(ExecuteClosureOnDeinit { _ = value })
+        let key = ObjCAssociationKey<ExecuteClosureOnDeinit>()
+        
+        _objC_associatedObjects[key] = ExecuteClosureOnDeinit {
+            _ = value
+        }
     }
 }
 

@@ -54,7 +54,7 @@ extension String {
 
 extension String {
     public func dropFirst() -> Substring {
-        return dropFirst(1)
+        self.dropFirst(1)
     }
     
     public func dropPrefixIfPresent<String: StringProtocol>(_ prefix: String) -> Substring {
@@ -64,6 +64,10 @@ extension String {
     @_disfavoredOverload
     public func dropPrefixIfPresent<String: StringProtocol>(_ prefix: String) -> Self {
         Self(dropPrefixIfPresent(prefix) as Substring)
+    }
+    
+    public func addingPrefixIfMissing(_ prefix: String) -> String {
+        hasPrefix(prefix) ? self : (prefix + self)
     }
     
     public func dropLast() -> Substring {
@@ -77,6 +81,10 @@ extension String {
     @_disfavoredOverload
     public func dropSuffixIfPresent<String: StringProtocol>(_ prefix: String) -> Self {
         Self(dropSuffixIfPresent(prefix) as Substring)
+    }
+    
+    public func addingSuffixIfMissing(_ suffix: String) -> String {
+        hasSuffix(suffix) ? self : (self + suffix)
     }
 }
 

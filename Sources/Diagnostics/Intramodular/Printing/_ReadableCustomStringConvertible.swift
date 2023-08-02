@@ -5,9 +5,10 @@
 import Foundation
 import Swallow
 
-public struct _ReadableCustomStringConvertible<Subject>: CustomDebugStringConvertible, CustomStringConvertible {
+public struct _ReadableCustomStringConvertible<Subject>: CustomDebugStringConvertible, CustomStringConvertible, Identifiable {
     public let base: Subject
-    
+    public let id: AnyHashable = UUID()
+
     public var debugDescription: String {
         description
     }
@@ -35,6 +36,8 @@ public struct _ReadableCustomStringConvertible<Subject>: CustomDebugStringConver
 
 extension _ReadableCustomStringConvertible: HashEquatable {
     public func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+        
         if let base = base as? (any Hashable) {
             base.hash(into: &hasher)
         } else {

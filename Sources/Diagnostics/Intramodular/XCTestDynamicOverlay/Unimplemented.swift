@@ -25,7 +25,7 @@ public func unimplemented<Result>(
     return {
         let description = description()
         _fail(description, nil, fileID: fileID, line: line)
-        guard let placeholder: Result = _generatePlaceholder()
+        guard let placeholder: Result = try? _generatePlaceholder()
         else { _unimplementedFatalError(description, file: file, line: line) }
         return placeholder
     }
@@ -51,7 +51,7 @@ public func unimplemented<Result>(
 ) -> Result {
     let description = description()
     _fail(description, nil, fileID: fileID, line: line)
-    guard let placeholder: Result = _generatePlaceholder()
+    guard let placeholder: Result = try? _generatePlaceholder()
     else { _unimplementedFatalError(description, file: file, line: line) }
     return placeholder
 }
@@ -77,7 +77,7 @@ public func unimplemented<A, Result>(
     return {
         let description = description()
         _fail(description, $0, fileID: fileID, line: line)
-        guard let placeholder: Result = _generatePlaceholder()
+        guard let placeholder: Result = try? _generatePlaceholder()
         else { _unimplementedFatalError(description, file: file, line: line) }
         return placeholder
     }
@@ -104,7 +104,7 @@ public func unimplemented<A, B, Result>(
     return {
         let description = description()
         _fail(description, ($0, $1), fileID: fileID, line: line)
-        guard let placeholder: Result = _generatePlaceholder()
+        guard let placeholder: Result = try? _generatePlaceholder()
         else { _unimplementedFatalError(description, file: file, line: line) }
         return placeholder
     }
@@ -131,7 +131,7 @@ public func unimplemented<A, B, C, Result>(
     return {
         let description = description()
         _fail(description, ($0, $1, $2), fileID: fileID, line: line)
-        guard let placeholder: Result = _generatePlaceholder()
+        guard let placeholder: Result = try? _generatePlaceholder()
         else { _unimplementedFatalError(description, file: file, line: line) }
         return placeholder
     }
@@ -158,7 +158,7 @@ public func unimplemented<A, B, C, D, Result>(
     return {
         let description = description()
         _fail(description, ($0, $1, $2, $3), fileID: fileID, line: line)
-        guard let placeholder: Result = _generatePlaceholder()
+        guard let placeholder: Result = try? _generatePlaceholder()
         else { _unimplementedFatalError(description, file: file, line: line) }
         return placeholder
     }
@@ -185,7 +185,7 @@ public func unimplemented<A, B, C, D, E, Result>(
     return {
         let description = description()
         _fail(description, ($0, $1, $2, $3, $4), fileID: fileID, line: line)
-        guard let placeholder: Result = _generatePlaceholder()
+        guard let placeholder: Result = try? _generatePlaceholder()
         else { _unimplementedFatalError(description, file: file, line: line) }
         return placeholder
     }
@@ -288,7 +288,7 @@ public func unimplemented<Result>(
     return {
         let description = description()
         _fail(description, nil, fileID: fileID, line: line)
-        guard let placeholder: Result = _generatePlaceholder()
+        guard let placeholder: Result = try? _generatePlaceholder()
         else { _unimplementedFatalError(description, file: file, line: line) }
         return placeholder
     }
@@ -324,7 +324,7 @@ public func unimplemented<A, Result>(
     return {
         let description = description()
         _fail(description, $0, fileID: fileID, line: line)
-        guard let placeholder: Result = _generatePlaceholder()
+        guard let placeholder: Result = try? _generatePlaceholder()
         else { _unimplementedFatalError(description, file: file, line: line) }
         return placeholder
     }
@@ -351,7 +351,7 @@ public func unimplemented<A, B, Result>(
     return {
         let description = description()
         _fail(description, ($0, $1), fileID: fileID, line: line)
-        guard let placeholder: Result = _generatePlaceholder()
+        guard let placeholder: Result = try? _generatePlaceholder()
         else { _unimplementedFatalError(description, file: file, line: line) }
         return placeholder
     }
@@ -378,7 +378,7 @@ public func unimplemented<A, B, C, Result>(
     return {
         let description = description()
         _fail(description, ($0, $1, $2), fileID: fileID, line: line)
-        guard let placeholder: Result = _generatePlaceholder()
+        guard let placeholder: Result = try? _generatePlaceholder()
         else { _unimplementedFatalError(description, file: file, line: line) }
         return placeholder
     }
@@ -405,7 +405,7 @@ public func unimplemented<A, B, C, D, Result>(
     return {
         let description = description()
         _fail(description, ($0, $1, $2, $3), fileID: fileID, line: line)
-        guard let placeholder: Result = _generatePlaceholder()
+        guard let placeholder: Result = try? _generatePlaceholder()
         else { _unimplementedFatalError(description, file: file, line: line) }
         return placeholder
     }
@@ -432,7 +432,7 @@ public func unimplemented<A, B, C, D, E, Result>(
     return {
         let description = description()
         _fail(description, ($0, $1, $2, $3, $4), fileID: fileID, line: line)
-        guard let placeholder: Result = _generatePlaceholder()
+        guard let placeholder: Result = try? _generatePlaceholder()
         else { _unimplementedFatalError(description, file: file, line: line) }
         return placeholder
     }

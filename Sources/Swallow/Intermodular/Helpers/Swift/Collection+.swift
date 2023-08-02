@@ -4,13 +4,6 @@
 
 import Swift
 
-public protocol AnyBidirectionalCollectionType<Element>: Collection where Index == AnyBidirectionalCollection<Element>.Index {
-    init<C: BidirectionalCollection>(_ collection: C) where C.Element == Element
-    init(_ collection: AnyBidirectionalCollection<Element>)
-    
-    func eraseToAnyBidirectionalCollection() -> AnyBidirectionalCollection<Element>
-}
-
 extension AnyBidirectionalCollection: AnyBidirectionalCollectionType {
     public func eraseToAnyBidirectionalCollection() -> AnyBidirectionalCollection<Element> {
         .init(self)
@@ -35,20 +28,15 @@ extension RandomAccessCollection {
     }
 }
 
-enum CollectionOfOneConversionError: Swift.Error {
-    case hasNoElements
-    case hasMoreThanOneElement
-}
-
 extension Collection {
     public func toCollectionOfOne() throws -> CollectionOfOne<Element> {
         switch count {
             case 0:
-                throw CollectionOfOneConversionError.hasNoElements
+                throw CollectionOfOneConversionError<Self>.isEmpty
             case 1:
                 return .init(first!)
             default:
-                throw CollectionOfOneConversionError.hasMoreThanOneElement
+                throw CollectionOfOneConversionError<Self>.containsMoreThanOneElement(self)
         }
     }
     
@@ -60,37 +48,6 @@ extension Collection {
         return try toCollectionOfOne()
     }
 }
-
-public enum FirstOrLastCollectionIndex {
-    case first
-    case last
-}
-
-public struct RelativeIndex: ExpressibleByIntegerLiteral {
-    public let distanceFromStartIndex: Int
-    
-    public init(atDistance distance: Int) {
-        self.distanceFromStartIndex = distance
-    }
-    
-    public static func atDistance(_ distance: Int) -> RelativeIndex {
-        return .init(atDistance: distance)
-    }
-    
-    public init<C: Collection>(_ index: C.Index, in collection: C) {
-        self.init(atDistance: collection.distance(from: collection.startIndex, to: index))
-    }
-    
-    public init(integerLiteral value: Int) {
-        self.distanceFromStartIndex = value
-    }
-    
-    public func absolute<C: Collection>(in collection: C) -> C.Index {
-        return collection.index(atDistance: distanceFromStartIndex)
-    }
-}
-
-// MARK: - Helpers
 
 extension Collection {
     public subscript(_ index: RelativeIndex) -> Element {
@@ -128,4 +85,50 @@ extension MutableCollection where Indices: Collection {
             }
         }
     }
+}
+
+// MARK: - Auxiliary
+
+public protocol AnyBidirectionalCollectionType<Element>: Collection where Index == AnyBidirectionalCollection<Element>.Index {
+    init<C: BidirectionalCollection>(_ collection: C) where C.Element == Element
+    init(_ collection: AnyBidirectionalCollection<Element>)
+    
+    func eraseToAnyBidirectionalCollection() -> AnyBidirectionalCollection<Element>
+}
+
+public enum FirstOrLastCollectionIndex {
+    case first
+    case last
+}
+
+public struct RelativeIndex: ExpressibleByIntegerLiteral {
+    public let distanceFromStartIndex: Int
+    
+    public init(atDistance distance: Int) {
+        self.distanceFromStartIndex = distance
+    }
+    
+    public static func atDistance(_ distance: Int) -> RelativeIndex {
+        return .init(atDistance: distance)
+    }
+    
+    public init<C: Collection>(_ index: C.Index, in collection: C) {
+        self.init(atDistance: collection.distance(from: collection.startIndex, to: index))
+    }
+    
+    public init(integerLiteral value: Int) {
+        self.distanceFromStartIndex = value
+    }
+    
+    public func absolute<C: Collection>(in collection: C) -> C.Index {
+        return collection.index(atDistance: distanceFromStartIndex)
+    }
+}
+
+// MARK: - Error Handling
+
+
+private enum CollectionOfOneConversionError<Base: Collection>: Swift.Error {
+    case isEmpty
+    case containsMoreThanOneElement(Base)
 }

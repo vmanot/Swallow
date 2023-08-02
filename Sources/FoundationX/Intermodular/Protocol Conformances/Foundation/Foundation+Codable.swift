@@ -7,6 +7,10 @@ import Swift
 
 extension Calendar.Component: Codable, RawRepresentable {
     public var rawValue: String {
+        if let _leapMonthRawValue {
+            return _leapMonthRawValue
+        }
+        
         switch self {
             case .era:
                 return "era"
@@ -40,11 +44,21 @@ extension Calendar.Component: Codable, RawRepresentable {
                 return "calendar"
             case .timeZone:
                 return "timeZone"
-            @unknown default:
+            default:
                 assertionFailure()
                 
                 return "unknown"
         }
+    }
+    
+    private var _leapMonthRawValue: String? {
+        if #available(macOS 13.0, iOS 16.0, tvOS 16.0, watchOS 9.0, *) {
+            if self == .isLeapMonth {
+                return "isLeapMotnh"
+            }
+        }
+        
+        return nil
     }
     
     public init?(rawValue: String) {

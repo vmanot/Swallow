@@ -6,7 +6,13 @@ import ObjectiveC
 import Swallow
 
 public struct ObjCAssociationKey<Value> {
-    private let storage: ReferenceBox<ObjCAssociationPolicy>
+    class _Storage: ReferenceBox<ObjCAssociationPolicy> {
+        deinit {
+            assertionFailure()
+        }
+    }
+    
+    private let storage: _Storage
     
     public var policy: ObjCAssociationPolicy {
         return storage.value
@@ -18,7 +24,7 @@ public struct ObjCAssociationKey<Value> {
         line: UInt = #line
     ) {
         self.storage = _memoize(uniquingWith: (policy, file.description, line)) {
-            ReferenceBox(policy)
+            _Storage(policy)
         }
     }
 }
@@ -33,7 +39,7 @@ extension ObjCAssociationKey: Equatable {
 
 extension ObjCAssociationKey: Hashable {
     public func hash(into hasher: inout Hasher) {
-        hasher.combine(rawValue)
+        hasher.combine(ObjectIdentifier(storage))
     }
 }
 
@@ -42,29 +48,5 @@ extension ObjCAssociationKey: RawValueConvertible {
     
     public var rawValue: RawValue {
         unsafeBitCast(storage, to: UnsafeRawPointer.self)
-    }
-}
-
-// MARK: - Auxiliary
-
-public struct ObjCAssociation<Object: ObjCObject, AssociatedValue> {
-    private weak var object: Object?
-    
-    private let key: ObjCAssociationKey<AssociatedValue>
-    
-    public init(object: Object?, key: ObjCAssociationKey<AssociatedValue>) {
-        self.object = object
-        self.key = key
-    }
-    
-    public init(object: Object?, value: AssociatedValue) {
-        self.object = object
-        self.key = ObjCAssociationKey<AssociatedValue>()
-        
-        object?[key] = value
-    }
-    
-    public func dissociate() {
-        object?[key] = nil
     }
 }

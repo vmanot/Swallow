@@ -6,41 +6,39 @@ import Foundation
 import Swift
 
 /// A set of weakly-held objects.
-public struct _WeakSet<Element: AnyObject> {
-    /// Wrapper of a set of weakly-referenced objects
-    private var _boxedObjects = WrapperBox<NSHashTable<Element>>(NSHashTable.weakObjects())
-    /// Set of immutable objects
-    private var _objects: NSHashTable<Element> {
-        return _boxedObjects.unbox
+public struct _WeakSet<Element: AnyObject>: Initiable {
+    private var _storageBox = ReferenceBox<NSHashTable<Element>>(NSHashTable.weakObjects())
+    
+    private var _unsafelyAccessedStorage: NSHashTable<Element> {
+        return _storageBox.wrappedValue
     }
-    /// Set of mutable objects
-    private var _mutableObjects: NSHashTable<Element> {
+    
+    private var _mutableStorage: NSHashTable<Element> {
         mutating get {
-            if !isKnownUniquelyReferenced(&_boxedObjects) {
-                // `_boxedObjects` is being referenced by another `WeakSet` struct (that must have been
-                // created through a copied assignment). Create a copy of `_boxedObjects` so that both
-                // structs now reference a different set of objects.
-                _boxedObjects = WrapperBox(_objects.copy() as! NSHashTable)
+            if !isKnownUniquelyReferenced(&_storageBox) {
+                _storageBox = ReferenceBox(_unsafelyAccessedStorage.copy() as! NSHashTable)
             }
-            return _boxedObjects.unbox
+            
+            return _storageBox.wrappedValue
         }
+    }
+    
+    public init() {
+        
     }
 }
 
 extension _WeakSet {
-    /// Adds an object to the set.
-    public mutating func add(_ object: Element) {
-        _mutableObjects.add(object)
+    public mutating func insert(_ object: Element) {
+        _mutableStorage.add(object)
     }
     
-    /// Removes an object from the set.
     public mutating func remove(_ object: Element) {
-        _mutableObjects.remove(object)
+        _mutableStorage.remove(object)
     }
     
-    /// Removes all objects from the set.
     public mutating func removeAll() {
-        _mutableObjects.removeAllObjects()
+        _mutableStorage.removeAllObjects()
     }
 }
 
@@ -50,12 +48,12 @@ extension _WeakSet: Sequence {
     public typealias Iterator = AnyIterator<Element>
     
     public var count: Int {
-        _objects.count
+        _unsafelyAccessedStorage.count
     }
     
     public func makeIterator() -> Iterator {
         var index = 0
-        let allObjects = _objects.allObjects
+        let allObjects = _unsafelyAccessedStorage.allObjects
         
         return AnyIterator {
             if index < allObjects.count {
@@ -70,14 +68,46 @@ extension _WeakSet: Sequence {
     }
 }
 
-// MARK: - Auxiliary
-
-extension _WeakSet {
-    internal final class WrapperBox<T> {
-        let unbox: T
+extension _WeakSet: SequenceInitiableSequence {
+    public init(_ sequence: some Sequence<Element>) {
+        self.init()
         
-        init(_ element: T) {
-            unbox = element
+        for element in sequence {
+            _unsafelyAccessedStorage.add(element)
         }
     }
+}
+
+extension _WeakSet: SetProtocol {
+    public func contains(_ element: Element) -> Bool {
+        _unsafelyAccessedStorage.contains(element)
+    }
+    
+    public func isSubset(of other: _WeakSet<Element>) -> Bool {
+        _unsafelyAccessedStorage.isSubset(of: other._unsafelyAccessedStorage)
+    }
+    
+    public func isSuperset(of other: _WeakSet<Element>) -> Bool {
+        other._unsafelyAccessedStorage.isSubset(of: _unsafelyAccessedStorage)
+    }
+    
+    public func intersection(_ other: Self) -> Self {
+        var result = self
+        
+        result._mutableStorage.intersect(other._unsafelyAccessedStorage)
+        
+        return result
+    }
+    
+    public func union(_ other: Self) -> Self {
+        var result = self
+        
+        result._mutableStorage.union(other._unsafelyAccessedStorage)
+        
+        return result
+    }
+}
+
+extension _WeakSet: @unchecked Sendable where Element: Sendable {
+    
 }

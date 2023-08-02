@@ -22,10 +22,12 @@ extension _ErrorX {
         []
     }
     
+    @_transparent
     public init?(_catchAll error: AnyError) throws {
         throw Never.Reason.unavailable
     }
     
+    @_transparent
     public init?(_catchAll error: any Error) throws {
         try self.init(_catchAll: .init(erasing: error))
     }
@@ -34,17 +36,25 @@ extension _ErrorX {
 // MARK: - API
 
 extension _ErrorX {
+    @_transparent
     public static func _catchAll(_ error: Never.Reason) -> Self! {
         try? Self(_catchAll: error)
     }
 }
 
+@_transparent
 public func _withErrorType<E: _ErrorX, R>(
     _ type: E.Type,
     operation: () throws -> R
-) rethrows -> R {
+) throws -> R {
     do {
-        return try operation()
+        let result = Result(catching: { try operation() })
+        
+        if case .failure(let error) = result {
+            runtimeIssue(error)
+        }
+        
+        return try result.get()
     } catch(let error) {
         if let error = error as? E {
             throw error
@@ -52,8 +62,6 @@ public func _withErrorType<E: _ErrorX, R>(
             let wrappedError: Error
             
             do {
-                runtimeIssue(error)
-                
                 wrappedError = try E(_catchAll: error).unwrap()
             } catch(let wrappingError) {
                 assertionFailure(wrappingError)
@@ -66,10 +74,11 @@ public func _withErrorType<E: _ErrorX, R>(
     }
 }
 
+@_transparent
 public func _withErrorType<E: _ErrorX, R>(
     _ type: E.Type,
     operation: () async throws -> R
-) async rethrows -> R {
+) async throws -> R {
     let result = await Result {
         try await operation()
     }
@@ -86,6 +95,7 @@ extension AnyError: _ErrorX {
         (base as? (any _ErrorX))?.traits ?? []
     }
     
+    @_transparent
     public init?(_catchAll error: AnyError) throws {
         self.init(erasing: error)
     }

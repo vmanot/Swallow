@@ -12,7 +12,7 @@ extension PassthroughLogger {
         column: UInt? = #column,
         operation: () throws -> Result
     ) throws -> Result {
-        let scopedLogger = _expectedToNotThrow {
+        let scopedLogger = _expectNoThrow {
             try PassthroughLogger().scoped(to: FunctionLogScope(function: function))
         }
         
@@ -51,7 +51,7 @@ extension PassthroughLogger {
         column: UInt? = #column,
         operation: () async throws -> Result
     ) async throws -> Result {
-        let scopedLogger = _expectedToNotThrow {
+        let scopedLogger = _expectNoThrow {
             try self.scoped(to: FunctionLogScope(function: function))
         }
         

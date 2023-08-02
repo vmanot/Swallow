@@ -2,7 +2,7 @@
 // Copyright (c) Vatsal Manot
 //
 
-import Swallow
+import Swift
 
 protocol _PlaceholderInitiable {
     init()
@@ -88,7 +88,6 @@ extension UInt64: _PlaceholderInitiable {
     
 }
 
-
 extension AsyncStream: _PlaceholderInitiable {
     public init() {
         self.init {
@@ -110,7 +109,6 @@ import Foundation
 #if canImport(FoundationNetworking)
 import FoundationNetworking
 #endif
-
 extension Data: _PlaceholderInitiable {
     
 }
@@ -132,5 +130,4 @@ extension URL: _PlaceholderInitiable {
         self.init(string: "/")!
     }
 }
-
 #endif

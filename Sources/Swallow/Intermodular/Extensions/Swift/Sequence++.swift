@@ -24,6 +24,45 @@ extension Sequence {
         return nil
     }
     
+    public mutating func removeFirst<T>(
+        byUnwrapping transform: (Element) throws -> T?
+    ) rethrows -> T? where Self: RangeReplaceableCollection {
+        for (index, element) in self._enumerated() {
+            guard let result = try transform(element) else {
+                continue
+            }
+            
+            self.remove(at: index)
+            
+            return result
+        }
+        
+        return nil
+    }
+    
+    @_disfavoredOverload
+    public mutating func removeFirst<T>(
+        byUnwrapping transform: (Element) throws -> T?
+    ) rethrows -> T? where Self: DestructivelyMutableSequence {
+        var result: T?
+        
+        try self.removeAll(where: { (element: Element) in
+            guard let _result = try transform(element) else {
+                return false
+            }
+            
+            if result == nil {
+                result = _result
+                
+                return true
+            } else {
+                return false
+            }
+        })
+     
+        return result
+    }
+    
     @_disfavoredOverload
     public func firstAndOnly<T>(
         byUnwrapping transform: (Element) throws -> T?

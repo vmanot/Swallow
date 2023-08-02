@@ -8,7 +8,7 @@ import Swallow
 public struct ObjCAssociatedObjectView<Object> {
     private let base: AnyObject
     
-    public init(of base: Object) {
+    public init(base: Object) {
         assert(_swift_isClassType(type(of: base)))
 
         self.base = try! cast(base, to: AnyObject.self)
@@ -16,22 +16,30 @@ public struct ObjCAssociatedObjectView<Object> {
 }
 
 extension ObjCAssociatedObjectView {
-    public func removeAll() {
-        objc_removeAssociatedObjects(base)
-    }
-}
-
-extension ObjCAssociatedObjectView {
-    public func value<T>(forKey key: ObjCAssociationKey<T>) -> T? {
+    public func value<T>(
+        forKey key: ObjCAssociationKey<T>
+    ) -> T? {
         objc_getAssociatedObject(base, key.rawValue).map({ $0 as! T })
     }
     
-    public func value(forKey key: ObjCAssociationKey<Any>) -> Any? {
+    public func value(
+        forKey key: ObjCAssociationKey<Any>
+    ) -> Any? {
         objc_getAssociatedObject(base, key.rawValue)
     }
     
-    public func setValue<T>(_ value: T?, forKey key: ObjCAssociationKey<T>) {
+    public func setValue<T>(
+        _ value: T?,
+        forKey key: ObjCAssociationKey<T>
+    ) {
         objc_setAssociatedObject(base, key.rawValue, value as Any?, key.policy.rawValue)
+    }
+    
+    public func setValue(
+        _ value: Any?,
+        forKey key: ObjCAssociationKey<Any>
+    ) {
+        objc_setAssociatedObject(base, key.rawValue, value as AnyObject, key.policy.rawValue)
     }
 
     public subscript<T>(
@@ -62,13 +70,8 @@ extension ObjCAssociatedObjectView {
             setValue(newValue, forKey: key)
         }
     }
-}
 
-extension ObjCAssociatedObjectView {
-    public func setValue(
-        _ value: Any?,
-        forKey key: ObjCAssociationKey<Any>
-    ) {
-        objc_setAssociatedObject(base, key.rawValue, value as AnyObject, key.policy.rawValue)
+    public func removeAll() {
+        objc_removeAssociatedObjects(base)
     }
 }

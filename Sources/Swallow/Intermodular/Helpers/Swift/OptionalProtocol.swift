@@ -24,13 +24,7 @@ extension OptionalProtocol {
     }
     
     /// Recursively unwraps a possibly optional/type-erased value.
-    public init(_unwrapping x: Any?) where Wrapped == Any {
-        guard let x = x else {
-            self.init(nilLiteral: ())
-            
-            return
-        }
-        
+    public init<T>(_unwrapping x: T) where Wrapped == Any {        
         if let _x = x as? any OptionalProtocol {
             if let _xUnwrapped = _x._wrapped {
                 self.init(_unwrapping: _xUnwrapped)

@@ -7,7 +7,7 @@ import Swift
 public protocol SetProtocol<Element>: Countable, Sequence {
     func contains(_: Element) -> Bool
     
-    func isSubset(of: Self) -> Bool
+    func isSubset(of _: Self) -> Bool
     func isSuperset(of _: Self) -> Bool
 }
 

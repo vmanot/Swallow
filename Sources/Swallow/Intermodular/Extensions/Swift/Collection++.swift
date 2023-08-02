@@ -51,8 +51,8 @@ extension Collection {
         return .init(makeIterator)
     }
     
-    public func consecutivesAllowingHalfEmptyPairs() -> LazyMapSequence<LazyMapSequence<Self.Indices, (offset: Self.Index, element: Self.Element)>, (Self.Element, Self.Element?)> {
-        _enumerated().map({ ($0.1, self[try: self.index(after: $0.0)]) })
+    public func consecutivesAllowingHalfEmptyPairs() -> LazyMapSequence<LazyMapSequence<Self.Indices, (index: Self.Index, element: Self.Element)>, (Self.Element, Self.Element?)> {
+        _enumerated().map({ (index: $0.1, element: self[try: self.index(after: $0.0)]) })
     }
 }
 
@@ -199,8 +199,8 @@ extension Collection {
 
 extension Collection {
     @_disfavoredOverload
-    public func _enumerated() -> LazyMapCollection<Self.Indices, (offset: Self.Index, element: Self.Element)> {
-        indices.lazy.map({ (offset: $0, element: self[$0]) })
+    public func _enumerated() -> LazyMapCollection<Self.Indices, (index: Self.Index, element: Self.Element)> {
+        indices.lazy.map({ (index: $0, element: self[$0]) })
     }
 }
 

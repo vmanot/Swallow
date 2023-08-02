@@ -119,6 +119,23 @@ extension MutableDictionaryProtocol {
         }
     }
     
+    public subscript(
+        key: DictionaryKey,
+        _defaultInPlaceWith defaultValue: () async -> DictionaryValue
+    ) -> DictionaryValue {
+        mutating get async {
+            if let value = self[key] {
+                return value
+            } else {
+                let value = await defaultValue()
+                
+                self[key] = value
+                
+                return value
+            }
+        }
+    }
+    
     public subscript(key: DictionaryKey?) -> DictionaryValue? {
         get {
             key.flatMap({ self.value(forKey: $0) })

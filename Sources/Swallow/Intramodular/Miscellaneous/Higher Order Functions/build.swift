@@ -99,3 +99,59 @@ public func build<T: AnyObject, U, V>(_ x: T, with f: ((T, U) throws -> V), _ y:
 
     return x
 }
+
+@_transparent
+public func _withFakeInoutScope<T: AnyObject, Result>(
+    _ x: T, _
+    body: (inout T) throws -> Result
+) rethrows -> Result {
+    var _x = x
+    
+    let result = try body(&_x)
+    
+    assert(x === _x)
+    
+    return result
+}
+
+@_transparent
+public func _withFakeInoutScope<T: AnyObject, Result>(
+    _ x: T, _
+    body: (inout T?) throws -> Result
+) rethrows -> Result {
+    var _x: T? = x
+    
+    let result = try body(&_x)
+    
+    assert(x === _x)
+    
+    return result
+}
+
+@_transparent
+public func _withFakeInoutScope<T: AnyObject, Result>(
+    _ x: T, _
+    body: (inout T) async throws -> Result
+) async rethrows -> Result {
+    var _x = x
+    
+    let result = try await body(&_x)
+    
+    assert(x === _x)
+    
+    return result
+}
+
+@_transparent
+public func _withFakeInoutScope<T: AnyObject, Result>(
+    _ x: T, _
+    body: (inout T?) async throws -> Result
+) async rethrows -> Result {
+    var _x: T? = x
+    
+    let result = try await body(&_x)
+    
+    assert(x === _x)
+    
+    return result
+}

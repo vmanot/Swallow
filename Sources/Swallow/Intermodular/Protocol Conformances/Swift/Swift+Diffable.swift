@@ -2,7 +2,7 @@
 // Copyright (c) Vatsal Manot
 //
 
-import Swallow
+import Swift
 
 extension Array: Diffable where Element: Equatable {
     public typealias Difference = CollectionDifference<Element>
@@ -16,9 +16,9 @@ extension ContiguousArray: Diffable where Element: Equatable {
     public typealias Difference = CollectionDifference<Element>
 }
 
-extension CollectionOfOne: Diffable where Element: Equatable {
-    public struct Difference: Equatable {
-        public enum Change: Equatable {
+extension CollectionOfOne {
+    public struct Difference: _DiffableDifferenceType {
+        public enum Change {
             case update(from: Element, to: Element)
             
             public var oldValue: Element {
@@ -34,6 +34,10 @@ extension CollectionOfOne: Diffable where Element: Equatable {
                         return newValue
                 }
             }
+        }
+        
+        public var isEmpty: Bool {
+            update == nil
         }
         
         public let update: Change?
@@ -57,10 +61,28 @@ extension CollectionOfOne: Diffable where Element: Equatable {
             }
         }
     }
+}
+
+extension CollectionOfOne.Difference.Change: Equatable where Element: Equatable {
     
-    public func difference(from other: Self) -> Difference {
-        if value != other.value {
-            return Difference(update: .update(from: other.value, to: value))
+}
+
+extension CollectionOfOne.Difference: Equatable where Element: Equatable {
+    
+}
+
+extension CollectionOfOne.Difference.Change: Hashable where Element: Hashable {
+    
+}
+
+extension CollectionOfOne.Difference: Hashable where Element: Hashable {
+    
+}
+
+extension CollectionOfOne: Diffable where Element: Equatable {
+    public func difference(from source: Self) -> Difference {
+        if self.value != source.value {
+            return Difference(update: .update(from: source.value, to: self.value))
         } else {
             return Difference(update: nil)
         }
@@ -95,7 +117,7 @@ extension CollectionOfOne: Diffable where Element: Equatable {
     }
 }
 
-public struct DictionaryDifference<Key: Hashable, Value>: Sequence {
+public struct DictionaryDifference<Key: Hashable, Value>: _DiffableDifferenceType, Sequence {
     public enum Change {
         case insert(key: Key, value: Value)
         case update(key: Key, value: Value)
@@ -268,10 +290,25 @@ extension Result: Diffable where Success: Diffable {
     }
 }
 
+extension Result: _DiffableDifferenceType where Success: _DiffableDifferenceType {
+    public var isEmpty: Bool {
+        switch self {
+            case .success(let diff):
+                return diff.isEmpty
+            case .failure:
+                return false // FIXME?
+        }
+    }
+}
+
 extension Set: Diffable {
-    public struct Difference: Hashable {
+    public struct Difference: _DiffableDifferenceType, Hashable {
         public var insertions: Set<Element>
         public var removals: Set<Element>
+        
+        public var isEmpty: Bool {
+            insertions.isEmpty && removals.isEmpty
+        }
         
         public init(insertions: Set, removals: Set) {
             self.insertions = insertions

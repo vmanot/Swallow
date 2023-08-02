@@ -11,6 +11,10 @@ public struct KeyedValuesOf<Wrapped>: Initiable  {
     /// The values that have been set.
     private var values: [PartialKeyPath<Wrapped>: Any] = [:]
     
+    public var isEmpty: Bool {
+        base == nil && values.isEmpty
+    }
+    
     /// Create an empty `Partial`.
     public init() {
         
@@ -138,9 +142,13 @@ extension KeyedValuesOf: CustomStringConvertible {
 }
 
 extension KeyedValuesOf: Diffable {
-    public struct Difference {
+    public struct Difference: _DiffableDifferenceType {
         let source: KeyedValuesOf<Wrapped>
         let destination: KeyedValuesOf<Wrapped>
+        
+        public var isEmpty: Bool {
+            source.isEmpty && destination.isEmpty
+        }
         
         public func contains<T>(_ keyPath: WritableKeyPath<Wrapped, T>) -> Bool {
             let lhs = try? source.value(for: keyPath)

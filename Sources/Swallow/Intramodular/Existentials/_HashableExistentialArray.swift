@@ -12,7 +12,7 @@ public struct _HashableExistentialArray<Existential>: Hashable {
     }
     
     public init(_ sequence: some Sequence<Existential>) {
-        self.init(base: sequence.map(_HashableExistential.init(_unsafelyErasing:)))
+        self.init(base: sequence.map(_HashableExistential.init(wrappedValue:)))
     }
 }
 
@@ -34,7 +34,7 @@ extension _HashableExistentialArray: CustomDebugStringConvertible {
 
 extension _HashableExistentialArray: ExpressibleByArrayLiteral {
     public init(arrayLiteral elements: Existential...) {
-        self.init(base: elements.map(_HashableExistential<Existential>.init(_unsafelyErasing:)))
+        self.init(base: elements.map(_HashableExistential<Existential>.init(wrappedValue:)))
     }
 }
 
@@ -62,15 +62,15 @@ extension _HashableExistentialArray: ExtensibleSequence, MutableCollection, Muta
     }
     
     public mutating func insert(_ element: Existential) {
-        base.insert(_HashableExistential(_unsafelyErasing: element), at: 0)
+        base.insert(_HashableExistential(wrappedValue: element), at: 0)
     }
     
     public mutating func append(_ element: Existential) {
-        base.append(_HashableExistential(_unsafelyErasing: element))
+        base.append(_HashableExistential(wrappedValue: element))
     }
     
     public mutating func append(contentsOf elements: some Sequence<Existential>) {
-        base.append(contentsOf: elements.map(_HashableExistential.init(_unsafelyErasing:)))
+        base.append(contentsOf: elements.map(_HashableExistential.init(wrappedValue:)))
     }
 
     public mutating func replaceSubrange<C: Collection>(
@@ -79,17 +79,17 @@ extension _HashableExistentialArray: ExtensibleSequence, MutableCollection, Muta
     ) where C.Element == Element {
         base.replaceSubrange(
             subrange,
-            with: newElements.map(_HashableExistential.init(_unsafelyErasing:))
+            with: newElements.map(_HashableExistential.init(wrappedValue:))
         )
     }
     
     @discardableResult
     public mutating func removeFirst(of element: Element) -> Element? {
-        base.removeFirst(of: _HashableExistential(_unsafelyErasing: element))?.wrappedValue
+        base.removeFirst(of: _HashableExistential(wrappedValue: element))?.wrappedValue
     }
 
     public mutating func removeAll(of element: Element) {
-        base.removeAll(of: _HashableExistential(_unsafelyErasing: element))
+        base.removeAll(of: _HashableExistential(wrappedValue: element))
     }
 }
 

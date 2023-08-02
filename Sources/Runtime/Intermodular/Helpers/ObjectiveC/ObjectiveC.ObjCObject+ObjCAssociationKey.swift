@@ -32,137 +32,26 @@ extension ObjCObject {
 }
 
 extension ObjCObject {
+    public var _objC_associatedObjects: ObjCAssociatedObjectView<Self> {
+        ObjCAssociatedObjectView(base: self)
+    }
+    
     public subscript<T>(key: ObjCAssociationKey<T>) -> T? {
         get {
-            return associatedObjectView[key]
+            return _objC_associatedObjects[key]
         } set {
-            associatedObjectView[key] = newValue
+            _objC_associatedObjects[key] = newValue
         }
     }
     
-    public subscript<T>(key: ObjCAssociationKey<T>, default defaultValue: @autoclosure () -> T) -> T {
+    public subscript<T>(
+        key: ObjCAssociationKey<T>,
+        default defaultValue: @autoclosure () -> T
+    ) -> T {
         get {
-            if let result = associatedObjectView[key] {
-                return result
-            } else {
-                let result = defaultValue()
-                associatedObjectView[key] = result
-                return result
-            }
+            _objC_associatedObjects[key, default: defaultValue()]
         } set {
-            self[key] = newValue
-        }
-    }
-}
-
-// MARK:
-
-private let objectAssociationMapKey = ObjCAssociationKey<[String: ObjCAssociationKey<Any>]>()
-
-extension ObjCObject {
-    public var associatedObjectView: ObjCAssociatedObjectView<Self> {
-        .init(of: self)
-    }
-    
-    public var objectAssociationMap: [String: ObjCAssociationKey<Any>] {
-        get {
-            associatedObjectView.value(forKey: objectAssociationMapKey) ?? .init()
-        } set {
-            associatedObjectView.setValue(newValue, forKey: objectAssociationMapKey)
-        }
-    }
-    
-    public subscript(associationKeyForString string: String) -> ObjCAssociationKey<Any> {
-        objectAssociationMap[string, defaultInPlace: ObjCAssociationKey<Any>()]
-    }
-    
-    public subscript(associated key: String) -> Any? {
-        get {
-            associatedObjectView[self[associationKeyForString: key]]
-        } set {
-            associatedObjectView[self[associationKeyForString: key]] = newValue
-        }
-    }
-    
-    public subscript<T>(associated key: String, _ type: T.Type) -> T? {
-        get {
-            self[self[associationKeyForString: key]].map({ $0 as! T })
-        } set {
-            self[self[associationKeyForString: key]] = newValue
-        }
-    }
-    
-    public subscript<T>(associated key: String, default defaultValue: @autoclosure () -> T) -> T {
-        get {
-            self[self[associationKeyForString: key], default: defaultValue()] as! T
-        } set {
-            self[self[associationKeyForString: key]] = newValue
-        }
-    }
-    
-    @discardableResult
-    public func associateRuntimeValue<Value>(
-        _ value: Value,
-        policy: ObjCAssociationPolicy = .retain
-    ) -> ObjCAssociation<Self, Value>  {
-        let key = ObjCAssociationKey<Value>(policy: policy)
-        
-        self[key] = value
-        
-        return .init(object: self, key: key)
-    }
-}
-
-// MARK:
-
-private let objectAssociationKeyAssociationMapKey = ObjCAssociationKey<[AnyHashable: Any]>()
-
-extension ObjCObject {
-    public func associationKey<T>(for hashable: AnyHashable, valueType: T.Type = T.self) -> ObjCAssociationKey<T> {
-        if let result = self[objectAssociationKeyAssociationMapKey, default: [:]][hashable] {
-            return result as! ObjCAssociationKey
-        } else {
-            let result = ObjCAssociationKey<T>()
-            self[objectAssociationKeyAssociationMapKey, default: [:]][hashable] = result
-            return result
-        }
-    }
-    
-    public subscript<T>(associatedWith hashable: AnyHashable) -> T? {
-        get {
-            self[associationKey(for: hashable)]
-        } set {
-            self[associationKey(for: hashable)] = newValue
-        }
-    }
-    
-    public subscript<T>(associatedWith hashables: AnyHashable...) -> T? {
-        get {
-            self[associatedWith: hashables]
-        } set {
-            self[associatedWith: hashables] = newValue
-        }
-    }
-    
-    public subscript<T>(associatedWith hashable: AnyHashable, default defaultValue: @autoclosure () -> T) -> T {
-        get {
-            if let result: T = self[associatedWith: hashable] {
-                return result
-            } else {
-                let result = defaultValue()
-                self[associatedWith: hashable] = result
-                return result
-            }
-        } set {
-            self[associatedWith: hashable] = newValue
-        }
-    }
-    
-    public subscript<T>(associatedWith hashables: AnyHashable..., default defaultValue: @autoclosure () -> T) -> T {
-        get {
-            self[associatedWith: hashables, default: defaultValue()]
-        } set {
-            self[associatedWith: hashables, default: defaultValue()] = newValue
+            _objC_associatedObjects[key, default: defaultValue()] = newValue
         }
     }
 }

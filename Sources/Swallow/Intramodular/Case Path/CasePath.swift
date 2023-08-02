@@ -4,16 +4,43 @@
 
 import Swift
 
-public protocol _CasePath_Type {
+public protocol _AnyCasePath {
     associatedtype Root
     associatedtype Value
     
     func extract(from root: Root) -> Value?
+    
+    func _opaque_embed<T>(_: T) throws -> Any
+    func _opaque_extract<T>(from _: T) throws -> Any?
+    func _opaque_instantiateParameterFree() -> Any?
 }
 
-extension _CasePath_Type {
+extension CasePath {
+    public func _opaque_embed<T>(_ value: T) throws -> Any {
+        try embed(cast(value, to: Value.self))
+    }
+    
     public func _opaque_extract<T>(from root: T) throws -> Any? {
         try extract(from: cast(root, to: Root.self))
+    }
+    
+    public func _opaque_instantiateParameterFree() -> Any? {
+        do {
+            switch _Root.self {
+                case Void.self:
+                    return try _opaque_embed(())
+                case None.self:
+                    assertionFailure() // because why would I ever write an enum case like this?
+                    
+                    return try _opaque_embed(None())
+                default:
+                    return nil
+            }
+        } catch {
+            assertionFailure(error)
+            
+            return nil
+        }
     }
 }
 
@@ -21,7 +48,7 @@ extension _CasePath_Type {
 /// value.
 ///
 /// This type defines key path-like semantics for enum cases.
-public struct CasePath<_Root, _Value>: _CasePath_Type {
+public struct CasePath<_Root, _Value>: _AnyCasePath {
     public typealias Root = _Root
     public typealias Value = _Value
     
@@ -125,7 +152,7 @@ extension CasePath: _PartiallyEquatable {
             }
             
             let _rhs = rhs.embed(())
-        
+            
             let isEqual = AnyEquatable.equate(_lhs, _rhs)
             
             return !isEqual
@@ -162,6 +189,19 @@ extension Sequence where Element: _CasePathExtracting {
         _ casePath: CasePath<Element, Value>
     ) -> Value? {
         first(byUnwrapping: { casePath.extract(from: $0) })
+    }
+    
+    public mutating func removeFirst<Value>(
+        _ casePath: CasePath<Element, Value>
+    ) -> Value? where Self: RangeReplaceableCollection {
+        removeFirst(byUnwrapping: { casePath.extract(from: $0) })
+    }
+    
+    @_disfavoredOverload
+    public mutating func removeFirst<Value>(
+        _ casePath: CasePath<Element, Value>
+    ) -> Value? where Self: ResizableSetProtocol {
+        removeFirst(byUnwrapping: { casePath.extract(from: $0) })
     }
     
     public func first<T0, T1>(

@@ -19,7 +19,14 @@ public func _tryAssert(
     line: UInt = #line
 ) throws {
     guard condition else {
-        throw _AssertionFailureError.assertionFailed(.init(file: file, function: function, line: line, column: nil))
+        throw _AssertionFailureError.assertionFailed(
+            .init(
+                file: file,
+                function: function,
+                line: line,
+                column: nil
+            )
+        )
     }
 }
 
@@ -38,7 +45,7 @@ public func _tryAssert(
 }
 
 @_transparent
-public func _expectedToNotThrow<T>(_ fn: () throws -> T?) -> T? {
+public func _expectNoThrow<T>(_ fn: () throws -> T?) -> T? {
     do {
         return try fn()
     } catch {
@@ -50,7 +57,7 @@ public func _expectedToNotThrow<T>(_ fn: () throws -> T?) -> T? {
 
 @_transparent
 @_disfavoredOverload
-public func _expectedToNotThrow<T>(_ fn: () throws -> T) throws -> T {
+public func _expectNoThrow<T>(_ fn: () throws -> T) throws -> T {
     do {
         return try fn()
     } catch {
@@ -61,7 +68,7 @@ public func _expectedToNotThrow<T>(_ fn: () throws -> T) throws -> T {
 }
 
 @_transparent
-public func _expectedToNotThrow<T>(_ fn: () async throws -> T?) async -> T? {
+public func _expectNoThrow<T>(_ fn: () async throws -> T?) async -> T? {
     do {
         return try await fn()
     } catch {
@@ -73,7 +80,7 @@ public func _expectedToNotThrow<T>(_ fn: () async throws -> T?) async -> T? {
 
 @_disfavoredOverload
 @_transparent
-public func _expectedToNotThrowExpression<T>(_ fn: @autoclosure () throws -> T?) -> T? {
+public func _expectNoThrowExpression<T>(_ fn: @autoclosure () throws -> T?) -> T? {
     do {
         return try fn()
     } catch {
@@ -85,7 +92,7 @@ public func _expectedToNotThrowExpression<T>(_ fn: @autoclosure () throws -> T?)
 
 @_disfavoredOverload
 @_transparent
-public func _expectedToNotThrowExpression<T>(_ fn: @autoclosure () async throws -> T?) async -> T? {
+public func _expectNoThrowExpression<T>(_ fn: @autoclosure () async throws -> T?) async -> T? {
     do {
         return try await fn()
     } catch {
@@ -135,6 +142,18 @@ public func _catchAndMapError<Error: Swift.Error, Result>(
 
 @_transparent
 public func _catchAndMapError<Error: Swift.Error, Result>(
+    to error: @autoclosure () -> Error,
+    operation: () async throws -> Result
+) async throws -> Result {
+    do {
+        return try await operation()
+    } catch(_) {
+        throw error()
+    }
+}
+
+@_transparent
+public func _catchAndMapError<Error: Swift.Error, Result>(
     to error: (AnyError) -> Error,
     operation: () throws -> Result
 ) throws -> Result {
@@ -147,12 +166,12 @@ public func _catchAndMapError<Error: Swift.Error, Result>(
 
 @_transparent
 public func _catchAndMapError<Error: Swift.Error, Result>(
-    to error: @autoclosure () -> Error,
+    to error: (AnyError) -> Error,
     operation: () async throws -> Result
 ) async throws -> Result {
     do {
         return try await operation()
-    } catch(_) {
-        throw error()
+    } catch {
+        throw error
     }
 }

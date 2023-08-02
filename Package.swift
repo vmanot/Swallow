@@ -92,6 +92,7 @@ let package = Package(
         .testTarget(
             name: "SwallowTests",
             dependencies: [
+                "Runtime",
                 "Swallow"
             ]
         ),

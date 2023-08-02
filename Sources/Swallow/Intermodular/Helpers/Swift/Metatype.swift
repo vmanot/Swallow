@@ -7,17 +7,9 @@ import Swift
 /// A `Hashable` representation of a metatype.
 ///
 /// More useful than `ObjectIdentifier` as it exposes access to the underlying value.
-public struct Metatype<T>: CustomStringConvertible, Hashable, @unchecked Sendable {
+public struct Metatype<T>: @unchecked Sendable {
     public let value: T
-    
-    public var description: String {
-        name
-    }
-    
-    public var debugDescription: String {
-        String(describing: value)
-    }
-    
+        
     public init(_ value: T) {
         #if DEBUG
         guard let _ = value as? Any.Type else {
@@ -31,19 +23,67 @@ public struct Metatype<T>: CustomStringConvertible, Hashable, @unchecked Sendabl
 
         self.value = value
     }
-    
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(ObjectIdentifier(value as! Any.Type))
-    }
-    
-    public static func == (lhs: Self, rhs: Self) -> Bool {
-        (lhs.value as! Any.Type) == (rhs.value as! Any.Type)
+}
+
+extension Metatype {
+    public func _isAnyOrNever(unwrapIfNeeded: Bool = false) -> Bool {
+        let type = _unwrapBase()
+        
+        switch type {
+            case Any.self:
+                return true
+            case AnyObject.self:
+                return true
+            case Never.self:
+                return true
+            default:
+                break
+        }
+        
+        guard unwrapIfNeeded else {
+            return false
+        }
+        
+        switch type {
+            case Optional<Any>.self:
+                return true
+            case Optional<AnyObject>.self:
+                return true
+            case Optional<Never>.self:
+                assertionFailure()
+                
+                return true
+            default:
+                break
+        }
+        
+        return false
     }
 }
 
-// MARK: - Extensions
+// MARK: - Conformances
 
-extension Metatype {
+extension Metatype: CustomDebugStringConvertible, CustomStringConvertible {
+    public var debugDescription: String {
+        String(describing: value)
+    }
+
+    public var description: String {
+        name
+    }
+}
+
+extension Metatype: Hashable {
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(ObjectIdentifier(_unwrapBase()))
+    }
+    
+    public static func == (lhs: Self, rhs: Self) -> Bool {
+        lhs._unwrapBase() == rhs._unwrapBase()
+    }
+}
+
+extension Metatype: Named {
     public var name: String {
         _getTypeName(from: _unwrapBase())
     }
@@ -71,7 +111,7 @@ extension Metatype: _UnwrappableTypeEraser {
 private func _getTypeName(
     from type: Any.Type,
     qualified: Bool = true,
-    genericsAbbreviated: Bool = false  // NB: This defaults to `true` in Custom Dump
+    genericsAbbreviated: Bool = false
 ) -> String {
     var name = _typeName(type, qualified: qualified)
         .replacingOccurrences(
@@ -79,9 +119,8 @@ private func _getTypeName(
             with: "",
             options: .regularExpression
         )
-    for _ in 1...10 {  // NB: Only handle so much nesting
-        let abbreviated =
-        name
+    for _ in 1...10 {
+        let abbreviatedName = name
             .replacingOccurrences(
                 of: #"\bSwift.Optional<([^><]+)>"#,
                 with: "$1?",
@@ -97,14 +136,20 @@ private func _getTypeName(
                 with: "[$1: $2]",
                 options: .regularExpression
             )
-        if abbreviated == name { break }
-        name = abbreviated
+        
+        if abbreviatedName == name {
+            break
+        }
+        
+        name = abbreviatedName
     }
+    
     name = name.replacingOccurrences(
         of: #"\w+\.([\w.]+)"#,
         with: "$1",
         options: .regularExpression
     )
+    
     if genericsAbbreviated {
         name = name.replacingOccurrences(
             of: #"<.+>"#,
@@ -112,5 +157,6 @@ private func _getTypeName(
             options: .regularExpression
         )
     }
+    
     return name
 }

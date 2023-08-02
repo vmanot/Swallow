@@ -6,6 +6,7 @@ import Foundation
 import Swallow
 
 /// A timestamp with a description suitable for use in filenames.
+@_spi(Internal)
 public struct Timestamp {
     private let date: Date
     
@@ -20,6 +21,7 @@ public struct Timestamp {
 
 // MARK: - Conformances
 
+@_spi(Internal)
 extension Timestamp: CustomStringConvertible {
     public var description: String {
         String(Int(date.timeIntervalSince1970))

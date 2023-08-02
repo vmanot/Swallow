@@ -89,15 +89,15 @@ public func _unwrappedType(
 ///
 /// For e.g. `_unwrappedType(of: AnyHashable(1))` would be `Int.self` as opposed to `AnyHashable.self`.
 @inline(never)
-public func _unwrapPossiblyTypeErasedValue(
-    _ x: Any?
-) -> Any {
+public func _unwrapPossiblyTypeErasedValue<T>(
+    _ x: T
+) -> Any? {
     let _x = Optional<Any>(_unwrapping: x)
     
     if let __x: Any = _x {
         return _takeOpaqueExistentialUnoptimized(__x)
     } else {
-        return _x as Any
+        return _x 
     }
 }
 
@@ -130,7 +130,7 @@ public func _castTypeErasingIfNeeded<T, U>(
         }
     } catch {
         throw RuntimeCastError.invalidTypeCast(
-            from: __fixed__type(of: value),
+            from: __fixed_type(of: value),
             to: type,
             value: value,
             location: .init(file: file, fileID: fileID, function: function, line: line, column: column)

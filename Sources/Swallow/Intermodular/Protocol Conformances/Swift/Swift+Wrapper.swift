@@ -26,19 +26,15 @@ extension CollectionOfOne: MutableWrapper {
     @inlinable
     public var value: Value {
         get {
-            return self[0]
+            self[0]
         } set {
             self[0] = newValue
         }
     }
 }
 
-extension IteratorOnly: Wrapper {
-    
-}
-
 @propertyWrapper
-public final class ReferenceBox<T>: Wrapper {
+open class ReferenceBox<T>: Wrapper {
     public var value: T
     
     public var wrappedValue: T {
@@ -49,7 +45,7 @@ public final class ReferenceBox<T>: Wrapper {
         }
     }
     
-    public init(_ value: T) {
+    public required init(_ value: T) {
         self.value = value
     }
     
@@ -109,7 +105,7 @@ extension Pair: Sendable where T: Sendable, U: Sendable {
     
 }
 
-public enum StrongOrWeak<Value: AnyObject> {
+public enum _StrongOrWeak<Value: AnyObject> {
     case strong(Value?)
     case weak(Weak<Value>)
     
@@ -152,7 +148,7 @@ extension Unmanaged: MutableWrapper {
     }
 }
 
-public struct Unowned<Value: AnyObject>: Wrapper {
+public struct _UnownedObject<Value: AnyObject>: Wrapper {
     public unowned let value: Value
     
     public init(_ value: Value) {
@@ -160,7 +156,7 @@ public struct Unowned<Value: AnyObject>: Wrapper {
     }
 }
 
-public struct UnsafeWeak<Value: AnyObject>: Wrapper {
+public struct _UnsafeWeak<Value: AnyObject>: Wrapper {
     public private(set) weak var _value: Value?
     
     public var value: Value {
@@ -172,6 +168,7 @@ public struct UnsafeWeak<Value: AnyObject>: Wrapper {
     }
 }
 
+/// A weakly held value.
 @propertyWrapper
 public struct Weak<Value>: PropertyWrapper {
     private weak var _weakWrappedValue: AnyObject?
@@ -204,14 +201,6 @@ public struct Weak<Value>: PropertyWrapper {
     
     public init() {
         self.init(wrappedValue: nil)
-    }
-}
-
-open class WrapperBase<Value>: CustomDebugStringConvertible, Wrapper {
-    public let value: Value
-    
-    public required init(_ value: Value) {
-        self.value = value
     }
 }
 

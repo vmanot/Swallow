@@ -116,18 +116,6 @@ public struct FixedCountIterator<Value: IteratorProtocol>: IteratorProtocol, Wra
     }
 }
 
-public struct IteratorOnly<Value: IteratorProtocol>: IteratorProtocol {
-    public private(set) var value: Value
-
-    public init(_ value: Value) {
-        self.value = value
-    }
-
-    public mutating func next() -> Value.Element? {
-        return value.next()
-    }
-}
-
 public struct Join2Iterator<G0: IteratorProtocol, G1: IteratorProtocol>: IteratorProtocol, Wrapper where G0.Element == G1.Element {
     public typealias Value = (G0, G1)
     
@@ -202,14 +190,9 @@ public enum OneOfTwoIterators<I0: IteratorProtocol, I1: IteratorProtocol>: Itera
     }
 }
 
-// MARK: - Helpers 
+// MARK: - Supplementary
 
 extension IteratorProtocol {
-    @inlinable
-    public var iteratorOnly: IteratorOnly<Self> {
-        return .init(self)
-    }
-
     @inlinable
     public func join<G: IteratorProtocol>(_ other: G) -> Join2Iterator<Self, G>  {
         return .init((self, other))

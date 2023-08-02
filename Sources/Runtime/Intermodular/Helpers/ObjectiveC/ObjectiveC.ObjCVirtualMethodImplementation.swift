@@ -34,7 +34,7 @@ extension ObjCClass {
     
     var virtualMethodImplementations: [ObjCSelector: ObjCVirtualMethodImplementation] {
         get {
-            return self[ObjCClass.virtualMethodImplementationsKey] ?? [:]
+            return self[ObjCClass.virtualMethodImplementationsKey, default: [:]]
         } nonmutating set {
             self[ObjCClass.virtualMethodImplementationsKey] = newValue
         }
