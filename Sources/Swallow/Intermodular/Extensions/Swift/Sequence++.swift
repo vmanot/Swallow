@@ -64,6 +64,29 @@ extension Sequence {
     }
     
     @_disfavoredOverload
+    public mutating func removeFirstAndOnly<T>(
+        byUnwrapping transform: (Element) throws -> T?
+    ) throws -> T? where Self: DestructivelyMutableSequence {
+        var result: T?
+        
+        try self.removeAll(where: { (element: Element) in
+            guard let _result = try transform(element) else {
+                return false
+            }
+            
+            if result == nil {
+                result = _result
+                
+                return true
+            } else {
+                throw _PlaceholderError()
+            }
+        })
+        
+        return result
+    }
+
+    @_disfavoredOverload
     public func firstAndOnly<T>(
         byUnwrapping transform: (Element) throws -> T?
     ) throws -> T? {

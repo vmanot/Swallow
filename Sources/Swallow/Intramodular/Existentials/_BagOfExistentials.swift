@@ -47,6 +47,10 @@ public struct _BagOfExistentials<Existential> {
         }
     }
     
+    public func inserting(_ element: Existential) -> Self {
+        build(self, with: { $0.insert(element) })
+    }
+    
     public mutating func remove(_ element: Existential) {
         if let element = _HashableElement(element) {
             _hashableElements.remove(element)
