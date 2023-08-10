@@ -59,7 +59,7 @@ extension ObjCAssociatedObjectView {
         get {
             guard let result = self.value(forKey: key) else {
                 let value = defaultValue()
-                
+                                
                 self.setValue(value, forKey: key)
                 
                 return value

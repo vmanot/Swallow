@@ -86,6 +86,8 @@ public func _memoize<T: Hashable, Result>(
 struct _GloballyMemoizedValues {
     @usableFromInline
     class _KeyValueMap {
+        let lock = OSUnfairLock()
+
         @usableFromInline
         var storage: [Int: Any] = [:]
         
@@ -100,15 +102,17 @@ struct _GloballyMemoizedValues {
             operation fn: () -> Result
         ) -> Result {
             get {
-                guard let result = storage[key.hashValue].map({ $0 as! Result }) else {
-                    let result = fn()
-                    
-                    storage[key.hashValue] = result
+                lock.withCriticalScope {
+                    guard let result = storage[key.hashValue].map({ $0 as! Result }) else {
+                        let result = fn()
+                        
+                        storage[key.hashValue] = result
+                        
+                        return result
+                    }
                     
                     return result
                 }
-                
-                return result
             }
         }
     }

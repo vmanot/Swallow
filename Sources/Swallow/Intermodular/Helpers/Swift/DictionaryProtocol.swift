@@ -81,6 +81,14 @@ extension MutableDictionaryProtocol {
         return result
     }
     
+    public func removingValue(
+        forKey key: DictionaryKey
+    ) -> Self {
+        build(self) {
+            _ = $0.removeValue(forKey: key)
+        }
+    }
+    
     public mutating func removeValues(
         forKeys keysToBeRemoved: some Sequence<DictionaryKey>
     ) {

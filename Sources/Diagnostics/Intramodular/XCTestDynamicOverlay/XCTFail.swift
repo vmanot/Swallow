@@ -11,7 +11,7 @@ import Swallow
     ///
     /// - Parameter message: An optional description of the assertion, for inclusion in test
     ///   results.
-    @_disfavoredOverload
+    @_transparent
     public func XCTFail(_ message: String = "") {
       var message = message
       attachHostApplicationWarningIfNeeded(&message)
@@ -61,7 +61,9 @@ import Swallow
       to: XCTFailureHandler.self
     )
 
-    private func attachHostApplicationWarningIfNeeded(_ message: inout String) {
+    @_transparent
+    @usableFromInline
+    func attachHostApplicationWarningIfNeeded(_ message: inout String) {
       guard
         _XCTIsTesting,
         Bundle.main.bundleIdentifier != "com.apple.dt.xctest.tool"
@@ -99,6 +101,8 @@ import Swallow
       )
     }
 
+    @_transparent
+    @usableFromInline
     func isTestFrame(_ frame: String) -> Bool {
       // Regular expression to detect and demangle an XCTest case frame:
       //
