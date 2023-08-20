@@ -255,7 +255,7 @@ private struct KeyedContainer<Key: CodingKey>: KeyedEncodingContainerProtocol {
     let encoder: URLQueryEncoder
     let codingPath: [CodingKey]
     
-    func encode<T>(_ value: T, forKey key: Key) throws where T : Encodable {
+    func encode<T>(_ value: T, forKey key: Key) throws where T: Encodable {
         try encoder.encodeEncodable(value, forKey: codingPath + [key])
     }
     
@@ -334,7 +334,7 @@ private struct SingleValueContanier: SingleValueEncodingContainer {
         try encoder.encodeNil(forKey: codingPath)
     }
     
-    mutating func encode<T>(_ value: T) throws where T : Encodable {
+    mutating func encode<T>(_ value: T) throws where T: Encodable {
         try encoder.encodeEncodable(value, forKey: codingPath)
     }
 }

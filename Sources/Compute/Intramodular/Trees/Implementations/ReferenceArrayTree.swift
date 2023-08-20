@@ -37,7 +37,8 @@ public final class ReferenceArrayTree<Value>: ConstructibleTree, Identifiable, M
         self.value = value
         self.children = children
             
-        _updateValueLink()
+        (value as? (any ReferenceArrayTreeValueObject))?._opaque_unsafelyAccessedParent = self
+        
         _updateChildrenLinks()
     }
         
@@ -69,6 +70,7 @@ extension ReferenceArrayTree {
 }
 
 public protocol ReferenceArrayTreeValueObject: AnyObject {
+    var _unsafelyAccessedParent: ReferenceArrayTree<Self>? { get set }
     var parent: ReferenceArrayTree<Self>? { get set }
 }
 
@@ -78,6 +80,14 @@ extension ReferenceArrayTreeValueObject {
             parent
         } set {
             parent = newValue.map({ $0 as! ReferenceArrayTree })
+        }
+    }
+    
+    var _opaque_unsafelyAccessedParent: AnyObject? {
+        get {
+            _unsafelyAccessedParent
+        } set {
+            _unsafelyAccessedParent = newValue.map({ $0 as! ReferenceArrayTree })
         }
     }
 }

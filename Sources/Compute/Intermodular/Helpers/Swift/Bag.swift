@@ -25,7 +25,7 @@ public struct Bag<Element>: BagType {
     private var key0: Key?
     private var value0: Element?
     private var pairs = ContiguousArray<Entry>()
-    private var dictionary: [Key : Element]?
+    private var dictionary: [Key: Element]?
     private var onlyFastPath = true
     
     public init() {

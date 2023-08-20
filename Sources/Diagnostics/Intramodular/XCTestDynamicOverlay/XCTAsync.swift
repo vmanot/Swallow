@@ -60,7 +60,7 @@ public func XCTAssertThrowsErrorAsync<T>(
  _ message: @autoclosure () -> String = "",
  file: StaticString = #filePath,
  line: UInt = #line
- ) async where T : Equatable {
+ ) async where T: Equatable {
  let expression1 = await expand(expression1)
  let expression2 = await expand(expression2)
  try? { XCTAssertEqual(try expression1(), try expression2(), message(), file: file, line: line) }()
@@ -73,7 +73,7 @@ public func XCTAssertThrowsErrorAsync<T>(
  _ message: @autoclosure () -> String = "",
  file: StaticString = #filePath,
  line: UInt = #line
- ) async where T : Equatable {
+ ) async where T: Equatable {
  let expression1 = await expand(lhs)
  let expression2 = await expand(rhs)
  

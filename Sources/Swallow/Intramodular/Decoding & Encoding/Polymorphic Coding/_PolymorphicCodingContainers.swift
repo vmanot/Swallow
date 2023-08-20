@@ -584,7 +584,7 @@ public struct _PolymorphicKeyedEncodingContainer<Key: CodingKey>: KeyedEncodingC
         try base.encode(value, forKey: key)
     }
     
-    public mutating func encode<T>(_ value: T, forKey key: Key) throws where T : Encodable {
+    public mutating func encode<T>(_ value: T, forKey key: Key) throws where T: Encodable {
         try base.encode(value, forKey: key)
     }
     

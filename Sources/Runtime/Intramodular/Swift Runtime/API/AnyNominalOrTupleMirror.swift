@@ -4,16 +4,16 @@
 
 import Swallow
 
-public protocol _AnyMirrorType<Subject> {
+public protocol _VisitableMirror<Subject> {
     associatedtype Subject
     
     func _accept(
-        visitor: _AnyMirrorVisitor,
+        visitor: some _MirrorVisitor,
         at path: [_AnyMirrorPathElement]
     ) throws
 }
 
-public struct AnyNominalOrTupleMirror<Subject>: _AnyMirrorType, MirrorType {
+public struct AnyNominalOrTupleMirror<Subject>: _VisitableMirror, MirrorType {
     public var subject: Any
     public let typeMetadata: TypeMetadata.NominalOrTuple
         
@@ -202,7 +202,7 @@ public enum _AnyMirrorPathElement: Hashable, Sendable {
     case field(AnyCodingKey)
 }
 
-public protocol _AnyMirrorVisitor {
+public protocol _MirrorVisitor {
     func shouldVisitChildren<T>(
         of subject: T,
         at path: [_AnyMirrorPathElement]
@@ -216,7 +216,7 @@ public protocol _AnyMirrorVisitor {
 
 extension AnyNominalOrTupleMirror {
     public func _accept(
-        visitor: _AnyMirrorVisitor,
+        visitor: some _MirrorVisitor,
         at path: [_AnyMirrorPathElement]
     ) throws {
         guard visitor.shouldVisitChildren(of: subject, at: path) else {
@@ -239,14 +239,14 @@ extension AnyNominalOrTupleMirror {
     }
 }
 
-extension _AnyMirrorVisitor {
+extension _MirrorVisitor {
     public func visit<T>(_ mirror: AnyNominalOrTupleMirror<T>) throws {
         try mirror._accept(visitor: self, at: [])
     }
 }
 
-private func _AnyNominalOrTupleMirror_init(_ x: Any) -> (any _AnyMirrorType)? {
-    func makeMirror<T>(_ subject: T) -> (any _AnyMirrorType)? {
+private func _AnyNominalOrTupleMirror_init(_ x: Any) -> (any _VisitableMirror)? {
+    func makeMirror<T>(_ subject: T) -> (any _VisitableMirror)? {
         AnyNominalOrTupleMirror(subject)
     }
     

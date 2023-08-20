@@ -7,8 +7,8 @@ import Swift
 public typealias IdentifierIndexedArrayOf<Element: Identifiable> = IdentifierIndexedArray<Element, Element.ID>
 
 public struct IdentifierIndexedArray<Element, ID: Hashable> {
-    private var base: OrderedDictionary<ID, Element>
-    private var id: (Element) -> ID
+    private(set) var base: OrderedDictionary<ID, Element>
+    private(set) var id: (Element) -> ID
     
     public var identifiers: Set<ID> {
         Set(base.keys)
@@ -228,7 +228,7 @@ extension IdentifierIndexedArray {
             try $0.removeAll(where: { try shouldBeRemoved($0.value) })
         }
     }
-
+    
     public mutating func removeSubrange(
         _ subrange: Range<Index>
     ) {
@@ -250,7 +250,7 @@ extension IdentifierIndexedArray {
         
         removeSubrange(rangeToRemove)
     }
-
+    
     @discardableResult
     public mutating func remove(
         elementIdentifiedBy id: ID
@@ -286,15 +286,39 @@ extension IdentifierIndexedArray {
     }
     
     /// Updates a given identifiable element if already present, inserts it otherwise.
-    public mutating func upsert(_ element: Element) {
+    public mutating func upsert(
+        _ element: Element
+    ) {
         if update(element) == nil {
             append(element)
         }
     }
     
     /// Updates a given identifiable element if already present, inserts it otherwise.
-    public mutating func upsert<S: Sequence>(contentsOf elements: S) where S.Element == Element {
+    public mutating func upsert<S: Sequence>(
+        contentsOf elements: S
+    ) where S.Element == Element {
         elements.forEach({ upsert($0) })
+    }
+    
+    public mutating func upsert(
+        _ element: Element,
+        uniquingValuesWith unique: (Element, Element) throws -> Element
+    ) rethrows {
+        let id = _idForElement(element)
+        
+        if let existing = self[id: id] {
+            self[id: id] = try unique(existing, element)
+        } else {
+            self.append(element)
+        }
+    }
+
+    public mutating func upsert<S: Sequence>(
+        contentsOf elements: S,
+        uniquingValuesWith unique: (Element, Element) throws -> Element
+    ) rethrows where S.Element == Element {
+        try elements.forEach({ try upsert($0, uniquingValuesWith: unique) })
     }
 }
 

@@ -47,6 +47,12 @@ public struct _BagOfExistentials<Existential> {
         }
     }
     
+    public mutating func insert(contentsOf elements: some Sequence<Existential>) {
+        for element in elements {
+            insert(element)
+        }
+    }
+    
     public func inserting(_ element: Existential) -> Self {
         build(self, with: { $0.insert(element) })
     }
@@ -61,6 +67,7 @@ public struct _BagOfExistentials<Existential> {
         }
     }
     
+    /// Removes all the elements that satisfy the given predicate.
     public mutating func removeAll(
         where shouldBeRemoved: (Existential) throws -> Bool
     ) rethrows {
@@ -69,6 +76,13 @@ public struct _BagOfExistentials<Existential> {
         try _hashableElements.removeAll(where: { try shouldBeRemoved($0.value) })
     }
     
+    /// Removes all elements from the bag.
+    public mutating func removeAll() {
+        _nonEquatableElements.removeAll()
+        _equatableElements.removeAll()
+        _hashableElements.removeAll()
+    }
+
     public func contains(_ element: Existential) -> Bool {
         guard (element is any Equatable) else {
             assertionFailure()
