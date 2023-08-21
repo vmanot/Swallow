@@ -16,7 +16,7 @@ public protocol RangeProtocol: Equatable {
     func contains(_ other: ClosedRange<Bound>) -> Bool
 }
 
-public protocol NonClosedRangeProtocol: RangeProtocol {
+public protocol ExclusiveRangeProtocol: RangeProtocol {
 
 }
 
@@ -38,7 +38,7 @@ extension BoundInitiableRangeProtocol {
     }
 }
 
-extension NonClosedRangeProtocol {
+extension ExclusiveRangeProtocol {
     public func contains(_ other: Self) -> Bool {
         return true
             && (other.lowerBound >= lowerBound) && (other.lowerBound <= upperBound)
@@ -48,29 +48,45 @@ extension NonClosedRangeProtocol {
 
 // MARK: - Extensions
 
-extension RangeProtocol where Self: BoundInitiableRangeProtocol {
-    public init(lowerBound: Bound, upperBound: Bound) {
+extension RangeProtocol  {
+    @inlinable
+    public init(lowerBound: Bound, upperBound: Bound) where Self: BoundInitiableRangeProtocol {
         self.init(bounds: (lowerBound, upperBound))
     }
-}
-
-extension RangeProtocol where Self: NonClosedRangeProtocol {
+    
     @inlinable
-    public init(_ bound: Bound) where Self: BoundInitiableRangeProtocol, Bound: Strideable {
+    public init(_ bound: Bound) where Self: BoundInitiableRangeProtocol & ExclusiveRangeProtocol, Bound: Strideable {
         self.init(bounds: (lower: bound, upper: bound.successor()))
     }
 
-    public func overlaps(with other: Self) -> Bool {
+    public func overlaps(
+        with other: Self
+    ) -> Bool where Self: ExclusiveRangeProtocol {
         return false
-        || (other.lowerBound >= lowerBound) && (other.lowerBound <= upperBound)
-        || (other.upperBound <= upperBound) && (other.upperBound >= lowerBound)
+            || (other.lowerBound >= lowerBound) && (other.lowerBound <= upperBound)
+            || (other.upperBound <= upperBound) && (other.upperBound >= lowerBound)
+    }
+    
+    public func clamped(
+        to other: Self
+    ) -> Self where Self: BoundInitiableRangeProtocol & ExclusiveRangeProtocol {
+        Self(
+            lowerBound: max(lowerBound, other.lowerBound),
+            upperBound: min(lowerBound, other.upperBound)
+        )
+    }
+    
+    public mutating func clampInPlace(
+        to other: Self
+    ) where Self: BoundInitiableRangeProtocol & ExclusiveRangeProtocol {
+        self = clamped(to: other)
     }
 }
 
 infix operator <~=: ComparisonPrecedence
 infix operator >~=: ComparisonPrecedence
 
-public func <~= <T: NonClosedRangeProtocol>(lhs: T, rhs: T) -> Bool {
+public func <~= <T: ExclusiveRangeProtocol>(lhs: T, rhs: T) -> Bool {
     guard lhs.upperBound <= rhs.upperBound else {
         return false
     }
@@ -82,7 +98,7 @@ public func <~= <T: NonClosedRangeProtocol>(lhs: T, rhs: T) -> Bool {
     return true
 }
 
-public func >~= <T: NonClosedRangeProtocol>(lhs: T, rhs: T) -> Bool {
+public func >~= <T: ExclusiveRangeProtocol>(lhs: T, rhs: T) -> Bool {
     guard lhs.upperBound >= rhs.upperBound else {
         return false
     }
@@ -94,6 +110,6 @@ public func >~= <T: NonClosedRangeProtocol>(lhs: T, rhs: T) -> Bool {
     return true
 }
 
-public func ..< <T: NonClosedRangeProtocol & BoundInitiableRangeProtocol>(lhs: T.Bound, rhs: T.Bound) -> T {
+public func ..< <T: ExclusiveRangeProtocol & BoundInitiableRangeProtocol>(lhs: T.Bound, rhs: T.Bound) -> T {
     return .init(lowerBound: lhs, upperBound: rhs)
 }

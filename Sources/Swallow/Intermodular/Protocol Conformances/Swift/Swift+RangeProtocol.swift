@@ -18,7 +18,7 @@ extension ClosedRange: BoundInitiableRangeProtocol, ClosedRangeProtocol {
     }
 }
 
-extension Range: BoundInitiableRangeProtocol, NonClosedRangeProtocol {
+extension Range: BoundInitiableRangeProtocol, ExclusiveRangeProtocol {
     public init(bounds: (lower: Bound, upper: Bound)) {
         self = bounds.lower..<bounds.upper
     }

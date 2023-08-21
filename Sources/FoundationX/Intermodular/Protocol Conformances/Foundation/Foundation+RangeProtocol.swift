@@ -5,7 +5,7 @@
 import Foundation
 import Swallow
 
-extension NSRange: BoundInitiableRangeProtocol, NonClosedRangeProtocol {
+extension NSRange: BoundInitiableRangeProtocol, ExclusiveRangeProtocol {
     public typealias Bound = Int
     
     public init(bounds: (lower: Bound, upper: Bound)) {
