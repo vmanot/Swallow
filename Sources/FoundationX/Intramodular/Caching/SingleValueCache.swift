@@ -26,17 +26,27 @@ extension SingleValueCache {
     public static func inMemory<T>() -> Self where Self == InMemorySingleValueCache<T> {
         .init()
     }
+    
+    public static func inMemory<T>(
+        initialValue: Value
+    ) -> Self where Self == InMemorySingleValueCache<T> {
+        .init(initialValue)
+    }
 }
 
 // MARK: - Implemented Conformances
 
-public final class InMemorySingleValueCache<Value>: SingleValueCache {
+public final class InMemorySingleValueCache<Value>: Initiable, SingleValueCache {
     private var value: Value?
-    
-    public init() {
         
+    public init(_ value: Value?) {
+        self.value = value
     }
     
+    public convenience init() {
+        self.init(nil)
+    }
+
     public func store(_ value: Value) {
         self.value = value
     }

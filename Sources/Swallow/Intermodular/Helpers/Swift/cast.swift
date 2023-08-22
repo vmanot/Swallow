@@ -250,6 +250,8 @@ extension _TypeCastTo2: @unchecked Sendable where T: Sendable, U: Sendable {
 }
 
 public protocol _ArrayProtocol: Initiable {
+    static var _opaque_ArrayProtocol_ElementType: Any.Type { get }
+    
     func _opaque_castElementType(to _: Any.Type) throws -> _ArrayProtocol
     func _castElementType<T>(to _: T.Type) throws -> [T]
 }

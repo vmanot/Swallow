@@ -11,11 +11,11 @@ public protocol PropertyWrapper<WrappedValue> {
     var wrappedValue: WrappedValue { get }
 }
 
-public protocol ParameterlessPropertyWrapper: PropertyWrapper {
+public protocol ParameterlessPropertyWrapper<WrappedValue>: PropertyWrapper {
     init(wrappedValue: WrappedValue)
 }
 
-public protocol MutablePropertyWrapper: PropertyWrapper {
+public protocol MutablePropertyWrapper<WrappedValue>: PropertyWrapper {
     var wrappedValue: WrappedValue { get set }
 }
 
@@ -211,6 +211,40 @@ extension MutableValueBox: Hashable where WrappedValue: Hashable {
     }
 }
 
+// MARK: - Implemented Conformances
+
+public final class _IndirectMutablePropertyWrapper<P: MutablePropertyWrapper>: MutablePropertyWrapper {
+    public typealias WrappedValue = P.WrappedValue
+    
+    private var initialValue: P.WrappedValue?
+    private var base: P?
+    
+    public var wrappedValue: P.WrappedValue {
+        get {
+            base?.wrappedValue ?? initialValue!
+        } set {
+            if var base = base {
+                base.wrappedValue = newValue
+            } else {
+                initialValue = newValue
+            }
+        }
+    }
+    
+    public func setBase(_ base: P) {
+        self.initialValue = nil
+        self.base = base
+    }
+    
+    public init(initialValue: P.WrappedValue) {
+        self.initialValue = initialValue
+    }
+    
+    public init(base: P) {
+        self.base = base
+    }
+}
+
 public struct _PropertyWrapperMutabilityAdaptor<Wrapper: PropertyWrapper>: MutablePropertyWrapper {
     public typealias WrappedValue = Wrapper.WrappedValue
     
@@ -228,3 +262,12 @@ public struct _PropertyWrapperMutabilityAdaptor<Wrapper: PropertyWrapper>: Mutab
         self.base = .left(wrapper)
     }
 }
+
+#if canImport(SwiftUI)
+import SwiftUI
+
+extension Binding: MutablePropertyWrapper {
+    
+}
+
+#endif

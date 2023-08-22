@@ -145,3 +145,42 @@ extension _HashableExistential {
         }
     }
 }
+
+public struct _TypeHashingAnyHashable: Hashable, _UnwrappableHashableTypeEraser {
+    private let _base: AnyHashable
+    
+    public var base: any Hashable {
+        _base.base as! (any Hashable)
+    }
+    
+    public init<H: Hashable>(_ base: H) {
+        self._base = AnyHashable(base)
+    }
+    
+    public init(_erasing base: any Hashable) {
+        self = base._eraseToTypeHashingAnyHashable()
+    }
+    
+    public func _unwrapBase() -> _UnwrappedBaseType {
+        base
+    }
+        
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(ObjectIdentifier(type(of: _base.base)))
+        hasher.combine(_base)
+    }
+    
+    public static func == (lhs: Self, rhs: Self) -> Bool {
+        guard type(of: lhs._base.base) == type(of: rhs._base.base) else {
+            return false
+        }
+        
+        return rhs._base == lhs._base
+    }
+}
+
+extension Hashable {
+    public func _eraseToTypeHashingAnyHashable() -> _TypeHashingAnyHashable {
+        _TypeHashingAnyHashable(self)
+    }
+}

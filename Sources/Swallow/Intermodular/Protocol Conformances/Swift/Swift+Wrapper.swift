@@ -34,7 +34,7 @@ extension CollectionOfOne: MutableWrapper {
 }
 
 @propertyWrapper
-open class ReferenceBox<T>: Wrapper {
+open class ReferenceBox<T>: MutablePropertyWrapper, Wrapper {
     public var value: T
     
     public var wrappedValue: T {
@@ -52,6 +52,36 @@ open class ReferenceBox<T>: Wrapper {
     public convenience init(wrappedValue: T) {
         self.init(wrappedValue)
     }
+}
+
+@propertyWrapper
+public final class LazyReferenceBox<T> {
+    private var initializeValue: (() -> T)?
+    private var value: T?
+    
+    public var wrappedValue: T {
+        get {
+            if let value {
+                return value
+            } else {
+                self.value = initializeValue!()
+                self.initializeValue = nil
+                
+                return self.value!
+            }
+        } set {
+            self.value = newValue
+            self.initializeValue = nil
+        }
+    }
+    
+    public init(wrappedValue value: @autoclosure @escaping () -> T) {
+        self.initializeValue = value
+    }
+}
+
+extension LazyReferenceBox: @unchecked Sendable where T: Sendable {
+    
 }
 
 public struct Pair<T, U>: MutableWrapper {
