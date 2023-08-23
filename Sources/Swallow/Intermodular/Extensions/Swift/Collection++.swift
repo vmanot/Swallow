@@ -248,12 +248,58 @@ extension Collection {
 // MARK: - Splitting
 
 extension Collection {
+    /// https://stackoverflow.com/a/71087582/2747515
+    @inlinable
+    public func splitIncludingSeparators(
+        maxSplits: Int = .max,
+        omittingEmptySubsequences: Bool = true,
+        whereSeparator isSeparator: (Element) throws -> Bool
+    ) rethrows -> [SubSequence] {
+        precondition(maxSplits >= 0, "maxSplits can not be negative")
+        
+        if isEmpty {
+            return []
+        }
+        
+        var subsequences: [SubSequence] = []
+        var lowerBound = startIndex
+        
+        func appendAndAdvance(with upperBound: Index) {
+            let range = lowerBound..<upperBound
+            if !omittingEmptySubsequences || !range.isEmpty {
+                subsequences.append(self[range])
+                lowerBound = upperBound
+            }
+        }
+        
+        while
+            var upperBound = try self[lowerBound...].firstIndex(where: isSeparator),
+            subsequences.count < maxSplits
+        {
+            appendAndAdvance(with: upperBound)
+            
+            if subsequences.count == maxSplits {
+                break
+            }
+            
+            formIndex(after: &upperBound)
+            
+            appendAndAdvance(with: upperBound)
+        }
+        
+        appendAndAdvance(with: endIndex)
+        
+        return subsequences
+    }
+
     @inlinable
     public func splitIncludingSeparators<Separator>(
         maxSplits: Int = .max,
         omittingEmptySubsequences: Bool = true,
         separator: (Element) throws -> Separator?
     ) rethrows -> [Either<SubSequence, Separator>] {
+        precondition(maxSplits >= 0, "maxSplits can not be negative")
+
         var result: [Either<SubSequence, Separator>] = []
         var subsequenceStart = startIndex
         var splitCount = 0
