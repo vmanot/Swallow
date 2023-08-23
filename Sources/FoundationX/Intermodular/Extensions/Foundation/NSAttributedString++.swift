@@ -11,6 +11,54 @@ import UIKit
 #endif
 
 extension NSAttributedString {
+    public var stringBounds: NSRange {
+        NSRange(location: 0, length: length)
+    }
+}
+
+extension NSAttributedString {
+    public struct EnumerateAttributesSequence: Sequence {
+        public typealias Element = (range: NSRange, attributes: [NSAttributedString.Key: Any])
+        
+        let attributedString: NSAttributedString
+                
+        public struct Iterator: IteratorProtocol {
+            let attributedString: NSAttributedString
+            
+            private var range: NSRange
+            private var index: Int
+            
+            public init(attributedString: NSAttributedString) {
+                self.attributedString = attributedString
+                self.range = NSRange(location: 0, length: attributedString.length)
+                self.index = 0
+            }
+            
+            public mutating func next() -> Element? {
+                guard index < attributedString.length else {
+                    return nil
+                }
+                
+                var currentRange: NSRange = NSRange()
+                let attributes = attributedString.attributes(at: index, longestEffectiveRange: &currentRange, in: range)
+                
+                index = NSMaxRange(currentRange)
+                
+                return (range: currentRange, attributes: attributes)
+            }
+        }
+        
+        public func makeIterator() -> Iterator {
+            return Iterator(attributedString: attributedString)
+        }
+    }
+    
+    public var attributes: EnumerateAttributesSequence {
+        .init(attributedString: self)
+    }
+}
+    
+extension NSAttributedString {
     public func splitIncludingSeparators(
         maxSplits: Int = .max,
         omittingEmptySubsequences: Bool = true,
@@ -49,6 +97,32 @@ extension NSAttributedString {
 }
 
 extension NSAttributedString {
+    public func _characterWideAttributedStrings() -> [NSAttributedString] {
+        var attributedStrings: [NSAttributedString] = []
+        let length = self.length
+        
+        for i in 0..<length {
+            let range = NSRange(location: i, length: 1)
+            let attributedSubstring = self.attributedSubstring(from: range)
+            attributedStrings.append(attributedSubstring)
+        }
+        
+        return attributedStrings
+    }
+
+    public func _enumerateAttributesAndDump(
+        forRange range: NSRange? = nil,
+        options: NSAttributedString.EnumerationOptions = []
+    ) -> [(range: NSRange, attributes: [NSAttributedString.Key: Any])] {
+        var result: [(range: NSRange, attributes: [NSAttributedString.Key: Any])] = []
+        
+        enumerateAttributes(in: range ?? stringBounds, options: options) { attributes, range, stop in
+            result.append((range, attributes))
+        }
+        
+        return result
+    }
+
     public func _attributedSubstringsWithAttributes(
         isolateAttachments: Bool
     ) -> [(string: NSAttributedString, attributes: [NSAttributedString.Key: Any])] {

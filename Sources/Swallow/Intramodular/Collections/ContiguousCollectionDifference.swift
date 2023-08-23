@@ -5,42 +5,48 @@
 import Foundation
 
 /// A type representing a collection of contiguous changes, either insertions or removals.
-public struct ContiguousCollectionDifference<ChangeElement> {
+public struct ContiguousCollectionDifference<ChangeElements> {
     /// A type representing a contiguous change, either an insertion or removal.
     public enum ContiguousChange {
         /// An insertion of a contiguous range of elements.
-        case insert(offsetRange: Range<Int>, elements: [ChangeElement])
+        case insert(offsetRange: Range<Int>, elements: ChangeElements)
         /// A removal of a contiguous range of elements.
-        case remove(offsetRange: Range<Int>, elements: [ChangeElement])
+        case remove(offsetRange: Range<Int>, elements: ChangeElements)
     }
     
-    public enum ContiguousChangeType {
-        case insert
-        case remove
-    }
-    
-    /// An array of the contiguous changes.
-    public var changes: [ContiguousChange]
-    
+    public var insertions: [ContiguousChange]
+    public var removals: [ContiguousChange]
+
     public init(changes: [ContiguousChange]) {
-        self.changes = changes
+        self.insertions = changes.lazy.compactMap { change -> ContiguousChange? in
+            guard case .insert = change else {
+                return nil
+            }
+            
+            return change
+        }
+        self.removals = changes.lazy.compactMap { change -> ContiguousChange? in
+            guard case .remove = change else {
+                return nil
+            }
+            
+            return change
+        }
     }
 }
 
-extension ContiguousCollectionDifference.ContiguousChange: Equatable where ChangeElement: Equatable {
+extension ContiguousCollectionDifference.ContiguousChange: Equatable where ChangeElements: Equatable {
     
 }
 
 extension CollectionDifference {
-    public func toContiguousCollectionDifference() -> ContiguousCollectionDifference<ChangeElement> {
-        var contiguousChanges: [ContiguousCollectionDifference<ChangeElement>.ContiguousChange] = []
+    public func toContiguousCollectionDifference() -> ContiguousCollectionDifference<[ChangeElement]> {
+        var contiguousChanges: [ContiguousCollectionDifference<[ChangeElement]>.ContiguousChange] = []
         
         var currentOffsetRange: Range<Int>?
         var currentElements: [ChangeElement] = []
         var isInsertion: Bool?
-        
-        var changes: [Change]
-                
+                        
         for change in self {
             switch change {
                 case .insert(let offset, let element, _):
@@ -83,16 +89,58 @@ extension CollectionDifference {
 }
 
 extension RangeReplaceableCollection {
-    public mutating func apply(_ difference: ContiguousCollectionDifference<Element>) {
+    public mutating func apply<C: Collection>(
+        _ difference: ContiguousCollectionDifference<C>
+    ) where C.Element == Element {
         // Applying the changes in reverse order to avoid messing with the offsets of subsequent changes
-        for change in difference.changes.reversed() {
+        for change in difference.removals.reversed() {
+            switch change {
+                case .insert:
+                    assertionFailure()
+                case let .remove(offsetRange, _):
+                    let indexRange = index(startIndex, offsetBy: offsetRange.lowerBound)..<index(startIndex, offsetBy: offsetRange.upperBound)
+                    removeSubrange(indexRange)
+            }
+        }
+        
+        for change in difference.insertions {
             switch change {
                 case let .insert(offsetRange, elements):
                     let indexRange = index(startIndex, offsetBy: offsetRange.lowerBound)..<index(startIndex, offsetBy: offsetRange.lowerBound)
                     replaceSubrange(indexRange, with: elements)
-                case let .remove(offsetRange, _):
-                    let indexRange = index(startIndex, offsetBy: offsetRange.lowerBound)..<index(startIndex, offsetBy: offsetRange.upperBound)
-                    removeSubrange(indexRange)
+                case .remove:
+                    assertionFailure()
+            }
+        }
+    }
+}
+
+extension NSMutableAttributedString {
+    public func apply(
+        _ difference: ContiguousCollectionDifference<NSAttributedString>
+    ) {
+        for change in difference.removals.reversed() {
+            switch change {
+                case .insert:
+                    assertionFailure("Should not encounter an insertion in removals.")
+                case let .remove(range, _):
+                    let range = NSRange(
+                        location: range.lowerBound,
+                        length: range.upperBound - range.lowerBound
+                    )
+                    
+                    self.replaceCharacters(in: range, with: "")
+            }
+        }
+        
+        for change in difference.insertions {
+            switch change {
+                case let .insert(range, string):
+                    let offset = range.lowerBound
+                    
+                    self.insert(string, at: offset)
+                case .remove:
+                    assertionFailure("Should not encounter a removal in insertions.")
             }
         }
     }
