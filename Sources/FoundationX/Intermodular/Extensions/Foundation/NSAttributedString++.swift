@@ -65,7 +65,7 @@ extension NSAttributedString {
         whereSeparator isSeparator: (Character) -> Bool
     ) -> [NSAttributedString] {
         let string = self.string
-        let components: [Substring] = string.splitIncludingSeparators(
+        let components: [Substring] = string.split(
             maxSplits: maxSplits,
             omittingEmptySubsequences: omittingEmptySubsequences,
             whereSeparator: isSeparator
@@ -73,23 +73,46 @@ extension NSAttributedString {
         
         var result: [NSAttributedString] = []
         
+        func validateSeparator(_ separator: NSAttributedString) {
+            guard let separatorCharacter = separator.string.first else {
+                assertionFailure()
+                
+                return
+            }
+            
+            assert(separator.length == 1)
+            assert(isSeparator(separatorCharacter))
+            
+            if separatorCharacter == Character._NSTextAttachment_character {
+                assert(separator.attributes.first?.attributes[.attachment] != nil)
+            }
+        }
+        
         for component in components {
             let range = NSRange(component.bounds, in: string)
             
             result.append(attributedSubstring(from: range))
             
-            let separatorRange = NSRange(location: (range.location + range.length) + 1, length: 1)
+            let separatorRange = NSRange(location: range.location + range.length, length: 1)
             
             if separatorRange.location < self.length {
-                let separatorString = self.attributedSubstring(from: separatorRange)
+                let separator = self.attributedSubstring(from: separatorRange)
                 
-                assert(separatorString.length == 1)
-                assert(isSeparator(separatorString.string.first!))
+                validateSeparator(separator)
 
-                result.append(separatorString)
+                result.append(separator)
             }
         }
         
+        if let last = string.last, isSeparator(last) {
+            let separatorRange = NSRange(string.lastIndex!..<string.endIndex, in: string)
+            let separator = self.attributedSubstring(from: separatorRange)
+            
+            validateSeparator(separator)
+
+            result.append(separator)
+        }
+            
         assert(string.isEmpty == result.isEmpty)
         
         return result
