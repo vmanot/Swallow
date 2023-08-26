@@ -218,8 +218,12 @@ extension Collection {
     public func prefix(
         till isTerminator: (Element) throws -> Bool
     ) rethrows -> SubSequence {
-        guard let index = try firstIndex(where: isTerminator), index != startIndex else {
+        guard let index = try firstIndex(where: isTerminator) else {
             return self[...]
+        }
+        
+        if index == startIndex {
+            return prefix(0)
         }
         
         return self[..<index]
