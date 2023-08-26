@@ -16,10 +16,17 @@ public struct _OpaqueIdentifier: Hashable, @unchecked Sendable {
         self.sourceType = .init(type(of: x))
         self._base = x.id
     }
-    
+        
     @_disfavoredOverload
     public init(from x: any Identifiable) {
-        self.sourceType = .init(type(of: x))
-        self._base = x.id.erasedAsAnyHashable
+        self = x._opaqueIdentifier
+    }
+}
+
+// MARK: - Auxiliary
+
+extension Identifiable {
+    public var _opaqueIdentifier: _OpaqueIdentifier {
+        _OpaqueIdentifier(from: self)
     }
 }

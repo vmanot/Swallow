@@ -203,7 +203,7 @@ public protocol KeyedValuesOfConstructible {
     init(from values: KeyedValuesOf<Self>) throws
 }
 
-// MARK: - SwiftUI Additions -
+// MARK: - SwiftUI Additions
 
 #if canImport(SwiftUI)
 import SwiftUI

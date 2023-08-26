@@ -11,6 +11,20 @@ import UIKit
 #endif
 
 extension NSAttributedString {
+    @MainActor
+    public convenience init?(html: String) throws {
+        try self.init(
+            data: try html.data(using: .utf16, allowLossyConversion: false).unwrap(),
+            options: [
+                .documentType: NSAttributedString.DocumentType.html,
+                .characterEncoding: String.Encoding.utf8.rawValue
+            ],
+            documentAttributes: nil
+        )
+    }
+}
+
+extension NSAttributedString {
     public var stringBounds: NSRange {
         NSRange(location: 0, length: length)
     }
@@ -20,41 +34,115 @@ extension NSAttributedString {
     public struct EnumerateAttributesSequence: Sequence {
         public typealias Element = (range: NSRange, attributes: [NSAttributedString.Key: Any])
         
-        let attributedString: NSAttributedString
-                
+        let _makeIterator: () -> Iterator
+        
         public struct Iterator: IteratorProtocol {
             let attributedString: NSAttributedString
+            let attributeKey: NSAttributedString.Key?
             
-            private var range: NSRange
             private var index: Int
             
-            public init(attributedString: NSAttributedString) {
+            public init(
+                attributedString: NSAttributedString,
+                attribute: NSAttributedString.Key?
+            ) {
                 self.attributedString = attributedString
-                self.range = NSRange(location: 0, length: attributedString.length)
+                self.attributeKey = attribute
                 self.index = 0
             }
             
             public mutating func next() -> Element? {
-                guard index < attributedString.length else {
+                let currentIndex = index
+                
+                guard currentIndex < attributedString.length else {
                     return nil
                 }
+                                       
+                let range: NSRange
+                let attributes: [NSAttributedString.Key: Any]
                 
-                var currentRange: NSRange = NSRange()
-                let attributes = attributedString.attributes(at: index, longestEffectiveRange: &currentRange, in: range)
+                if let attributeKey {
+                    let attribute: Any?
+                    
+                    if attributeKey == .attachment {
+                        attribute = attributedString.attribute(
+                            attributeKey,
+                            at: currentIndex,
+                            effectiveRange: nil
+                        )
+                        
+                        range = NSRange(location: currentIndex, length: 1)
+
+                        index += 1
+
+                        if attribute == nil {
+                            return next()
+                        }
+                    } else {
+                        var currentRange: NSRange = NSRange()
+
+                        attribute = attributedString.attribute(
+                            attributeKey,
+                            at: index,
+                            longestEffectiveRange: &currentRange,
+                            in: NSRange(location: currentIndex, length: attributedString.length - currentIndex)
+                        )
+                        
+                        index = NSMaxRange(currentRange)
+                        
+                        range = currentRange
+                    }
+                    
+                    attributes = attribute.map({ [attributeKey: $0] }) ?? [:]
+                } else {
+                    var currentRange: NSRange = NSRange()
+
+                    attributes = attributedString.attributes(
+                        at: index,
+                        longestEffectiveRange: &currentRange,
+                        in: NSRange(location: currentIndex, length: attributedString.length - currentIndex)
+                    )
+                    
+                    index = NSMaxRange(currentRange)
+                    
+                    range = currentRange
+                }
+                                
+                if index == currentIndex {
+                    assertionFailure()
+                    
+                    index = currentIndex + 1
+                }
                 
-                index = NSMaxRange(currentRange)
+                if let attributeKey {
+                    guard attributes[attributeKey] != nil else {
+                        return nil
+                    }
+                }
                 
-                return (range: currentRange, attributes: attributes)
+                assert((range.location + range.length) <= attributedString.length)
+                
+                return (range: range, attributes: attributes)
             }
         }
         
         public func makeIterator() -> Iterator {
-            return Iterator(attributedString: attributedString)
+            _makeIterator()
         }
     }
     
     public var attributes: EnumerateAttributesSequence {
-        .init(attributedString: self)
+        EnumerateAttributesSequence {
+            .init(attributedString: self, attribute: nil)
+        }
+    }
+    
+    public func enumerateSequence(
+        for attribute: NSAttributedString.Key? = nil
+    ) -> EnumerateAttributesSequence {
+        EnumerateAttributesSequence {
+            .init(attributedString: self, attribute: attribute)
+        }
     }
 }
     

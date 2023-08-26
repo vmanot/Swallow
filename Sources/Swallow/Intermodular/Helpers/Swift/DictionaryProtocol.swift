@@ -188,7 +188,7 @@ extension DictionaryProtocol {
     }
 }
 
-// MARK: - SwiftUI Additions -
+// MARK: - SwiftUI Additions
 
 #if canImport(SwiftUI)
 

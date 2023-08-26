@@ -217,7 +217,7 @@ extension Collection {
 
     public func prefix(
         till isTerminator: (Element) throws -> Bool
-    ) rethrows -> SubSequence? {
+    ) rethrows -> SubSequence {
         guard let index = try firstIndex(where: isTerminator), index != startIndex else {
             return self[...]
         }
@@ -227,7 +227,7 @@ extension Collection {
     
     public func prefix(
         till element: Element
-    ) -> SubSequence? where Element: Equatable {
+    ) -> SubSequence where Element: Equatable {
         prefix(till: { $0 == element })
     }
 }
@@ -324,6 +324,8 @@ extension Collection {
         if !(omittingEmptySubsequences && subsequenceStart == endIndex) {
             result.append(.left(self[subsequenceStart..<endIndex]))
         }
+        
+        assert(result.map({ $0.reduce(left: \.count, right: { _ in 1 }) }).reduce(0, +) == self.count)
         
         return result
     }

@@ -233,3 +233,24 @@ extension Set {
 public func ~= <T: _CasePathExtracting, U>(lhs: T, rhs: CasePath<T, U>) -> Bool {
     lhs[casePath: rhs] != nil
 }
+
+// MARK: - SwiftUI Additions
+
+#if canImport(SwiftUI)
+import SwiftUI
+
+extension Binding {
+    public func _unsafelyUnwrap<T>(
+        _ casePath: CasePath<Value, T>
+    ) -> Binding<T> {
+        Binding<T>(
+            get: {
+                casePath.extract(from: wrappedValue)!
+            },
+            set: { newValue in
+                wrappedValue = casePath.embed(newValue)
+            }
+        )
+    }
+}
+#endif

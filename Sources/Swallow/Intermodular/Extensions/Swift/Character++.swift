@@ -5,6 +5,7 @@
 import Swift
 
 extension Character {
+    public static let zeroWidthSpace = Character("\u{200B}")
     public static let backtick: Self = "`"
     public static var newline: Self = "\n"
     public static let quotationMark: Self = "\""
