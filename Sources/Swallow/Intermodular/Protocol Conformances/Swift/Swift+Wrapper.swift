@@ -80,6 +80,32 @@ public final class LazyReferenceBox<T> {
     }
 }
 
+@propertyWrapper
+public final class LazyWeakReferenceBox<T: AnyObject> {
+    private var initializeValue: (() -> T?)?
+    private weak var value: T?
+    
+    public var wrappedValue: T {
+        get {
+            if let value {
+                return value
+            } else {
+                self.value = initializeValue!()
+                self.initializeValue = nil
+                
+                return self.value!
+            }
+        } set {
+            self.value = newValue
+            self.initializeValue = nil
+        }
+    }
+    
+    public init(_ value: @escaping () -> T?) {
+        self.initializeValue = value
+    }
+}
+
 extension LazyReferenceBox: @unchecked Sendable where T: Sendable {
     
 }
