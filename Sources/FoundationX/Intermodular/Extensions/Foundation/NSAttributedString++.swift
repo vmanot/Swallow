@@ -22,6 +22,14 @@ extension NSAttributedString {
             documentAttributes: nil
         )
     }
+    
+    public func appending(_ string: NSAttributedString) -> NSAttributedString {
+        let result = NSMutableAttributedString(attributedString: self)
+        
+        result.append(string)
+        
+        return result
+    }
 }
 
 extension NSAttributedString {
