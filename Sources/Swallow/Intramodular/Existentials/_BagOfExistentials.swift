@@ -47,7 +47,9 @@ public struct _BagOfExistentials<Existential> {
         }
     }
     
-    public mutating func insert(contentsOf elements: some Sequence<Existential>) {
+    public mutating func insert(
+        contentsOf elements: some Sequence<Existential>
+    ) {
         for element in elements {
             insert(element)
         }
@@ -108,19 +110,34 @@ public struct _BagOfExistentials<Existential> {
     }
     
     @_disfavoredOverload
-    public func first(ofType type: Any.Type) -> Any? {
+    public func first(
+        ofType type: Any.Type
+    ) -> Any? {
         self.first(where: { _isValueOfGivenType($0, type: type) }).map({ $0 as Any })
     }
     
-    public func firstAndOnly<T>(ofType type: T.Type) throws -> T? {
+    public func firstAndOnly<T>(
+        ofType type: T.Type
+    ) throws -> T? {
         try self.filter({ _isValueOfGivenType($0, type: type) }).firstAndOnly(ofType: type)
     }
     
-    public mutating func removeAll<T>(ofType type: T.Type) {
+    public mutating func removeAll<T>(
+        ofType type: T.Type
+    ) {
+        removeAll(where: { _isValueOfGivenType($0, type: type) })
+    }
+
+    public mutating func removeAll(
+        ofType type: Any.Type
+    ) {
         removeAll(where: { _isValueOfGivenType($0, type: type) })
     }
     
-    public mutating func replaceAll<T>(ofType type: T.Type, with element: Existential) {
+    public mutating func replaceAll<T>(
+        ofType type: T.Type,
+        with element: Existential
+    ) {
         removeAll(ofType: type)
         
         insert(element)
