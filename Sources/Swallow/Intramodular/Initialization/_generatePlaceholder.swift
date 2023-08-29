@@ -8,16 +8,6 @@ private enum _PlaceholderGenerationFailure: Error {
     case unsupportedType(Any.Type)
 }
 
-public func _generatePlaceholder(
-    ofType type: Any.Type
-) throws -> Any {
-    func _generatePlaceholderOfType<T>(_ type: T.Type) throws -> Any {
-        return try (_generatePlaceholder() as T) as Any
-    }
-    
-    return try _openExistential(type, do: _generatePlaceholderOfType)
-}
-
 public func _generatePlaceholder<Result>(
     ofType type: Result.Type = Result.self
 ) throws -> Result {
@@ -48,9 +38,22 @@ public func _generatePlaceholder<Result>(
             return type.placeholder as! Result
         case let type as any ExpressibleByUnicodeScalarLiteral.Type:
             return type.placeholder as! Result
+        case let type as _ThrowingInitiable.Type:
+            return try type.init() as! Result
         default:
             throw _PlaceholderGenerationFailure.unsupportedType(Result.self)
     }
+}
+
+@_disfavoredOverload
+public func _generatePlaceholder(
+    ofType type: Any.Type
+) throws -> Any {
+    func _generatePlaceholderOfType<T>(_ type: T.Type) throws -> Any {
+        return try (_generatePlaceholder() as T) as Any
+    }
+    
+    return try _openExistential(type, do: _generatePlaceholderOfType)
 }
 
 // MARK: - Internal

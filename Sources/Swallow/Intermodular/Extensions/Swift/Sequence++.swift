@@ -194,6 +194,17 @@ extension Sequence {
         return result
     }
     
+    public func _orderedMapToKeys<Key: Hashable>(
+        _ key: (Element) throws -> Key
+    ) rethrows -> Collections.OrderedDictionary<Key, [Element]> {
+        try Collections.OrderedDictionary(
+            self.lazy.map { (element: Element) in
+                (try key(element), [element])
+            }, 
+            uniquingKeysWith: { $0.appending(contentsOf: $1) }
+        )
+    }
+    
     public func _orderedMapToUniqueKeys<Key: Hashable>(
         _ key: (Element) throws -> Key
     ) rethrows -> Collections.OrderedDictionary<Key, Element> {

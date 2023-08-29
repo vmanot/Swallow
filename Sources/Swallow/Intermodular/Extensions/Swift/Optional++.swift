@@ -201,6 +201,19 @@ extension Optional {
             return value
         }
     }
+    
+    @discardableResult
+    public mutating func unwrapWithMutableScope<Result>(
+        _ operation: (inout Wrapped) throws -> Result
+    ) throws -> Result {
+        var unwrapped = try unwrap()
+        
+        let result = try operation(&unwrapped)
+        
+        self = unwrapped
+        
+        return result
+    }
 }
 
 #if DEBUG

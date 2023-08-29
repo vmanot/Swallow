@@ -81,15 +81,13 @@ extension IdentifierIndexedArrayOf {
 
 // MARK: - Conformances
 
-extension IdentifierIndexedArray: CustomStringConvertible {
-    public var description: String {
-        "IdentifierIndexedArray<\(Element.self)>"
-    }
-}
-
-extension IdentifierIndexedArray: CustomDebugStringConvertible {
+extension IdentifierIndexedArray: CustomDebugStringConvertible, CustomStringConvertible {
     public var debugDescription: String {
-        "IdentifierIndexedArray<\(Element.self)>"
+        base.debugDescription
+    }
+
+    public var description: String {
+        base.description
     }
 }
 

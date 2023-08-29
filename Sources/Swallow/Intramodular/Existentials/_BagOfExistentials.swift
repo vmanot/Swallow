@@ -146,9 +146,13 @@ public struct _BagOfExistentials<Existential> {
 
 // MARK: - Conformances
 
-extension _BagOfExistentials: CustomDebugStringConvertible {
+extension _BagOfExistentials: CustomDebugStringConvertible, CustomStringConvertible {
     public var debugDescription: String {
         Array(self).debugDescription
+    }
+    
+    public var description: String {
+        Array(self).description
     }
 }
 
@@ -189,7 +193,7 @@ extension _BagOfExistentials {
         }
         
         public static func == (lhs: Self, rhs: Self) -> Bool {
-            lhs.type == rhs.type && AnyEquatable.equate(lhs, rhs)
+            lhs.type == rhs.type && AnyEquatable.equate(lhs.value, rhs.value)
         }
     }
     
@@ -215,7 +219,7 @@ extension _BagOfExistentials {
         }
         
         public static func == (lhs: Self, rhs: Self) -> Bool {
-            lhs.type == rhs.type && AnyEquatable.equate(lhs, rhs)
+            lhs.type == rhs.type && AnyEquatable.equate(lhs.value, rhs.value)
         }
     }
 }
