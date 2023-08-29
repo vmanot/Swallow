@@ -2,6 +2,7 @@
 // Copyright (c) Vatsal Manot
 //
 
+import Collections
 import Swift
 
 extension Sequence {
@@ -59,7 +60,7 @@ extension Sequence {
                 return false
             }
         })
-     
+        
         return result
     }
     
@@ -85,7 +86,7 @@ extension Sequence {
         
         return result
     }
-
+    
     @_disfavoredOverload
     public func firstAndOnly<T>(
         byUnwrapping transform: (Element) throws -> T?
@@ -104,7 +105,7 @@ extension Sequence {
         
         return result
     }
-
+    
     public func first<T>(ofType type: T.Type) -> T? {
         first(byUnwrapping: { $0 as? T })
     }
@@ -180,7 +181,7 @@ extension Sequence {
         
         return result
     }
-
+    
     public func _flatMapToTuples<T: Sequence>(
         by values: (Element) throws -> T
     ) rethrows -> [(Element, T.Element)] {
@@ -193,26 +194,32 @@ extension Sequence {
         return result
     }
     
-    public func mapToDictionaryWithUniqueKeys<Key: Hashable>(
-        _ uniqueKeys: (Element) throws -> some Sequence<Key>
-    ) rethrows -> [Key: Element] {
-        var result = [Key: Element](minimumCapacity: underestimatedCount)
-        
-        for element in self {
-            let keys = try uniqueKeys(element)
-            
-            for key in keys {
-                guard result[key] == nil else {
-                    assertionFailure()
-                    
-                    continue
-                }
-                
-                result[key] = element
+    public func _orderedMapToUniqueKeys<Key: Hashable>(
+        _ key: (Element) throws -> Key
+    ) rethrows -> Collections.OrderedDictionary<Key, Element> {
+        try Collections.OrderedDictionary(uniqueKeysWithValues: self.lazy.map { (element: Element) in
+            (try key(element), element)
+        })
+    }
+    
+    public func _orderedMapToUniqueKeysWithValues<Key: Hashable, Value>(
+        _ transform: (Element) throws -> (Key, Value)
+    ) rethrows -> Collections.OrderedDictionary<Key, Value> {
+        try Collections.OrderedDictionary(uniqueKeysWithValues: self.lazy.map { (element: Element) in
+            try transform(element)
+        })
+    }
+    
+    public func _unsafeCompactMapToOrderedDictionary<Key: Hashable>(
+        _ key: (Element) throws -> Key?
+    ) rethrows -> Collections.OrderedDictionary<Key, Element> {
+        try Collections.OrderedDictionary(uniqueKeysWithValues: self.lazy.compactMap { (element: Element) -> (Key, Element)? in
+            guard let key = try key(element) else {
+                return nil
             }
-        }
-        
-        return result
+            
+            return (key, element)
+        })
     }
     
     public func multiplicativelyKeyed<Key: Hashable>(
@@ -343,7 +350,7 @@ extension Sequence {
     ) async rethrows -> [T.Element] where T.Element: Sendable {
         try await concurrentMap(transform).flatMap({ $0 })
     }
-
+    
     public func asyncForEach(
         _ body: @Sendable (Element) async throws -> Void
     ) async rethrows {
@@ -515,7 +522,7 @@ extension Sequence {
         
         return try dropFirst().reduce(initial(first), combine)
     }
-
+    
     public func concatenateAndReduce<T>(
         _ initialValue: (Element, Element) throws -> T,
         _ combine: (T, Element) throws -> T
@@ -575,7 +582,7 @@ extension Sequence {
             )
         )
     }
-
+    
     public func between(
         count startIndex: Int,
         and endIndex: Int
@@ -702,6 +709,8 @@ extension Sequence {
     }
 }
 
+// MARK: map
+
 extension Sequence {
     public func map<T>(
         _ f: (@escaping (Element) -> T),
@@ -713,6 +722,36 @@ extension Sequence {
             transform: { $0 = !$0; return $0 ? f($1) : g($1) }
         )
     }
+    
+    public func _compactMap<T, U>(
+        _ keyPath: KeyPath<(T?, U), T?>,
+        _ transform: (Element) throws -> (T?, U)
+    ) rethrows -> [(T, U)] {
+        try compactMap { element -> (T, U)? in
+            let transformed = try transform(element)
+            
+            guard let first: T = transformed[keyPath: keyPath] else {
+                return nil
+            }
+            
+            return (first, transformed.1)
+        }
+    }
+
+    public func _compactMap<T, U>(
+        _ keyPath: KeyPath<(T, U?), U?>,
+        _ transform: (Element) throws -> (T, U?)
+    ) rethrows -> [(T, U)] {
+        try compactMap { element -> (T, U)? in
+            let transformed = try transform(element)
+            
+            guard let second: U = transformed[keyPath: keyPath] else {
+                return nil
+            }
+            
+            return (transformed.0, second)
+        }
+    }
 }
 
 // MARK: hasPrefix & hasSuffix
@@ -721,7 +760,7 @@ extension Sequence where Element: Equatable {
     public func hasPrefix(_ prefix: Element) -> Bool {
         first == prefix
     }
-        
+    
     public func hasPrefix(_ prefix: some Sequence<Element>) -> Bool {
         var iterator = makeIterator()
         var prefixIterator = prefix.makeIterator()
@@ -877,13 +916,13 @@ extension Sequence {
             }
         }
     }
-
+    
     public func distinct<T: Hashable>(
         by keyPath: KeyPath<Element, T>
     ) -> AnySequence<Element> {
         distinct(by: { $0[keyPath: keyPath] })
     }
-        
+    
     public func distinct() -> AnySequence<Element> where Element: Hashable {
         distinct(by: \.hashValue)
     }
