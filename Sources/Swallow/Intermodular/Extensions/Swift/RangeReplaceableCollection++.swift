@@ -224,6 +224,38 @@ extension RangeReplaceableCollection {
     }
 
     @discardableResult
+    public mutating func removeAllBackwards(
+        where predicate: (Element) -> Bool,
+        until terminator: (Element) -> Bool
+    ) -> [Element] where Index: Strideable {
+        var removedElements: [Element] = []
+        
+        guard let lastIndex else {
+            return []
+        }
+        
+        var index = lastIndex
+        
+        while index >= startIndex && !terminator(self[index]) {
+            if predicate(self[index]) {
+                removedElements.append(self[index])
+                
+                let isStartIndex = index == startIndex
+                
+                self.remove(at: index)
+                
+                if isStartIndex {
+                    break
+                }
+            }
+            
+            index = self.index(before: index)
+        }
+        
+        return removedElements
+    }
+
+    @discardableResult
     public func removingAll(
         where predicate: ((Element) throws -> Bool)
     ) rethrows -> Self {

@@ -140,6 +140,7 @@ extension XcodeRuntimeIssueLogger {
             var line: UInt
         }
         
+        private var lock = OSUnfairLock()
         private var invocations = Set<Invocation>()
         
         /// Returns whether to raise a runtime issue in a file on a particular line.
@@ -149,7 +150,9 @@ extension XcodeRuntimeIssueLogger {
             in file: StaticString,
             on line: UInt
         ) -> Bool {
-            return invocations.insert(Invocation(file: HashedStaticString(file), line: line)).inserted
+            lock.withCriticalScope {
+                return invocations.insert(Invocation(file: HashedStaticString(file), line: line)).inserted
+            }
         }
     }
 }

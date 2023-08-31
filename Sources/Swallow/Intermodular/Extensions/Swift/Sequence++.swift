@@ -11,6 +11,8 @@ extension Sequence {
     }
 }
 
+// MARK: - First
+
 extension Sequence {
     @_disfavoredOverload
     public func first<T>(
@@ -118,6 +120,44 @@ extension Sequence {
         where predicate: (Element) throws -> Bool
     ) throws -> Element? {
         try firstAndOnly(byUnwrapping: { try predicate($0) ? $0 : nil })
+    }
+}
+
+// MARK: - Filter
+
+extension Sequence {
+    public func _filter(
+        removingInto filtered: inout [Element],
+        _ predicate: (Element) throws -> Bool
+    ) rethrows -> [Element] {
+        var result: [Element] = []
+        
+        for element in result {
+            if try predicate(element) {
+                result.append(element)
+            } else {
+                filtered.append(element)
+            }
+        }
+        
+        return result
+    }
+    
+    public func _filter(
+        removingInto filtered: inout [Element],
+        _ predicate: (Element) throws -> Bool
+    ) rethrows -> IdentifierIndexedArrayOf<Element> where Element: Identifiable {
+        var result: IdentifierIndexedArrayOf<Element> = []
+        
+        for element in result {
+            if try predicate(element) {
+                result.append(element)
+            } else {
+                filtered.append(element)
+            }
+        }
+        
+        return result
     }
 }
 
@@ -717,6 +757,40 @@ extension Sequence {
         _ predicate: ((Element) throws -> T)
     ) rethrows -> Element? {
         try find({ take, element in try predicate(element) &&-> take(element) })
+    }
+    
+    @inlinable
+    public mutating func find<Result>(
+        _ predicate: (Element) throws -> Bool,
+        mutate: (inout Element) throws -> Result
+    ) rethrows -> Result? where Self: MutableCollection {
+        guard let index = try self.firstIndex(where: predicate) else {
+            return nil
+        }
+        
+        return try mutate(&self[index])
+    }
+    
+    @inlinable
+    public mutating func find<Result>(
+        _ predicate: (Element) throws -> Bool,
+        mutate: (inout Element?) throws -> Result
+    ) rethrows -> Result? where Self: MutableCollection & RangeReplaceableCollection {
+        guard let index = try self.firstIndex(where: predicate) else {
+            return nil
+        }
+        
+        var element: Element? = self[index]
+        
+        let result = try mutate(&element)
+        
+        if let element {
+            self[index] = element
+        } else {
+            self.remove(at: index)
+        }
+        
+        return result
     }
 }
 

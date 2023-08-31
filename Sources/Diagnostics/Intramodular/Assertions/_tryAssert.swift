@@ -13,12 +13,16 @@ enum _AssertionFailureError: Error {
 @_transparent
 public func _tryAssert(
     _ condition: Bool,
-    message: String? = nil,
+    _ message: String? = nil,
     file: StaticString = #file,
     function: StaticString = #function,
     line: UInt = #line
 ) throws {
     guard condition else {
+        if let message = message {
+            runtimeIssue(message)
+        }
+        
         throw _AssertionFailureError.assertionFailed(
             .init(
                 file: file,
@@ -33,13 +37,17 @@ public func _tryAssert(
 @inline(__always)
 @_transparent
 public func _tryAssert(
-    message: String? = nil,
+    _ message: String? = nil,
     _ condition: () throws -> Bool,
     file: StaticString = #file,
     function: StaticString = #function,
     line: UInt = #line
 ) throws {
     guard try condition() else {
+        if let message = message {
+            runtimeIssue(message)
+        }
+
         throw _AssertionFailureError.assertionFailed(.init(file: file, function: function, line: line, column: nil))
     }
 }

@@ -59,6 +59,42 @@ extension IdentifierIndexedArray {
 }
 
 extension IdentifierIndexedArrayOf {
+    public func element(before other: ID) -> Element? {
+        guard let index = self.index(of: other), index > startIndex else {
+            return nil
+        }
+        
+        let previousIndex = self.index(before: index)
+        
+        guard previousIndex < endIndex else {
+            return nil
+        }
+        
+        return self[previousIndex]
+    }
+
+    public func element(before other: Element) -> Element? {
+        self.element(before: _idForElement(other))
+    }
+
+    public func element(after other: ID) -> Element? {
+        guard let index = self.index(of: other), let lastIndex, index < lastIndex else {
+            return nil
+        }
+        
+        let nextIndex = self.index(after: index)
+        
+        guard nextIndex < endIndex else {
+            return nil
+        }
+        
+        return self[nextIndex]
+    }
+    
+    public func element(after other: Element) -> Element? {
+        self.element(after: _idForElement(other))
+    }
+
     public func sorted(
         by areInIncreasingOrder: (Self.Element, Self.Element) throws -> Bool
     ) rethrows -> Self {
@@ -368,6 +404,13 @@ extension Sequence {
     ) rethrows -> IdentifierIndexedArrayOf<T> {
         IdentifierIndexedArrayOf(try self.lazy.map({ try transform($0) }), id: \.id)
     }
+    
+    @_disfavoredOverload
+    public func flatMap<S: Sequence>(
+        _ transform: (@escaping (Element) throws -> S)
+    ) rethrows -> IdentifierIndexedArrayOf<S.Element> where S.Element: Identifiable {
+        IdentifierIndexedArrayOf(try self.flatMap({ try transform($0) }), id: \.id)
+    }
 }
 
 // MARK: - SwiftUI Additions
@@ -401,6 +444,70 @@ extension Binding {
                 self.wrappedValue[id: identifier] = $0
             }
         )
+    }
+}
+
+extension ForEach where Content: View {
+    public init<Element: Identifiable, UnwrappedContent: View>(
+        identified data: Binding<IdentifierIndexedArrayOf<Element>>,
+        @ViewBuilder content: @escaping (Binding<Element>) -> UnwrappedContent
+    ) where Data == LazyMapSequence<IdentifierIndexedArrayOf<Element>.Indices, (IdentifierIndexedArrayOf<Element>.Index, ID)>, ID == Element.ID, IdentifierIndexedArrayOf<Element>.Index: Hashable, Content == SwiftUI._ConditionalContent<UnwrappedContent, EmptyView>
+    {
+        self.init(data, id: \.id) { $element in
+            let id = element.id
+            let binding = Binding<Element>(
+                get: {
+                    return element
+                },
+                set: { (newValue: Element) in
+                    guard data.wrappedValue.contains(elementIdentifiedBy: id) else {
+                        return
+                    }
+                    
+                    $element.wrappedValue = newValue
+                }
+            )
+            
+            if data.wrappedValue.contains(elementIdentifiedBy: id) {
+                content(binding)
+            } else {
+                EmptyView()
+            }
+        }
+    }
+
+    public init<Element: Identifiable & Initiable, UnwrappedContent: View>(
+        identified data: Binding<IdentifierIndexedArrayOf<Element>>,
+        @ViewBuilder content: @escaping (Binding<Element>) -> UnwrappedContent
+    ) where Data == LazyMapSequence<IdentifierIndexedArrayOf<Element>.Indices, (IdentifierIndexedArrayOf<Element>.Index, ID)>, ID == Element.ID, IdentifierIndexedArrayOf<Element>.Index: Hashable, Content == SwiftUI._ConditionalContent<UnwrappedContent, EmptyView>
+    {
+        self.init(data, id: \.id) { $element in
+            let id = element.id
+            let binding = Binding<Element>(
+                get: {
+                    if data.wrappedValue.contains(elementIdentifiedBy: id) {
+                        return element
+                    } else {
+                        runtimeIssue("Recovering by creating placeholder element.")
+                        
+                        return Element() // FIXME?
+                    }
+                },
+                set: { (newValue: Element) in
+                    guard data.wrappedValue.contains(elementIdentifiedBy: id) else {
+                        return
+                    }
+                    
+                    $element.wrappedValue = newValue
+                }
+            )
+            
+            if data.wrappedValue.contains(elementIdentifiedBy: id) {
+                content(binding)
+            } else {
+                EmptyView()
+            }
+        }
     }
 }
 #endif
