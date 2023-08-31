@@ -248,7 +248,7 @@ extension NSAttributedString {
         var result: [(string: NSAttributedString, attributes: [NSAttributedString.Key: Any])] = []
         let fullRange = NSRange(location: 0, length: length)
         
-        self.enumerateAttributes(in: fullRange, options: []) { (attributes, range, stop) in
+        self.enumerateAttributes(in: fullRange, options: [.longestEffectiveRangeNotRequired]) { (attributes, range, stop) in
             let subString = self.attributedSubstring(from: range)
 
             result.append((string: subString, attributes: attributes))
