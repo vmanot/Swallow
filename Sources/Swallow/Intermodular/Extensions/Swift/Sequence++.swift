@@ -241,7 +241,9 @@ extension Sequence {
             self.lazy.map { (element: Element) in
                 (try key(element), [element])
             }, 
-            uniquingKeysWith: { $0.appending(contentsOf: $1) }
+            uniquingKeysWith: {
+                $0.appending(contentsOf: $1)
+            }
         )
     }
     

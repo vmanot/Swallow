@@ -244,6 +244,12 @@ extension IdentifierIndexedArray {
         self.base = .init(uniqueKeysWithValues: _base)
     }
     
+    public mutating func insert(
+        _ newElement: Element
+    ) {
+        self.base.insert((_idForElement(newElement), newElement), at: 0)
+    }
+    
     public mutating func replaceSubrange<C: Collection>(
         _ subrange: Range<Index>,
         with newElements: C

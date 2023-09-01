@@ -4,7 +4,7 @@
 
 import Swift
 
-public struct _BagOfExistentials<Existential> {
+public struct _BagOfExistentials<Existential>: @unchecked Sendable {
     private var _nonEquatableElements: [Existential] = []
     private var _equatableElements: [_EquatableElement] = []
     private var _hashableElements: Set<_HashableElement> = []
