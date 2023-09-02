@@ -53,6 +53,7 @@ public struct Hashable2ple<T0: Hashable, T1: Hashable>: Hashable, Wrapper {
     }
 }
 
+@frozen
 public struct ManyHashable: Hashable {
     @usableFromInline
     let hashIntoHasherImpl: (inout Hasher) -> ()

@@ -10,8 +10,6 @@ public final class OSUnfairLock: Sendable {
     @usableFromInline
     let base: os_unfair_lock_t
     
-    @inlinable
-    @inline(__always)
     public init() {
         let base = os_unfair_lock_t.allocate(capacity: 1)
         

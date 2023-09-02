@@ -2,7 +2,7 @@
 // Copyright (c) Vatsal Manot
 //
 
-import Collections
+@_implementationOnly import Collections
 import Swift
 
 extension Sequence {
@@ -236,8 +236,8 @@ extension Sequence {
     
     public func _orderedMapToKeys<Key: Hashable>(
         _ key: (Element) throws -> Key
-    ) rethrows -> Collections.OrderedDictionary<Key, [Element]> {
-        try Collections.OrderedDictionary(
+    ) rethrows -> OrderedDictionary<Key, [Element]> {
+        try OrderedDictionary(
             self.lazy.map { (element: Element) in
                 (try key(element), [element])
             }, 
@@ -257,24 +257,24 @@ extension Sequence {
     
     public func _orderedMapToUniqueKeys<Key: Hashable>(
         _ key: (Element) throws -> Key
-    ) rethrows -> Collections.OrderedDictionary<Key, Element> {
-        try Collections.OrderedDictionary(uniqueKeysWithValues: self.lazy.map { (element: Element) in
+    ) rethrows -> OrderedDictionary<Key, Element> {
+        try OrderedDictionary(uniqueKeysWithValues: self.lazy.map { (element: Element) in
             (try key(element), element)
         })
     }
     
     public func _orderedMapToUniqueKeysWithValues<Key: Hashable, Value>(
         _ transform: (Element) throws -> (Key, Value)
-    ) rethrows -> Collections.OrderedDictionary<Key, Value> {
-        try Collections.OrderedDictionary(uniqueKeysWithValues: self.lazy.map { (element: Element) in
+    ) rethrows -> OrderedDictionary<Key, Value> {
+        try OrderedDictionary(uniqueKeysWithValues: self.lazy.map { (element: Element) in
             try transform(element)
         })
     }
     
     public func _unsafeCompactMapToOrderedDictionary<Key: Hashable>(
         _ key: (Element) throws -> Key?
-    ) rethrows -> Collections.OrderedDictionary<Key, Element> {
-        try Collections.OrderedDictionary(uniqueKeysWithValues: self.lazy.compactMap { (element: Element) -> (Key, Element)? in
+    ) rethrows -> OrderedDictionary<Key, Element> {
+        try OrderedDictionary(uniqueKeysWithValues: self.lazy.compactMap { (element: Element) -> (Key, Element)? in
             guard let key = try key(element) else {
                 return nil
             }

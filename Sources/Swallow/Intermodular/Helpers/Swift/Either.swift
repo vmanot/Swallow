@@ -8,6 +8,7 @@
 import Foundation
 
 /// A type representing a choice between one of two types.
+@frozen
 public enum Either<T, U>: EitherRepresentable, MutableEitherRepresentable {
     public typealias LeftValue = T
     public typealias RightValue = U

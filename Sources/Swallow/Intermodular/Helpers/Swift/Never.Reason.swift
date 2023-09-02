@@ -8,6 +8,7 @@ extension Never {
     /// A reason for why something returns `Never`.
     ///
     /// This type is a work-in-progress. Do not use this type directly in your code.
+    @frozen
     public struct Reason: Hashable, Error {
         public enum _Base: String, Hashable {
             case abstract

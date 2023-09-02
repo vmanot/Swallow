@@ -19,7 +19,7 @@ extension OrderedDictionary: Decodable where Key: Decodable, Value: Decodable {
     public init(from decoder: Decoder) throws {
         // Decode the ordered dictionary from an array of alternating key-value pairs.
         self.init()
-    
+        
         var container = try decoder.unkeyedContainer()
         
         while !container.isAtEnd {

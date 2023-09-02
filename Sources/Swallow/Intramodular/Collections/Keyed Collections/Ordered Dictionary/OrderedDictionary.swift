@@ -51,6 +51,39 @@ public struct OrderedDictionary<Key: Hashable, Value>: RandomAccessCollection {
         )
     }
     
+    @inlinable
+    public mutating func merge<S: Sequence>(
+        _ keysAndValues: __owned S,
+        uniquingKeysWith combine: (Value, Value) throws -> Value
+    ) rethrows where S.Element == (key: Key, value: Value) {
+        for (key, value) in keysAndValues {
+            let existing = self[key]
+            
+            if let existing {
+                self[key] = try combine(existing, value)
+            } else {
+                self[key] = value
+            }
+        }
+    }
+    
+    public func merging<S: Sequence>(
+        _ keysAndValues: __owned S,
+        uniquingKeysWith combine: (Value, Value) throws -> Value
+    ) rethrows -> Self {
+        try with(self) {
+            try $0.merge($0, uniquingKeysWith: combine)
+        }
+    }
+
+    public init<S: Sequence>(
+        _ keysAndValues: S,
+        uniquingKeysWith combine: (Value, Value) throws -> Value
+    ) rethrows where S.Element == (key: Key, value: Value) {
+        self.init()
+        try self.merge(keysAndValues, uniquingKeysWith: combine)
+    }
+
     /// Initializes an empty ordered dictionary with preallocated space for at least
     /// the specified number of elements.
     public init(minimumCapacity: Int) {
