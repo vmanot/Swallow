@@ -16,8 +16,8 @@ import Swallow
         
         public typealias Vertex = Element
         
-        public typealias Vertices = IdentifierIndexedArrayOf<Element>
-        public typealias Edges = IdentifierIndexedArray<Edge>
+        public typealias Vertices = IdentifierIndexingArrayOf<Element>
+        public typealias Edges = IdentifierIndexingArray<Edge>
         
         public private(set) var vertices: Vertices
         public private(set) var edges: Edges

@@ -8,7 +8,7 @@ public struct _DictionarySnapshotOfTree<Node: ConstructibleTree & RecursiveTreeP
     public let values: [Node.ID: Node.TreeValue]
     public let childrenByParent: Set<ReferenceTree<Node.ID>>
     
-    public init(from nodes: IdentifierIndexedArray<Node, Node.ID>) {
+    public init(from nodes: IdentifierIndexingArray<Node, Node.ID>) {
         var childrenByParent: [Node.ID: Set<Node.ID>] = [:]
         
         var nodeIDs: [Node.ID: ReferenceTree<Node.ID>] = [:]

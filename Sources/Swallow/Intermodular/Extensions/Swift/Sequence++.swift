@@ -146,8 +146,8 @@ extension Sequence {
     public func _filter(
         removingInto filtered: inout [Element],
         _ predicate: (Element) throws -> Bool
-    ) rethrows -> IdentifierIndexedArrayOf<Element> where Element: Identifiable {
-        var result: IdentifierIndexedArrayOf<Element> = []
+    ) rethrows -> IdentifierIndexingArrayOf<Element> where Element: Identifiable {
+        var result: IdentifierIndexingArrayOf<Element> = []
         
         for element in result {
             if try predicate(element) {

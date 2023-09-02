@@ -4,9 +4,10 @@
 
 import Swift
 
-public typealias IdentifierIndexedArrayOf<Element: Identifiable> = IdentifierIndexedArray<Element, Element.ID>
+public typealias IdentifierIndexingArrayOf<Element: Identifiable> = IdentifierIndexingArray<Element, Element.ID>
 
-public struct IdentifierIndexedArray<Element, ID: Hashable> {
+/// An array that additionally indexes elements by ID.
+public struct IdentifierIndexingArray<Element, ID: Hashable> {
     private(set) var base: OrderedDictionary<ID, Element>
     private(set) var id: (Element) -> ID
     
@@ -46,7 +47,7 @@ public struct IdentifierIndexedArray<Element, ID: Hashable> {
 
 // MARK: - Implementation
 
-extension IdentifierIndexedArray {
+extension IdentifierIndexingArray {
     public mutating func append(_ element: Element) {
         self[id: _idForElement(element)] = element
     }
@@ -58,7 +59,7 @@ extension IdentifierIndexedArray {
     }
 }
 
-extension IdentifierIndexedArrayOf {
+extension IdentifierIndexingArrayOf {
     public func element(before other: ID) -> Element? {
         guard let index = self.index(of: other), index > startIndex else {
             return nil
@@ -98,26 +99,26 @@ extension IdentifierIndexedArrayOf {
     public func sorted(
         by areInIncreasingOrder: (Self.Element, Self.Element) throws -> Bool
     ) rethrows -> Self {
-        IdentifierIndexedArray(try sorted(by: areInIncreasingOrder) as Array, id: id)
+        IdentifierIndexingArray(try sorted(by: areInIncreasingOrder) as Array, id: id)
     }
     
     public func map<T: Identifiable>(
         _ transform: (Element) throws -> T
-    ) rethrows -> IdentifierIndexedArrayOf<T> {
-        try IdentifierIndexedArrayOf<T>(Array(self).map({ try transform($0) }))
+    ) rethrows -> IdentifierIndexingArrayOf<T> {
+        try IdentifierIndexingArrayOf<T>(Array(self).map({ try transform($0) }))
     }
     
     public func map<T, U: Hashable>(
         id: KeyPath<T, U>,
         _ transform: (Element) throws -> T
-    ) rethrows -> IdentifierIndexedArray<T, U> {
-        try IdentifierIndexedArray<T, U>(Array(self).map({ try transform($0) }), id: id)
+    ) rethrows -> IdentifierIndexingArray<T, U> {
+        try IdentifierIndexingArray<T, U>(Array(self).map({ try transform($0) }), id: id)
     }
 }
 
 // MARK: - Conformances
 
-extension IdentifierIndexedArray: CustomDebugStringConvertible, CustomStringConvertible {
+extension IdentifierIndexingArray: CustomDebugStringConvertible, CustomStringConvertible {
     public var debugDescription: String {
         base.debugDescription
     }
@@ -127,31 +128,31 @@ extension IdentifierIndexedArray: CustomDebugStringConvertible, CustomStringConv
     }
 }
 
-extension IdentifierIndexedArray: Equatable where Element: Equatable {
+extension IdentifierIndexingArray: Equatable where Element: Equatable {
     public static func == (lhs: Self, rhs: Self) -> Bool {
         lhs.base == rhs.base
     }
 }
 
-extension IdentifierIndexedArray: ExpressibleByArrayLiteral where Element: Identifiable, Element.ID == ID {
+extension IdentifierIndexingArray: ExpressibleByArrayLiteral where Element: Identifiable, Element.ID == ID {
     public init(arrayLiteral elements: Element...) {
         self.init(elements, id: \.id)
     }
 }
 
-extension IdentifierIndexedArray: Hashable where Element: Hashable {
+extension IdentifierIndexingArray: Hashable where Element: Hashable {
     public func hash(into hasher: inout Hasher) {
         base.hash(into: &hasher)
     }
 }
 
-extension IdentifierIndexedArray: Initiable where Element: Identifiable, Element.ID == ID {
+extension IdentifierIndexingArray: Initiable where Element: Identifiable, Element.ID == ID {
     public init() {
         self.init([], id: \.id)
     }
 }
 
-extension IdentifierIndexedArray: MutableCollection, MutableSequence, RandomAccessCollection {
+extension IdentifierIndexingArray: MutableCollection, MutableSequence, RandomAccessCollection {
     public var count: Int {
         base.count
     }
@@ -233,7 +234,7 @@ extension IdentifierIndexedArray: MutableCollection, MutableSequence, RandomAcce
     }
 }
 
-extension IdentifierIndexedArray {
+extension IdentifierIndexingArray {
     private mutating func _naivelyModifyBase(
         _ operation: (inout [(key: ID, value: Element)]) throws -> Void
     ) rethrows {
@@ -362,7 +363,7 @@ extension IdentifierIndexedArray {
     }
 }
 
-extension IdentifierIndexedArray: RangeReplaceableCollection where Element: Identifiable, Element.ID == ID {
+extension IdentifierIndexingArray: RangeReplaceableCollection where Element: Identifiable, Element.ID == ID {
     /// Updates a given identifiable element if already present, inserts it otherwise.
     public mutating func updateOrAppend(_ element: Element) {
         if let index = self.index(of: _idForElement(element)) {
@@ -373,23 +374,23 @@ extension IdentifierIndexedArray: RangeReplaceableCollection where Element: Iden
     }
 }
 
-extension IdentifierIndexedArray: @unchecked Sendable where Element: Sendable, ID: Sendable {
+extension IdentifierIndexingArray: @unchecked Sendable where Element: Sendable, ID: Sendable {
     
 }
 
-extension IdentifierIndexedArray: Sequence {
+extension IdentifierIndexingArray: Sequence {
     public func makeIterator() -> AnyIterator<Element> {
         .init(base.lazy.map({ $0.value }).makeIterator())
     }
 }
 
-extension IdentifierIndexedArray: Decodable where Element: Decodable, Element: Identifiable, Element.ID == ID {
+extension IdentifierIndexingArray: Decodable where Element: Decodable, Element: Identifiable, Element.ID == ID {
     public init(from decoder: Decoder) throws {
         self.init(try decoder.singleValueContainer().decode([Element].self), id: \.id)
     }
 }
 
-extension IdentifierIndexedArray: Encodable where Element: Encodable, Element: Identifiable, Element.ID == ID {
+extension IdentifierIndexingArray: Encodable where Element: Encodable, Element: Identifiable, Element.ID == ID {
     public func encode(to encoder: Encoder) throws {
         try base.map({ $0.value }).encode(to: encoder)
     }
@@ -400,22 +401,22 @@ extension IdentifierIndexedArray: Encodable where Element: Encodable, Element: I
 extension Sequence {
     public func identified<T: Hashable>(
         by keyPath: KeyPath<Element, T>
-    ) -> IdentifierIndexedArray<Element, T> {
-        IdentifierIndexedArray(self, id: keyPath)
+    ) -> IdentifierIndexingArray<Element, T> {
+        IdentifierIndexingArray(self, id: keyPath)
     }
     
     @_disfavoredOverload
     public func map<T: Identifiable>(
         _ transform: (@escaping (Element) throws -> T)
-    ) rethrows -> IdentifierIndexedArrayOf<T> {
-        IdentifierIndexedArrayOf(try self.lazy.map({ try transform($0) }), id: \.id)
+    ) rethrows -> IdentifierIndexingArrayOf<T> {
+        IdentifierIndexingArrayOf(try self.lazy.map({ try transform($0) }), id: \.id)
     }
     
     @_disfavoredOverload
     public func flatMap<S: Sequence>(
         _ transform: (@escaping (Element) throws -> S)
-    ) rethrows -> IdentifierIndexedArrayOf<S.Element> where S.Element: Identifiable {
-        IdentifierIndexedArrayOf(try self.flatMap({ try transform($0) }), id: \.id)
+    ) rethrows -> IdentifierIndexingArrayOf<S.Element> where S.Element: Identifiable {
+        IdentifierIndexingArrayOf(try self.flatMap({ try transform($0) }), id: \.id)
     }
 }
 
@@ -428,7 +429,7 @@ extension Binding {
     public subscript<Element, ID: Hashable>(
         id identifier: ID,
         default defaultValue: @autoclosure @escaping () -> Element
-    ) -> Binding<Element> where Value == IdentifierIndexedArray<Element, ID> {
+    ) -> Binding<Element> where Value == IdentifierIndexingArray<Element, ID> {
         .init(
             get: {
                 self.wrappedValue[id: identifier, default: defaultValue()]
@@ -441,7 +442,7 @@ extension Binding {
     
     public subscript<Element, ID: Hashable>(
         unsafelyUnwrappingElementIdentifiedBy identifier: ID
-    ) -> Binding<Element> where Value == IdentifierIndexedArray<Element, ID> {
+    ) -> Binding<Element> where Value == IdentifierIndexingArray<Element, ID> {
         .init(
             get: {
                 self.wrappedValue[id: identifier]!
@@ -455,9 +456,9 @@ extension Binding {
 
 extension ForEach where Content: View {
     public init<Element: Identifiable, UnwrappedContent: View>(
-        identified data: Binding<IdentifierIndexedArrayOf<Element>>,
+        identified data: Binding<IdentifierIndexingArrayOf<Element>>,
         @ViewBuilder content: @escaping (Binding<Element>) -> UnwrappedContent
-    ) where Data == LazyMapSequence<IdentifierIndexedArrayOf<Element>.Indices, (IdentifierIndexedArrayOf<Element>.Index, ID)>, ID == Element.ID, IdentifierIndexedArrayOf<Element>.Index: Hashable, Content == SwiftUI._ConditionalContent<UnwrappedContent, EmptyView>
+    ) where Data == LazyMapSequence<IdentifierIndexingArrayOf<Element>.Indices, (IdentifierIndexingArrayOf<Element>.Index, ID)>, ID == Element.ID, IdentifierIndexingArrayOf<Element>.Index: Hashable, Content == SwiftUI._ConditionalContent<UnwrappedContent, EmptyView>
     {
         self.init(data, id: \.id) { $element in
             let id = element.id
@@ -483,9 +484,9 @@ extension ForEach where Content: View {
     }
 
     public init<Element: Identifiable & Initiable, UnwrappedContent: View>(
-        identified data: Binding<IdentifierIndexedArrayOf<Element>>,
+        identified data: Binding<IdentifierIndexingArrayOf<Element>>,
         @ViewBuilder content: @escaping (Binding<Element>) -> UnwrappedContent
-    ) where Data == LazyMapSequence<IdentifierIndexedArrayOf<Element>.Indices, (IdentifierIndexedArrayOf<Element>.Index, ID)>, ID == Element.ID, IdentifierIndexedArrayOf<Element>.Index: Hashable, Content == SwiftUI._ConditionalContent<UnwrappedContent, EmptyView>
+    ) where Data == LazyMapSequence<IdentifierIndexingArrayOf<Element>.Indices, (IdentifierIndexingArrayOf<Element>.Index, ID)>, ID == Element.ID, IdentifierIndexingArrayOf<Element>.Index: Hashable, Content == SwiftUI._ConditionalContent<UnwrappedContent, EmptyView>
     {
         self.init(data, id: \.id) { $element in
             let id = element.id
