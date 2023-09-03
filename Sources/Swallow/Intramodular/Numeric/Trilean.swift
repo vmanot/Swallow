@@ -4,6 +4,7 @@
 
 import Swift
 
+@frozen
 public enum Trilean: Int8, Hashable {
     case `false` = -1
     case unknown

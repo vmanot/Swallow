@@ -6,6 +6,7 @@ import Foundation
 import Swift
 
 /// The kind of container vended by a `Decoder`.
+@frozen
 public enum _DecodingContainerKind: CaseIterable, Hashable {
     public static var allCases: [_DecodingContainerKind] {
         [.keyed(by: AnyCodingKey.self), .unkeyed, .singleValue]

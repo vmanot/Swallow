@@ -87,6 +87,7 @@ extension MaybeKnown {
         case unknown
         case known
         
+        @_disfavoredOverload
         public static func == (lhs: _ComparisonType, rhs: MaybeKnown) -> Bool {
             switch (lhs, rhs) {
                 case (.unknown, .unknown):
@@ -98,6 +99,7 @@ extension MaybeKnown {
             }
         }
         
+        @_disfavoredOverload
         public static func == (lhs: MaybeKnown, rhs: _ComparisonType) -> Bool {
             rhs == lhs
         }

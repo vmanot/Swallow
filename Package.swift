@@ -27,7 +27,7 @@ let package = Package(
         )
     ],
     dependencies: [
-        .package(url: "https://github.com/apple/swift-collections", branch: "main"),
+        .package(url: "https://github.com/apple/swift-collections", branch: "release/1.1"),
     ],
     targets: [
         .target(
@@ -87,7 +87,9 @@ let package = Package(
             dependencies: [
                 .product(name: "Collections", package: "swift-collections")
             ],
-            swiftSettings: []
+            swiftSettings: [
+                .unsafeFlags(["-enable-library-evolution"])
+            ]
         ),
         .testTarget(
             name: "SwallowTests",
