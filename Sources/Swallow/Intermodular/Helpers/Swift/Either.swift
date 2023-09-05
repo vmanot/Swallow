@@ -1,11 +1,8 @@
 //
-//  File.swift
-//  
-//
-//  Created by Vatsal Manot on 23/06/23.
+// Copyright (c) Vatsal Manot
 //
 
-import Foundation
+import Swift
 
 /// A type representing a choice between one of two types.
 @frozen

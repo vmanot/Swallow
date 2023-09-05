@@ -10,6 +10,12 @@ public protocol RawValueConvertible {
     var rawValue: RawValue { get }
 }
 
+public protocol ThrowingRawValueConvertible {
+    associatedtype RawValue
+    
+    var rawValue: RawValue { get throws }
+}
+
 public protocol MutableRawValueConvertible {
     associatedtype RawValue
     

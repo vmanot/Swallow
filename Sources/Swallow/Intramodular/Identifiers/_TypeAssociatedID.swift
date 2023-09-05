@@ -4,6 +4,9 @@
 
 import Foundation
 
+/// An affordance for phantom identifier types.
+///
+/// https://swiftwithmajid.com/2021/02/18/phantom-types-in-swift/
 public struct _TypeAssociatedID<Parent, RawValue: Hashable>: Hashable, RawRepresentable {
     public let rawValue: RawValue
     
