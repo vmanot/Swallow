@@ -5,6 +5,7 @@
 import Foundation
 import Swift
 
+/// Allow keys that are not present to be decoded as empty values.
 @propertyWrapper
 public struct LossyCoding<Value>: MutablePropertyWrapper, ParameterlessPropertyWrapper {
     public var wrappedValue: Value

@@ -375,7 +375,9 @@ extension Collection {
 // MARK: - Subsequencing -
 
 extension Collection {
-    public func chunked(by chunkSize: Int) -> [Self.SubSequence] {
+    public func chunked(
+        by chunkSize: Int
+    ) -> [Self.SubSequence] {
         return stride(from: 0, to: count, by: chunkSize).map {
             self[index(atDistance: $0)..<index(atDistance: Swift.min($0 + chunkSize, self.count))]
         }
