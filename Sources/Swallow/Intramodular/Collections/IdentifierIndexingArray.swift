@@ -167,7 +167,13 @@ extension IdentifierIndexingArray: MutableCollection, MutableSequence, RandomAcc
     
     public subscript(_ index: Int) -> Element {
         get {
-            base[index].value
+            guard index < base.endIndex else {
+                assertionFailure()
+                
+                return try! _generatePlaceholder()
+            }
+            
+            return base[index].value
         } set {
             base[index] = (_idForElement(newValue), newValue)
         }

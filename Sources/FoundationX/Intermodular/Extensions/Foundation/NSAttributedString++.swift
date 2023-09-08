@@ -10,6 +10,14 @@ import Foundation
 import UIKit
 #endif
 
+#if os(iOS)
+extension NSAttributedString {
+    public var containsAttachments: Bool {
+        self.containsAttachments(in: stringBounds)
+    }
+}
+#endif
+
 extension NSAttributedString {
     @MainActor
     public convenience init?(html: String) throws {
