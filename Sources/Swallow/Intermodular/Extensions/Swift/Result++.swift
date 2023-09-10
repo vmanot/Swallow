@@ -34,7 +34,7 @@ extension Result {
     public func mapFailure<T>(_ transform: ((Failure) throws -> T)) rethrows -> Result<Success, T> {
         return .init(try eitherValue.map(id, transform))
     }
-        
+    
     public func get() -> Success where Failure == Never {
         switch self {
             case .success(let value):
@@ -64,7 +64,7 @@ extension Result where Failure == Error {
             self = .failure(error)
         }
     }
-
+    
     public init?(catching body: () async throws -> Success?) async {
         do {
             guard let success = try await body() else {
@@ -76,7 +76,7 @@ extension Result where Failure == Error {
             self = .failure(error)
         }
     }
-
+    
     public init(_ value: @autoclosure () throws -> Success) {
         self.init(catching: value)
     }
@@ -89,6 +89,80 @@ extension Result where Failure == Error {
             self = .success(try value())
         } catch {
             self.init(catching: otherValue)
+        }
+    }
+    
+    public static func fromEither(
+        _ first: () throws -> Success,
+        or second: () throws -> Success
+    ) throws -> Self {
+        do {
+            return Self.success(try first())
+        } catch {
+            return Self(catching: { try second() })
+        }
+    }
+    
+    public static func from(
+        _ first: () throws -> Success,
+        or second: () throws -> Success,
+        or third: () throws -> Success
+    ) throws -> Self {
+        do {
+            return Self.success(try first())
+        } catch {
+            do {
+                return Self.success(try second())
+            } catch {
+                return Self(catching: { try third() })
+            }
+        }
+    }
+    
+    public static func from(
+        _ first: () throws -> Success,
+        or second: () throws -> Success,
+        or third: () throws -> Success,
+        or fourth: () throws -> Success
+    ) throws -> Self {
+        do {
+            return Self.success(try first())
+        } catch {
+            do {
+                return Self.success(try second())
+            } catch {
+                do {
+                    return Self.success(try third())
+                } catch {
+                    return Self(catching: { try fourth() })
+                }
+            }
+        }
+    }
+    
+    public static func from(
+        _ first: () throws -> Success,
+        or second: () throws -> Success,
+        or third: () throws -> Success,
+        or fourth: () throws -> Success,
+        or fifth: () throws -> Success
+    ) throws -> Self {
+        do {
+            return Self.success(try first())
+        } catch {
+            do {
+                return Self.success(try second())
+            } catch {
+                do {
+                    return Self.success(try third())
+                } catch {
+                    do {
+                        return Self.success(try fourth())
+                    } catch {
+                        return Self(catching: { try fifth() })
+                    }
+                }
+            }
         }
     }
     
