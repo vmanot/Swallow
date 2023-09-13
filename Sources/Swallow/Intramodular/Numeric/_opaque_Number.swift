@@ -78,7 +78,7 @@ extension _opaque_Number {
                 return Self(unchecked: value)
                 
             case let value as String:
-                guard let `Self` = type(Self.self) as? LosslessStringConvertible.Type else {
+                guard let `Self` = Self.self as? LosslessStringConvertible.Type else {
                     fallthrough
                 }
                 
@@ -86,7 +86,7 @@ extension _opaque_Number {
                 
             default:
                 if !isRetry {
-                    return (value as? _opaque_Number)?._opaque_Number_attemptCast(to: type(Self.self)).map({ $0 as! Self })
+                    return (value as? _opaque_Number)?._opaque_Number_attemptCast(to: Self.self).map({ $0 as! Self })
                 }
                 
                 return try? cast(value)

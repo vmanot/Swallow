@@ -100,6 +100,7 @@ public func build<T: AnyObject, U, V>(_ x: T, with f: ((T, U) throws -> V), _ y:
     return x
 }
 
+@_spi(Internal)
 @_transparent
 public func _withFakeInoutScope<T: AnyObject, Result>(
     _ x: T, _
@@ -114,6 +115,7 @@ public func _withFakeInoutScope<T: AnyObject, Result>(
     return result
 }
 
+@_spi(Internal)
 @_transparent
 public func _withFakeInoutScope<T: AnyObject, Result>(
     _ x: T, _
@@ -128,6 +130,7 @@ public func _withFakeInoutScope<T: AnyObject, Result>(
     return result
 }
 
+@_spi(Internal)
 @_transparent
 public func _withFakeInoutScope<T: AnyObject, Result>(
     _ x: T, _
@@ -142,6 +145,7 @@ public func _withFakeInoutScope<T: AnyObject, Result>(
     return result
 }
 
+@_spi(Internal)
 @_transparent
 public func _withFakeInoutScope<T: AnyObject, Result>(
     _ x: T, _

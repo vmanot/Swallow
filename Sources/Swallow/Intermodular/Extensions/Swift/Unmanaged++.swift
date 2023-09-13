@@ -39,31 +39,3 @@ extension Unmanaged {
         return passUnretained(instance).autorelease()
     }
 }
-
-extension Unmanaged {
-    public static func pass(_ instance: Instance, ownership: ObjectOwnershipQualfier) -> Self {
-        switch ownership {
-            case .autoreleasing:
-                return Unmanaged.passUnretained(instance).autorelease()
-            case .strong:
-                return Unmanaged.passRetained(instance)
-            case .unsafeUnretained:
-                return Unmanaged.passUnretained(instance)
-            case .weak:
-                return Unmanaged.passUnretained(instance)
-        }
-    }
-    
-    public func relinquish(ownership: ObjectOwnershipQualfier) {
-        switch ownership {
-            case .autoreleasing:
-                break
-            case .strong:
-                release()
-            case .unsafeUnretained:
-                break
-            case .weak:
-                break
-        }
-    }
-}
