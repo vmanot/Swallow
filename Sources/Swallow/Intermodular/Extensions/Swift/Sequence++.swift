@@ -939,6 +939,20 @@ extension Sequence {
     ) rethrows -> [Element] {
         try sorted(by: { try transform($0) < transform($1) })
     }
+    
+    public func sorted<T: Comparable>(
+        by transform: (Element) throws -> T,
+        order: _SequenceSortOrder
+    ) rethrows -> [Element] {
+        try sorted(by: {
+            switch order {
+                case .forward:
+                    return try transform($0) < transform($1)
+                case .reverse:
+                    return try transform($0) > transform($1)
+            }
+        })
+    }
 }
 
 // MARK: Sum
