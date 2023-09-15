@@ -2,6 +2,7 @@
 // Copyright (c) Vatsal Manot
 //
 
+import Foundation
 import Swift
 
 extension FloatingPoint {
@@ -40,5 +41,12 @@ extension FloatingPoint {
     @inlinable
     public func square() -> Self {
         self * self
+    }
+}
+
+extension FloatingPoint {
+    @inlinable
+    public func formatted(toDecimalPlaces n: Int) -> String {
+        String(format: "%.\(n)f", self as! CVarArg)
     }
 }
