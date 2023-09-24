@@ -6,43 +6,23 @@ import Foundation
 import Swift
 
 extension Encodable {
-    @available(*, deprecated)
-    public func encode<Container: KeyedEncodingContainerProtocol>(to container: inout Container, forKey key: Container.Key) throws {
-        try container.encode(self, forKey: key)
-    }
-
-    @available(*, deprecated)
-    public func encode<Container: SingleValueEncodingContainer>(to container: inout Container) throws {
-        try container.encode(self)
-    }
-
-    @available(*, deprecated)
-    public func encode(to container: inout SingleValueEncodingContainer) throws {
-        try container.encode(self)
-    }
-
-    @available(*, deprecated)
-    public func encode<Container: UnkeyedEncodingContainer>(to container: inout Container) throws {
-        try container.encode(self)
-    }
-
-    @available(*, deprecated)
-    public func encode(to container: inout UnkeyedEncodingContainer) throws {
-        try container.encode(self)
-    }
-}
-
-extension Encodable {
-    public func toJSONData(prettyPrint: Bool = false) throws -> Data {
-        let encoder = JSONEncoder()
-        
-        encoder.outputFormatting = .sortedKeys
-        encoder.outputFormatting.formUnion(prettyPrint ? [.prettyPrinted] : [])
+    public func toJSONData(
+        prettyPrint: Bool = false
+    ) throws -> Data {
+        let encoder = prettyPrint ? minifiedJSONEncoder : minifiedJSONEncoder
         
         return try encoder.encode(self, allowFragments: true)
     }
     
-    public func toJSONString(prettyPrint: Bool = false) -> String? {
-        return (try? toJSONData(prettyPrint: prettyPrint)).flatMap({ String(data: $0, encoding: .utf8) })
+    public func toJSONString(
+        prettyPrint: Bool = false
+    ) -> String? {
+        (try? toJSONData(prettyPrint: prettyPrint)).flatMap({ String(data: $0, encoding: .utf8) })
     }
+}
+
+private let minifiedJSONEncoder = JSONEncoder()
+private let prettyJSONEncoder = build(JSONEncoder()) {
+    $0.outputFormatting = .sortedKeys
+    $0.outputFormatting = .prettyPrinted
 }
