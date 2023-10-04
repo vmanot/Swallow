@@ -78,37 +78,33 @@ extension NSAttributedString {
                 let attributes: [NSAttributedString.Key: Any]
                 
                 if let attributeKey {
-                    let attribute: Any?
+                    var currentRange: NSRange = NSRange()
                     
-                    if attributeKey == .attachment {
-                        attribute = attributedString.attribute(
-                            attributeKey,
-                            at: currentIndex,
-                            effectiveRange: nil
-                        )
-                        
-                        range = NSRange(location: currentIndex, length: 1)
-
-                        index += 1
-
-                        if attribute == nil {
-                            return next()
-                        }
-                    } else {
-                        var currentRange: NSRange = NSRange()
-
-                        attribute = attributedString.attribute(
+                    let attribute = attributedString.attribute(
+                        attributeKey,
+                        at: index,
+                        longestEffectiveRange: &currentRange,
+                        in: NSRange(location: currentIndex, length: attributedString.length - currentIndex)
+                    )
+                    
+                    index = NSMaxRange(currentRange)
+                    
+                    if attributeKey == .attachment, attribute == nil, index < attributedString.length {
+                        if let _attribute = attributedString.attribute(
                             attributeKey,
                             at: index,
-                            longestEffectiveRange: &currentRange,
-                            in: NSRange(location: currentIndex, length: attributedString.length - currentIndex)
-                        )
-                        
-                        index = NSMaxRange(currentRange)
-                        
-                        range = currentRange
+                            effectiveRange: nil
+                        ) {
+                            defer {
+                                self.index = index + 1
+                            }
+                            
+                            return (NSRange(location: index, length: 1), [.attachment: _attribute])
+                        }
                     }
-                    
+
+                    range = currentRange
+
                     attributes = attribute.map({ [attributeKey: $0] }) ?? [:]
                 } else {
                     var currentRange: NSRange = NSRange()
@@ -124,10 +120,10 @@ extension NSAttributedString {
                     range = currentRange
                 }
                                 
-                if index == currentIndex {
+                guard index != currentIndex else {
                     assertionFailure()
                     
-                    index = currentIndex + 1
+                    return nil
                 }
                 
                 if let attributeKey {
@@ -142,7 +138,7 @@ extension NSAttributedString {
             }
         }
         
-        public func makeIterator() -> Iterator {
+        public consuming func makeIterator() -> Iterator {
             _makeIterator()
         }
     }
