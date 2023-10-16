@@ -5,6 +5,7 @@
 import Foundation
 import Swallow
 
+@_transparent
 public func XCTAssertNoThrowAsync<T>(
     _ expression: @autoclosure () async throws -> T,
     _ message: @autoclosure () -> String? = nil,
@@ -18,6 +19,7 @@ public func XCTAssertNoThrowAsync<T>(
     }
 }
 
+@_transparent
 public func XCTAssertNoThrowAsync<T>(
     _ operation: () async throws -> T,
     _ message: @autoclosure () -> String? = nil,
@@ -27,6 +29,7 @@ public func XCTAssertNoThrowAsync<T>(
     await XCTAssertNoThrowAsync(try await operation(), message(), file: file, line: line)
 }
 
+@_transparent
 public func XCTAssertThrowsErrorAsync<T>(
     _ expression: @autoclosure () async throws -> T,
     _ message: @autoclosure () -> String = "Failed to throw an error.",
@@ -43,6 +46,7 @@ public func XCTAssertThrowsErrorAsync<T>(
     }
 }
 
+@_transparent
 public func XCTAssertThrowsErrorAsync<T>(
     _ operation: () async throws -> T,
     _ message: @autoclosure () -> String = "Failed to throw an error.",

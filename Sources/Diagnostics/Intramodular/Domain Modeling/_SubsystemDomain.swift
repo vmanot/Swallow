@@ -4,6 +4,7 @@
 
 import Swallow
 
+/// A domain within a subsystem.
 public protocol _SubsystemDomain: Hashable, Sendable {
     associatedtype Error: Swift.Error = Swift.Error
 }
