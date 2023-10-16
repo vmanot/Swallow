@@ -6,7 +6,7 @@ import Foundation
 import Swift
 import System
 
-public struct BookmarkedURL: Hashable, Identifiable, URLRepresentable {
+public struct BookmarkedURL: Identifiable, URLRepresentable {
     public let url: URL
     public let bookmarkData: Data?
     
@@ -62,7 +62,13 @@ extension BookmarkedURL: Codable {
     
     public init(from decoder: Decoder) throws {
         do {
-            self = try Self(rawValue: try decoder.decodeSingleValue(String.self)).unwrap()
+            let container = try decoder.singleValueContainer()
+            
+            do {
+                self = try Self(rawValue: try container.decode(String.self)).unwrap()
+            } catch {
+                self = try Self(url: try container.decode(URL.self)).unwrap()
+            }
         } catch {
             let container = try decoder.container(keyedBy: CodingKeys.self)
             
@@ -75,6 +81,30 @@ extension BookmarkedURL: Codable {
 extension BookmarkedURL: CustomStringConvertible {
     public var description: String {
         url.description
+    }
+}
+
+extension BookmarkedURL: Equatable {
+    public static func == (lhs: Self, rhs: URL) -> Bool {
+        lhs.url == rhs
+    }
+    
+    public static func != (lhs: Self, rhs: URL) -> Bool {
+        lhs.url != rhs
+    }
+    
+    public static func == (lhs: URL, rhs: Self) -> Bool {
+        lhs == rhs.url
+    }
+    
+    public static func != (lhs: URL, rhs: Self) -> Bool {
+        lhs != rhs.url
+    }
+}
+
+extension BookmarkedURL: Hashable {
+    public func hash(into hasher: inout Hasher) {
+        url.hash(into: &hasher)
     }
 }
 
@@ -101,20 +131,3 @@ extension BookmarkedURL {
     }
 }
 
-extension BookmarkedURL {
-    public static func == (lhs: Self, rhs: URL) -> Bool {
-        lhs.url == rhs
-    }
-    
-    public static func != (lhs: Self, rhs: URL) -> Bool {
-        lhs.url != rhs
-    }
-    
-    public static func == (lhs: URL, rhs: Self) -> Bool {
-        lhs == rhs.url
-    }
-    
-    public static func != (lhs: URL, rhs: Self) -> Bool {
-        lhs != rhs.url
-    }
-}
