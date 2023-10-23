@@ -28,6 +28,7 @@ extension ObjCClass: NominalTypeMetadata_Type {
         return base == class_getSuperclass(_DummyClass.self)
     }
     
+    @_transparent
     public var base: Any.Type {
         value
     }

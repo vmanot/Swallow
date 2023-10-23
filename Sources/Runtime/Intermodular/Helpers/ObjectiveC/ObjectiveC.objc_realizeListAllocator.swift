@@ -5,6 +5,8 @@
 import ObjectiveC
 import Swallow
 
+@_transparent
+@usableFromInline
 func objc_realizeListAllocator<T: Wrapper, P: Pointer>(
     _ f: ((UnsafeMutablePointer<UInt32>?) -> P?)
 ) -> AnyRandomAccessCollection<T> where P.Pointee == T.Value {
@@ -21,6 +23,8 @@ func objc_realizeListAllocator<T: Wrapper, P: Pointer>(
     .eraseToAnyRandomAccessCollection()
 }
 
+@_transparent
+@usableFromInline
 func objc_realizeListAllocator<T: Wrapper, P: Pointer>(
     _ f: ((UnsafeMutablePointer<UInt32>?) -> P?)
 ) -> AnyRandomAccessCollection<T> where P.Pointee == Optional<T.Value> {
@@ -38,6 +42,8 @@ func objc_realizeListAllocator<T: Wrapper, P: Pointer>(
     .eraseToAnyRandomAccessCollection()
 }
 
+@_transparent
+@usableFromInline
 func objc_realizeListAllocator<T, U: Wrapper, P: Pointer>(
     _ f: ((T?, UnsafeMutablePointer<UInt32>?) -> P?),
     _ x: T?
@@ -56,6 +62,8 @@ func objc_realizeListAllocator<T, U: Wrapper, P: Pointer>(
     .eraseToAnyRandomAccessCollection()
 }
 
+@_transparent
+@usableFromInline
 func objc_realizeListAllocator<T, U: Wrapper, P: Pointer>(
     _ f: ((T, UnsafeMutablePointer<UInt32>?) -> P?),
     _ x: T
@@ -72,6 +80,8 @@ func objc_realizeListAllocator<T, U: Wrapper, P: Pointer>(
     .eraseToAnyRandomAccessCollection()
 }
 
+@_transparent
+@usableFromInline
 func objc_realizeListAllocator<T, U: Wrapper, P: Pointer>(
     _ f: ((T?, UnsafeMutablePointer<UInt32>?) -> P?),
     _ x: T?
@@ -90,6 +100,8 @@ func objc_realizeListAllocator<T, U: Wrapper, P: Pointer>(
     .eraseToAnyRandomAccessCollection()
 }
 
+@_transparent
+@usableFromInline
 func objc_realizeListAllocator<T, U: Wrapper, P: Pointer>(
     _ f: ((T, UnsafeMutablePointer<UInt32>?) -> P?),
     _ x: T

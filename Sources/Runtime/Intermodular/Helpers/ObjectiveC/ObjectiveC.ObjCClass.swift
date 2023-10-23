@@ -11,24 +11,29 @@ public struct ObjCClass: CustomDebugStringConvertible, ExpressibleByStringLitera
     
     public let value: Value
         
+    @_transparent
     public init(_ value: Value) {
         self.value = value
     }
 }
 
 extension ObjCClass {
+    @inlinable
     public static func existsWithName(_ name: String) -> Bool {
         return objc_getClass(name) != nil
     }
     
+    @inlinable
     public var isMetaClass: Bool {
         return class_isMetaClass(value)
     }
     
+    @inlinable
     public var metaClass: ObjCClass? {
         objc_getMetaClass(name).flatMap({ $0 as? AnyClass }).map({ ObjCClass($0) })
     }
     
+    @inlinable
     public var superclass: ObjCClass? {
         return (class_getSuperclass(value) as Optional).map({ .init($0) })
     }
@@ -93,41 +98,42 @@ extension ObjCClass {
 
 extension ObjCClass: ApproximatelyEquatable {
     public static func ~= (lhs: ObjCClass, rhs: ObjCClass) -> Bool {
-        return lhs.value ~= rhs.value
+        lhs.value ~= rhs.value
     }
     
     public func responds(to selector: ObjCSelector) -> Bool {
-        return class_respondsToSelector(value, selector.value)
+        class_respondsToSelector(value, selector.value)
     }
     
     public static func ~= (lhs: ObjCClass, rhs: ObjCSelector) -> Bool {
-        return lhs.responds(to: rhs)
+        lhs.responds(to: rhs)
     }
     
     public static func ~= (lhs: ObjCClass, rhs: ObjCMethod) -> Bool {
-        return lhs ~= rhs.getDescription().selector
+        lhs ~= rhs.getDescription().selector
     }
     
     public func has(_ property: ObjCProperty) -> Bool {
-        return class_getProperty(value, property.name) == property.value
+        class_getProperty(value, property.name) == property.value
     }
     
     public static func ~= (lhs: ObjCClass, rhs: ObjCProperty) -> Bool {
-        return lhs.has(rhs)
+        lhs.has(rhs)
     }
     
     public func conforms(to protocol_: ObjCProtocol) -> Bool {
-        return class_conformsToProtocol(value, protocol_.value)
+        class_conformsToProtocol(value, protocol_.value)
     }
     
     public static func ~= (lhs: ObjCClass, rhs: ObjCProtocol) -> Bool {
-        return lhs.conforms(to: rhs)
+        lhs.conforms(to: rhs)
     }
 }
 
 extension ObjCClass: CaseIterable {
+    @_transparent
     public static var allCases: AnyRandomAccessCollection<ObjCClass> {
-        return objc_realizeListAllocator({ objc_copyClassList($0) })
+        objc_realizeListAllocator({ objc_copyClassList($0) })
     }
 }
 
@@ -227,12 +233,14 @@ extension ObjCClass: ExtensibleSequence {
 }
 
 extension ObjCClass: Hashable {
+    @_transparent
     public func hash(into hasher: inout Hasher) {
         hasher.combine(ObjectIdentifier(value))
     }
     
+    @_transparent
     public static func == (lhs: ObjCClass, rhs: ObjCClass) -> Bool {
-        return lhs.hashValue == rhs.hashValue
+        lhs.value == rhs.value
     }
 }
 
