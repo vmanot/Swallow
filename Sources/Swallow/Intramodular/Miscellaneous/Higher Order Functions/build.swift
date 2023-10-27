@@ -4,7 +4,20 @@
 
 import Swift
 
+@_transparent
 public func with<V>(
+    _ initialValue: V,
+    modify: (inout V) throws -> ()
+) rethrows -> V {
+    var value = initialValue
+    
+    try modify(&value)
+    
+    return value
+}
+
+@_transparent
+public func withMutableScope<V>(
     _ initialValue: V,
     modify: (inout V) throws -> ()
 ) rethrows -> V {

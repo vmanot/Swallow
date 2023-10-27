@@ -74,7 +74,8 @@ extension AnyEquatable: _UnwrappableTypeEraser {
 // MARK: - Supplementary
 
 extension Equatable {
+    @_transparent
     public func eraseToAnyEquatable() -> AnyEquatable {
-        .init(erasing: self)
+        AnyEquatable(erasing: self)
     }
 }
