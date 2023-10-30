@@ -255,6 +255,15 @@ extension Sequence {
         })
     }
     
+    public func _mapToDictionary<Key: Hashable, Value>(
+        key: KeyPath<Element, Key>,
+        _ value: (Element) throws -> Value
+    ) rethrows -> Dictionary<Key, Value> {
+        try Dictionary(uniqueKeysWithValues: self.lazy.map { (element: Element) in
+            (element[keyPath: key], try value(element))
+        })
+    }
+    
     public func _orderedMapToUniqueKeys<Key: Hashable>(
         _ key: (Element) throws -> Key
     ) rethrows -> OrderedDictionary<Key, Element> {

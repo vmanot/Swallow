@@ -15,6 +15,12 @@ public protocol _TypeMetadata_Type: Hashable {
     init?(_ base: Any.Type)
 }
 
+extension _TypeMetadata_Type {
+    public var _isInvalid: Bool {
+        String(describing: base).contains("<<< invalid type >>>")
+    }
+}
+
 /// A `NominalTypeMetadata`-like type.
 public protocol NominalTypeMetadata_Type: CustomStringConvertible, _TypeMetadata_Type {
     var mangledName: String { get }

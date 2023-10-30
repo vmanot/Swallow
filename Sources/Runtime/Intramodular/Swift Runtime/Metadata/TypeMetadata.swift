@@ -7,11 +7,7 @@ import Swallow
 @frozen
 public struct TypeMetadata: _TypeMetadata_Type {
     public let base: Any.Type
-    
-    public var _isInvalid: Bool {
-        String(describing: base).contains("<<< invalid type >>>")
-    }
-    
+        
     public init(_ base: Any.Type) {
         self.base = base
     }
