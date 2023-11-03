@@ -6,9 +6,9 @@ import Swallow
 
 extension PredicateExpressionsX {
     public struct SequenceContains<
-        LHS: PredicateExpression,
-        RHS: PredicateExpression
-    >: PredicateExpression
+        LHS: PredicateExpressionX,
+        RHS: PredicateExpressionX
+    >: PredicateExpressionX
     where
         LHS.Output: Sequence,
         LHS.Output.Element: Equatable,
@@ -33,9 +33,9 @@ extension PredicateExpressionsX {
     }
     
     public struct SequenceHasPrefix<
-        LHS: PredicateExpression,
-        RHS: PredicateExpression
-    >: PredicateExpression
+        LHS: PredicateExpressionX,
+        RHS: PredicateExpressionX
+    >: PredicateExpressionX
     where
         LHS.Output: Sequence,
         LHS.Output.Element: Equatable,
@@ -60,9 +60,9 @@ extension PredicateExpressionsX {
     }
 
     public struct CollectionHasSuffix<
-        LHS: PredicateExpression,
-        RHS: PredicateExpression
-    >: PredicateExpression
+        LHS: PredicateExpressionX,
+        RHS: PredicateExpressionX
+    >: PredicateExpressionX
     where
         LHS.Output: BidirectionalCollection,
         LHS.Output.Element: Equatable,
@@ -81,7 +81,7 @@ extension PredicateExpressionsX {
             self.suffix = suffix
         }
         
-        public init<E: PredicateExpression>(
+        public init<E: PredicateExpressionX>(
             collection: LHS,
             suffix: E
         ) where LHS.Output.Element: _UnwrappableTypeEraser, E.Output: BidirectionalCollection<LHS.Output.Element._UnwrappedBaseType>, RHS == PredicateExpressionsX.Map<E, AnyBidirectionalCollection<LHS.Output.Element>> {
@@ -103,9 +103,9 @@ extension PredicateExpressionsX {
     }
     
     public struct CollectionHasApproximateSuffix<
-        LHS: PredicateExpression,
-        RHS: PredicateExpression
-    >: PredicateExpression
+        LHS: PredicateExpressionX,
+        RHS: PredicateExpressionX
+    >: PredicateExpressionX
     where
         LHS.Output: BidirectionalCollection,
         LHS.Output.Element: ApproximatelyEquatable,
@@ -124,7 +124,7 @@ extension PredicateExpressionsX {
             self.suffix = suffix
         }
         
-        public init<E: PredicateExpression>(
+        public init<E: PredicateExpressionX>(
             collection: LHS,
             suffix: E
         ) where LHS.Output.Element: _UnwrappableTypeEraser, E.Output: BidirectionalCollection<LHS.Output.Element._UnwrappedBaseType>, RHS == PredicateExpressionsX.Map<E, AnyBidirectionalCollection<LHS.Output.Element>> {
@@ -146,9 +146,9 @@ extension PredicateExpressionsX {
     }
 
     public struct CollectionHasPredicatedSuffix<
-        LHS: PredicateExpression,
+        LHS: PredicateExpressionX,
         RHS: BidirectionalCollection<(LHS.Output.Element) -> Bool>
-    >: PredicateExpression where LHS.Output: BidirectionalCollection {
+    >: PredicateExpressionX where LHS.Output: BidirectionalCollection {
         public typealias Output = Bool
         
         public let collection: LHS
@@ -168,9 +168,9 @@ extension PredicateExpressionsX {
     }
     
     public struct StringContainsSubstring<
-        LHS: PredicateExpression<String>,
-        RHS: PredicateExpression<String>
-    >: PredicateExpression {
+        LHS: PredicateExpressionX<String>,
+        RHS: PredicateExpressionX<String>
+    >: PredicateExpressionX {
         public typealias Output = Bool
         
         public let sequence: LHS

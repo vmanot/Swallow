@@ -26,19 +26,11 @@ extension String {
 }
 
 extension String {
-    public func contains(only characterSet: CharacterSet) -> Bool {
-        CharacterSet(charactersIn: self).isSubset(of: characterSet)
-    }
-    
     public func substring(withRange range: NSRange) -> Substring {
         let start = index(startIndex, offsetBy: range.location)
         let end = index(start, offsetBy: range.length)
         
         return self[start..<end]
-    }
-
-    public func removingCharacters(in characterSet: CharacterSet) -> String {
-        String(String.UnicodeScalarView(unicodeScalars.filter({ !characterSet.contains($0) })))
     }
 }
 
@@ -50,7 +42,7 @@ extension String {
     ) -> AttributedString {
         _memoize(uniquingWith: (string, count)) {
             var string = AttributedString(localized: String.LocalizationValue(stringLiteral: string))
-
+            
             var morphology = Morphology()
             let number: Morphology.GrammaticalNumber
             

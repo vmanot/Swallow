@@ -10,14 +10,14 @@ public protocol PredicateProtocol {
     func evaluate(_ input: Input) throws -> Bool
 }
 
-public protocol PredicateExpression<Output> {
+public protocol PredicateExpressionX<Output> {
     associatedtype Output
     
     func evaluate(_ bindings: PredicateBindings) throws -> Output
 }
 
 public struct PredicateX<Input>: PredicateProtocol {
-    public var expression: any PredicateExpression<Bool>
+    public var expression: any PredicateExpressionX<Bool>
     public let variable: PredicateExpressionsX.Variable<Input>
 
     public func evaluate(_ input: Input) throws -> Bool {
@@ -59,7 +59,7 @@ func bar() {
 }
 
 
-extension PredicateExpression {
+extension PredicateExpressionX {
     public static func value<T>(
         _ value: T
     ) -> Self where Self == PredicateExpressionsX.Value<T> {

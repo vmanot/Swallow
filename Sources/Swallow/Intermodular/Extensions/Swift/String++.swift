@@ -141,6 +141,10 @@ extension String {
 }
 
 extension String {
+    public func contains(only characterSet: CharacterSet) -> Bool {
+        CharacterSet(charactersIn: self).isSubset(of: characterSet)
+    }
+    
     public func removingCharacters(
         in characterSet: CharacterSet
     ) -> String {

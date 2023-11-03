@@ -6,15 +6,15 @@ import Darwin
 import Swallow
 
 public protocol StandardPredicateExpressionBuilder {
-    associatedtype LHS: PredicateExpression
+    associatedtype LHS: PredicateExpressionX
     
-    init(expression: @escaping (LHS) -> any PredicateExpression<Bool>)
+    init(expression: @escaping (LHS) -> any PredicateExpressionX<Bool>)
 }
 
-public struct StandardPredicateExpressionOver<LHS: PredicateExpression>: StandardPredicateExpressionBuilder {
-    public let expression: (LHS) -> any PredicateExpression<Bool>
+public struct StandardPredicateExpressionOver<LHS: PredicateExpressionX>: StandardPredicateExpressionBuilder {
+    public let expression: (LHS) -> any PredicateExpressionX<Bool>
     
-    public init(expression: @escaping (LHS) -> any PredicateExpression<Bool>) {
+    public init(expression: @escaping (LHS) -> any PredicateExpressionX<Bool>) {
         self.expression = expression
     }
 }
@@ -22,7 +22,7 @@ public struct StandardPredicateExpressionOver<LHS: PredicateExpression>: Standar
 extension PredicateX: StandardPredicateExpressionBuilder {
     public typealias LHS = PredicateExpressionsX.Variable<Input>
     
-    public init(expression: (LHS) -> any PredicateExpression<Bool>) {
+    public init(expression: (LHS) -> any PredicateExpressionX<Bool>) {
         self.variable = .init()
         self.expression = expression(variable)
     }
@@ -38,7 +38,7 @@ extension StandardPredicateExpressionBuilder {
     
     public static func contains(
         _ substring: String
-    ) -> Self where LHS: PredicateExpression<String> {
+    ) -> Self where LHS: PredicateExpressionX<String> {
         .init(expression: {
             PredicateExpressionsX.StringContainsSubstring(sequence: $0, element: .value(substring))
         })

@@ -24,7 +24,7 @@ extension PredicateExpressionsX {
         }
     }
     
-    public struct Variable<Output>: PredicateExpression {
+    public struct Variable<Output>: PredicateExpressionX {
         public let key: VariableID
         
         public init() {
@@ -39,7 +39,7 @@ extension PredicateExpressionsX {
         }
     }
     
-    public struct Value<Output>: PredicateExpression {
+    public struct Value<Output>: PredicateExpressionX {
         public let value: Output
         
         public init(_ value: Output) {
@@ -51,7 +51,7 @@ extension PredicateExpressionsX {
         }
     }
     
-    public struct KeyPath<Root: PredicateExpression, Output>: PredicateExpression {
+    public struct KeyPath<Root: PredicateExpressionX, Output>: PredicateExpressionX {
         public let root: Root
         public let keyPath: Swift.KeyPath<Root.Output, Output> & Sendable
         
@@ -67,7 +67,7 @@ extension PredicateExpressionsX {
 }
 
 extension PredicateExpressionsX {
-    public struct Map<Base: PredicateExpression, Output>: PredicateExpression {
+    public struct Map<Base: PredicateExpressionX, Output>: PredicateExpressionX {
         public let base: Base
         public let transform: @Sendable (Base.Output) throws -> Output
         
@@ -85,7 +85,7 @@ extension PredicateExpressionsX {
     }
 }
 
-extension PredicateExpression {
+extension PredicateExpressionX {
     public func map<T>(
         _ expression: @escaping @Sendable (Output) throws -> T
     ) -> PredicateExpressionsX.Map<Self, T> {

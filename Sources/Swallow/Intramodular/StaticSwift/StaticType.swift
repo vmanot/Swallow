@@ -14,7 +14,7 @@ public protocol _StaticType: Sendable {
 /// A type that has no instance data (i.e. init() doesn't really make a difference).
 ///
 /// This is **not** to be confused with the singleton pattern.
-public protocol _StaticInstance: Hashable, Identifiable, Sendable where ID == Metatype<Self.Type> {
+public protocol _StaticInstance: Hashable, Identifiable, Initiable, Sendable where ID == Metatype<Self.Type> {
     var id: Metatype<Self.Type> { get }
 }
 

@@ -214,7 +214,8 @@ extension Collection {
             return self[startIndex..<endIndex]
         }
     }
-
+    
+    @_disfavoredOverload
     public func prefix(
         till isTerminator: (Element) throws -> Bool
     ) rethrows -> SubSequence {

@@ -6,9 +6,9 @@ import Swallow
 
 extension PredicateExpressionsX {
     public struct Conjunction<
-        LHS: PredicateExpression,
-        RHS: PredicateExpression
-    >: PredicateExpression
+        LHS: PredicateExpressionX,
+        RHS: PredicateExpressionX
+    >: PredicateExpressionX
     where
     LHS.Output == Bool,
     RHS.Output == Bool
@@ -29,12 +29,12 @@ extension PredicateExpressionsX {
     }
     
     @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
-    public struct _ConjunctionOfMany: PredicateExpression {
+    public struct _ConjunctionOfMany: PredicateExpressionX {
         public typealias Output = Bool
         
-        public let expressions: [any PredicateExpression<Bool>]
+        public let expressions: [any PredicateExpressionX<Bool>]
         
-        public init(expressions: [any PredicateExpression<Bool>]) {
+        public init(expressions: [any PredicateExpressionX<Bool>]) {
             self.expressions = expressions
         }
         

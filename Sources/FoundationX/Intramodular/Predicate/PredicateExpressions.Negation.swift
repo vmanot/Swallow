@@ -5,7 +5,7 @@
 import Swallow
 
 extension PredicateExpressionsX {
-    public struct Negation<Wrapped: PredicateExpression>: PredicateExpression where Wrapped.Output == Bool {
+    public struct Negation<Wrapped: PredicateExpressionX>: PredicateExpressionX where Wrapped.Output == Bool {
         public typealias Output = Bool
         
         public let wrapped: Wrapped
