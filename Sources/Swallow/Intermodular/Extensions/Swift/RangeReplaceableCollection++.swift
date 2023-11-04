@@ -223,6 +223,7 @@ extension RangeReplaceableCollection {
         return self.remove(at: [index]).first!
     }
 
+    @_disfavoredOverload
     @discardableResult
     public mutating func removeAllBackwards(
         where predicate: (Element) -> Bool,
@@ -255,6 +256,7 @@ extension RangeReplaceableCollection {
         return removedElements
     }
 
+    @_disfavoredOverload
     @discardableResult
     public func removingAll(
         where predicate: ((Element) throws -> Bool)
@@ -266,6 +268,7 @@ extension RangeReplaceableCollection {
         return result
     }
     
+    @_disfavoredOverload
     public mutating func remove<T>(
         byUnwrapping transform: (Element) throws -> T?
     ) rethrows -> [T] {

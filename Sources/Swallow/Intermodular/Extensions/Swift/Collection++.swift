@@ -207,6 +207,7 @@ extension Collection {
 // MARK: - Prefixing
 
 extension Collection {
+    @_disfavoredOverload
     public func prefix(_ maxLength: Int?) -> SubSequence {
         if let maxLength {
             return self.prefix(maxLength)
@@ -230,6 +231,7 @@ extension Collection {
         return self[..<index]
     }
     
+    @_disfavoredOverload
     public func prefix(
         till element: Element
     ) -> SubSequence where Element: Equatable {
