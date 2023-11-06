@@ -76,8 +76,8 @@ extension DestructivelyMutableSequence where Self: RangeReplaceableCollection {
     ) rethrows {
         var indexOffset: Int = 0
         
-        for (index, element) in _enumerated() {
-            let index = self.index(index, offsetBy: indexOffset)
+        for (offset, element) in enumerated() {
+            let index = self.index(startIndex, offsetBy: offset + indexOffset)
             
             var wasElementMutated: Bool = false
             

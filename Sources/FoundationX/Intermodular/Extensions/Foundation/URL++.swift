@@ -107,6 +107,54 @@ extension URL {
     }
 }
 
+extension URL {
+    public var _queryParameters: [String: String]? {
+        get {
+            guard let components = URLComponents(url: self, resolvingAgainstBaseURL: true), let queryItems = components.queryItems else {
+                return nil
+            }
+            
+            return queryItems.reduce(into: [String: String]()) { (result, item) in
+                result[item.name] = item.value
+            }
+        } set {
+            if newValue.isNilOrEmpty && URLComponents(url: self, resolvingAgainstBaseURL: true)?.queryItems == nil {
+                return
+            }
+            
+            var components = URLComponents(url: self, resolvingAgainstBaseURL: true)!
+            
+            components.queryItems = newValue?.map {
+                URLQueryItem(name: $0.key, value: $0.value)
+            }
+            
+            self = components.url!
+        }
+    }
+}
+
+extension URL {
+    public var _removingPercentEncoding: URL {
+        get throws {
+            guard let decodedString = self.absoluteString.removingPercentEncoding else {
+                throw _PlaceholderError()
+            }
+            
+            return  try URL(string: decodedString).unwrap()
+        }
+    }
+    
+    public var _removingQueryParameterValueDelimeters: URL {
+        var result = self
+        
+        result._queryParameters = _queryParameters?.compactMapValues {
+            $0.replacingOccurrences(of: "\"", with: "")
+        }
+        
+        return result
+    }
+}
+
 extension URL.PathComponent {
     public static func directory(_ string: String) -> Self{
         Self(rawValue: string, isDirectory: true)

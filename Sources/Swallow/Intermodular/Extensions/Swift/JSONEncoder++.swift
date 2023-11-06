@@ -20,7 +20,10 @@ extension JSONEncoder {
         nonConformingFloatEncodingStrategy.map(into: &self.nonConformingFloatEncodingStrategy)
     }
     
-    public func encode<T: Encodable>(_ value: T, allowFragments: Bool) throws -> Data {
+    public func encode<T: Encodable>(
+        _ value: T,
+        allowFragments: Bool
+    ) throws -> Data {
         do {
             return try encode(value)
         } catch {
