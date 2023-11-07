@@ -2,6 +2,7 @@
 // Copyright (c) Vatsal Manot
 //
 
+@_implementationOnly import Collections
 import Swift
 
 public typealias IdentifierIndexingArrayOf<Element: Identifiable> = IdentifierIndexingArray<Element, Element.ID>
@@ -11,7 +12,11 @@ public struct IdentifierIndexingArray<Element, ID: Hashable> {
     private(set) var base: OrderedDictionary<ID, Element>
     private(set) var id: (Element) -> ID
     
-    public var identifiers: Set<ID> {
+    public var identifiers: AnyRandomAccessCollection<ID> {
+        .init(OrderedSet(base.keys))
+    }
+    
+    public var _unorderedIdentifiers: Set<ID> {
         Set(base.keys)
     }
     
@@ -73,11 +78,11 @@ extension IdentifierIndexingArrayOf {
         
         return self[previousIndex]
     }
-
+    
     public func element(before other: Element) -> Element? {
         self.element(before: _idForElement(other))
     }
-
+    
     public func element(after other: ID) -> Element? {
         guard let index = self.index(of: other), let lastIndex, index < lastIndex else {
             return nil
@@ -95,7 +100,7 @@ extension IdentifierIndexingArrayOf {
     public func element(after other: Element) -> Element? {
         self.element(after: _idForElement(other))
     }
-
+    
     public func sorted(
         by areInIncreasingOrder: (Self.Element, Self.Element) throws -> Bool
     ) rethrows -> Self {
@@ -122,7 +127,7 @@ extension IdentifierIndexingArray: CustomDebugStringConvertible, CustomStringCon
     public var debugDescription: String {
         base.debugDescription
     }
-
+    
     public var description: String {
         base.description
     }
@@ -360,7 +365,7 @@ extension IdentifierIndexingArray {
             self.append(element)
         }
     }
-
+    
     public mutating func upsert<S: Sequence>(
         contentsOf elements: S,
         uniquingValuesWith unique: (Element, Element) throws -> Element
@@ -488,7 +493,7 @@ extension ForEach where Content: View {
             }
         }
     }
-
+    
     public init<Element: Identifiable & Initiable, UnwrappedContent: View>(
         identified data: Binding<IdentifierIndexingArrayOf<Element>>,
         @ViewBuilder content: @escaping (Binding<Element>) -> UnwrappedContent

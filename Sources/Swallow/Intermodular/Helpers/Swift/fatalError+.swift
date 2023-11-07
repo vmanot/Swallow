@@ -5,6 +5,7 @@
 import Swift
 
 /// Unconditionally throws an error and stops execution.
+@_transparent
 public func fatalError(
     _ error: Error,
     file: StaticString = #file,

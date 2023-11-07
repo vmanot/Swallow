@@ -8,18 +8,34 @@ import Swift
 
 extension FileManager {
     /// Returns a Boolean value that indicates whether a file or directory exists at a specified URL.
-    public func fileExists(at url: URL) -> Bool {
+    public func fileExists(
+        at url: URL
+    ) -> Bool {
         fileExists(atPath: url.path)
     }
 
     /// Returns a Boolean value that indicates whether a file or directory exists at a specified path.
     @available(macOS 11.0, iOS 14.0, watchOS 7.0, tvOS 14.0, *)
-    public func fileExists(at path: FilePath) -> Bool {
+    public func fileExists(
+        at path: FilePath
+    ) -> Bool {
         fileExists(at: URL(path)!)
+    }
+    
+    public func regularFileExists(
+        at url: URL
+    ) -> Bool {
+        var isDirectory: ObjCBool = false
+        
+        let exists = self.fileExists(atPath: url.path, isDirectory: &isDirectory)
+        
+        return exists && !isDirectory.boolValue
     }
 
     /// Returns a Boolean value that indicates whether a directory exists at a specified URL.
-    public func directoryExists(at url: URL) -> Bool {
+    public func directoryExists(
+        at url: URL
+    ) -> Bool {
         var isFolder: ObjCBool = false
 
         fileExists(atPath: url.path, isDirectory: &isFolder)
@@ -33,11 +49,15 @@ extension FileManager {
 
     /// Returns a Boolean value that indicates whether a directory exists at a specified path.
     @available(macOS 11.0, iOS 14.0, watchOS 7.0, tvOS 14.0, *)
-    public func directoryExists(at path: FilePath) -> Bool {
+    public func directoryExists(
+        at path: FilePath
+    ) -> Bool {
         directoryExists(at: URL(path)!)
     }
     
-    public func isDirectory<T: URLRepresentable>(at location: T) -> Bool {
+    public func isDirectory<T: URLRepresentable>(
+        at location: T
+    ) -> Bool {
         let url = location.url
         var isDirectory = ObjCBool(false)
         
@@ -48,7 +68,9 @@ extension FileManager {
         return isDirectory.boolValue
     }
     
-    public func isReadableAndWritable<T: URLRepresentable>(at location: T) -> Bool {
+    public func isReadableAndWritable<T: URLRepresentable>(
+        at location: T
+    ) -> Bool {
         var url = location.url
         
         if isDirectory(at: url) && !url.path.hasSuffix("/") {
@@ -60,7 +82,9 @@ extension FileManager {
 }
 
 extension FileManager {
-    public func suburls<T: URLRepresentable>(at location: T) throws -> [T] {
+    public func suburls<T: URLRepresentable>(
+        at location: T
+    ) throws -> [T] {
         try contentsOfDirectory(atPath: location.url.path)
             .lazy
             .map({ location.url.appendingPathComponent($0) })
@@ -111,7 +135,9 @@ extension FileManager {
 }
 
 extension FileManager {
-    public func createDirectoryIfNecessary(at url: URL) throws {
+    public func createDirectoryIfNecessary(
+        at url: URL
+    ) throws {
         guard !fileExists(at: url) else {
             return
         }
@@ -120,11 +146,15 @@ extension FileManager {
     }
     
     @available(macOS 11.0, iOS 14.0, watchOS 7.0, tvOS 14.0, *)
-    public func removeItem(at path: FilePath) throws {
+    public func removeItem(
+        at path: FilePath
+    ) throws {
         try removeItem(at: URL(path).unwrap())
     }
     
-    public func removeItemIfNecessary(at url: URL) throws {
+    public func removeItemIfNecessary(
+        at url: URL
+    ) throws {
         guard fileExists(at: url) else {
             return
         }
@@ -133,7 +163,9 @@ extension FileManager {
     }
     
     @available(macOS 11.0, iOS 14.0, watchOS 7.0, tvOS 14.0, *)
-    public func removeItemIfNecessary(at url: FilePath) throws {
+    public func removeItemIfNecessary(
+        at url: FilePath
+    ) throws {
         guard fileExists(at: url) else {
             return
         }
@@ -143,7 +175,9 @@ extension FileManager {
 }
 
 extension FileManager {
-    public func parentDirectory(for url: URL) -> URL {
+    public func parentDirectory(
+        for url: URL
+    ) -> URL {
         let result = url.deletingLastPathComponent()
         
         assert(result.hasDirectoryPath)
