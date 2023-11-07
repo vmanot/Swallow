@@ -361,6 +361,22 @@ extension MutableCollection where Self: RangeReplaceableCollection {
     }
 }
 
+extension RangeReplaceableCollection {
+    @inlinable
+    public mutating func removeAfter(predicate: (Element) throws -> Bool) rethrows {
+        if let index = try self.firstIndex(where: predicate) {
+            self.removeSubrange(index...)
+        }
+    }
+    
+    @inlinable
+    public mutating func removeFrom(predicate: (Element) throws -> Bool) rethrows {
+        if let index = try self.firstIndex(where: predicate) {
+            self.removeSubrange(index..<self.endIndex)
+        }
+    }
+}
+
 extension RangeReplaceableCollection where Element: Equatable {
     @discardableResult
     public mutating func replace(allOf element: Element, with replacement: Element) -> [Element] {

@@ -1050,3 +1050,105 @@ extension Sequence {
         Array(self.distinct(by: \.hashValue))
     }
 }
+
+// MARK: Consecutives
+
+extension Sequence {
+    public func longestConsecutiveSequences<T: Comparable & Hashable>(
+        by id: KeyPath<Element, T>,
+        relativeTo other: some Sequence<Element>
+    ) -> [[Element]] {
+        let index = other
+            .map({ $0[keyPath: id] })
+            .sorted()
+            .enumerated()
+            ._mapToDictionary(key: \.element, \.offset)
+        
+        return longestConsecutiveSequences { lhs, rhs in
+            let _lhs = lhs[keyPath: id]
+            let _rhs = rhs[keyPath: id]
+            
+            assert(_lhs != _rhs)
+            
+            guard let lhsIndex = index[_lhs], let rhsIndex = index[_rhs] else {
+                assertionFailure()
+                
+                return false
+            }
+            
+            assert(lhsIndex != rhsIndex)
+            
+            return lhsIndex < rhsIndex
+        }
+    }
+    
+    public func longestConsecutiveSequences<T: Hashable>(
+        by id: KeyPath<Element, T>,
+        relativeTo relativeSequence: some Sequence<T>
+    ) -> [[Element]] {
+        let index = relativeSequence.enumerated()._mapToDictionary(key: \.element, \.offset)
+        
+        return longestConsecutiveSequences { lhs, rhs in
+            let _lhs = lhs[keyPath: id]
+            let _rhs = rhs[keyPath: id]
+            
+            assert(_lhs != _rhs)
+            
+            guard let lhsIndex = index[_rhs], let rhsIndex = index[_rhs] else {
+                assertionFailure()
+                
+                return false
+            }
+            
+            assert(lhsIndex != rhsIndex)
+            
+            return lhsIndex < rhsIndex
+        }
+    }
+    
+    public func longestConsecutiveSequences(
+        where isConsecutive: (Element, Element) -> Bool
+    ) -> [[Element]] {
+        var sequences = [[Element]]()
+        var currentSequence = [Element]()
+        
+        for element in self {
+            if let last = currentSequence.last, !isConsecutive(last, element) {
+                sequences.append(currentSequence)
+                currentSequence = [element]
+            } else {
+                currentSequence.append(element)
+            }
+        }
+        
+        if !currentSequence.isEmpty {
+            sequences.append(currentSequence)
+        }
+        
+        return sequences
+    }
+    
+    public func longestConsecutiveSequence(
+        where isConsecutive: (Element, Element) -> Bool
+    ) -> [Element] {
+        var maxLength = 0
+        var currentLength = 0
+        var longestSequence: [Element] = []
+        var currentSequence: [Element] = []
+        
+        for element in self {
+            if currentSequence.isEmpty || isConsecutive(currentSequence.last!, element) {
+                currentSequence.append(element)
+                currentLength += 1
+                if currentLength > maxLength {
+                    maxLength = currentLength
+                    longestSequence = currentSequence
+                }
+            } else {
+                currentSequence = [element]
+                currentLength = 1
+            }
+        }
+        return longestSequence
+    }
+}
