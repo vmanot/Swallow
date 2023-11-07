@@ -23,7 +23,7 @@ public struct AnyError: CustomDebugStringConvertible, Error, Hashable, @unchecke
     init(_ base: Error) {
         self.init(erasing: base)
     }
-
+    
     public init(description: String) {
         self.init(CustomStringError(description: description))
     }
@@ -72,13 +72,15 @@ public struct CustomStringError: Codable, CustomStringConvertible, Error, Expres
 }
 
 public struct _PlaceholderError: Hashable, Error, CustomStringConvertible, Sendable {
+    public let note: String?
     public let location: SourceCodeLocation?
     
     public var description: String {
         return "Empty error at \(location ?? "<unspecified>" as Any)"
     }
     
-    private init(location: SourceCodeLocation? = nil) {
+    private init(note: String? = nil, location: SourceCodeLocation? = nil) {
+        self.note = note
         self.location = location
         
         runtimeIssue("This is a placeholder error and should not be used in production.")
