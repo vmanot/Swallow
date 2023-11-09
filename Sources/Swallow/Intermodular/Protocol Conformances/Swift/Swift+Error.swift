@@ -62,6 +62,10 @@ public struct CustomStringError: Codable, CustomStringConvertible, Error, Expres
         self.description = description
     }
     
+    public init(_ description: String) {
+        self.description = description
+    }
+    
     public init(stringLiteral value: String) {
         self.init(description: value)
     }
@@ -76,7 +80,7 @@ public struct _PlaceholderError: Hashable, Error, CustomStringConvertible, Senda
     public let location: SourceCodeLocation?
     
     public var description: String {
-        return "Empty error at \(location ?? "<unspecified>" as Any)"
+        return "Placeholder error at \(location ?? "<unspecified>" as Any)"
     }
     
     private init(note: String? = nil, location: SourceCodeLocation? = nil) {

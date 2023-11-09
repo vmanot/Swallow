@@ -52,14 +52,35 @@ extension AnyCodable {
         }
     }
     
-    public init(destructuring value: Codable) throws {
-        self = try ObjectDecoder().decode(AnyCodable.self, from: ObjectEncoder().encode(value))
+    public init(
+        destructuring value: Codable
+    ) throws {
+        self = try ObjectDecoder().decode(
+            AnyCodable.self,
+            from: ObjectEncoder().encode(value)
+        )
     }
 }
 
 // MARK: - Extensions
 
 extension AnyCodable {
+    public var _dictionaryValue: [AnyCodingKey: AnyCodable]? {
+        guard case .dictionary(let value) = self else {
+            return nil
+        }
+        
+        return value
+    }
+    
+    public var _arrayValue: [AnyCodable]? {
+        guard case .array(let value) = self else {
+            return nil
+        }
+        
+        return value
+    }
+    
     public var value: Any? {
         switch self {
             case .none:

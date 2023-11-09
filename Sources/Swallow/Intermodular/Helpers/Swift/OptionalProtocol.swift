@@ -65,6 +65,16 @@ extension OptionalProtocol {
 
 // MARK: - Supplementary
 
+public func _attemptToDecodeOptionalNone<T>(
+    from type: T.Type
+) throws -> T {
+    if let type = T.self as? any OptionalProtocol.Type {
+        return type.init(nilLiteral: ()) as! T
+    }
+    
+    throw DecodingError.dataCorrupted(.init(codingPath: []))
+}
+
 public func _getUnwrappedType(
     from type: Any.Type
 ) -> Any.Type {
