@@ -31,9 +31,7 @@ public struct _HashableExistential<Value>: PropertyWrapper {
     }
     
     public init(wrappedValue: Value) {
-        Self._validate(wrappedValue)
-        
-        self.base = wrappedValue
+        try! self.init(_erasing: wrappedValue)
     }
     
     private static func _validate(_ value: Value) {
@@ -65,23 +63,60 @@ extension _HashableExistential {
         case unsupportedValue(Any)
     }
     
-    @_disfavoredOverload
-    public init(erasing value: Any) throws where Value == any Hashable {
+    fileprivate init(
+        _wrappedValue: WrappedValue
+    ) {
+        self.base = _wrappedValue
+    }
+    
+    @inline(never)
+    fileprivate init(
+        _erasing value: Any
+    ) throws {
         switch value {
             case let value as any Hashable:
-                self.init(wrappedValue: value)
+                self.init(_wrappedValue: value as! WrappedValue)
             case let value as Any.Type:
-                self.init(wrappedValue: ObjectIdentifier(value))
+                self.init(_wrappedValue: ObjectIdentifier(value) as! WrappedValue)
             case is Void:
-                self.init(wrappedValue: None())
+                self.init(_wrappedValue: None() as! WrappedValue)
             default:
                 if _isValueNil(value) {
-                    // TODO: Assert value is an existential type.
-                    self.init(wrappedValue: _HashablePlaceholderNil())
+                    switch Value.self {
+                        case Any.self:
+                            fatalError()
+                        case Optional<Any>.self:
+                            assert(!(value is Any.Type))
+                            
+                            self.init(_wrappedValue: _HashablePlaceholderNil() as! WrappedValue)
+                        case Optional<Any.Type>.self:
+                            assert(value is Optional<Any.Type>)
+                            
+                            self.init(_wrappedValue: value as! WrappedValue)
+                        case Optional<Any.Protocol>.self:
+                            assert(value is Optional<Any.Protocol>)
+                            
+                            self.init(_wrappedValue: value as! WrappedValue)
+                        default:
+                            self.init(_wrappedValue: _HashablePlaceholderNil() as! WrappedValue)
+                    }
+                    
+                    if let placeholder = _HashablePlaceholderNil() as? WrappedValue {
+                        self.init(_wrappedValue: placeholder)
+                    } else {
+                        self.init(_wrappedValue: value as! WrappedValue)
+                    }
                 } else {
                     throw InitializationError.unsupportedValue(value)
                 }
         }
+    }
+
+    @_disfavoredOverload
+    public init(
+        erasing value: Any
+    ) throws where Value == any Hashable {
+        try self.init(_erasing: value)
     }
 }
 
@@ -107,7 +142,9 @@ extension _HashableExistential: Equatable {
 
 extension _HashableExistential: Hashable {
     public func hash(into hasher: inout Hasher) {
-        if let base = base as? None {
+        if WrappedValue.self == Optional<Any.Type>.self {
+            hasher.combine((base as! Optional<Any.Type>).map({ Metatype<Any.Type>($0) }))
+        } else if let base = base as? None {
             hasher.combine(base)
         } else if let base = base as? _HashablePlaceholderNil {
             hasher.combine(base)

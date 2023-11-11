@@ -260,6 +260,27 @@ public struct Weak<Value>: PropertyWrapper {
     }
 }
 
+@propertyWrapper
+public struct WeakObjectPointer<Value: AnyObject>: Hashable {
+    public weak var wrappedValue: Value?
+    
+    public init(wrappedValue: Value? = nil) {
+        self.wrappedValue = wrappedValue
+    }
+    
+    public func hash(into hasher: inout Hasher) {
+        wrappedValue.map(ObjectIdentifier.init).hash(into: &hasher)
+    }
+    
+    public static func == (lhs: Self, rhs: Self) -> Bool {
+        guard let lhs = lhs.wrappedValue, let rhs = rhs.wrappedValue else {
+            return false
+        }
+        
+        return ObjectIdentifier(lhs) == ObjectIdentifier(rhs)
+    }
+}
+
 // MARK: - Conformances
 
 extension Pair: Initiable where T: Initiable, U: Initiable {

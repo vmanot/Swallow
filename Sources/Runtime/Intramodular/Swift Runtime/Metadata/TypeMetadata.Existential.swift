@@ -52,7 +52,9 @@ extension TypeMetadata {
             return false
         }
 
-        return _conformsToProtocol(base, protocolType.metadata.metadata.pointee.protocolDescriptorVector) != nil
+        let protocolDescriptor = protocolType.metadata.metadata.pointee.protocolDescriptorVector
+        
+        return _conformsToProtocol(base, protocolDescriptor) != nil
     }
 }
 

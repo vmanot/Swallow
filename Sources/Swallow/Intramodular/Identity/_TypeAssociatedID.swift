@@ -33,6 +33,14 @@ extension _TypeAssociatedID: Codable where RawValue: Codable {
     }
 }
 
+extension _TypeAssociatedID: Identifiable {
+    public typealias ID = Self
+    
+    public var id: Self {
+        self
+    }
+}
+
 extension _TypeAssociatedID: Initiable where RawValue: Initiable {
     public init() {
         self.init(rawValue: .init())
