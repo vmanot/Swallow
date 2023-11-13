@@ -115,9 +115,9 @@ public struct IndexPathEnumeratedTree<Base: HomogenousTree>: HomogenousTree wher
         base.value
     }
     
-    public var children: LazyMapSequence<Base.Children.Indices, Self> {
+    public var children: [Self] {
         base.children._enumerated().map {
-            Self(indexPath: indexPath.appending($0.index), base: $0.element)
+            Self(indexPath: indexPath.appending($0.0), base: $0.1)
         }
     }
     
