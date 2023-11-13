@@ -25,15 +25,26 @@ public struct _PolymorphicDecoder: Decoder {
     public func container<Key: CodingKey>(
         keyedBy type: Key.Type
     ) throws -> KeyedDecodingContainer<Key> {
-        .init(_PolymorphicKeyedDecodingContainer(try base.container(keyedBy: type), parent: self))
+        .init(
+            _PolymorphicKeyedDecodingContainer(
+                try base.container(keyedBy: type),
+                parent: self
+            )
+        )
     }
     
     public func unkeyedContainer() throws -> UnkeyedDecodingContainer {
-        _PolymorphicUnkeyedDecodingContainer(try base.unkeyedContainer(), parent: self)
+        _PolymorphicUnkeyedDecodingContainer(
+            try base.unkeyedContainer(),
+            parent: self
+        )
     }
     
     public func singleValueContainer() throws -> SingleValueDecodingContainer {
-        _PolymorphicSingleValueDecodingContainer(try base.singleValueContainer(), parent: self)
+        _PolymorphicSingleValueDecodingContainer(
+            try base.singleValueContainer(),
+            parent: self
+        )
     }
 }
 

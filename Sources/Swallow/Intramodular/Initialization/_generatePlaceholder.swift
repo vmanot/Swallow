@@ -11,7 +11,7 @@ private enum _PlaceholderGenerationFailure: Error {
 public func _generatePlaceholder<Result>(
     ofType type: Result.Type = Result.self
 ) throws -> Result {
-    switch Result.self {
+    switch type {
         case let type as any _HasPlaceholder.Type:
             return type.init(_opaque_placeholder: ()) as! Result
         case let type as _PlaceholderInitiable.Type:
@@ -41,12 +41,13 @@ public func _generatePlaceholder<Result>(
         case let type as _ThrowingInitiable.Type:
             return try type.init() as! Result
         default:
+            assert(Result.self != Any.self)
+            
             throw _PlaceholderGenerationFailure.unsupportedType(Result.self)
     }
 }
 
-@_disfavoredOverload
-public func _generatePlaceholder(
+public func _opaque_generatePlaceholder(
     ofType type: Any.Type
 ) throws -> Any {
     func _generatePlaceholderOfType<T>(_ type: T.Type) throws -> Any {
@@ -54,6 +55,21 @@ public func _generatePlaceholder(
     }
     
     return try _openExistential(type, do: _generatePlaceholderOfType)
+}
+
+@_disfavoredOverload
+public func _generatePlaceholder(
+    ofType type: Any.Type
+) throws -> Any {
+    try _opaque_generatePlaceholder(ofType: type)
+}
+
+@_disfavoredOverload
+public func _generatePlaceholder<R>(
+    ofType type: Any.Type,
+    as _: R.Type
+) throws -> R {
+    try cast(_opaque_generatePlaceholder(ofType: type), to: R.self)
 }
 
 // MARK: - Internal

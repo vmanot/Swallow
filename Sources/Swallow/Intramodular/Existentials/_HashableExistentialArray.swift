@@ -4,7 +4,7 @@
 
 import Swift
 
-public struct _HashableExistentialArray<Existential>: Hashable {
+public struct _HashableExistentialArray<Existential>: Hashable, Initiable {
     private var base: [_HashableExistential<Existential>]
     
     fileprivate init(base: [_HashableExistential<Existential>]) {
@@ -13,6 +13,10 @@ public struct _HashableExistentialArray<Existential>: Hashable {
     
     public init(_ sequence: some Sequence<Existential>) {
         self.init(base: sequence.map(_HashableExistential.init(wrappedValue:)))
+    }
+    
+    public init() {
+        self.init([])
     }
 }
 
