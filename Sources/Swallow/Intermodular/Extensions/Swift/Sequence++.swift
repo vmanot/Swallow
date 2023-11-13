@@ -939,7 +939,9 @@ extension Sequence {
         sorted(by: \.self, order: order)
     }
     
-    public func sorted<T: Comparable>(by keyPath: KeyPath<Element, T>) -> [Element] {
+    public func sorted<T: Comparable>(
+        by keyPath: KeyPath<Element, T>
+    ) -> [Element] {
         sorted(by: keyPath, order: .forward)
     }
     

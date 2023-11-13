@@ -65,21 +65,29 @@ public protocol ExtensibleRangeReplaceableCollection: ExtensibleCollection, Rang
 // MARK: - Implementation
 
 extension ExtensibleSequence where ElementsAppendResult == Void {
-    public mutating func append<S: Sequence>(contentsOf newElements: S) where S.Element == Element {
+    public mutating func append<S: Sequence>(
+        contentsOf newElements: S
+    ) where S.Element == Element {
         newElements.forEach({ self.append($0) })
     }
 }
 
 extension ExtensibleSequence where ElementsInsertResult == Void {
-    public mutating func insert<S: Sequence>(contentsOf newElements: S) where S.Element == Element {
+    public mutating func insert<S: Sequence>(
+        contentsOf newElements: S
+    ) where S.Element == Element {
         newElements.reversed().forEach({ self.insert($0) })
     }
     
-    public mutating func insert<C: Collection>(contentsOf newElements: C) where C.Element == Element {
+    public mutating func insert<C: Collection>(
+        contentsOf newElements: C
+    ) where C.Element == Element {
         newElements.reversed().forEach({ self.insert($0) })
     }
     
-    public mutating func insert<C: Collection>(contentsOf newElements: C) where C.Element == Element, C.Index: Strideable {
+    public mutating func insert<C: Collection>(
+        contentsOf newElements: C
+    ) where C.Element == Element, C.Index: Strideable {
         newElements.reversed().forEach({ self.insert($0) })
     }
 }

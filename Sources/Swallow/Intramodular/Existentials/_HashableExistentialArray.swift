@@ -73,7 +73,9 @@ extension _HashableExistentialArray: ExtensibleSequence, MutableCollection, Muta
         base.append(_HashableExistential(wrappedValue: element))
     }
     
-    public mutating func append(contentsOf elements: some Sequence<Existential>) {
+    public mutating func append(
+        contentsOf elements: some Sequence<Existential>
+    ) {
         base.append(contentsOf: elements.map(_HashableExistential.init(wrappedValue:)))
     }
 

@@ -57,6 +57,18 @@ extension IdentifierIndexingArray {
         self[id: _idForElement(element)] = element
     }
     
+    public mutating func append<S: Sequence>(
+        contentsOf newElements: S
+    ) where S.Element == Element {
+        let id = self._idForElement
+        
+        _naivelyModifyBase {
+            $0.append(contentsOf: newElements.lazy.map {
+                (id($0), $0)
+            })
+        }
+    }
+    
     public func appending(_ element: Element) -> Self {
         build(self, with: {
             $0.append(element)
@@ -371,6 +383,14 @@ extension IdentifierIndexingArray {
         uniquingValuesWith unique: (Element, Element) throws -> Element
     ) rethrows where S.Element == Element {
         try elements.forEach({ try upsert($0, uniquingValuesWith: unique) })
+    }
+
+    public mutating func remove(
+        atOffsets indexSet: IndexSet
+    ) {
+        _naivelyModifyBase {
+            $0.remove(atOffsets: indexSet)
+        }
     }
 }
 
