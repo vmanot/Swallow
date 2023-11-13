@@ -103,3 +103,20 @@ extension URL {
         self = try directory.toURL()
     }
 }
+
+#if os(macOS)
+func getUnsandboxedDesktopPath() -> String? {
+    let fileManager = FileManager.default
+    let appContainerURL = fileManager.homeDirectoryForCurrentUser
+    let desktopURL = appContainerURL.appendingPathComponent("Desktop")
+    
+    let unsandboxedDesktopURL = desktopURL.standardizedFileURL
+    let unsandboxedDesktopPath = unsandboxedDesktopURL.path
+    
+    if fileManager.isReadableFile(atPath: unsandboxedDesktopPath) {
+        return unsandboxedDesktopPath
+    } else {
+        return nil
+    }
+}
+#endif

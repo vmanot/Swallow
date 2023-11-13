@@ -5,11 +5,6 @@
 import Darwin
 import Swallow
 
-@_silgen_name("swift_isClassType")
-public func swift_isClassType(
-    _: Any.Type
-) -> Bool
-
 @_silgen_name("swift_reflectionMirror_recursiveCount")
 public func swift_reflectionMirror_recursiveCount(
     _: Any.Type

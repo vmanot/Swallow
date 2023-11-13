@@ -13,20 +13,6 @@ extension _FinalClassAnyObject {
     public typealias _Self = _FinalClassAnyObject
 }
 
-public func isClass(_ type: Any.Type) -> Bool {
-    let result = type is AnyClass
-    
-    if result {
-        assert(type as? AnyClass != nil)
-
-        return true
-    } else {
-        assert(type as? AnyClass == nil)
-
-        return false
-    }
-}
-
 public func isClass(
     _ cls: AnyClass,
     descendantOf otherCls: AnyClass
@@ -63,10 +49,15 @@ public func isType(
     return isClass(cls, descendantOf: otherCls)
 }
 
+@_silgen_name("swift_isClassType")
+public func swift_isClassType(
+    _: Any.Type
+) -> Bool
+
 public func isAnyObject<T>(_ x: T) -> Bool {
-    return isClass(type(of: x))
+    return swift_isClassType(type(of: x))
 }
 
 public func isAnyObject<T>(_ x: T?) -> Bool {
-    return isClass(T.self)
+    return swift_isClassType(T.self)
 }

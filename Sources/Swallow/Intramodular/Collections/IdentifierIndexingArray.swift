@@ -528,4 +528,5 @@ extension ForEach where Content: View {
         }
     }
 }
+
 #endif

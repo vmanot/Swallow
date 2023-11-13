@@ -153,7 +153,7 @@ extension _HashableExistential: Hashable {
         } else if let base = base as? (any Hashable) {
             hasher.combine(ObjectIdentifier(type(of: base)))
             hasher.combine(base)
-        } else if isClass(type(of: base)), let base = try? cast(base, to: AnyObject.self) {
+        } else if swift_isClassType(type(of: base)), let base = try? cast(base, to: AnyObject.self) {
             hasher.combine(ObjectIdentifier(type(of: base)))
             hasher.combine(ObjectIdentifier(base))
         } else {

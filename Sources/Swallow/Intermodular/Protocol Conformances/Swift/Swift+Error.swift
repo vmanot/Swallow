@@ -75,6 +75,9 @@ public struct CustomStringError: Codable, CustomStringConvertible, Error, Expres
     }
 }
 
+/// A placeholder error to use in lieu of a proper domain-specific error.
+///
+/// This is a glorified `TODO`.
 public struct _PlaceholderError: Hashable, Error, CustomStringConvertible, Sendable {
     public let note: String?
     public let location: SourceCodeLocation?

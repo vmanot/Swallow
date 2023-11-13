@@ -16,7 +16,7 @@ private var logger_objcAssociationKey: UInt = 0
 
 extension Logging {
     public var logger: PassthroughLogger {
-        if isClass(type(of: self)) {
+        if swift_isClassType(type(of: self)) {
             let _self = self as! any Logging & AnyObject
             
             return _self._defaultLogger

@@ -212,7 +212,7 @@ extension PassthroughLogger {
         }
         
         public static func something(_ thing: Any) -> Self {
-            if isClass(type(of: thing)) {
+            if swift_isClassType(type(of: thing)) {
                 return .object(thing as AnyObject)
             } else {
                 return .init(content: .something(thing))

@@ -24,7 +24,7 @@ public struct _HashableOrObjectIdentifier: Hashable {
         
         if let base = base as? any Hashable {
             self.base = base.erasedAsAnyHashable
-        } else if isClass(Swift.type(of: base)) {
+        } else if swift_isClassType(Swift.type(of: base)) {
             self.base = ObjectIdentifier(try! cast(base, to: AnyObject.self))
         } else {
             return nil
