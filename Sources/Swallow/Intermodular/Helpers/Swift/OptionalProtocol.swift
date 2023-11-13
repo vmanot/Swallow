@@ -102,6 +102,10 @@ public func _initializeNilLiteral<T>(ofType type: T.Type) throws -> T {
     try cast(cast(type, to: (any ExpressibleByNilLiteral.Type).self).init(nilLiteral: ()))
 }
 
+public func _initializeEmptyArrayLiteral<T>(ofType type: T.Type) throws -> T {
+    try cast(cast(type, to: (any ExpressibleByArrayLiteral.Type).self).init(_emptyArrayLiteral: ()))
+}
+
 public func _isTypeOptionalType(_ type: Any.Type) -> Bool {
     type is any OptionalProtocol.Type
 }
