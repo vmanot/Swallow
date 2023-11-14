@@ -157,11 +157,15 @@ extension ObjCTypeCoder {
         ObjCTypeContainerDecoderRuleForUnion.self
     ]
     
-    public static func decode(atom encoding: String) -> [Any.Type] {
+    public static func decode(
+        atom encoding: String
+    ) -> [Any.Type] {
         if encoding.contains("b") {
             let sizeInBits = encoding
                 .replacingOccurrences(of: "b", with: "")
-                .map({ Int(String($0))! })
+                .map({ (element: Character) in
+                    Int(String(element))!
+                })
                 .reduce(0, +)
             
             return Array<Any.Type>(repeating: Byte.self, count: sizeInBits / 8)
@@ -196,12 +200,16 @@ extension ObjCTypeCoder {
         return value.flatteningToUnitIfNecessary()
     }
     
-    public static func decode(_ encoding: RecursiveArray<String>) -> Any.Type {
+    public static func decode(
+        _ encoding: RecursiveArray<String>
+    ) -> Any.Type {
         let encoding = indent(encoding)
         
         if let unitValue = encoding.leftValue {
             return ObjCTypeContainerDecoderRuleForNoRule.process(decode(atom: unitValue))
-        } else if let rule = (encoding.first?.leftValue).flatMap({ prefix in rules.find({ $0.prefix == prefix }) }) {
+        } else if let rule = (encoding.first?.leftValue).flatMap({ (prefix: String) in
+            rules.find({ $0.prefix == prefix })
+        }) {
             var encoding = encoding
             
             encoding.removeFirst()

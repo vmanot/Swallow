@@ -61,7 +61,7 @@ public struct KeyedValuesOf<Wrapped>: Initiable  {
     /// - Parameter keyPath: A key path from `Wrapped` to a property of type `Value`.
     public mutating func removeValue<Value>(for keyPath: WritableKeyPath<Wrapped, Value>) {
         if base != nil {
-            fatalError(reason: .unimplemented)
+            fatalError(.unimplemented)
         } else {
             _ = values.removeValue(forKey: keyPath)
         }
@@ -163,7 +163,7 @@ extension KeyedValuesOf: Diffable {
     }
     
     public func applying(_ difference: Difference) -> Self? {
-        fatalError(reason: .unimplemented)
+        fatalError(.unimplemented)
     }
     
     public static func diff(_ lhs: Wrapped, _ rhs: Wrapped) -> Difference {

@@ -38,7 +38,7 @@ extension Never.Reason {
         
         return .init(_base: .abstract)
     }
-
+    
     public static var illegal: Self {
         .init(_base: .illegal)
     }
@@ -46,10 +46,10 @@ extension Never.Reason {
     @_transparent
     public static var impossible: Self {
         assertionFailure()
-
+        
         return .init(_base: .impossible)
     }
-            
+    
     @_transparent
     public static var unavailable: Self {
         .init(_base: .unavailable)
@@ -119,6 +119,16 @@ extension Never {
 
 // MARK: - API
 
+public func fatalError(
+    _ reason: Never.Reason,
+    file: StaticString = #file,
+    function: StaticString = #function,
+    line: UInt = #line
+) -> Never {
+    Never.materialize(reason: reason, file: file, function: function, line: line)
+}
+
+@available(*, deprecated, renamed: "fatalError(_:file:function:line:)")
 public func fatalError(
     reason: Never.Reason,
     file: StaticString = #file,
