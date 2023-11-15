@@ -232,7 +232,7 @@ public struct Weak<Value>: PropertyWrapper {
     
     public var wrappedValue: Value? {
         get {
-            _weakWrappedValue.map({ $0 as! WrappedValue }) ?? _strongWrappedValue
+            _weakWrappedValue.map({ $0 as! Value }) ?? _strongWrappedValue
         } set {
             if let newValue {
                 if type(of: newValue) is AnyClass {

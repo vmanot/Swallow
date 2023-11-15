@@ -3,7 +3,7 @@
 //
 
 import Foundation
-import Swift
+import Swallow
 
 /// Terminal UI.
 @_spi(Internal)
@@ -70,7 +70,7 @@ public func _printEnclosedInASCIIBox(
     func printLine(_ line: String, alignment: TerminalUI.ASCII.BoxContentAlignment) {
         let padding = wordWrapWidth - line.count
         let paddingLeft: Int
-        let paddingRight: Int
+        var paddingRight: Int
         
         switch alignment {
             case .left:
@@ -84,9 +84,18 @@ public func _printEnclosedInASCIIBox(
                 paddingRight = 0
         }
         
-        let paddedLine = "| " + String(repeating: " ", count: paddingLeft) +
+        if paddingRight < 0 {
+            runtimeIssue(.unexpected)
+            
+            paddingRight = 0
+        }
         
-        line + String(repeating: " ", count: paddingRight) + " |"
+        var paddedLine = "| "
+        
+        paddedLine += String(repeating: " ", count: paddingLeft) 
+        paddedLine += line
+        paddedLine += String(repeating: " ", count: paddingRight)
+        paddedLine += " |"
         
         print(paddedLine)
     }
