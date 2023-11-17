@@ -50,9 +50,9 @@ extension TypeMetadata {
             }
         }
 
-        guard let protocolType = TypeMetadata.Existential(testType) else {
+        /*guard let protocolType = TypeMetadata.Existential(testType) else {
             return false
-        }
+        }*/
 
         return false
         

@@ -11,6 +11,16 @@ enum _AssertionFailureError: Error {
 
 @inline(__always)
 @_transparent
+public func assertNotNil<T>(_ x: T?) {
+    guard x != nil else {
+        runtimeIssue("Unexpectedly found nil.")
+        
+        return
+    }
+}
+
+@inline(__always)
+@_transparent
 public func _tryAssert(
     _ condition: Bool,
     _ message: String? = nil,
