@@ -25,7 +25,9 @@ extension TypeMetadata {
 }
 
 extension TypeMetadata {
-    public func conforms(to testType: Any.Type) -> Bool {
+    public func conforms(
+        to testType: Any.Type
+    ) -> Bool {
         func _conformsToType<A>(
             _ type: A.Type
         ) -> Bool {
@@ -52,9 +54,12 @@ extension TypeMetadata {
             return false
         }
 
+        return false
+        
+        /*
         let protocolDescriptor = protocolType.metadata.metadata.pointee.protocolDescriptorVector
         
-        return _conformsToProtocol(base, protocolDescriptor) != nil
+        return _conformsToProtocol(base, protocolDescriptor) != nil*/
     }
 }
 
