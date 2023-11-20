@@ -77,7 +77,7 @@ extension _HashableExistential {
             case let value as any Hashable:
                 self.init(_wrappedValue: value as! WrappedValue)
             case let value as Any.Type:
-                self.init(_wrappedValue: ObjectIdentifier(value) as! WrappedValue)
+                self.init(_wrappedValue: value as! WrappedValue)
             case is Void:
                 self.init(_wrappedValue: None() as! WrappedValue)
             default:

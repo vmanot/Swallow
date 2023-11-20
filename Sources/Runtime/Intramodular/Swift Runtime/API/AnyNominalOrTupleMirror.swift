@@ -16,7 +16,7 @@ public protocol _VisitableMirror<Subject> {
 public struct AnyNominalOrTupleMirror<Subject>: _VisitableMirror, MirrorType {
     public var subject: Any
     public let typeMetadata: TypeMetadata.NominalOrTuple
-        
+    
     private let _cachedFieldsByName: [AnyCodingKey: NominalTypeMetadata.Field]
     
     @available(*, deprecated, renamed: "subject")
@@ -55,7 +55,7 @@ public struct AnyNominalOrTupleMirror<Subject>: _VisitableMirror, MirrorType {
                             
                             return field
                         }
-                                                
+                        
                         return .init(
                             name: field.name,
                             type: TypeMetadata(Swift.type(of: element.value)),
@@ -69,7 +69,7 @@ public struct AnyNominalOrTupleMirror<Subject>: _VisitableMirror, MirrorType {
             )
         )
     }
-        
+    
     init?(_subject subject: Any) {
         func _typeMetadataFromValue<T>(_ x: T) -> TypeMetadata.NominalOrTuple? {
             TypeMetadata.NominalOrTuple(type(of: x))
@@ -83,6 +83,10 @@ public struct AnyNominalOrTupleMirror<Subject>: _VisitableMirror, MirrorType {
     
     public init?(_ subject: Subject) {
         self.init(_subject: _unwrapExistential(subject))
+    }
+    
+    public init(reflecting subject: Subject) throws {
+        self = try Self(_subject: _unwrapExistential(subject)).unwrap()
     }
 }
 
