@@ -5,6 +5,7 @@
 import Darwin
 import Swallow
 
+@frozen
 public enum POSIXKernelMemoryAdvice: Int32, Initiable {
     case normal
     case willBeAccessedRandomly

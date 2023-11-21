@@ -6,6 +6,7 @@ import Foundation
 import Swift
 import System
 
+@frozen
 public struct BookmarkedURL: Identifiable, URLRepresentable {
     public let url: URL
     public let bookmarkData: Data?
@@ -21,7 +22,6 @@ public struct BookmarkedURL: Identifiable, URLRepresentable {
         FilePath(url)!
     }
     
-    @inlinable
     public init?(url: URL, bookmarkData: Data?) {
         self.url = url
         self.bookmarkData = bookmarkData

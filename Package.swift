@@ -40,35 +40,45 @@ let package = Package(
                 .product(name: "Collections", package: "swift-collections"),
                 "Swallow"
             ],
-            swiftSettings: []
+            swiftSettings: [
+                .unsafeFlags(["-enable-library-evolution"])
+            ]
         ),
         .target(
             name: "Diagnostics",
             dependencies: [
                 "Swallow"
             ],
-            swiftSettings: []
+            swiftSettings: [
+                .unsafeFlags(["-enable-library-evolution"])
+            ]
         ),
         .target(
             name: "FoundationX",
             dependencies: [
                 "Swallow"
             ],
-            swiftSettings: []
+            swiftSettings: [
+                .unsafeFlags(["-enable-library-evolution"])
+            ]
         ),
         .target(
             name: "POSIX",
             dependencies: [
                 "Swallow"
             ],
-            swiftSettings: []
+            swiftSettings: [
+                .unsafeFlags(["-enable-library-evolution"])
+            ]
         ),
         .target(
             name: "PythonString",
             dependencies: [
                 "Swallow"
             ],
-            swiftSettings: []
+            swiftSettings: [
+                .unsafeFlags(["-enable-library-evolution"])
+            ]
         ),
         .target(
             name: "Runtime",
@@ -77,7 +87,9 @@ let package = Package(
                 "FoundationX",
                 "Swallow"
             ],
-            swiftSettings: []
+            swiftSettings: [
+                .unsafeFlags(["-enable-library-evolution"])
+            ]
         ),
         .target(
             name: "SE0270_RangeSet"

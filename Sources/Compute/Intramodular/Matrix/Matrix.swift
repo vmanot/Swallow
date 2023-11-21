@@ -131,7 +131,6 @@ extension Matrix: Sequence {
 // MARK: - Conditional Conformances
 
 extension Matrix: Decodable where Element: Decodable {
-    @inlinable
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
         

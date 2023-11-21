@@ -18,12 +18,10 @@ public struct NSKeyedArchived<Value>: Codable {
         self._wrappedValue = .init(wrappedValue)
     }
     
-    @inlinable
     public init<T>(wrappedValue: Value) where T: NSCoding, Value == Optional<T> {
         self.wrappedValue = wrappedValue
     }
     
-    @inlinable
     public init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
         

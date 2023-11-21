@@ -5,6 +5,7 @@
 import Darwin
 import Swallow
 
+@frozen
 public struct _LockedState<State> {
     @usableFromInline
     let _buffer: ManagedBuffer<State, _Lock.Primitive>

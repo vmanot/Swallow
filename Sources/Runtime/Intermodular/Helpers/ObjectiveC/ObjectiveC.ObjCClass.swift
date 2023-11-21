@@ -10,8 +10,7 @@ public struct ObjCClass: CustomDebugStringConvertible, ExpressibleByStringLitera
     public typealias Value = AnyClass
     
     public let value: Value
-        
-    @_transparent
+    
     public init(_ value: Value) {
         self.value = value
     }
