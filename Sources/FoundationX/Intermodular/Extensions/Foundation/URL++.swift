@@ -7,6 +7,7 @@ import Swallow
 import System
 
 extension URL {
+    @_disfavoredOverload
     @available(macOS 11.0, iOS 14.0, watchOS 7.0, tvOS 14.0, *)
     public init?(
         _filePath: FilePath
