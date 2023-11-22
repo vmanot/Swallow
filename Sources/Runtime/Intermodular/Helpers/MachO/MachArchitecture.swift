@@ -2,6 +2,8 @@
 // Copyright (c) Vatsal Manot
 //
 
+#if os(iOS) || os(macOS) || os(tvOS) || os(watchOS)
+
 import Darwin
 import MachO
 import Swallow
@@ -59,3 +61,5 @@ extension MachArchitecture: Named {
         return .init(utf8String: value.name)
     }
 }
+
+#endif

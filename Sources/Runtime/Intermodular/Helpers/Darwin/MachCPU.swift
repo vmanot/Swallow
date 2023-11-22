@@ -2,6 +2,8 @@
 // Copyright (c) Vatsal Manot
 //
 
+#if os(iOS) || os(macOS) || os(tvOS) || os(watchOS)
+
 import Darwin
 import Swallow
 
@@ -27,3 +29,5 @@ public struct MachCPU: CustomDebugStringConvertible, Hashable, Trivial {
         )
     }
 }
+
+#endif

@@ -4,9 +4,25 @@
 
 import Foundation
 import Swallow
+import System
 
 extension URL {
-    public init?(bundle: Bundle, fileName: String, extension: String?) {
+    @available(macOS 11.0, iOS 14.0, watchOS 7.0, tvOS 14.0, *)
+    public init?(
+        _filePath: FilePath
+    ) {
+        #if os(visionOS)
+        self.init(filePath: _filePath)
+        #else
+        self.init(_filePath)
+        #endif
+    }
+    
+    public init?(
+        bundle: Bundle,
+        fileName: String,
+        extension: String?
+    ) {
         guard let url = bundle.url(forResource: fileName, withExtension: `extension`) else {
             return nil
         }
@@ -14,7 +30,11 @@ extension URL {
         self = url
     }
     
-    public init?(bundle: Bundle, fileName: String, withOrWithoutExtension `extension`: String) {
+    public init?(
+        bundle: Bundle,
+        fileName: String,
+        withOrWithoutExtension `extension`: String
+    ) {
         guard let url = URL(bundle: bundle, fileName: fileName, extension: `extension`) ?? URL(bundle: bundle, fileName: fileName, extension: nil) else {
             return nil
         }
