@@ -52,7 +52,11 @@ extension FileManager {
     public func directoryExists(
         at path: FilePath
     ) -> Bool {
-        directoryExists(at: URL(path)!)
+        #if os(visionOS)
+        return directoryExists(at: URL(filePath: path)!)
+        #else
+        return directoryExists(at: URL(path)!)
+        #endif
     }
     
     public func isDirectory<T: URLRepresentable>(

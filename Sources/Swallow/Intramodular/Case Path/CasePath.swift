@@ -143,7 +143,7 @@ extension CasePath: CustomStringConvertible {
 }
 
 extension CasePath: _PartiallyEquatable {
-    public func isNotEqual(to other: Self) -> Bool? {
+    public func isEqual(to other: Self) -> Bool? {
         if let lhs = self as? CasePath<Root, Void>, let rhs = other as? CasePath<Root, Void> {
             let _lhs = lhs.embed(())
             
@@ -155,7 +155,7 @@ extension CasePath: _PartiallyEquatable {
             
             let isEqual = AnyEquatable.equate(_lhs, _rhs)
             
-            return !isEqual
+            return isEqual
         } else {
             return nil
         }

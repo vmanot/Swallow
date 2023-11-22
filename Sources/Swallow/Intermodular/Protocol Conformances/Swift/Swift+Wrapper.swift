@@ -264,8 +264,11 @@ public struct Weak<Value>: PropertyWrapper {
 public struct WeakObjectPointer<Value: AnyObject>: Hashable {
     public weak var wrappedValue: Value?
     
+    private let id: ObjectIdentifier?
+    
     public init(wrappedValue: Value? = nil) {
         self.wrappedValue = wrappedValue
+        self.id = wrappedValue.map(ObjectIdentifier.init)
     }
     
     public func hash(into hasher: inout Hasher) {
@@ -273,11 +276,7 @@ public struct WeakObjectPointer<Value: AnyObject>: Hashable {
     }
     
     public static func == (lhs: Self, rhs: Self) -> Bool {
-        guard let lhs = lhs.wrappedValue, let rhs = rhs.wrappedValue else {
-            return false
-        }
-        
-        return ObjectIdentifier(lhs) == ObjectIdentifier(rhs)
+        return lhs.id == rhs.id
     }
 }
 
