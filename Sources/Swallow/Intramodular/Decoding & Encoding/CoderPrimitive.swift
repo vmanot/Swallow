@@ -75,6 +75,46 @@ extension Bool: CoderPrimitive {
     }
 }
 
+extension Decimal: CoderPrimitive {
+    public static func _decode(
+        from container: SingleValueDecodingContainer
+    ) throws -> Self {
+        try container.decode(Self.self)
+    }
+    
+    public static func _decode<Container: UnkeyedDecodingContainer>(
+        from container: inout Container
+    ) throws -> Self {
+        try container.decode(Self.self)
+    }
+    
+    public static func _decode<Key: CodingKey>(
+        from container: KeyedDecodingContainer<Key>,
+        forKey key: Key
+    ) throws -> Self {
+        try container.decode(Self.self, forKey: key)
+    }
+    
+    public func _encode<Container: SingleValueEncodingContainer>(
+        to container: inout Container
+    ) throws {
+        try container.encode(self)
+    }
+    
+    public func _encode<Container: UnkeyedEncodingContainer>(
+        to container: inout Container
+    ) throws {
+        try container.encode(self)
+    }
+    
+    public func _encode<Key: CodingKey>(
+        to container: inout KeyedEncodingContainer<Key>,
+        forKey key: Key
+    ) throws {
+        try container.encode(self, forKey: key)
+    }
+}
+
 extension Double: CoderPrimitive {
     public static func _decode(
         from container: SingleValueDecodingContainer
@@ -556,6 +596,46 @@ extension UInt64: CoderPrimitive {
 }
 
 extension String: CoderPrimitive {
+    public static func _decode(
+        from container: SingleValueDecodingContainer
+    ) throws -> Self {
+        try container.decode(Self.self)
+    }
+    
+    public static func _decode<Container: UnkeyedDecodingContainer>(
+        from container: inout Container
+    ) throws -> Self {
+        try container.decode(Self.self)
+    }
+    
+    public static func _decode<Key: CodingKey>(
+        from container: KeyedDecodingContainer<Key>,
+        forKey key: Key
+    ) throws -> Self {
+        try container.decode(Self.self, forKey: key)
+    }
+    
+    public func _encode<Container: SingleValueEncodingContainer>(
+        to container: inout Container
+    ) throws {
+        try container.encode(self)
+    }
+    
+    public func _encode<Container: UnkeyedEncodingContainer>(
+        to container: inout Container
+    ) throws {
+        try container.encode(self)
+    }
+    
+    public func _encode<Key: CodingKey>(
+        to container: inout KeyedEncodingContainer<Key>,
+        forKey key: Key
+    ) throws {
+        try container.encode(self, forKey: key)
+    }
+}
+
+extension URL: CoderPrimitive {
     public static func _decode(
         from container: SingleValueDecodingContainer
     ) throws -> Self {
