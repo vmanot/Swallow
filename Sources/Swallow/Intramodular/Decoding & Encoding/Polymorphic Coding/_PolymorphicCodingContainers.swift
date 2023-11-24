@@ -291,7 +291,19 @@ public struct _PolymorphicKeyedDecodingContainer<Key: CodingKey>: KeyedDecodingC
             return try base.decode(T.self, forKey: key)
         }
         
-        return try base.decode(_PolymorphicDecodingProxy<T>.self, forKey: key).value
+        do {
+            return try base.decode(_PolymorphicDecodingProxy<T>.self, forKey: key).value
+        } catch {
+            if let decodingError = _ModularDecodingError(
+                error,
+                type: T.self,
+                data: try base.decodeIfPresent(AnyCodable.self, forKey: key)
+            ) {
+                throw decodingError
+            } else {
+                throw error
+            }
+        }
     }
     
     public func decodeIfPresent<T: Decodable>(_ type: T.Type, forKey key: Key) throws -> T?  {

@@ -15,7 +15,13 @@ extension TopLevelDecoder {
             return try cast(() as Void, to: T.self)
         }
         
-        return try cast(try cast(type, to: Decodable.Type.self).decode(input, using: self), to: T.self)
+        return try cast(
+            try cast(type, to: Decodable.Type.self).decode(
+                input,
+                using: self
+            ),
+            to: T.self
+        )
     }
 }
 
@@ -27,7 +33,10 @@ extension Decodable {
         using decoder: Decoder
     ) throws -> Self {
         
-        return try decoder._polymorphic().decode(self, from: input)
+        return try decoder._polymorphic().decode(
+            self,
+            from: input
+        )
     }
 }
 

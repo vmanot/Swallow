@@ -59,7 +59,10 @@ public struct _PolymorphicTopLevelDecoder<Base: TopLevelDecoder>: TopLevelDecode
     }
     
     public func decode<T: Decodable>(_ type: T.Type, from input: Base.Input) throws -> T {
-        try base.decode(_PolymorphicDecodingProxy<T>.self, from: input).value
+        try base.decode(
+            _PolymorphicDecodingProxy<T>.self,
+            from: input
+        ).value
     }
 }
 
