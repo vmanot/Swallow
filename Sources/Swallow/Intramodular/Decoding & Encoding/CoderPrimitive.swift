@@ -5,6 +5,9 @@
 import Foundation
 import Swift
 
+/// A primitive `Codable` type.
+///
+/// These types are exempt from being special-cased by middleware.
 public protocol CoderPrimitive: Codable, Hashable {
     static func _decode(
         from container: SingleValueDecodingContainer

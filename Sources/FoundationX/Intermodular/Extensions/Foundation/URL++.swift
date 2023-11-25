@@ -52,7 +52,9 @@ extension URL {
 
 extension URL {
     /// The portion of a URL relative to a given base URL.
-    public func relativeString(relativeTo baseURL: URL) -> String {
+    public func relativeString(
+        relativeTo baseURL: URL
+    ) -> String {
         TODO.whole(.addressEdgeCase, .refactor)
 
         if absoluteString.hasPrefix(baseURL.absoluteString) {
@@ -95,11 +97,18 @@ extension URL {
 
 extension URL {
     public static var userDocuments: URL! {
-        try? FileManager.default.url(for: .documentDirectory, in: .userDomainMask)
+        try? FileManager.default.url(
+            for: .documentDirectory,
+            in: .userDomainMask
+        )
     }
 
-    public static func securityAppGroupContainer(for identifier: String) throws -> URL {
-        try FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: identifier).unwrap()
+    public static func securityAppGroupContainer(
+        for identifier: String
+    ) throws -> URL {
+        try FileManager.default.containerURL(
+            forSecurityApplicationGroupIdentifier: identifier
+        ).unwrap()
     }
 }
 
