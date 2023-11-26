@@ -7,6 +7,16 @@ import Swallow
 import System
 
 extension URL {
+    var _normalizedURL: URL {
+        guard isFileURL else {
+            return self
+        }
+        
+        return URL(string: resolvingSymlinksInPath().path)!
+    }
+}
+
+extension URL {
     @_disfavoredOverload
     @available(macOS 11.0, iOS 14.0, watchOS 7.0, tvOS 14.0, *)
     public init?(
@@ -72,8 +82,14 @@ extension URL {
 }
 
 extension URL {
-    public func appendingDirectoryPathComponent(_ pathComponent: String) -> URL {
-        appendingPathComponent(pathComponent, isDirectory: true)
+    public func appendingDirectoryPathComponent(
+        _ pathComponent: String?
+    ) -> URL {
+        guard let pathComponent else {
+            return self
+        }
+        
+        return appendingPathComponent(pathComponent, isDirectory: true)
     }
 }
 
@@ -109,6 +125,29 @@ extension URL {
         try FileManager.default.containerURL(
             forSecurityApplicationGroupIdentifier: identifier
         ).unwrap()
+    }
+}
+
+extension URL {
+    /// The real home directory of the user.
+    @_spi(Internal)
+    public static var _userHomeDirectory: URL {
+        get throws {
+            enum _Error: Swift.Error {
+                case invalidHomeDirectory
+            }
+            
+            guard let pw = getpwuid(getuid()), let home = pw.pointee.pw_dir else {
+                throw _Error.invalidHomeDirectory
+            }
+            
+            let path = FileManager.default.string(
+                withFileSystemRepresentation: home,
+                length: Int(strlen(home))
+            )
+            
+            return URL(fileURLWithPath: path)
+        }
     }
 }
 

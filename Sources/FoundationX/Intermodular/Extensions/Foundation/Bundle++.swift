@@ -70,7 +70,7 @@ extension Bundle {
 }
 
 extension Bundle {
-    public var name: String? {
+    public var bundleName: String? {
         infoDictionary?[kCFBundleNameKey as String] as? String
     }
 }

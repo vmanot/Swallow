@@ -37,6 +37,10 @@ public protocol _StaticInteger: _StaticValue where Value == Int {
     
 }
 
+public struct _AllCasesOf<T>: _StaticType {
+    
+}
+
 // MARK: - Default Implementation
 
 extension _StaticInstance {

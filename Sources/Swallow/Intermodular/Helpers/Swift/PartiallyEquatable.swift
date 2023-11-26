@@ -11,6 +11,17 @@ public protocol _PartiallyEquatable {
     func isEqual(to _: Self) -> Bool?
 }
 
+extension _PartiallyEquatable {
+    @usableFromInline
+    func _opaque_isEqual(to other: Any) -> Bool? {
+        guard let other = other as? Self else {
+            return nil
+        }
+        
+        return self.isEqual(to: other)
+    }
+}
+
 /// This type is **internal**.
 public protocol _PartialEquatableTypeConvertible {
     associatedtype PartialEquatableType: _PartiallyEquatable
@@ -19,6 +30,26 @@ public protocol _PartialEquatableTypeConvertible {
 }
 
 // MARK: - Supplementary
+
+public func _isKnownEqual<T: _PartiallyEquatable>(
+    _ lhs: T?,
+    _ rhs: T?
+) -> Bool {
+    if lhs == nil && rhs == nil {
+        return true
+    } else if let lhs, let rhs {
+        return lhs.isEqual(to: rhs) ?? false
+    } else {
+        return false
+    }
+}
+
+public func _isKnownEqual<T>(
+    _ lhs: T,
+    _ rhs: T
+) -> Bool {
+    _isMaybeEqual(lhs, rhs) ?? false
+}
 
 public func _isKnownEqual<T: _PartialEquatableTypeConvertible>(
     _ lhs: T,
@@ -50,6 +81,10 @@ public struct _PartiallyEquatableDictionary<Key: Hashable, Value>: _PartiallyEqu
     }
     
     public func isEqual(to other: Self) -> Bool? {
+        if base.isEmpty && other.base.isEmpty {
+            return true
+        }
+        
         guard base.count == other.base.count else {
             return false
         }
@@ -65,8 +100,8 @@ public struct _PartiallyEquatableDictionary<Key: Hashable, Value>: _PartiallyEqu
                 return false
             }
             
-            if _isMaybeEqual(lhs, rhs) == false {
-                return false
+            if let isEqual = _isMaybeEqual(lhs, rhs) {
+                return isEqual
             }
         }
         
@@ -99,6 +134,10 @@ public func _isMaybeEqual(_ lhs: Any, _ rhs: Any) -> Bool? {
     let isEqual = _openExistential(type(of: lhs), do: open)
     
     guard let isEqual else {
+        if let lhs = lhs as? any _PartiallyEquatable {
+            return lhs._opaque_isEqual(to: rhs)
+        }
+        
         return nil
     }
     

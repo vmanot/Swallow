@@ -83,6 +83,65 @@ extension FileManager {
         
         return isReadableFile(atPath: url.path) && isWritableFile(atPath: url.path)
     }
+    
+    public func isReadableAndWritable<T: URLRepresentable>(
+        atOrAncestorOf location: T
+    ) -> Bool {
+        let url = location.url._normalizedURL
+        
+        if isReadableAndWritable(at: url) {
+            return true
+        } else {
+            let parentURL = url.resolvingSymlinksInPath().deletingLastPathComponent()
+            
+            guard parentURL != url, !parentURL.path.isEmpty else{
+                return false
+            }
+            
+            return isReadableAndWritable(atOrAncestorOf: parentURL)
+        }
+    }
+    
+    public func nearestSecurityScopedAccessibleAncestor<T: URLRepresentable>(
+        for location: T
+    ) -> URL? {
+        let url = location.url._normalizedURL
+        
+        if let result = try? _SecurityScopedBookmarks.resolvedURL(for: location.url._normalizedURL) {
+            return result
+        } else {
+            let parentURL = url.deletingLastPathComponent()
+            
+            guard parentURL != url, !parentURL.path.isEmpty else {
+                return nil
+            }
+            
+            return nearestSecurityScopedAccessibleAncestor(for: parentURL)
+        }
+    }
+
+    public func isSecurityScopedAccessible<T: URLRepresentable>(
+        at location: T
+    ) -> Bool {
+        let url = location.url._normalizedURL
+        
+        if ((try? _SecurityScopedBookmarks.resolvedURL(for: location.url._normalizedURL)) as URL?) != nil {
+            return true
+        }
+                
+        if isReadableAndWritable(at: url) {
+            return true
+        } else {
+            let parentURL = url.deletingLastPathComponent()
+            
+            guard parentURL != url, !parentURL.path.isEmpty else {
+                return false
+            }
+            
+            return isSecurityScopedAccessible(at: parentURL)
+        }
+    }
+
 }
 
 extension FileManager {
@@ -140,13 +199,18 @@ extension FileManager {
 
 extension FileManager {
     public func createDirectoryIfNecessary(
-        at url: URL
+        at url: URL,
+        withIntermediateDirectories: Bool = false
     ) throws {
         guard !fileExists(at: url) else {
             return
         }
         
-        try createDirectory(at: url, withIntermediateDirectories: false, attributes: nil)
+        try createDirectory(
+            at: url,
+            withIntermediateDirectories: withIntermediateDirectories,
+            attributes: nil
+        )
     }
     
     @available(macOS 11.0, iOS 14.0, watchOS 7.0, tvOS 14.0, *)
@@ -206,11 +270,15 @@ extension FileManager {
         }
     }
 
-    public func contents(of url: URL) throws -> Data {
+    public func contents(
+        of url: URL
+    ) throws -> Data {
         try contents(atPath: url.path).unwrap()
     }
     
-    public func contentsIfFileExists(of url: URL) throws -> Data? {
+    public func contentsIfFileExists(
+        of url: URL
+    ) throws -> Data? {
         guard fileExists(at: url) else {
             return nil
         }
@@ -218,12 +286,16 @@ extension FileManager {
         return try contents(of: url)
     }
 
-    public func contentsOfDirectory(at url: URL) throws -> [URL] {
+    public func contentsOfDirectory(
+        at url: URL
+    ) throws -> [URL] {
         try contentsOfDirectory(at: url, includingPropertiesForKeys: [])
     }
 
     @available(macOS 11.0, iOS 14.0, watchOS 7.0, tvOS 14.0, *)
-    public func contentsOfDirectory(at path: FilePath) throws -> [URL] {
+    public func contentsOfDirectory(
+        at path: FilePath
+    ) throws -> [URL] {
         try contentsOfDirectory(at: URL(path).unwrap(), includingPropertiesForKeys: [])
     }
 

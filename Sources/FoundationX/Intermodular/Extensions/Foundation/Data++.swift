@@ -12,6 +12,27 @@ extension Data {
 }
 
 extension Data {
+    public init?(
+        resourceWithName name: String,
+        bundle: Bundle? = nil
+    ) {
+        let bundle = bundle ?? Bundle.main
+        
+        guard
+            let url = bundle.url(
+                forResource: name,
+                withExtension: nil
+            ),
+            let data = try? Data(contentsOf: url) 
+        else {
+            return nil
+        }
+        
+        self = data
+    }
+}
+
+extension Data {
     public static func allocate(byteCount: Int, alignment: Int) -> Data {
         let buffer = UnsafeMutableRawPointer.allocate(byteCount: byteCount, alignment: alignment)
         
