@@ -42,7 +42,7 @@ public enum _UserHomeDirectory: String, CaseIterable {
         self = directory
     }
     
-    public func requestAccess() async throws {
+    public func requestAccess() async throws -> URL {
         try await _DirectoryAccessManager.requestAccess(to: self)
     }
 }

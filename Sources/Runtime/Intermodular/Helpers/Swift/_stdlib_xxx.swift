@@ -24,7 +24,8 @@ public func swift_reflectionMirror_recursiveChildOffset(
 ) -> Int
 
 @_silgen_name("swift_demangle")
-private func _stdlib_demangleImpl(
+@usableFromInline
+func _stdlib_demangleImpl(
     _ mangledName: UnsafePointer<CChar>?,
     mangledNameLength: Int,
     outputBuffer: UnsafeMutablePointer<UInt8>?,
@@ -32,17 +33,26 @@ private func _stdlib_demangleImpl(
     flags: UInt32
 ) -> UnsafeMutablePointer<CChar>?
 
+@_transparent
 public func _stdlib_demangleName(
     _ mangled: String
 ) -> String {
     return mangled.utf8CString.withUnsafeBufferPointer { (buffer: UnsafeBufferPointer<CChar>) in
-        return _stdlib_demangleImpl(
+        let result = _stdlib_demangleImpl(
             buffer.baseAddress,
             mangledNameLength: Int(buffer.count - 1),
             outputBuffer: nil,
             outputBufferSize: nil, flags: 0
         )
-        .map({ String(utf8String: $0, deallocate: true) }) ?? mangled
+        .map({ String(utf8String: $0, deallocate: true) })
+        
+        guard let result else {
+            runtimeIssue("Failed to demangle type: \(mangled)")
+            
+            return mangled
+        }
+        
+        return result
     }
 }
 
@@ -67,10 +77,14 @@ public func _swift_isClassType(
 // MARK: - Auxiliary
 
 public struct _SwiftRuntimeTypeFieldReflectionMetadata {
-    public typealias Dealloc = @convention(c) (UnsafePointer<CChar>?) -> Void
+    public typealias Deallocate = @convention(c) (UnsafePointer<CChar>?) -> Void
 
+    @usableFromInline
     let name: UnsafePointer<CChar>? = nil
-    let dealloc: Dealloc? = nil
+    @usableFromInline
+    let dealloc: Deallocate? = nil
+    @usableFromInline
     let isStrong: Bool = false
+    @usableFromInline
     let isVar: Bool = false
 }

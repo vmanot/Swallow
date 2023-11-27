@@ -5,90 +5,85 @@
 import os
 import Swallow
 
-public struct _Runtime_MetadataField {
+public struct _SwiftRuntimeField {
     public let key: String
     public let type: Any.Type
 }
 
-public func swift_getFields<InstanceType>(
+private struct _SwiftRuntimeFieldByOffset {
+    let type: Any.Type
+    let offset: Int
+}
+
+public func _swift_getFields<InstanceType>(
     _ instance: InstanceType
-) -> [(field: _Runtime_MetadataField, value: Any?)] {
+) -> [(field: _SwiftRuntimeField, value: Any?)] {
     func unwrap<T>(_ x: Any) -> T {
         return x as! T
     }
-    var fields = [(field: _Runtime_MetadataField, value: Any?)]()
+    
+    var fields = [(field: _SwiftRuntimeField, value: Any?)]()
     var mirror: Mirror? = Mirror(reflecting: instance)
-    while let m = mirror {
-        let nextValue = m.children.compactMap({ child -> (field: _Runtime_MetadataField, value: Any?)? in
+    
+    while let _mirror = mirror {
+        let nextValue = _mirror.children.compactMap({ child -> (field: _SwiftRuntimeField, value: Any?)? in
             guard let key = child.label else {
                 return nil
             }
-            return (_Runtime_MetadataField(key: key, type: type(of: child.value)), unwrap(child.value))
+            
+            return (_SwiftRuntimeField(key: key, type: type(of: child.value)), unwrap(child.value))
         })
+        
         fields.append(contentsOf: nextValue)
-        mirror = m.superclassMirror
+        
+        mirror = _mirror.superclassMirror
     }
+    
     return fields
 }
 
-public func swift_getFieldValue<Value, InstanceType>(
+public func _swift_getFieldValue<Value, InstanceType>(
     _ key: String,
     _ type: Value.Type,
     _ instance: InstanceType
 ) throws -> Value {
-    try getFieldValue(key, type, instance)
-}
-
-public func swift_setFieldValue<Value, ObjectType: AnyObject>(
-    _ key: String,
-    _ value: Value,
-    _ object: ObjectType
-) throws {
-    var instance = object
-    try setFieldValue(key, value, &instance)
-}
-
-@_disfavoredOverload
-public func swift_setFieldValue<Value, InstanceType>(
-    _ key: String,
-    _ value: Value,
-    _ instance: inout InstanceType
-) throws {
-    try setFieldValue(key, value, &instance)
-}
-
-private struct SwiftFieldNotFoundError: Error, CustomStringConvertible {
-    var type: Any.Type
-    var key: String
-    var instance: Any.Type
+    let field = try _swift_getField(key, type, Swift.type(of: instance))
     
-    var description: String {
-        "\(key) of type \(String(describing: type)) was not found on instance type \(instance)"
-    }
-}
-
-private func getFieldValue<Value, InstanceType>(
-    _ key: String,
-    _ type: Value.Type,
-    _ instance: InstanceType
-) throws -> Value {
-    let field = try swift_getField(key, type, Swift.type(of: instance))
     return try withUnsafeInstancePointer(instance) { pointer in
         func project<S>(_ type: S.Type) -> Value {
             pointer.advanced(by: field.offset).withMemoryRebound(to: S.self, capacity: 1) { ptr in
                 unsafePartialBitCast(ptr.pointee, to: Value.self)
             }
         }
+        
         return _openExistential(field.type, do: project)
     }
 }
 
-private func setFieldValue<Value, InstanceType>(
+public func _swift_setFieldValue<Value, ObjectType: AnyObject>(
+    _ key: String,
+    _ value: Value,
+    _ object: ObjectType
+) throws {
+    var instance = object
+    try __swift_setFieldValue(key, value, &instance)
+}
+
+@_disfavoredOverload
+public func _swift_setFieldValue<Value, InstanceType>(
     _ key: String,
     _ value: Value,
     _ instance: inout InstanceType
 ) throws {
-    let field = try swift_getField(key, Value.self, Swift.type(of: instance))
+    try __swift_setFieldValue(key, value, &instance)
+}
+
+private func __swift_setFieldValue<Value, InstanceType>(
+    _ key: String,
+    _ value: Value,
+    _ instance: inout InstanceType
+) throws {
+    let field = try _swift_getField(key, Value.self, Swift.type(of: instance))
     try withUnsafeMutableInstancePointer(&instance) { pointer in
         func project<S>(_ type: S.Type) {
             let buffer = pointer.advanced(by: field.offset).assumingMemoryBound(to: S.self)
@@ -102,17 +97,18 @@ private func setFieldValue<Value, InstanceType>(
     }
 }
 
-private class FieldLookupCache {
-    private let lock: os_unfair_lock_t
-    private var storage = [UnsafeRawPointer: [String: Field]]()
+private struct _SwiftRuntimeFieldLookupCache {
+    private static var lock: os_unfair_lock_t = {
+        let lock = os_unfair_lock_t.allocate(capacity: 1)
+        
+        lock.initialize(to: os_unfair_lock_s())
+        
+        return lock
+    }()
     
-    static let shared = FieldLookupCache()
-    private init() {
-        self.lock = .allocate(capacity: 1)
-        self.lock.initialize(to: os_unfair_lock_s())
-    }
-    
-    subscript(type: Any.Type, key: String) -> Field? {
+    private static var storage = [UnsafeRawPointer: [String: _SwiftRuntimeFieldByOffset]]()
+            
+    static subscript(type: Any.Type, key: String) -> _SwiftRuntimeFieldByOffset? {
         get {
             storage[unsafeBitCast(type, to: UnsafeRawPointer.self)]?[key]
         }
@@ -123,34 +119,40 @@ private class FieldLookupCache {
     }
 }
 
-private func swift_getField<Value>(
+private func _swift_getField<Value>(
     _ key: String,
     _ type: Value.Type,
     _ instanceType: Any.Type
-) throws -> Field {
-    
-    if let field = FieldLookupCache.shared[type, key] {
+) throws -> _SwiftRuntimeFieldByOffset {
+    if let field = _SwiftRuntimeFieldLookupCache[type, key] {
         return field
     }
+
     do {
-        let field = try swift_getField_slow(key, type, instanceType)
-        FieldLookupCache.shared[type, key] = field
+        let field = try _swift_getField_slow(key, type, instanceType)
+        
+        _SwiftRuntimeFieldLookupCache[type, key] = field
+        
         return field
     } catch {
         throw error
     }
 }
 
-private func swift_getField_slow<Value>(
+private func _swift_getField_slow<Value>(
     _ key: String,
     _ type: Value.Type,
     _ instanceType: Any.Type
-) throws -> Field {
+) throws -> _SwiftRuntimeFieldByOffset {
     let count = swift_reflectionMirror_recursiveCount(instanceType)
     for i in 0..<count {
         var field = _SwiftRuntimeTypeFieldReflectionMetadata()
         let fieldType = swift_reflectionMirror_recursiveChildMetadata(instanceType, index: i, fieldMetadata: &field)
-        defer { field.dealloc?(field.name) }
+        
+        defer {
+            field.dealloc?(field.name)
+        }
+        
         guard
             let name = field.name.map({ String(utf8String: $0) }),
             name == key
@@ -170,9 +172,10 @@ private func swift_getField_slow<Value>(
         }
         
         let offset = swift_reflectionMirror_recursiveChildOffset(instanceType, index: i)
-        return Field(type: fieldType, offset: offset)
+        return _SwiftRuntimeFieldByOffset(type: fieldType, offset: offset)
     }
-    throw SwiftFieldNotFoundError(type: Value.self, key: key, instance: instanceType)
+    
+    throw _SwiftRuntimeFieldNotFoundError(type: Value.self, key: key, instance: instanceType)
 }
 
 private func withUnsafeInstancePointer<InstanceType, Result>(
@@ -188,6 +191,7 @@ private func withUnsafeInstancePointer<InstanceType, Result>(
     } else {
         return try withUnsafePointer(to: instance) {
             let ptr = UnsafeRawPointer($0)
+            
             return try body(ptr)
         }
     }
@@ -206,12 +210,20 @@ private func withUnsafeMutableInstancePointer<InstanceType, Result>(
     } else {
         return try withUnsafeMutablePointer(to: &instance) {
             let ptr = UnsafeMutableRawPointer(mutating: $0)
+            
             return try body(ptr)
         }
     }
 }
 
-private struct Field {
-    let type: Any.Type
-    let offset: Int
+// MARK: - Error Handling
+
+private struct _SwiftRuntimeFieldNotFoundError: Error, CustomStringConvertible {
+    var type: Any.Type
+    var key: String
+    var instance: Any.Type
+    
+    var description: String {
+        "\(key) of type \(String(describing: type)) was not found on instance type \(instance)"
+    }
 }

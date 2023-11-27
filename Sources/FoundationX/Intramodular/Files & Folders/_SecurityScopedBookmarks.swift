@@ -63,8 +63,6 @@ class _SecurityScopedBookmarks {
         } catch {
             throw _SecurityScopedBookmarks._Error.failedToSaveBookmarkData(error)
         }
-        
-        return nil
     }
     
     private static func save(_ bookmarks: [Bookmark]) {
