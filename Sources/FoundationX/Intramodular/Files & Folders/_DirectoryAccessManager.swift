@@ -19,7 +19,7 @@ public enum _DirectoryAccessManager {
     }
 }
 
-#if os(iOS)
+#if os(iOS) || os(tvOS) || os(visionOS)
 extension _DirectoryAccessManager {
     public static func requestAccess(
         toDirectory directory: URL

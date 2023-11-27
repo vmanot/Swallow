@@ -91,7 +91,7 @@ class _SecurityScopedBookmarks {
 
 // MARK: - Auxiliary
 
-#if os(iOS)
+#if os(iOS) || os(tvOS) || os(visionOS)
 extension URL {
     init(
         _resolvingBookmarkDataWithSecurityScopedAccess data: Data,

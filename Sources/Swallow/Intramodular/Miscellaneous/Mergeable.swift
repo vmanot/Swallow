@@ -34,19 +34,83 @@ extension ThrowingMergeOperatable {
         try merging(try cast(other, to: Self.self))
     }
     
-    public func merging(
-        _ other: Self
+    public func mergingInPlace(
+        with other: Self
     ) throws -> Self {
         try build(self) {
             try $0.mergeInPlace(with: other)
         }
     }
     
-    public func merging(
-        _ other: Self
+    public func mergingInPlace(
+        with other: Self
     ) -> Self where Self: MergeOperatable {
         build(self) {
             $0.mergeInPlace(with: other)
         }
     }
+    
+    public func merging(
+        _ other: Self
+    ) throws -> Self {
+        try mergingInPlace(with: other)
+    }
+
+    public func merging(
+        _ other: Self
+    ) -> Self where Self: MergeOperatable {
+        mergingInPlace(with: other)
+    }
 }
+
+// MARK: - SwiftUI
+
+#if canImport(SwiftUI)
+import SwiftUI
+
+extension PreferenceKey where Value: MergeOperatable {
+    public static func reduce(
+        value: inout Value,
+        nextValue: () -> Value
+    ) {
+        value = value.mergingInPlace(with: nextValue())
+    }
+}
+
+extension PreferenceKey where Value: ThrowingMergeOperatable {
+    public static func reduce(
+        value: inout Value,
+        nextValue: () -> Value
+    ) {
+        do {
+            value = try value.mergingInPlace(with: nextValue())
+        } catch {
+            runtimeIssue(error)
+        }
+    }
+}
+
+extension View {
+    public func environment<V: MergeOperatable>(
+        _ keyPath: WritableKeyPath<EnvironmentValues, V>,
+        merging value: V
+    ) -> some View {
+        transformEnvironment(keyPath) {
+            $0.mergeInPlace(with: value)
+        }
+    }
+    
+    public func environment<V: MergeOperatable>(
+        _ keyPath: WritableKeyPath<EnvironmentValues, V?>,
+        merging value: V
+    ) -> some View {
+        transformEnvironment(keyPath) { oldValue in
+            if oldValue == nil {
+                oldValue = value
+            } else {
+                oldValue?.mergeInPlace(with: value)
+            }
+        }
+    }
+}
+#endif
