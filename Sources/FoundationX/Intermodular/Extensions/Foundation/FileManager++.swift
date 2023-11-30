@@ -110,7 +110,7 @@ extension FileManager {
         if let result = try? _SecurityScopedBookmarks.resolvedURL(for: location.url._normalizedURL) {
             return result
         } else {
-            let parentURL = url.deletingLastPathComponent()
+            let parentURL = url.resolvingSymlinksInPath().deletingLastPathComponent()
             
             guard parentURL != url, !parentURL.path.isEmpty else {
                 return nil

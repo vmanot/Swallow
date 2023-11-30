@@ -223,17 +223,17 @@ extension FileManager {
         toDirectory url: URLRepresentable,
         perform operation: (URL) throws -> T
     ) throws -> T {
-        let url = try _DirectoryAccessManager.requestAccess(toDirectory: url.url)
+        let url = url.url //try _DirectoryAccessManager.requestAccess(toDirectory: url.url)
         
-        guard url.startAccessingSecurityScopedResource() else {
+        /*guard url.startAccessingSecurityScopedResource() else {
             assertionFailure()
             
             throw _SecurityScopedResourceAccessError.invalidAccess
-        }
+        }*/
         
         let result = try operation(url)
         
-        url.stopAccessingSecurityScopedResource()
+      //  url.stopAccessingSecurityScopedResource()
         
         return result
     }
