@@ -45,14 +45,16 @@ extension Optional {
         }
     }
     
-    public static func =?? (lhs: inout Wrapped, rhs: Wrapped?) {
+    public static func =?? (lhs: inout Wrapped, rhs: Self) {
         if let rhs = rhs {
             lhs = rhs
         }
     }
     
-    public static func =?? (lhs: inout Wrapped, rhs: Wrapped??) {
-        lhs =?? rhs.compact()
+    public static func =?? (lhs: inout Self, rhs: Self?) {
+        if let rhs = rhs.compact() {
+            lhs = rhs
+        }
     }
 }
 
