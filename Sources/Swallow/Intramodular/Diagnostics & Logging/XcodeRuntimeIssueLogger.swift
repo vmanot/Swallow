@@ -33,7 +33,7 @@ public struct XcodeRuntimeIssueLogger {
         _ warningFormat: StaticString,
         file: StaticString = #file,
         line: UInt = #line,
-        vaList: CVarArg...
+        _ vaList: CVarArg...
     ) {
         guard _isDebugAssertConfiguration else {
             return
@@ -73,7 +73,7 @@ public func runtimeIssue(
         warningFormat,
         file: file,
         line: line,
-        vaList: arguments
+        arguments
     )
 }
 
@@ -87,10 +87,8 @@ public func runtimeIssue(
         "%{public}s",
         file: file,
         line: line,
-        vaList: message()
+        message()
     )
-    
-    debugPrint(message())
 }
 
 @_transparent
@@ -169,23 +167,27 @@ public func RTI_RUNTIME_ISSUES_UNAVAILABLE() {
     hasLoggedUnavailable = true
 }
 
-struct HashedStaticString: Hashable {
-    private let base: StaticString
-    
-    init(_ base: StaticString) {
-        self.base = base
-    }
-    
-    func hash(into hasher: inout Hasher) {
-        base.withUTF8Buffer { buffer in
-            hasher.combine(bytes: UnsafeRawBufferPointer(buffer))
+extension XcodeRuntimeIssueLogger {
+    struct HashedStaticString: Hashable {
+        private let base: StaticString
+        
+        init(_ base: StaticString) {
+            self.base = base
         }
-    }
-    
-    static func == (lhs: Self, rhs: Self) -> Bool {
-        lhs.base.withUTF8Buffer { (lhs: UnsafeBufferPointer<UInt8>) in
-            rhs.base.withUTF8Buffer { (rhs: UnsafeBufferPointer<UInt8>) in
-                zip(lhs, rhs).first(where: { $0.0 != $0.1 }) == nil
+        
+        @_transparent
+        func hash(into hasher: inout Hasher) {
+            base.withUTF8Buffer { buffer in
+                hasher.combine(bytes: UnsafeRawBufferPointer(buffer))
+            }
+        }
+        
+        @_transparent
+        static func == (lhs: Self, rhs: Self) -> Bool {
+            lhs.base.withUTF8Buffer { (lhs: UnsafeBufferPointer<UInt8>) in
+                rhs.base.withUTF8Buffer { (rhs: UnsafeBufferPointer<UInt8>) in
+                    zip(lhs, rhs).first(where: { $0.0 != $0.1 }) == nil
+                }
             }
         }
     }
