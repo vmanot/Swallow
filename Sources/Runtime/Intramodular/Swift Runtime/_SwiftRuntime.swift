@@ -88,10 +88,10 @@ extension _SwiftRuntime {
         for i in 0..<images {
             let imageName = String(cString: _dyld_get_image_name(i))
             // System frameworks on the simulator are in Xcode.app/Contents/** (Although Xcode could be renamed like Xcode-beta.app so don't check for that specifically)
-            /*guard !imageName.contains(".simruntime") && !imageName.contains(".app/Contents/") && !imageName.starts(with: "/usr/lib/") else {
-             continue
-             }*/
-            
+            guard !imageName.contains(".simruntime") && !imageName.contains(".app/Contents/") && !imageName.starts(with: "/usr/lib/") else {
+                continue
+            }
+
             let header = _dyld_get_image_header(i)!
             var size: UInt = 0
             let sectStart = UnsafeRawPointer(
@@ -117,3 +117,4 @@ extension _SwiftRuntime {
         return types
     }
 }
+
