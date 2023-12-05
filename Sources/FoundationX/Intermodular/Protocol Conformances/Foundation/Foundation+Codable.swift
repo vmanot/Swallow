@@ -53,9 +53,9 @@ extension Calendar.Component: Codable, RawRepresentable {
     
     private var _leapMonthRawValue: String? {
         #if swift(>=5.9)
-        if #available(macOS 14.0, iOS 18.0, tvOS 18.0, watchOS 10.0, *) {
+        if #available(macOS 14.0, iOS 17.0, tvOS 17.0, watchOS 10.0, *) {
             if self == .isLeapMonth {
-                return "isLeapMotnh"
+                return "isLeapMonth"
             }
         }
         #endif

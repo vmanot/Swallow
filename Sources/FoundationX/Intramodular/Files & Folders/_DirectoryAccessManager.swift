@@ -76,7 +76,7 @@ extension _DirectoryAccessManager {
                 
                 return try _SecurityScopedBookmarks.save(for: url)
             }
-
+            
             let url = try _requestAccess(toDirectory: url)
             
             do {
@@ -105,7 +105,7 @@ extension _DirectoryAccessManager {
         url.stopAccessingSecurityScopedResource()
     }
     
-
+    
     @MainActor
     public static func _requestAccess(
         toDirectory url: URL
@@ -125,8 +125,8 @@ extension _DirectoryAccessManager {
         let isKnownDirectory = _UserHomeDirectory(from: url) != nil
         
         openPanel.message = isKnownDirectory
-            ? "Your app needs to access the \(directoryName) folder to continue. Please select the \(directoryName) folder to grant access."
-            : "Your app needs to access a folder to continue. Please select the folder to grant access."
+        ? "Your app needs to access the \(directoryName) folder to continue. Please select the \(directoryName) folder to grant access."
+        : "Your app needs to access a folder to continue. Please select the folder to grant access."
         
         openPanel.prompt = "Grant Access"
         
@@ -213,38 +213,45 @@ extension NSError {
 
 // MARK: - Supplementary
 
-public enum _SecurityScopedResourceAccessError: Error {
-    case invalidAccess
-}
-
 extension FileManager {
     @MainActor
     public func withUserGrantedAccess<T>(
         toDirectory url: URLRepresentable,
         perform operation: (URL) throws -> T
     ) throws -> T {
-        let url = url.url //try _DirectoryAccessManager.requestAccess(toDirectory: url.url)
+        var url: URL = url.url
         
-        /*guard url.startAccessingSecurityScopedResource() else {
+        guard !isURLInApplicationContainer(url) else {
+            return try operation(url)
+        }
+        
+        url = try _DirectoryAccessManager.requestAccess(toDirectory: url)
+        
+        guard url.startAccessingSecurityScopedResource() else {
             assertionFailure()
             
             throw _SecurityScopedResourceAccessError.invalidAccess
-        }*/
+        }
         
         let result = try operation(url)
         
-      //  url.stopAccessingSecurityScopedResource()
+        url.stopAccessingSecurityScopedResource()
         
         return result
     }
-}
-
-// MARK: - Auxiliary
-
-extension URL {
-    /// Adds the missing fucking "/" at the end.
-    fileprivate var _standardizedDirectoryPath: String {
-        path.addingSuffixIfMissing("/")
+    
+    private func isURLInApplicationContainer(
+        _ url: URL
+    ) -> Bool {
+        #if os(macOS)
+        return url.path.hasPrefix(NSHomeDirectory())
+        #else
+        return true
+        #endif
+    }
+    
+    fileprivate enum _SecurityScopedResourceAccessError: Error {
+        case invalidAccess
     }
 }
 

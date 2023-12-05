@@ -91,7 +91,7 @@ extension _SwiftRuntime {
             guard !imageName.contains(".simruntime") && !imageName.contains(".app/Contents/") && !imageName.starts(with: "/usr/lib/") else {
                 continue
             }
-
+            
             let header = _dyld_get_image_header(i)!
             var size: UInt = 0
             let sectStart = UnsafeRawPointer(
@@ -117,4 +117,3 @@ extension _SwiftRuntime {
         return types
     }
 }
-

@@ -87,7 +87,7 @@ extension FileManager {
     public func isReadableAndWritable<T: URLRepresentable>(
         atOrAncestorOf location: T
     ) -> Bool {
-        let url = location.url._normalizedURL
+        let url = location.url._fromFileURLToURL()
         
         if isReadableAndWritable(at: url) {
             return true
@@ -105,14 +105,16 @@ extension FileManager {
     public func nearestSecurityScopedAccessibleAncestor<T: URLRepresentable>(
         for location: T
     ) -> URL? {
-        let url = location.url._normalizedURL
+        let url = location.url._fromFileURLToURL()
         
-        if let result = try? _SecurityScopedBookmarks.resolvedURL(for: location.url._normalizedURL) {
+        if let result = try? _SecurityScopedBookmarks.resolvedURL(for: location.url._fromFileURLToURL()) {
+            return result
+        } else if let result = try? _SecurityScopedBookmarks.save(for: location.url) {
             return result
         } else {
             let parentURL = url.resolvingSymlinksInPath().deletingLastPathComponent()
-            
-            guard parentURL != url, !parentURL.path.isEmpty else {
+
+            guard parentURL != url, !parentURL._isRootPath, !parentURL.path.isEmpty else {
                 return nil
             }
             
@@ -123,9 +125,9 @@ extension FileManager {
     public func isSecurityScopedAccessible<T: URLRepresentable>(
         at location: T
     ) -> Bool {
-        let url = location.url._normalizedURL
+        let url = location.url._fromFileURLToURL()
         
-        if ((try? _SecurityScopedBookmarks.resolvedURL(for: location.url._normalizedURL)) as URL?) != nil {
+        if ((try? _SecurityScopedBookmarks.resolvedURL(for: location.url._fromFileURLToURL())) as URL?) != nil {
             return true
         }
                 
@@ -134,7 +136,7 @@ extension FileManager {
         } else {
             let parentURL = url.deletingLastPathComponent()
             
-            guard parentURL != url, !parentURL.path.isEmpty else {
+            guard parentURL != url, !parentURL._isRootPath, !parentURL.path.isEmpty else {
                 return false
             }
             

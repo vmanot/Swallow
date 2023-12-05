@@ -4,7 +4,7 @@
 
 import Foundation
 
-class _SecurityScopedBookmarks {
+public final class _SecurityScopedBookmarks {
     private static let defaults = UserDefaults(suiteName: "com.vmanot.Swallow")!
     private static let bookmarkKey = "SecurityScopedBookmarks"
     
@@ -12,22 +12,18 @@ class _SecurityScopedBookmarks {
         let urlPath: String
         var data: Data
     }
-    
-    private static func standardizedURL(from url: URL) -> URL {
-        return url.standardized
-    }
-    
-    static func save(for url: URL) throws -> URL {
+        
+    public static func save(for url: URL) throws -> URL {
         do {
-            let standardizedURL = self.standardizedURL(from: url)
+            let url = url.standardized
             
-            let bookmarkData = try standardizedURL._bookmarkDataWithSecurityScopedAccess()
+            let bookmarkData = try url._bookmarkDataWithSecurityScopedAccess()
             var bookmarks = load()
             
-            if let index = bookmarks.firstIndex(where: { $0.urlPath == standardizedURL.path }) {
+            if let index = bookmarks.firstIndex(where: { $0.urlPath == url.path }) {
                 bookmarks[index].data = bookmarkData
             } else {
-                bookmarks.append(Bookmark(urlPath: standardizedURL.path, data: bookmarkData))
+                bookmarks.append(Bookmark(urlPath: url.path, data: bookmarkData))
             }
             
             save(bookmarks)
@@ -38,12 +34,12 @@ class _SecurityScopedBookmarks {
         }
     }
         
-    static func resolvedURL(
+    public static func resolvedURL(
         for url: URL
     ) throws -> URL? {
-        let standardizedURL = self.standardizedURL(from: url)
+        let url = url.standardized
        
-        guard let bookmark = load().first(where: { $0.urlPath == standardizedURL.path }) else {
+        guard let bookmark = load().first(where: { $0.urlPath == url.path }) else {
             return nil
         }
         
@@ -65,7 +61,9 @@ class _SecurityScopedBookmarks {
         }
     }
     
-    private static func save(_ bookmarks: [Bookmark]) {
+    private static func save(
+        _ bookmarks: [Bookmark]
+    ) {
         do {
             let data = try JSONEncoder().encode(bookmarks)
             defaults.set(data, forKey: bookmarkKey)
@@ -84,7 +82,7 @@ class _SecurityScopedBookmarks {
         }
     }
 
-    private static func clear() {
+    private static func removeAll() {
         defaults.removeObject(forKey: bookmarkKey)
     }
 }

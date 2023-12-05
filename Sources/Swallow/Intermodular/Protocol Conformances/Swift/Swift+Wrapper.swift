@@ -235,7 +235,9 @@ public struct Weak<Value>: PropertyWrapper {
             _weakWrappedValue.map({ $0 as! Value }) ?? _strongWrappedValue
         } set {
             if let newValue {
-                if type(of: newValue) is AnyClass {
+                let valueType = _getUnwrappedType(from: __fixed_type(of: newValue))
+                
+                if swift_isClassType(valueType) {
                     _weakWrappedValue = try! cast(newValue, to: AnyObject.self)
                 } else {
                     _strongWrappedValue = newValue

@@ -7,16 +7,6 @@ import Swallow
 import System
 
 extension URL {
-    var _normalizedURL: URL {
-        guard isFileURL else {
-            return self
-        }
-        
-        return URL(string: resolvingSymlinksInPath().path)!
-    }
-}
-
-extension URL {
     @_disfavoredOverload
     @available(macOS 11.0, iOS 14.0, watchOS 7.0, tvOS 14.0, *)
     public init?(
@@ -55,12 +45,6 @@ extension URL {
 }
 
 extension URL {
-    public var fileName: String? {
-        lastPathComponent
-    }
-}
-
-extension URL {
     /// The portion of a URL relative to a given base URL.
     public func relativeString(
         relativeTo baseURL: URL
@@ -78,18 +62,6 @@ extension URL {
         } else {
             return relativeString
         }
-    }
-}
-
-extension URL {
-    public func appendingDirectoryPathComponent(
-        _ pathComponent: String?
-    ) -> URL {
-        guard let pathComponent else {
-            return self
-        }
-        
-        return appendingPathComponent(pathComponent, isDirectory: true)
     }
 }
 
@@ -126,9 +98,7 @@ extension URL {
             forSecurityApplicationGroupIdentifier: identifier
         ).unwrap()
     }
-}
 
-extension URL {
     /// The real home directory of the user.
     @_spi(Internal)
     public static var _userHomeDirectory: URL {
@@ -161,6 +131,10 @@ extension URL {
             self.rawValue = rawValue
             self.isDirectory = isDirectory
         }
+        
+        public static func directory(_ string: String) -> Self{
+            Self(rawValue: string, isDirectory: true)
+        }
     }
 
     public mutating func append(_ component: PathComponent) {
@@ -173,6 +147,16 @@ extension URL {
     
     public static func + (lhs: Self, rhs: PathComponent) -> Self {
         lhs.appending(rhs)
+    }
+
+    public func appendingDirectoryPathComponent(
+        _ pathComponent: String?
+    ) -> URL {
+        guard let pathComponent else {
+            return self
+        }
+        
+        return appendingPathComponent(pathComponent, isDirectory: true)
     }
 }
 
@@ -200,9 +184,7 @@ extension URL {
             self = components.url!
         }
     }
-}
 
-extension URL {
     public var _removingPercentEncoding: URL {
         get throws {
             guard let decodedString = self.absoluteString.removingPercentEncoding else {
@@ -224,8 +206,30 @@ extension URL {
     }
 }
 
-extension URL.PathComponent {
-    public static func directory(_ string: String) -> Self{
-        Self(rawValue: string, isDirectory: true)
+extension URL {
+    public var _fileNameWithoutExtension: String {
+        self.deletingPathExtension().lastPathComponent
+    }
+
+    public var _fileNameWithExtension: String? {
+        lastPathComponent
+    }
+
+    /// Whether the `URL` is `/`.
+    public var _isRootPath: Bool {
+        return self.path == "/" || resolvingSymlinksInPath().path == "/"
+    }
+    
+    /// Adds the missing fucking "/" at the end.
+    public var _standardizedDirectoryPath: String {
+        path.addingSuffixIfMissing("/")
+    }
+
+    public func _fromFileURLToURL() -> URL {
+        guard isFileURL else {
+            return self
+        }
+        
+        return URL(string: resolvingSymlinksInPath().path)!
     }
 }
