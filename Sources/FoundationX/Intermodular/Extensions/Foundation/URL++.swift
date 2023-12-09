@@ -232,4 +232,16 @@ extension URL {
         
         return URL(string: resolvingSymlinksInPath().path)!
     }
+
+    public static func temporaryFile(
+        name: String,
+        data: Data
+    ) throws -> URL {
+        let tempDirectoryURL = FileManager.default.temporaryDirectory
+        let fileURL = tempDirectoryURL.appendingPathComponent(name)
+        
+        try data.write(to: fileURL)
+        
+        return fileURL
+    }
 }
