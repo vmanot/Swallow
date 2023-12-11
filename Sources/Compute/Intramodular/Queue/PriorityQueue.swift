@@ -14,19 +14,27 @@ public struct PriorityQueue<T: Comparable> {
     public var value = [Element]()
     private let predicate: ((Element, Element) -> Bool)
 
-    public init(_ value: [Element]) {
+    public init(
+        _ value: [Element]
+    ) {
         self.value = value
         self.predicate = { $0 < $1 }
     }
     
-    public init(ascending: Bool = false, startingValues: [Element] = []) {
+    public init(
+        ascending: Bool = false,
+        startingValues: [Element] = []
+    ) {
         self.init(
             order: ascending ? { (x: T, y: T) in x > y } : { (x: T, y: T) in x < y },
             startingValues: startingValues
         )
     }
 
-    public init(order: @escaping (Element, Element) -> Bool, startingValues: [Element] = []) {
+    public init(
+        order: @escaping (Element, Element) -> Bool,
+        startingValues: [Element] = []
+    ) {
         predicate = order
         value = startingValues
         
