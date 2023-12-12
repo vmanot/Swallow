@@ -61,7 +61,7 @@ extension TypeMetadata.MemoryLayout: Equatable {
 
 // MARK: - Helpers
 
-extension _TypeMetadata_Type {
+extension _TypeMetadataType {
     public var memoryLayout: TypeMetadata.MemoryLayout {
         .init(base)
     }

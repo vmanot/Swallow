@@ -5,51 +5,52 @@
 import Swallow
 
 /// A `TypeMetadata`-like type.
-public protocol _TypeMetadata_Type: Hashable {
+public protocol _TypeMetadataType: Hashable {
     var base: Any.Type { get }
     
     /// The supertype of this type, if any.
     var supertypeMetadata: Self? { get }
     
+    var _isInvalid: Bool { get }
+    
     init(_unsafe base: Any.Type)
     init?(_ base: Any.Type)
 }
 
-extension _TypeMetadata_Type {
-    public var _isInvalid: Bool {
-        String(describing: base).contains("<<< invalid type >>>")
-    }
-}
-
 /// A `NominalTypeMetadata`-like type.
-public protocol NominalTypeMetadata_Type: CustomStringConvertible, _TypeMetadata_Type {
+public protocol _NominalTypeMetadataType: CustomStringConvertible, _TypeMetadataType {
     var mangledName: String { get }
-    
     var supertypeFields: [NominalTypeMetadata.Field]? { get }
     var fields: [NominalTypeMetadata.Field] { get }
 }
 
 // MARK: - Implementation
 
-extension CustomStringConvertible where Self: _TypeMetadata_Type {
+extension _TypeMetadataType {
+    public var _isInvalid: Bool {
+        String(describing: base).contains("<<< invalid type >>>")
+    }
+}
+
+extension CustomStringConvertible where Self: _TypeMetadataType {
     public var description: String {
         String(describing: base)
     }
 }
 
-extension Equatable where Self: _TypeMetadata_Type {
+extension Equatable where Self: _TypeMetadataType {
     public static func == (lhs: Self, rhs: Self) -> Bool {
         lhs.base == rhs.base
     }
 }
 
-extension Hashable where Self: _TypeMetadata_Type {
+extension Hashable where Self: _TypeMetadataType {
     public func hash(into hasher: inout Hasher) {
         hasher.combine(ObjectIdentifier(base))
     }
 }
 
-extension _TypeMetadata_Type {
+extension _TypeMetadataType {
     public var supertypeMetadata: Self? {
         guard let value = (base as? AnyClass).map(ObjCClass.init) else {
             return nil
@@ -67,7 +68,7 @@ extension _TypeMetadata_Type {
     }
 }
 
-extension NominalTypeMetadata_Type {
+extension _NominalTypeMetadataType {
     public var supertypeFields: [NominalTypeMetadata.Field]? {
         supertypeMetadata?.fields
     }
@@ -75,7 +76,7 @@ extension NominalTypeMetadata_Type {
 
 // MARK: - Extensions
 
-extension _TypeMetadata_Type {
+extension _TypeMetadataType {
     public var isSwiftObject: Bool {
         ObjCClass(base)?.isSwiftObject ?? false
     }
@@ -85,7 +86,7 @@ extension _TypeMetadata_Type {
     }
 }
 
-extension NominalTypeMetadata_Type {
+extension _NominalTypeMetadataType {
     public var allFields: [NominalTypeMetadata.Field] {
         (supertypeMetadata?.allFields ?? []) + fields
     }

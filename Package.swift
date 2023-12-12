@@ -14,6 +14,7 @@ let package = Package(
         .library(
             name: "Swallow",
             targets: [
+                "_ExpansionsRuntime",
                 "_LoremIpsum",
                 "Compute",
                 "Diagnostics",
@@ -30,6 +31,17 @@ let package = Package(
         .package(url: "https://github.com/apple/swift-collections", branch: "release/1.1"),
     ],
     targets: [
+        .target(
+            name: "_ExpansionsRuntime",
+            dependencies: [
+                "Diagnostics",
+                "Runtime",
+                "Swallow",
+            ],
+            swiftSettings: [
+                .unsafeFlags(["-enable-library-evolution"])
+            ]
+        ),
         .target(
             name: "_LoremIpsum"
         ),

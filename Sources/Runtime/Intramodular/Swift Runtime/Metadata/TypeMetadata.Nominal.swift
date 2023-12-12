@@ -8,19 +8,19 @@ extension TypeMetadata {
     public typealias Nominal = NominalTypeMetadata
 }
 
-public struct NominalTypeMetadata: NominalTypeMetadata_Type {
+public struct NominalTypeMetadata: _NominalTypeMetadataType {
     public let base: Any.Type
     
     public var mangledName: String {
-        (TypeMetadata(base).typed as! any NominalTypeMetadata_Type).mangledName
+        (TypeMetadata(base).typed as! any _NominalTypeMetadataType).mangledName
     }
     
     public var fields: [Field] {
-        return (TypeMetadata(base).typed as! any NominalTypeMetadata_Type).fields
+        return (TypeMetadata(base).typed as! any _NominalTypeMetadataType).fields
     }
     
     public init?(_ base: Any.Type) {
-        guard TypeMetadata(base).typed is any NominalTypeMetadata_Type else {
+        guard TypeMetadata(base).typed is any _NominalTypeMetadataType else {
             return nil
         }
         

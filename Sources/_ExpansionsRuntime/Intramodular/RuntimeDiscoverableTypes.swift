@@ -2,8 +2,9 @@
 // Copyright (c) Vatsal Manot
 //
 
-import Diagnostics
+@_implementationOnly import Diagnostics
 import Foundation
+@_implementationOnly import Runtime
 import Swallow
 
 public final class RuntimeDiscoverableTypes {

@@ -11,109 +11,174 @@ public struct _SwiftRuntime {
     
 }
 
+
 extension _SwiftRuntime {
-    private static func getTypeName(
-        descriptor: UnsafePointer<_SwiftRuntime.TargetModuleContextDescriptor>
-    ) -> String? {
-        let flags = descriptor.pointee.flags
-        var parentName: String? = nil
-        switch flags.kind {
-            case .Module, .Enum, .Struct, .Class:
-                let name = UnsafeRawPointer(descriptor)
-                    .advanced(by: MemoryLayout<_SwiftRuntime.TargetModuleContextDescriptor>.offset(of: \.name)!)
-                    .advanced(by: Int(descriptor.pointee.name))
-                    .assumingMemoryBound(to: CChar.self)
-                let typeName = String(cString: name)
-                if descriptor.pointee.parent != 0 {
-                    let parent = UnsafeRawPointer(descriptor).advanced(by: MemoryLayout<_SwiftRuntime.TargetModuleContextDescriptor>.offset(of: \.parent)!).advanced(by: Int(descriptor.pointee.parent))
-                    if abs(descriptor.pointee.parent) % 2 == 1 {
-                        return nil
-                    }
-                    parentName = getTypeName(descriptor: parent.assumingMemoryBound(to: _SwiftRuntime.TargetModuleContextDescriptor.self))
-                }
-                if let parentName = parentName {
-                    return "\(parentName).\(typeName)"
-                }
-                return typeName
-            default:
-                return nil
+    @frozen
+    public struct _TypeConformance: Hashable, Identifiable {
+        public let name: String
+        @_HashableExistential
+        public var type: Any.Type?
+        public let `protocol`: String
+        
+        public var id: AnyHashable {
+            hashValue
+        }
+
+        public init(
+            name: String,
+            type: Any.Type?,
+            `protocol`: String
+        ) {
+            self.name = name
+            self.type = type
+            self.protocol = `protocol`
         }
     }
     
-    public typealias LookupResult = (name: String, accessor: () -> UInt64, proto: String)
+    public struct _TypeConformances: Identifiable {
+        public let name: String
+        public let conformances: IdentifierIndexingArrayOf<_TypeConformance>
+        
+        public var id: AnyHashable {
+            name
+        }
+    }
     
+    public static func types(
+        for image: DynamicLinkEditor.Image
+    ) -> [_TypeConformances] {
+        var result = [String: [_TypeConformance]]()
+        
+        var sectionSize: UInt = 0
+        let sectStart = UnsafeRawPointer(
+            getsectiondata(
+                UnsafeRawPointer(image.header).assumingMemoryBound(to: mach_header_64.self),
+                "__TEXT",
+                "__swift5_proto",
+                &sectionSize
+            )
+        )?.assumingMemoryBound(to: Int32.self)
+
+        guard var sectData = sectStart else {
+            return []
+        }
+        
+        for _ in 0..<(Int(sectionSize) / MemoryLayout<Int32>.size) {
+            let conformance = UnsafeRawPointer(sectData)
+                .advanced(by: Int(sectData.pointee))
+                .assumingMemoryBound(to: SwiftRuntimeProtocolConformanceDescriptor.self)
+            
+            if let type = parseConformance(from: conformance) {
+                result[type.name, default: []].append(type)
+            }
+            
+            sectData = sectData.successor()
+        }
+        
+        return result.filter({ !$0.value.isEmpty }).map {
+            _TypeConformances(
+                name: $0.value.first!.name,
+                conformances: IdentifierIndexingArrayOf($0.value.distinct())
+            )
+        }
+    }
+        
     private static func parseConformance(
-        conformance: UnsafePointer<_SwiftRuntime.ProtocolConformanceDescriptor>
-    ) -> LookupResult? {
-        let flags = conformance.pointee.conformanceFlags
+        from conformanceDescriptor: UnsafePointer<SwiftRuntimeProtocolConformanceDescriptor>
+    ) -> _TypeConformance? {
+        let flags = conformanceDescriptor.pointee.conformanceFlags
         
         guard case .DirectTypeDescriptor = flags.kind else {
             return nil
         }
         
-        guard conformance.pointee.protocolDescriptor % 2 == 1 else {
+        guard let protocolDescriptorPointer = conformanceDescriptor.mutableRepresentation.pointee.protocolDescriptor else {
             return nil
         }
-        let descriptorOffset = Int(conformance.pointee.protocolDescriptor & ~1)
-        let jumpPtr = UnsafeRawPointer(conformance).advanced(by: MemoryLayout<_SwiftRuntime.ProtocolConformanceDescriptor>.offset(of: \.protocolDescriptor)!).advanced(by: descriptorOffset)
-        let address = jumpPtr.load(as: UInt64.self)
         
-        // Address will be 0 if the protocol is not available (such as only defined on a newer OS)
-        guard address != 0 else {
+        let protocolName = String(cString: protocolDescriptorPointer.pointee.mangledName.advanced())
+        
+        let typeDescriptorPointer = UnsafeRawPointer(conformanceDescriptor)
+            .advanced(by: MemoryLayout<SwiftRuntimeProtocolConformanceDescriptor>.offset(of: \.nominalTypeDescriptor)!)
+            .advanced(by: Int(conformanceDescriptor.pointee.nominalTypeDescriptor))
+        
+        let descriptor = typeDescriptorPointer.assumingMemoryBound(to: SwiftRuntimeModuleContextDescriptor.self)
+        
+        let nominalTypeKinds = [
+            SwiftRuntimeContextDescriptorFlags.Kind.class,
+            SwiftRuntimeContextDescriptorFlags.Kind.struct,
+            SwiftRuntimeContextDescriptorFlags.Kind.enum
+        ]
+        
+        if descriptor.pointee.flags.isGeneric {
             return nil
         }
-        let protoPtr = UnsafeRawPointer(bitPattern: UInt(address))!
-        let proto = protoPtr.load(as: _SwiftRuntime.ProtocolDescriptor.self)
-        let namePtr = protoPtr.advanced(by: MemoryLayout<_SwiftRuntime.ProtocolDescriptor>.offset(of: \.name)!).advanced(by: Int(proto.name))
-        let protocolName = String(cString: namePtr.assumingMemoryBound(to: CChar.self))
-        /*  guard ["PreviewProvider", "PreviewRegistry"].contains(protocolName) else {
-         return nil
-         }*/
-        
-        let typeDescriptorPointer = UnsafeRawPointer(conformance).advanced(by: MemoryLayout<_SwiftRuntime.ProtocolConformanceDescriptor>.offset(of: \.nominalTypeDescriptor)!).advanced(by: Int(conformance.pointee.nominalTypeDescriptor))
-        
-        let descriptor = typeDescriptorPointer.assumingMemoryBound(to: _SwiftRuntime.TargetModuleContextDescriptor.self)
-        if let name = getTypeName(descriptor: descriptor),
-           [_SwiftRuntime.ContextDescriptorKind.Class, _SwiftRuntime.ContextDescriptorKind.Struct, _SwiftRuntime.ContextDescriptorKind.Enum].contains(descriptor.pointee.flags.kind) {
-            let accessFunctionPointer = UnsafeRawPointer(descriptor).advanced(by: MemoryLayout<_SwiftRuntime.TargetModuleContextDescriptor>.offset(of: \.accessFunction)!).advanced(by: Int(descriptor.pointee.accessFunction))
+                
+        if let name = getTypeName(descriptor: descriptor) {
+            guard nominalTypeKinds.contains(where: { $0 == descriptor.pointee.flags.kind }) else {
+                return nil
+            }
+            
+            let accessFunctionPointer = UnsafeRawPointer(descriptor)
+                .advanced(by: MemoryLayout<SwiftRuntimeModuleContextDescriptor>.offset(of: \.accessFunction)!)
+                .advanced(by: Int(descriptor.pointee.accessFunction))
+            
             let accessFunction = unsafeBitCast(accessFunctionPointer, to: (@convention(c) () -> UInt64).self)
-            return (name, accessFunction, protocolName)
+                        
+            let type: Any.Type?
+            
+            if descriptor.pointee.flags.isGeneric {
+                type = unsafeBitCast(accessFunction(), to: Any.Type.self)
+            } else {
+                type = nil
+            }
+            
+            return _TypeConformance(
+                name: name,
+                type: type,
+                protocol: protocolName
+            )
         }
+        
         return nil
     }
     
-    public static func getPreviewTypes() -> [LookupResult] {
-        let images = _dyld_image_count()
-        var types = [LookupResult]()
-        for i in 0..<images {
-            let imageName = String(cString: _dyld_get_image_name(i))
-            // System frameworks on the simulator are in Xcode.app/Contents/** (Although Xcode could be renamed like Xcode-beta.app so don't check for that specifically)
-            guard !imageName.contains(".simruntime") && !imageName.contains(".app/Contents/") && !imageName.starts(with: "/usr/lib/") else {
-                continue
-            }
-            
-            let header = _dyld_get_image_header(i)!
-            var size: UInt = 0
-            let sectStart = UnsafeRawPointer(
-                getsectiondata(
-                    UnsafeRawPointer(header).assumingMemoryBound(to: mach_header_64.self),
-                    "__TEXT",
-                    "__swift5_proto",
-                    &size))?.assumingMemoryBound(to: Int32.self)
-            if var sectData = sectStart {
-                for _ in 0..<Int(size)/MemoryLayout<Int32>.size {
-                    let conformance = UnsafeRawPointer(sectData)
-                        .advanced(by: Int(sectData.pointee))
-                        .assumingMemoryBound(to: _SwiftRuntime.ProtocolConformanceDescriptor.self)
+    private static func getTypeName(
+        descriptor: UnsafePointer<SwiftRuntimeModuleContextDescriptor>
+    ) -> String? {
+        let flags = descriptor.pointee.flags
+        var parentName: String? = nil
+        
+        switch flags.kind {
+            case .module, .enum, .struct, .class:
+                let name = UnsafeRawPointer(descriptor)
+                    .advanced(by: MemoryLayout<SwiftRuntimeModuleContextDescriptor>.offset(of: \.name)!)
+                    .advanced(by: Int(descriptor.pointee.name))
+                    .assumingMemoryBound(to: CChar.self)
+                
+                let typeName = String(cString: name)
+                
+                if descriptor.pointee.parent != 0 {
+                    let parent = UnsafeRawPointer(descriptor)
+                        .advanced(by: MemoryLayout<SwiftRuntimeModuleContextDescriptor>.offset(of: \.parent)!)
+                        .advanced(by: Int(descriptor.pointee.parent))
                     
-                    if let result = parseConformance(conformance: conformance) {
-                        types.append(result)
+                    if abs(descriptor.pointee.parent) % 2 == 1 {
+                        return nil
                     }
                     
-                    sectData = sectData.successor()
+                    parentName = getTypeName(
+                        descriptor: parent.assumingMemoryBound(to: SwiftRuntimeModuleContextDescriptor.self)
+                    )
                 }
-            }
+                
+                if let parentName = parentName {
+                    return "\(parentName).\(typeName)"
+                }
+                
+                return typeName
+            default:
+                return nil
         }
-        return types
     }
 }

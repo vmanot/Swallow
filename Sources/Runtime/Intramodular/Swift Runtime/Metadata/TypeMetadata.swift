@@ -5,7 +5,7 @@
 import Swallow
 
 @frozen
-public struct TypeMetadata: _TypeMetadata_Type {
+public struct TypeMetadata: _TypeMetadataType {
     public let base: Any.Type
         
     public init(_ base: Any.Type) {

@@ -55,7 +55,12 @@ extension String: UTF8Representable {
     }
     
     public init(utf8String: NullTerminatedUTF8String, count: Int, managed: Bool) {
-        self.init(bytesNoCopy: .init(utf8String.value), length: count, encoding: .utf8, freeWhenDone: managed)!
+        self.init(
+            bytesNoCopy: .init(utf8String.value),
+            length: count,
+            encoding: .utf8,
+            freeWhenDone: managed
+        )!
     }
     
     public init(utf8String: NullTerminatedUTF8String, count: Int, deallocate: Bool) {

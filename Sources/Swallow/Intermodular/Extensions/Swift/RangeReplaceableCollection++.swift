@@ -294,6 +294,14 @@ extension RangeReplaceableCollection {
             !alreadySeen.insert($0).inserted
         }
     }
+    
+    public func removingDuplicates() -> Self where Element: Hashable {
+        var result = self
+        
+        result.removeDuplicates()
+        
+        return result
+    }
 }
 
 extension MutableCollection where Self: RangeReplaceableCollection {

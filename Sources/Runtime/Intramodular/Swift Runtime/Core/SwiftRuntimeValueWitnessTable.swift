@@ -4,7 +4,8 @@
 
 import Swallow
 
-public struct SwiftRuntimeValueWitnessTable {    
+@frozen
+public struct SwiftRuntimeValueWitnessTable {
     var a: Int
     var b: Int
     var c: Int
@@ -23,6 +24,8 @@ public struct SwiftRuntimeValueWitnessTable {
     }
 }
 
+@frozen
+@usableFromInline
 struct SwiftRuntimeValueWitnessFlags {
     static let alignmentMask = 0x0000FFFF
     static let isNonPOD = 0x00010000

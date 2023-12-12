@@ -8,6 +8,11 @@ import Swallow
 public struct SwiftRuntimeUnsafeRelativePointer<Offset: BinaryInteger, Pointee> {
     public var offset: Offset
     
+    @_transparent
+    public init(offset: Offset) {
+        self.offset = offset
+    }
+    
     @_optimize(none)
     @_transparent
     public mutating func pointee() -> Pointee {
@@ -18,12 +23,11 @@ public struct SwiftRuntimeUnsafeRelativePointer<Offset: BinaryInteger, Pointee> 
     @_transparent
     public mutating func advanced() -> UnsafeMutablePointer<Pointee> {
         let offsetCopy = self.offset
-        return withUnsafePointer(to: &self) {
+        return withUnsafeMutablePointer(to: &self) {
             return $0
-                .rawRepresentation
+                .mutableRawRepresentation
                 .advanced(by: Int(offsetCopy))
                 .assumingMemoryBound(to: Pointee.self)
-                .mutableRepresentation
         }
     }
 }

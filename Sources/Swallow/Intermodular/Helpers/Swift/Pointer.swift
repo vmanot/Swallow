@@ -75,14 +75,17 @@ extension Pointer {
 }
 
 extension Pointer {
+    @_transparent
     public var nativeWordPointerRepresentation: UnsafePointer<NativeWord> {
         UnsafePointer<NativeWord>(opaquePointerRepresentation)
     }
     
+    @_transparent
     public var rawRepresentation: UnsafeRawPointer {
         UnsafeRawPointer(opaquePointerRepresentation)
     }
     
+    @_transparent
     public var mutableRawRepresentation: UnsafeMutableRawPointer {
         UnsafeMutableRawPointer(opaquePointerRepresentation)
     }

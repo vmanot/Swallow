@@ -4,9 +4,10 @@
 
 import Swift
 
+@frozen
+@usableFromInline
 struct SwiftRuntimeClassMetadataLayout: SwiftRuntimeContextualTypeMetadataLayout {
-    typealias ContextDescriptor = SwiftRuntimeClassContextDescriptor
-    
+    @usableFromInline
     var valueWitnessTable: UnsafePointer<SwiftRuntimeValueWitnessTable>
     var isaPointer: Int
     var superclass: AnyClass?
@@ -20,7 +21,8 @@ struct SwiftRuntimeClassMetadataLayout: SwiftRuntimeContextualTypeMetadataLayout
     var runtimeReserveField: UInt16
     var classObjectSize: UInt32
     var classObjectAddressPoint: UInt32
-    var contextDescriptor: UnsafeMutablePointer<ContextDescriptor>
+    @usableFromInline
+    var contextDescriptor: UnsafeMutablePointer<SwiftRuntimeClassContextDescriptor>
     var ivarDestroyer: UnsafeRawPointer
     
     public var kind: Int {

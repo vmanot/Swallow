@@ -4,9 +4,11 @@
 
 import Swallow
 
+// https://github.com/apple/swift/blob/f13167d9d162e69d1aac6ce022b19f6a80c62aba/include/swift/ABI/MetadataValues.h#L1237-L1312
 @frozen
 @usableFromInline
 struct SwiftRuntimeContextDescriptorFlags: OptionSet {
+    // https://github.com/apple/swift/blob/f13167d9d162e69d1aac6ce022b19f6a80c62aba/include/swift/ABI/MetadataValues.h#L1203-L1234
     @frozen
     @usableFromInline
     enum Kind: Int {
@@ -26,6 +28,11 @@ struct SwiftRuntimeContextDescriptorFlags: OptionSet {
     @usableFromInline
     var rawValue: UInt32
 
+    @usableFromInline
+    init(rawValue: UInt32) {
+        self.rawValue = rawValue
+    }
+
     var kind: Kind? {
         Kind(rawValue: Int(rawValue) & 0x1F)
     }
@@ -38,12 +45,12 @@ struct SwiftRuntimeContextDescriptorFlags: OptionSet {
         UInt16((rawValue >> 0x10) & 0xFFFF)
     }
     
-    @usableFromInline
-    init(rawValue: UInt32) {
-        self.rawValue = rawValue
+    var isGeneric: Bool {
+        UInt8(rawValue & 0x80) != 0
     }
 }
 
+@usableFromInline
 protocol SwiftRuntimeContextDescriptor {
     associatedtype FieldOffsetVectorOffsetType: FixedWidthInteger
     

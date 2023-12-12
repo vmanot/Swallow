@@ -8,7 +8,7 @@ extension TypeMetadata {
     public typealias NominalOrTuple = NominalOrTupleTypeMetadata
 }
 
-public struct NominalOrTupleTypeMetadata: _TypeMetadata_Type {
+public struct NominalOrTupleTypeMetadata: _TypeMetadataType {
     public let base: Any.Type
     
     public init(_unsafe base: Any.Type) {

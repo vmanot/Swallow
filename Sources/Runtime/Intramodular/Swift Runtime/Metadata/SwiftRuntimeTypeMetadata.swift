@@ -5,33 +5,47 @@
 import ObjectiveC
 import Swallow
 
-public func getSwiftObjectBaseSuperclass() -> AnyClass {
-    class Temp { }
-    return class_getSuperclass(Temp.self)!
+@usableFromInline
+protocol _SwiftRuntimeTypeMetadataType {
+    associatedtype MetadataLayout: SwiftRuntimeTypeMetadataLayout
+    
+    var basePointer: UnsafeRawPointer { get }
+    var metadata: UnsafePointer<MetadataLayout> { get }
+    var kind: SwiftRuntimeTypeKind { get }
+    var valueWitnessTable: UnsafePointer<SwiftRuntimeValueWitnessTable> { get }
+    
+    init(base: Any.Type)
 }
 
-struct SwiftRuntimeTypeMetadata<MetadataLayout: SwiftRuntimeTypeMetadataLayout>: SwiftRuntimeTypeMetadataProtocol {
+@frozen
+@usableFromInline
+struct SwiftRuntimeTypeMetadata<MetadataLayout: SwiftRuntimeTypeMetadataLayout>: _SwiftRuntimeTypeMetadataType {
     let base: Any.Type
     
+    @usableFromInline
     init(base: Any.Type) {
         self.base = base
     }
     
+    @usableFromInline
     var basePointer: UnsafeRawPointer {
-        return unsafeBitCast(base, to: UnsafeRawPointer.self)
+        unsafeBitCast(base, to: UnsafeRawPointer.self)
     }
     
+    @usableFromInline
     var metadata: UnsafePointer<MetadataLayout> {
-        return unsafeBitCast(base, to: UnsafeRawPointer.self)
+        unsafeBitCast(base, to: UnsafeRawPointer.self)
             .advanced(by: -MemoryLayout<UnsafeRawPointer>.size)
             .rawRepresentation
             .assumingMemoryBound(to: MetadataLayout.self)
     }
     
+    @usableFromInline
     var kind: SwiftRuntimeTypeKind {
-        .init(rawValue: metadata.pointee.kind)
+        SwiftRuntimeTypeKind(rawValue: metadata.pointee.kind)
     }
     
+    @usableFromInline
     var valueWitnessTable: UnsafePointer<SwiftRuntimeValueWitnessTable> {
         metadata.pointee.valueWitnessTable
     }
@@ -81,6 +95,7 @@ extension SwiftRuntimeTypeMetadata where MetadataLayout == SwiftRuntimeProtocolM
             .protocolDescriptorVector
             .pointee
             .mangledName
+            .advanced()
         
         return String(cString: cString)
     }
@@ -107,3 +122,20 @@ extension SwiftRuntimeTypeMetadata where MetadataLayout == SwiftRuntimeTupleMeta
     }
 }
 
+// MARK: - Supplementary
+
+typealias SwiftRuntimeGenericMetadata = SwiftRuntimeTypeMetadata<SwiftRuntimeGenericMetadataLayout>
+typealias SwiftRuntimeClassMetadata = SwiftRuntimeTypeMetadata<SwiftRuntimeClassMetadataLayout>
+typealias SwiftRuntimeEnumMetadata = SwiftRuntimeTypeMetadata<SwiftRuntimeEnumMetadataLayout>
+typealias SwiftRuntimeFunctionMetadata = SwiftRuntimeTypeMetadata<SwiftRuntimeFunctionMetadataLayout>
+typealias SwiftRuntimeProtocolMetadata = SwiftRuntimeTypeMetadata<SwiftRuntimeProtocolMetadataLayout>
+typealias SwiftRuntimeStructMetadata = SwiftRuntimeTypeMetadata<SwiftRuntimeStructMetadataLayout>
+typealias SwiftRuntimeTupleMetadata = SwiftRuntimeTypeMetadata<SwiftRuntimeTupleMetadataLayout>
+
+// MARK: - Auxiliary
+
+private func getSwiftObjectBaseSuperclass() -> AnyClass {
+    class Temp { }
+    
+    return class_getSuperclass(Temp.self)!
+}

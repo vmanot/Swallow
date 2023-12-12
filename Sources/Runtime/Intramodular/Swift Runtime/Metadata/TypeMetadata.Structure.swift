@@ -5,7 +5,7 @@
 import Swallow
 
 extension TypeMetadata {
-    public struct Structure: SwiftRuntimeTypeMetadataWrapper, NominalTypeMetadata_Type {
+    public struct Structure: SwiftRuntimeTypeMetadataWrapper, _NominalTypeMetadataType {
         typealias SwiftRuntimeTypeMetadata = SwiftRuntimeStructMetadata
         
         public let base: Any.Type
