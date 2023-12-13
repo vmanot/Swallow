@@ -29,6 +29,20 @@ extension IteratorProtocol {
     }
 }
 
+extension AsyncIteratorProtocol {
+    @discardableResult
+    @inlinable
+    public mutating func exhaust() async throws -> [Element] {
+        var result: [Element] = []
+        
+        while let next = try await self.next(){
+            result.append(next)
+        }
+        
+        return result
+    }
+}
+
 extension IteratorProtocol {
     @inlinable
     public func makeSequence() -> IteratorSequence<Self> {
