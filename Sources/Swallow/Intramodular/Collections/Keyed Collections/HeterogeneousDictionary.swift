@@ -28,19 +28,33 @@ public protocol HeterogeneousDictionaryKey<Domain, Value> {
 public struct HeterogeneousDictionary<Domain> {
     public typealias DictionaryValue = Any
     
-    fileprivate var storage: [Metatype<Any.Type>: Any]
+    fileprivate var storage: [AnyHeterogeneousDictionaryKey: Any]
     
     public var count: Int {
         self.storage.count
     }
     
-    fileprivate init(storage: [Metatype<Any.Type>: Any]) {
+    fileprivate init(storage: [AnyHeterogeneousDictionaryKey: Any]) {
         self.storage = storage
     }
     
-    public init(_unsafeUniqueKeysAndValues elements: [(key: Any.Type, value: Any)]) {
-        self.init(storage: .init(uniqueKeysWithValues: elements.lazy.map {
-            (Metatype($0.key), $0.value)
+    public init(
+        _unsafeStorage: [AnyHeterogeneousDictionaryKey: Any]
+    ) {
+        self.storage = _unsafeStorage
+    }
+    
+    public init(
+        _unsafeUniqueKeysAndValues elements: [(key: AnyHeterogeneousDictionaryKey, value: Any)]
+    ) {
+        self.init(storage: Dictionary(elements))
+    }
+
+    public init(
+        _unsafeUniqueKeysAndValues elements: [(key: Any.Type, value: Any)]
+    ) {
+        self.init(storage: Dictionary<AnyHeterogeneousDictionaryKey, Any>(uniqueKeysWithValues: elements.lazy.map {
+            (AnyHeterogeneousDictionaryKey(base: $0.key), $0.value)
         }))
     }
     
@@ -54,9 +68,9 @@ extension HeterogeneousDictionary {
         key: Key.Type
     ) -> Key.Value? where Key.Domain == Domain {
         get {
-            self.storage[Metatype<Any.Type>(key)] as! Key.Value?
+            self.storage[key] as! Key.Value?
         } set {
-            self.storage[Metatype<Any.Type>(key)] = newValue
+            self.storage[key] = newValue
         }
     }
     
@@ -65,9 +79,9 @@ extension HeterogeneousDictionary {
         key: any HeterogeneousDictionaryKey<Domain, T>.Type
     ) -> T? {
         get {
-            self.storage[Metatype<Any.Type>(key)] as! Optional<T>
+            self.storage[key] as! Optional<T>
         } set {
-            self.storage[Metatype<Any.Type>(key)] = newValue
+            self.storage[key] = newValue
         }
     }
     
@@ -106,6 +120,10 @@ extension HeterogeneousDictionary {
             self[HeterogeneousDictionaryValues()[keyPath: key]] = newValue
         }
     }
+    
+    public func removingValues(forKeys keys: some Sequence<Any.Type>) -> Self {
+        Self(storage: self.storage.removingValues(forKeys: keys.map(AnyHeterogeneousDictionaryKey.init(base:))))
+    }
 }
 
 extension HeterogeneousDictionary {
@@ -127,22 +145,90 @@ extension HeterogeneousDictionary {
 // MARK: - Conformances
 
 extension HeterogeneousDictionary: Sequence {
-    public typealias Element = (key: Any.Type, value: DictionaryValue)
+    public typealias Element = (key: AnyHeterogeneousDictionaryKey, value: DictionaryValue)
     
-    public var keys: [Any.Type] {
-        storage.keys.map(\.value)
+    public var keys: [AnyHeterogeneousDictionaryKey] {
+        Array(storage.keys)
     }
     
     public func makeIterator() -> AnyIterator<Element> {
-        AnyIterator(storage.lazy.map({ ($0.key.value, $0.value) }).makeIterator())
+        AnyIterator(storage.lazy.map({ ($0.key, $0.value) }).makeIterator())
     }
 }
 
 // MARK: - Auxiliary
 
+public struct AnyHeterogeneousDictionaryKey: Hashable, Sendable {
+    fileprivate let _base: Metatype<Any.Type>
+    
+    public var base: Any.Type {
+        _base.value
+    }
+    
+    fileprivate init(base: Metatype<Any.Type>) {
+        self._base = base
+    }
+    
+    fileprivate init(base: Any.Type) {
+        self.init(base: Metatype<Any.Type>(base))
+    }
+}
+
 /// A "namespace" for key properties for use with `HeterogeneousDictionary`'s key-path-based convenience subscript.
 public struct HeterogeneousDictionaryValues<Domain> {
     fileprivate init() {
         
+    }
+}
+
+extension MutableDictionaryProtocol where DictionaryKey == AnyHeterogeneousDictionaryKey {
+    public subscript(_ key: Any.Type) -> DictionaryValue? {
+        get {
+            self[AnyHeterogeneousDictionaryKey(base: key)]
+        } set {
+            self[AnyHeterogeneousDictionaryKey(base: key)] = newValue
+        }
+    }
+}
+
+extension Dictionary where Key == AnyHeterogeneousDictionaryKey, Value == Any {
+    public init<T>(_ dictionary: HeterogeneousDictionary<T>) {
+        self = dictionary.storage
+    }
+}
+
+extension Collection {
+    public func sharedKeysByEqualValue<T: Hashable, U>(
+        where isEqual: (U, U) throws -> Bool
+    ) rethrows -> [T: U] where Element == [T: U] {
+        guard !isEmpty else {
+            return [:]
+        }
+        
+        var lastValueForKey: [T: U] = [:]
+        var equalityStreaksByKey: [T: Int] = [:]
+        
+        var lastDictionary: Element?
+        
+        for dictionary in self {
+            lastDictionary = dictionary
+            
+            for (key, value) in dictionary {
+                if let lastValueForKey = lastValueForKey[key] {
+                    if try isEqual(lastValueForKey, value) {
+                        equalityStreaksByKey[key, default: 0] += 1
+                    } else {
+                        equalityStreaksByKey[key] = 0
+                    }
+                } else {
+                    equalityStreaksByKey[key] = 1
+                    lastValueForKey[key] = value
+                }
+            }
+        }
+
+        return equalityStreaksByKey
+            .filter({ $0.value == self.count })
+            ._mapToDictionary(key: \.key, { lastDictionary![$0.key]! })
     }
 }

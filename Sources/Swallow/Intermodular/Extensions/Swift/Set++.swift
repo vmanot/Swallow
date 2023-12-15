@@ -4,8 +4,22 @@
 
 import Swift
 
+extension Sequence {
+    public func _mapToSet<T: Hashable>(
+        _ transform: (Element) throws -> T
+    ) rethrows -> Set<T> {
+        var result = Set<T>(minimumCapacity: underestimatedCount)
+        
+        for element in self {
+            try result.insert(transform(element))
+        }
+        
+        return result
+    }
+}
+
 extension Set {
-    public func _mapToSet<T>(
+    public func _mapToSet<T: Hashable>(
         _ transform: (Element) throws -> T
     ) rethrows -> Set<T> {
         var result = Set<T>(minimumCapacity: count)

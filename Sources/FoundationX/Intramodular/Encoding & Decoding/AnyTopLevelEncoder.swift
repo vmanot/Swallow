@@ -5,9 +5,12 @@
 import Combine
 import Swallow
 
+@frozen
 public struct AnyTopLevelEncoder<Output>: TopLevelEncoder, Sendable {
-    private let _encode: @Sendable (Encodable) throws -> Output
+    @usableFromInline
+    let _encode: @Sendable (Encodable) throws -> Output
     
+    @_transparent
     public init<Encoder: TopLevelEncoder>(
         erasing encoder: Encoder
     ) where Encoder.Output == Output {
@@ -18,12 +21,14 @@ public struct AnyTopLevelEncoder<Output>: TopLevelEncoder, Sendable {
         }
     }
     
+    @_transparent
     public init<Coder: TopLevelDataCoder>(
         erasing coder: Coder
     ) where Output == Data {
         self._encode = { try coder.encode($0) }
     }
     
+    @_transparent
     public func encode<T: Encodable>(
         _ input: T
     ) throws -> Output {

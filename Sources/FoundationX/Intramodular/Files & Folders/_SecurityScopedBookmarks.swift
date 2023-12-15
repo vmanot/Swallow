@@ -66,6 +66,7 @@ public final class _SecurityScopedBookmarks {
     ) {
         do {
             let data = try JSONEncoder().encode(bookmarks)
+            
             defaults.set(data, forKey: bookmarkKey)
         } catch {
             print("Error saving bookmarks: \(error)")

@@ -447,3 +447,22 @@ extension AnyCodable: ObjectiveCBridgeable {
         }
     }
 }
+
+/*struct _Foundation_JSONDecoderImpl {
+ let decodingContainerKind: _DecodingContainerKind?
+ 
+ init?(from decoder: Decoder) {
+ let typeName = String(describing: Swift.type(of: decoder))
+ 
+ guard typeName.contains("Foundation") && typeName.contains("JSONDecoderImpl") else {
+ return nil
+ }
+ 
+ let mirror = Mirror(reflecting: decoder)
+ 
+ if let _ = mirror.descendant("values") as? (any _ArrayProtocol) {
+ self.decodingContainerKind = .unkeyed
+ }
+ guard String(describing: Swift.type(of: decoder))
+ }
+ }*/

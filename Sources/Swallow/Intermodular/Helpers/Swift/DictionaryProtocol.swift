@@ -97,6 +97,14 @@ extension MutableDictionaryProtocol {
         }
     }
     
+    public func removingValues(
+        forKeys keysToBeRemoved: some Sequence<DictionaryKey>
+    ) -> Self {
+        withMutableScope(self) {
+            $0.removeValues(forKeys: keysToBeRemoved)
+        }
+    }
+    
     public subscript(
         key: DictionaryKey,
         default defaultValue: @autoclosure () -> DictionaryValue

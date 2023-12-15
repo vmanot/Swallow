@@ -11,10 +11,15 @@ public struct _SwiftRuntime {
     
 }
 
+extension DynamicLinkEditor.Image {
+    public func _parseSwiftTypeConformances() -> [_SwiftRuntime._SwiftTypeConformances] {
+        _SwiftRuntime._parseSwiftTypeConformances(from: self)
+    }
+}
 
 extension _SwiftRuntime {
     @frozen
-    public struct _TypeConformance: Hashable, Identifiable {
+    public struct _SwiftTypeConformance: Hashable, Identifiable {
         public let name: String
         @_HashableExistential
         public var type: Any.Type?
@@ -23,7 +28,7 @@ extension _SwiftRuntime {
         public var id: AnyHashable {
             hashValue
         }
-
+        
         public init(
             name: String,
             type: Any.Type?,
@@ -35,19 +40,20 @@ extension _SwiftRuntime {
         }
     }
     
-    public struct _TypeConformances: Identifiable {
+    public struct _SwiftTypeConformances: Identifiable {
+        public let type: TypeMetadata
         public let name: String
-        public let conformances: IdentifierIndexingArrayOf<_TypeConformance>
+        public let conformances: IdentifierIndexingArrayOf<_SwiftTypeConformance>
         
         public var id: AnyHashable {
             name
         }
     }
     
-    public static func types(
-        for image: DynamicLinkEditor.Image
-    ) -> [_TypeConformances] {
-        var result = [String: [_TypeConformance]]()
+    public static func _parseSwiftTypeConformances(
+        from image: DynamicLinkEditor.Image
+    ) -> [_SwiftTypeConformances] {
+        var result = [String: [_SwiftTypeConformance]]()
         
         var sectionSize: UInt = 0
         let sectStart = UnsafeRawPointer(
@@ -58,7 +64,7 @@ extension _SwiftRuntime {
                 &sectionSize
             )
         )?.assumingMemoryBound(to: Int32.self)
-
+        
         guard var sectData = sectStart else {
             return []
         }
@@ -75,17 +81,24 @@ extension _SwiftRuntime {
             sectData = sectData.successor()
         }
         
-        return result.filter({ !$0.value.isEmpty }).map {
-            _TypeConformances(
-                name: $0.value.first!.name,
-                conformances: IdentifierIndexingArrayOf($0.value.distinct())
-            )
-        }
+        return result
+            .filter({ !$0.value.isEmpty })
+            .compactMap { element -> _SwiftTypeConformances? in
+                guard let name = element.value.first?.name, let type = element.value.first?.type else {
+                    return nil
+                }
+                
+                return _SwiftTypeConformances(
+                    type: TypeMetadata(type),
+                    name: name,
+                    conformances: IdentifierIndexingArrayOf(element.value.distinct())
+                )
+            }
     }
-        
+    
     private static func parseConformance(
         from conformanceDescriptor: UnsafePointer<SwiftRuntimeProtocolConformanceDescriptor>
-    ) -> _TypeConformance? {
+    ) -> _SwiftTypeConformance? {
         let flags = conformanceDescriptor.pointee.conformanceFlags
         
         guard case .DirectTypeDescriptor = flags.kind else {
@@ -113,7 +126,7 @@ extension _SwiftRuntime {
         if descriptor.pointee.flags.isGeneric {
             return nil
         }
-                
+        
         if let name = getTypeName(descriptor: descriptor) {
             guard nominalTypeKinds.contains(where: { $0 == descriptor.pointee.flags.kind }) else {
                 return nil
@@ -124,7 +137,7 @@ extension _SwiftRuntime {
                 .advanced(by: Int(descriptor.pointee.accessFunction))
             
             let accessFunction = unsafeBitCast(accessFunctionPointer, to: (@convention(c) () -> UInt64).self)
-                        
+            
             let type: Any.Type?
             
             if descriptor.pointee.flags.isGeneric {
@@ -133,7 +146,7 @@ extension _SwiftRuntime {
                 type = nil
             }
             
-            return _TypeConformance(
+            return .init(
                 name: name,
                 type: type,
                 protocol: protocolName

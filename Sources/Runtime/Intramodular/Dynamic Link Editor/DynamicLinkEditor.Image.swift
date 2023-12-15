@@ -26,6 +26,12 @@ extension DynamicLinkEditor {
     }
 }
 
+extension DynamicLinkEditor.Image: CustomStringConvertible {
+    public var description: String {
+        name
+    }
+}
+
 extension DynamicLinkEditor.Image {
     public enum _ImagePathFilter: String, CaseIterable {
         case preboot = "/private/preboot"

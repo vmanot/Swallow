@@ -56,31 +56,37 @@ extension TopLevelDataCoder where Self == PropertyListCoder {
     }
 }
 
+@frozen
 public struct JSONCoder: TopLevelDataCoder {
-    private let decoder: AnyTopLevelDecoder<Data>
-    private let encoder: AnyTopLevelEncoder<Data>
+    @usableFromInline
+    let decoder: AnyTopLevelDecoder<Data>
+    @usableFromInline
+    let encoder: AnyTopLevelEncoder<Data>
     
     public init(decoder: JSONDecoder, encoder: JSONEncoder) {
-        self.decoder = .init(erasing: decoder._polymorphic())
-        self.encoder = .init(erasing: encoder)
+        self.decoder = AnyTopLevelDecoder(erasing: decoder._polymorphic())
+        self.encoder = AnyTopLevelEncoder(erasing: encoder)
     }
     
     public init() {
-        self.init(decoder: .init(), encoder: .init())
+        self.init(decoder: JSONDecoder(), encoder: JSONEncoder())
     }
     
+    @_transparent
     public init(outputFormatting: JSONEncoder.OutputFormatting) {
         let encoder = JSONEncoder()
         
         encoder.outputFormatting = outputFormatting
         
-        self.init(decoder: .init(), encoder: encoder)
+        self.init(decoder: JSONDecoder(), encoder: encoder)
     }
     
+    @_transparent
     public func decode<T: Decodable>(_ type: T.Type, from data: Data) throws -> T {
         try decoder.decode(type, from: data)
     }
     
+    @_transparent
     public func encode<T: Encodable>(_ value: T) throws -> Data {
         try encoder.encode(value)
     }

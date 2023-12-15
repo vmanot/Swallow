@@ -58,7 +58,7 @@ public enum _ModularDecodingError: Error {
                 value: data
             )
         } else if let error = error as? _ModularDecodingError {
-            assertionFailure()
+            assertionFailure(error)
             
             self = error
         } else {
