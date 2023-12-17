@@ -77,8 +77,12 @@ extension _NominalTypeMetadataType {
 // MARK: - Extensions
 
 extension _TypeMetadataType {
-    public var isSwiftObject: Bool {
-        ObjCClass(base)?.isSwiftObject ?? false
+    var _isBaseSwiftObject: Bool {
+        guard let cls = ObjCClass(base) else {
+            return false
+        }
+        
+        return cls.isBaseSwiftObject
     }
     
     public static func of<T>(_ value: T) -> Self! {

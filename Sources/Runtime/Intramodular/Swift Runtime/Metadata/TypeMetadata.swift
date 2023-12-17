@@ -8,8 +8,13 @@ import Swallow
 public struct TypeMetadata: _TypeMetadataType {
     public let base: Any.Type
         
+    @_transparent
     public init(_ base: Any.Type) {
         self.base = base
+    }
+    
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(ObjectIdentifier(base))
     }
 }
 
@@ -28,6 +33,16 @@ extension TypeMetadata: MetatypeRepresentable {
     
     public func toMetatype() -> Any.Type {
         return base
+    }
+}
+
+extension TypeMetadata: Named {
+    public var name: String {
+        _typeName(base, qualified: true)
+    }
+    
+    public var mangledName: String? {
+        _mangledTypeName(base)
     }
 }
 

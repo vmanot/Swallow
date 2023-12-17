@@ -15,6 +15,12 @@ public protocol HeterogeneousDictionaryKey<Domain, Value> {
     associatedtype Value
 }
 
+extension HeterogeneousDictionaryKey {
+    public static var _opaque_Value: Any.Type {
+        Value.self
+    }
+}
+
 /// A dictionary that can store values of varying types while preserving strong types
 /// (i.e. without resorting to `Any`).
 ///
@@ -28,7 +34,7 @@ public protocol HeterogeneousDictionaryKey<Domain, Value> {
 public struct HeterogeneousDictionary<Domain> {
     public typealias DictionaryValue = Any
     
-    fileprivate var storage: [AnyHeterogeneousDictionaryKey: Any]
+    var storage: [AnyHeterogeneousDictionaryKey: Any]
     
     public var count: Int {
         self.storage.count
@@ -49,7 +55,7 @@ public struct HeterogeneousDictionary<Domain> {
     ) {
         self.init(storage: Dictionary(elements))
     }
-
+    
     public init(
         _unsafeUniqueKeysAndValues elements: [(key: Any.Type, value: Any)]
     ) {
@@ -144,6 +150,12 @@ extension HeterogeneousDictionary {
 
 // MARK: - Conformances
 
+extension HeterogeneousDictionary: CustomStringConvertible {
+    public var description: String {
+        storage.description
+    }
+}
+
 extension HeterogeneousDictionary: Sequence {
     public typealias Element = (key: AnyHeterogeneousDictionaryKey, value: DictionaryValue)
     
@@ -169,7 +181,8 @@ public struct AnyHeterogeneousDictionaryKey: Hashable, Sendable {
         self._base = base
     }
     
-    fileprivate init(base: Any.Type) {
+    @_spi(Internal)
+    public init(base: Any.Type) {
         self.init(base: Metatype<Any.Type>(base))
     }
 }
@@ -226,7 +239,7 @@ extension Collection {
                 }
             }
         }
-
+        
         return equalityStreaksByKey
             .filter({ $0.value == self.count })
             ._mapToDictionary(key: \.key, { lastDictionary![$0.key]! })

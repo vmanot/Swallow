@@ -9,6 +9,17 @@ enum _AssertionFailureError: Error {
     case assertionFailed(SourceCodeLocation)
 }
 
+extension Task where Failure == Error {
+    @discardableResult
+    public func _expectNoThrow() -> Task {
+        Task {
+            try await Diagnostics._warnOnThrow {
+                try await self.value
+            }
+        }
+    }
+}
+
 @inline(__always)
 @_transparent
 public func assertNotNil<T>(_ x: T?) {

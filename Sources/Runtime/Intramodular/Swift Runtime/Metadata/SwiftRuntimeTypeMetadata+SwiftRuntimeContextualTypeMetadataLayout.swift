@@ -18,7 +18,7 @@ extension SwiftRuntimeTypeMetadata where MetadataLayout: SwiftRuntimeContextualT
     
     @usableFromInline
     func numberOfFields() -> Int {
-        guard !TypeMetadata(base).isSwiftObject else {
+        guard !TypeMetadata(base)._isBaseSwiftObject else {
             return 0
         }
         
@@ -27,7 +27,7 @@ extension SwiftRuntimeTypeMetadata where MetadataLayout: SwiftRuntimeContextualT
     
     @usableFromInline
     func fieldOffsets() -> [Int] {
-        guard !TypeMetadata(base).isSwiftObject else {
+        guard !TypeMetadata(base)._isBaseSwiftObject else {
             return []
         }
         
@@ -67,7 +67,7 @@ extension SwiftRuntimeTypeMetadata where MetadataLayout: SwiftRuntimeContextualT
     
     @usableFromInline
     var fields: [NominalTypeMetadata.Field] {
-        guard !TypeMetadata(base).isSwiftObject else {
+        guard !TypeMetadata(base)._isBaseSwiftObject else {
             return []
         }
         

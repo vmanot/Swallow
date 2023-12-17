@@ -17,6 +17,41 @@ public struct ObjCClass: CustomDebugStringConvertible, ExpressibleByStringLitera
 }
 
 extension ObjCClass {
+    private static let _libobjc_Object = ObjCClass(NSClassFromString("Object")!)
+    
+    public func isKind(of other: ObjCClass) -> Bool {
+        guard self != ObjCClass._swiftObjectBaseClass && self != Self._libobjc_Object else {
+            return self == other
+        }
+        
+        if superclass == nil {
+            guard NSStringFromClass(value) != "Object" else {
+                return false
+            }
+            
+            return self == other
+        } else {
+            let className = NSStringFromClass(value)
+            
+            guard className != "NSPreviewTargetController", className != "NSServiceViewController", className != "UINSServiceViewController"  else {
+                return false
+            }
+            
+            if let lhs = value as? NSObject.Type, let rhs = other.value as? NSObject.Type {
+                return lhs.isKind(of: rhs)
+            } else {
+                return false
+                || class_getSuperclass(value) == other.value
+                || class_getSuperclass(class_getSuperclass(value)) == other.value
+                || class_getSuperclass(class_getSuperclass(class_getSuperclass(value))) == other.value
+                || class_getSuperclass(class_getSuperclass(class_getSuperclass(class_getSuperclass(value)))) == other.value
+                || class_getSuperclass(class_getSuperclass(class_getSuperclass(class_getSuperclass(class_getSuperclass(value))))) == other.value
+            }
+        }
+    }
+}
+
+extension ObjCClass {
     @inlinable
     public static func existsWithName(_ name: String) -> Bool {
         return objc_getClass(name) != nil
@@ -56,37 +91,53 @@ extension ObjCClass {
 }
 
 extension ObjCClass {
-    public subscript(instanceVariableNamed name: String) -> ObjCInstanceVariable? {
+    public subscript(
+        instanceVariableNamed name: String
+    ) -> ObjCInstanceVariable? {
         return (class_getInstanceVariable(value, name) as Optional).map({ .init($0) })
     }
     
-    public subscript(methodNamed selector: ObjCSelector) -> ObjCMethod? {
+    public subscript(
+        methodNamed selector: ObjCSelector
+    ) -> ObjCMethod? {
         return (class_getInstanceMethod(value, selector.value) as Optional).map({ .init($0) })
     }
     
-    public func method(for selector: ObjCSelector) throws -> ObjCMethod {
+    public func method(
+        for selector: ObjCSelector
+    ) throws -> ObjCMethod {
         return try (class_getInstanceMethod(value, selector.value) as Optional)
             .map({ ObjCMethod($0) })
             .unwrapOrThrow(ObjCRuntime.Error.instanceMethodNotFound(for: selector))
     }
     
-    public subscript(methodNamed name: String) -> ObjCMethod? {
+    public subscript(
+        methodNamed name: String
+    ) -> ObjCMethod? {
         return self[methodNamed: ObjCSelector(.init(name))]
     }
     
-    public subscript(classMethodNamed selector: ObjCSelector) -> ObjCMethod? {
+    public subscript(
+        classMethodNamed selector: ObjCSelector
+    ) -> ObjCMethod? {
         return (class_getClassMethod(value, selector.value) as Optional).map({ .init($0) })
     }
     
-    public subscript(classMethodNamed name: String) -> ObjCMethod? {
+    public subscript(
+        classMethodNamed name: String
+    ) -> ObjCMethod? {
         return self[classMethodNamed: ObjCSelector(.init(name))]
     }
     
-    public subscript(propertyNamed name: String) -> ObjCProperty? {
+    public subscript(
+        propertyNamed name: String
+    ) -> ObjCProperty? {
         return (class_getProperty(value, name) as Optional).map({ .init($0) })
     }
     
-    public func property(withName name: String) throws -> ObjCProperty {
+    public func property(
+        withName name: String
+    ) throws -> ObjCProperty {
         return try (class_getProperty(value, name) as Optional)
             .map(ObjCProperty.init)
             .unwrapOrThrow(ObjCRuntime.Error.propertyNotFound(name: name))
@@ -130,9 +181,19 @@ extension ObjCClass: ApproximatelyEquatable {
 }
 
 extension ObjCClass: CaseIterable {
-    @_transparent
-    public static var allCases: AnyRandomAccessCollection<ObjCClass> {
-        objc_realizeListAllocator({ objc_copyClassList($0) })
+    @usableFromInline
+    static var _allCases: [ObjCClass]? = nil
+    
+    public static var allCases: [ObjCClass] {
+        if let _allCases {
+            return _allCases
+        } else {
+            let result: [ObjCClass] = __fast_objc_realizeListAllocator({ objc_copyClassList($0) })
+            
+            self._allCases = result
+            
+            return result
+        }
     }
 }
 
@@ -270,7 +331,10 @@ extension ObjCClass: Named, NameInitiable {
 }
 
 extension ObjCClass {
-    public func swizzle(_ selector1: ObjCSelector, and selector2: ObjCSelector) throws {
+    public func swizzle(
+        _ selector1: ObjCSelector,
+        and selector2: ObjCSelector
+    ) throws {
         let method1 = try method(for: selector1)
         let method2 = try method(for: selector2)
         
@@ -282,33 +346,54 @@ extension ObjCClass {
         }
     }
     
-    public func replace(methodNamed selector: ObjCSelector, with newImpl: ObjCImplementation, preservingTo otherSelector: ObjCSelector) throws {
+    public func replace(
+        methodNamed selector: ObjCSelector,
+        with newImpl: ObjCImplementation,
+        preservingTo otherSelector: ObjCSelector
+    ) throws {
         let method = try self.method(for: selector)
         try addMethod(named: otherSelector, implementation: method.implementation, signature: method.signature)
         try replace(methodNamed: selector, with: newImpl)
     }
     
-    public func addMethod(named name: ObjCSelector, implementation: ObjCImplementation, signature: ObjCMethodSignature) throws {
+    public func addMethod(
+        named name: ObjCSelector,
+        implementation: ObjCImplementation,
+        signature: ObjCMethodSignature
+    ) throws {
         try class_addMethod(value, name.value, implementation.value, signature.rawValue).orThrow()
     }
     
     @discardableResult
-    public func replace(methodNamed name: ObjCSelector, with newImpl: ObjCImplementation) throws -> ObjCImplementation?  {
+    public func replace(
+        methodNamed name: ObjCSelector,
+        with newImpl: ObjCImplementation
+    ) throws -> ObjCImplementation?  {
         return replace(try method(for: name), with: newImpl)
     }
     
     @discardableResult
-    public func replace(_ description: ObjCMethodDescription, with implementation: ObjCImplementation) throws -> ObjCImplementation? {
+    public func replace(
+        _ description: ObjCMethodDescription,
+        with implementation: ObjCImplementation
+    ) throws -> ObjCImplementation? {
         return class_replaceMethod(value, Selector(description.name), implementation.value, description.signature.rawValue).map { .init($0) }
     }
     
     @discardableResult
-    public func replace(_ method: ObjCMethod, with implementation: ObjCImplementation) -> ObjCImplementation? {
+    public func replace(
+        _ method: ObjCMethod,
+        with implementation: ObjCImplementation
+    ) -> ObjCImplementation? {
         return class_replaceMethod(value, Selector(method.name), implementation.value, method.getDescription().signature.rawValue).map({ .init($0) })
     }
     
     @discardableResult
-    public func replace(_ method: ObjCMethod, with implementation: ObjCImplementation, signature: ObjCMethodSignature) throws -> ObjCImplementation? {
+    public func replace(
+        _ method: ObjCMethod,
+        with implementation: ObjCImplementation,
+        signature: ObjCMethodSignature
+    ) throws -> ObjCImplementation? {
         return class_replaceMethod(value, Selector(method.name), implementation.value, signature.rawValue).map { .init($0) }
     }
 }

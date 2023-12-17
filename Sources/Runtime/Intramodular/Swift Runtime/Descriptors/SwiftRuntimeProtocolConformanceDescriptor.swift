@@ -50,7 +50,7 @@ struct SwiftRuntimeProtocolConformanceDescriptor {
 
 extension SwiftRuntimeProtocolConformanceDescriptor {
     /// This **must** be called on a pointer to the receiver.
-    public var protocolDescriptor: UnsafeMutablePointer<SwiftRuntimeProtocolContextDescriptor>? {
+    public var contextDescriptor: UnsafeMutablePointer<SwiftRuntimeProtocolContextDescriptor>? {
         mutating get {
             guard _protocolDescriptor % 2 == 1 else {
                 return nil

@@ -12,8 +12,8 @@ public final class AutodeallocatingUnsafeBufferPointer<T>: ConstantBufferPointer
     public typealias SubSequence = UnsafeBufferPointer<T>.SubSequence
     public typealias Value = UnsafeBufferPointer<T>
     
-    private let base: UnsafeBufferPointer<T>
-    private let isAutodeallocating: Trilean
+    fileprivate let base: UnsafeBufferPointer<T>
+    fileprivate let isAutodeallocating: Trilean
     
     public var baseAddress: BaseAddressPointer? {
         base.baseAddress
@@ -79,4 +79,12 @@ extension UnsafeRawBufferPointer: ConstantRawBufferPointer, InitiableBufferPoint
 
 extension UnsafeMutableRawBufferPointer: InitiableMutableRawBufferPointer {
     public typealias BaseAddressPointer = UnsafeMutableRawPointer
+}
+
+// MARK: - Auxiliary
+
+extension Array {
+    public init(_ bufferPointer: AutodeallocatingUnsafeBufferPointer<Element>) {
+        self.init(bufferPointer.base)
+    }
 }

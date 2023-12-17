@@ -15,24 +15,6 @@ public protocol NSComparableReferenceConvertee: ReferenceConvertee {
 
 // MARK: - Implementation
 
-extension NSComparable {
-    public static func < (lhs: Self, rhs: Self) -> Bool {
-        lhs.compare(rhs) == .orderedAscending
-    }
-    
-    public static func <= (lhs: Self, rhs: Self) -> Bool {
-        lhs.compare(rhs) != .orderedDescending
-    }
-    
-    public static func > (lhs: Self, rhs: Self) -> Bool {
-        lhs.compare(rhs) == .orderedDescending
-    }
-    
-    public static func >= (lhs: Self, rhs: Self) -> Bool {
-        lhs.compare(rhs) != .orderedAscending
-    }
-}
-
 extension NSComparableReferenceConvertee where Self == ReferenceConvertibleType.ReferenceType {
     public func compare(_ other: Self) -> ComparisonResult {
         return compare(other as! ReferenceConvertibleType)

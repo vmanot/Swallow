@@ -22,12 +22,22 @@ extension ObjCTypeEncoding: MetatypeRepresentable {
 }
 
 extension ObjCClass: _NominalTypeMetadataType {
-    public var isSwiftObject: Bool {
-        final class _DummyClass { }
+    private static func _get_swiftObjectBaseClass() -> AnyClass {
+        final class _TestClass { }
         
-        return base == class_getSuperclass(_DummyClass.self)
+        let result: AnyClass = class_getSuperclass(_TestClass.self)!
+        
+        return result
     }
     
+    public static private(set) var _swiftObjectBaseClass: ObjCClass = {
+        ObjCClass(_get_swiftObjectBaseClass())
+    }()
+    
+    public var isBaseSwiftObject: Bool {
+        superclass == Self._swiftObjectBaseClass
+    }
+
     @_transparent
     public var base: Any.Type {
         value
@@ -38,7 +48,7 @@ extension ObjCClass: _NominalTypeMetadataType {
     }
     
     public var fields: [NominalTypeMetadata.Field] {
-        guard !isSwiftObject else {
+        guard self != ObjCClass._swiftObjectBaseClass else {
             return []
         }
         

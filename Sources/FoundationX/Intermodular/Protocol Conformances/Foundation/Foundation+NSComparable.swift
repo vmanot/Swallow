@@ -5,10 +5,6 @@
 import Foundation
 import Swallow
 
-extension NSDate: NSComparableReferenceConvertee {
-    
-}
-
 extension NSDateInterval: NSComparableReferenceConvertee {
     
 }

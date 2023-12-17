@@ -174,6 +174,16 @@ extension _HashableExistential: @unchecked Sendable {
 
 // MARK: - Auxiliary
 
+public protocol _UnsafeHashable {
+    func _unsafelyHash(into hasher: inout Hasher) throws
+}
+
+extension HeterogeneousDictionary: _UnsafeHashable {
+    public func _unsafelyHash(into hasher: inout Hasher) throws {
+        try storage.mapValues({ try _HashableExistential(erasing: $0) }).hash(into: &hasher)
+    }
+}
+
 extension _HashableExistential {
     fileprivate struct _HashablePlaceholderNil: ExpressibleByNilLiteral, Hashable, Sendable {
         init() {

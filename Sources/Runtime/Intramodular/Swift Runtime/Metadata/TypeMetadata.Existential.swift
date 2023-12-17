@@ -61,6 +61,24 @@ extension TypeMetadata {
         
         return _conformsToProtocol(base, protocolDescriptor) != nil*/
     }
+    
+    public func _conforms(
+        toExistentialMetatype testType: Any.Type
+    ) -> Bool {
+        func _conformsToMetatype<A>(
+            _ type: A.Type
+        ) -> Bool {
+            self.base is A
+        }
+        
+        return _openExistential(testType, do: _conformsToMetatype)
+    }
+    
+    public func conforms(
+        to testType: TypeMetadata
+    ) -> Bool {
+        return conforms(to: testType.base)
+    }
 }
 
 extension Metatype {

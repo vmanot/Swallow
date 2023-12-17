@@ -12,6 +12,7 @@ extension Never {
     public struct Reason: Hashable, Error {
         public enum _Base: String, Hashable {
             case abstract
+            case deprecated
             case illegal
             case impossible
             case unavailable
@@ -39,6 +40,12 @@ extension Never.Reason {
         return .init(_base: .abstract)
     }
     
+    @_transparent
+    public static var deprecated: Self {
+        .init(_base: .deprecated)
+    }
+    
+    @_transparent
     public static var illegal: Self {
         .init(_base: .illegal)
     }
