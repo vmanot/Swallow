@@ -27,6 +27,19 @@ extension Sequence {
         return nil
     }
     
+    @_disfavoredOverload
+    public func first<T>(
+        byUnwrapping transform: (Element) async throws -> T?
+    ) async rethrows -> T? {
+        for element in self {
+            if let match = try await transform(element) {
+                return match
+            }
+        }
+        
+        return nil
+    }
+    
     public mutating func removeFirst<T>(
         byUnwrapping transform: (Element) throws -> T?
     ) rethrows -> T? where Self: RangeReplaceableCollection {
@@ -108,6 +121,25 @@ extension Sequence {
         return result
     }
     
+    @_disfavoredOverload
+    public func firstAndOnly<T>(
+        byUnwrapping transform: (Element) async throws -> T?
+    ) async throws -> T? {
+        var result: T?
+        
+        for element in self {
+            if let match = try await transform(element) {
+                guard result == nil else {
+                    throw _PlaceholderError()
+                }
+                
+                result = match
+            }
+        }
+        
+        return result
+    }
+
     public func first<T>(ofType type: T.Type) -> T? {
         first(byUnwrapping: { $0 as? T })
     }

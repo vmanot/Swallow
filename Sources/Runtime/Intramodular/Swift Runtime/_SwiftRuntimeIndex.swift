@@ -60,7 +60,7 @@ extension _SwiftRuntimeIndex {
     ) -> [Any.Type] {
         return _fetch(predicates).map({ $0.base })
     }
-    
+
     private func _fetch(
         _ predicates: [QueryPredicate]
     ) -> Set<TypeMetadata> {
