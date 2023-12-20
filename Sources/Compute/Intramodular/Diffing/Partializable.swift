@@ -49,7 +49,9 @@ extension Partializable {
 // MARK: - Extensions
 
 extension Partializable {
-    public func coalescingInPlace(with other: Partial) throws -> Self {
+    public func coalescingInPlace(
+        with other: Partial
+    ) throws -> Self {
         var result = self
         
         try result.coalesceInPlace(with: other)
@@ -61,7 +63,14 @@ extension Partializable {
     public static func coalesce<S: Sequence>(
         _ partials: S
     ) throws -> Self? where S.Element == Optional<Partial> {
-        try partials.compactMap({ $0 }).reduce({ try $0?.coalescingInPlace(with: $1) })
+        try partials.compactMap({ $0 }).reduce({ try $0.coalescingInPlace(with: $1) })
+    }
+    
+    /// Create an instance by coalescing an ordered sequence of partials.
+    public static func coalesce<S: Sequence>(
+        _ partials: S
+    ) throws -> Self? where S.Element == Optional<Self>, Partial == Self {
+        try partials.compactMap({ $0 }).reduce({ try $0.coalescingInPlace(with: $1) })
     }
 }
 

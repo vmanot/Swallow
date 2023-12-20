@@ -6,14 +6,12 @@ import Foundation
 import Swallow
 
 /// Terminal UI.
-@_spi(Internal)
 public enum TerminalUI {
     public enum ASCII {
         
     }
 }
 
-@_spi(Internal)
 extension TerminalUI.ASCII {
     public enum BoxContentAlignment {
         case left
@@ -22,7 +20,6 @@ extension TerminalUI.ASCII {
     }
 }
 
-@_spi(Internal)
 public func _printEnclosedInASCIIBox(
     _ input: String,
     terminalWidth: Int = 80,

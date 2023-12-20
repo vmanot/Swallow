@@ -12,7 +12,7 @@ enum _AssertionFailureError: Error {
 extension Task where Failure == Error {
     @discardableResult
     public func _expectNoThrow() -> Task {
-        Task {
+        Task(priority: .utility) {
             try await Diagnostics._warnOnThrow {
                 try await self.value
             }

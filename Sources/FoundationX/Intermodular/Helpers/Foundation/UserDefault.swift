@@ -109,7 +109,7 @@ extension UserDefault {
                 object[keyPath: storageKeyPath].wrappedValue
             } set {
                 object.objectWillChange.send()
-
+                
                 object[keyPath: storageKeyPath].wrappedValue = newValue
             }
         }
@@ -174,27 +174,51 @@ extension AppStorage {
         self.init(wrappedValue: wrappedValue, key.stringValue, store: store)
     }
     
-    public init<Key: UserDefaultKey>(wrappedValue: Value, _ key: Key, store: UserDefaults? = nil) where Value == Double {
+    public init<Key: UserDefaultKey>(
+        wrappedValue: Value,
+        _ key: Key,
+        store: UserDefaults? = nil
+    ) where Value == Double {
         self.init(wrappedValue: wrappedValue, key.stringValue, store: store)
     }
     
-    public init<Key: UserDefaultKey>(wrappedValue: Value, _ key: Key, store: UserDefaults? = nil) where Value == String {
+    public init<Key: UserDefaultKey>(
+        wrappedValue: Value,
+        _ key: Key,
+        store: UserDefaults? = nil
+    ) where Value == String {
         self.init(wrappedValue: wrappedValue, key.stringValue, store: store)
     }
     
-    public init<Key: UserDefaultKey>(wrappedValue: Value, _ key: Key, store: UserDefaults? = nil) where Value == URL {
+    public init<Key: UserDefaultKey>(
+        wrappedValue: Value,
+        _ key: Key,
+        store: UserDefaults? = nil
+    ) where Value == URL {
         self.init(wrappedValue: wrappedValue, key.stringValue, store: store)
     }
     
-    public init<Key: UserDefaultKey>(wrappedValue: Value, _ key: Key, store: UserDefaults? = nil) where Value == Data {
+    public init<Key: UserDefaultKey>(
+        wrappedValue: Value,
+        _ key: Key,
+        store: UserDefaults? = nil
+    ) where Value == Data {
         self.init(wrappedValue: wrappedValue, key.stringValue, store: store)
     }
     
-    public init<Key: UserDefaultKey>(wrappedValue: Value, _ key: Key, store: UserDefaults? = nil) where Value: RawRepresentable, Value.RawValue == Int {
+    public init<Key: UserDefaultKey>(
+        wrappedValue: Value,
+        _ key: Key,
+        store: UserDefaults? = nil
+    ) where Value: RawRepresentable, Value.RawValue == Int {
         self.init(wrappedValue: wrappedValue, key.stringValue, store: store)
     }
     
-    public init<Key: UserDefaultKey>(wrappedValue: Value, _ key: Key, store: UserDefaults? = nil) where Value: RawRepresentable, Value.RawValue == String {
+    public init<Key: UserDefaultKey>(
+        wrappedValue: Value,
+        _ key: Key,
+        store: UserDefaults? = nil
+    ) where Value: RawRepresentable, Value.RawValue == String {
         self.init(wrappedValue: wrappedValue, key.stringValue, store: store)
     }
 }
