@@ -130,7 +130,7 @@ extension _SwiftRuntimeIndex {
         var allSwiftTypes: Set<TypeMetadata> = []
         var allSwiftTypes2: Set<TypeMetadata> = []
         
-        let imagesToSearch =  DynamicLinkEditor.Image.allCases.filter {
+        let imagesToSearch = DynamicLinkEditor.Image.allCases.filter {
             !$0._matches(DynamicLinkEditor.Image._ImagePathFilter.appleFramework)
         }
         
