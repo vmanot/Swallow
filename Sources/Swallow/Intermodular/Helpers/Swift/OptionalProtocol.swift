@@ -19,12 +19,15 @@ extension OptionalProtocol {
         Wrapped.self
     }
     
+    @usableFromInline
     init(_opaque_wrappedValue: Any) throws {
         self.init(try cast(_opaque_wrappedValue, to: Wrapped.self))
     }
     
     /// Recursively unwraps a possibly optional/type-erased value.
-    public init<T>(_unwrapping x: T) where Wrapped == Any {        
+    @inlinable
+    @inline(__always)
+    public init<T>(_unwrapping x: T) where Wrapped == Any {
         if let _x = x as? any OptionalProtocol {
             if let _xUnwrapped = _x._wrapped {
                 self.init(_unwrapping: _xUnwrapped)
@@ -82,6 +85,21 @@ public func _getUnwrappedType(
         return _getUnwrappedType(from: type._opaque_Optional_WrappedType)
     } else {
         return type
+    }
+}
+
+/// Unwrap a value completely.
+public func _unwrapPossiblyOptionalAny(
+    _ value: Any
+) -> Any {
+    let result: Any? = Optional(_unwrapping: value)
+    
+    if let result {
+        assert(!(type(of: result) is any OptionalProtocol.Type))
+        
+        return result
+    } else {
+        return result as Any
     }
 }
 

@@ -205,7 +205,7 @@ extension IdentifierIndexingArray: MutableCollection, MutableSequence, RandomAcc
         
         _self.move(fromOffsets: source, toOffset: destination)
         
-        self = .init(_self, id: self.id)
+        self = Self(_self, id: self.id)
     }
     
     public subscript(id identifier: ID) -> Element? {

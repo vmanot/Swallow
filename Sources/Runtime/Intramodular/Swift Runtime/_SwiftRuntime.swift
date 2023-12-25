@@ -9,8 +9,8 @@ public struct _SwiftRuntime {
     public static var _index: _SwiftRuntimeIndex = {
         let index = _SwiftRuntimeIndex()
         
-        _ = index.queryIndices
-
+        index.preheat()
+        
         return index
     }()
     

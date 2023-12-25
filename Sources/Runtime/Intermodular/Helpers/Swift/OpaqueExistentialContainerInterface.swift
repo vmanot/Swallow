@@ -196,7 +196,7 @@ extension OpaqueExistentialContainer: UnmanagedProtocol {
             var result = unsafeBitCast(value, to: OpaqueExistentialContainer.self)
             
             guard result.type.base != Any.self else {
-                result = unsafeBitCast(_unwrapExistential(value), to: OpaqueExistentialContainer.self)
+                result = unsafeBitCast(__fixed_opaqueExistential(value), to: OpaqueExistentialContainer.self)
                 
                 assert(result.type.base != Any.self)
                 

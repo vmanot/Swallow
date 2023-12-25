@@ -70,6 +70,7 @@ public struct AnyNominalOrTupleMirror<Subject>: _VisitableMirror, MirrorType {
         )
     }
     
+    @usableFromInline
     init?(_subject subject: Any) {
         func _typeMetadataFromValue<T>(_ x: T) -> TypeMetadata.NominalOrTuple? {
             TypeMetadata.NominalOrTuple(type(of: x))
@@ -81,12 +82,14 @@ public struct AnyNominalOrTupleMirror<Subject>: _VisitableMirror, MirrorType {
         )
     }
     
+    @inlinable
     public init?(_ subject: Subject) {
-        self.init(_subject: _unwrapExistential(subject))
+        self.init(_subject: __fixed_opaqueExistential(subject))
     }
     
+    @inlinable
     public init(reflecting subject: Subject) throws {
-        self = try Self(_subject: _unwrapExistential(subject)).unwrap()
+        self = try Self(_subject: __fixed_opaqueExistential(subject)).unwrap()
     }
 }
 

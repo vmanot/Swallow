@@ -64,6 +64,32 @@ extension RangeReplaceableCollection where Self: BidirectionalCollection & Mutab
             try mutateLast(&mutableLast)
         }
     }
+    
+    public mutating func append(
+        contentsOf newElements: some Sequence<Element>,
+        join: (Element, Element) -> Element?
+    ) {
+        for element in newElements {
+            if let last, let joined = join(last, element) {
+                self.mutableLast = joined
+            } else {
+                self.append(element)
+            }
+        }
+    }
+    
+    public mutating func append(
+        contentsOf newElements: some Collection<Element>,
+        join: (Element, Element) -> Element?
+    ) {
+        for element in newElements {
+            if let last, let joined = join(last, element) {
+                self.mutableLast = joined
+            } else {
+                self.append(element)
+            }
+        }
+    }
 }
 
 extension RangeReplaceableCollection {

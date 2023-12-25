@@ -34,6 +34,7 @@ extension HeterogeneousDictionaryKey {
 public struct HeterogeneousDictionary<Domain> {
     public typealias DictionaryValue = Any
     
+    @usableFromInline
     var storage: [AnyHeterogeneousDictionaryKey: Any]
     
     public var count: Int {
@@ -60,7 +61,7 @@ public struct HeterogeneousDictionary<Domain> {
         _unsafeUniqueKeysAndValues elements: [(key: Any.Type, value: Any)]
     ) {
         self.init(storage: Dictionary<AnyHeterogeneousDictionaryKey, Any>(uniqueKeysWithValues: elements.lazy.map {
-            (AnyHeterogeneousDictionaryKey(base: $0.key), $0.value)
+            (AnyHeterogeneousDictionaryKey(base: $0.key), _unwrapPossiblyOptionalAny($0.value))
         }))
     }
     
@@ -76,7 +77,11 @@ extension HeterogeneousDictionary {
         get {
             self.storage[key] as! Key.Value?
         } set {
-            self.storage[key] = newValue
+            if let newValue {
+                self.storage[key] = _unwrapPossiblyOptionalAny(newValue)
+            } else {
+                self.storage.removeValue(forKey: key)
+            }
         }
     }
     
@@ -87,7 +92,13 @@ extension HeterogeneousDictionary {
         get {
             self.storage[key] as! Optional<T>
         } set {
-            self.storage[key] = newValue
+            _ = self[key]
+            
+            if let newValue {
+                self.storage[key] = _unwrapPossiblyOptionalAny(newValue)
+            } else {
+                self.storage.removeValue(forKey: key)
+            }
         }
     }
     
@@ -127,7 +138,9 @@ extension HeterogeneousDictionary {
         }
     }
     
-    public func removingValues(forKeys keys: some Sequence<Any.Type>) -> Self {
+    public func removingValues(
+        forKeys keys: some Sequence<Any.Type>
+    ) -> Self {
         Self(storage: self.storage.removingValues(forKeys: keys.map(AnyHeterogeneousDictionaryKey.init(base:))))
     }
 }
@@ -177,11 +190,12 @@ public struct AnyHeterogeneousDictionaryKey: Hashable, Sendable {
         _base.value
     }
     
-    fileprivate init(base: Metatype<Any.Type>) {
+    @usableFromInline
+    init(base: Metatype<Any.Type>) {
         self._base = base
     }
     
-    @_spi(Internal)
+    @_transparent
     public init(base: Any.Type) {
         self.init(base: Metatype<Any.Type>(base))
     }
@@ -196,15 +210,25 @@ public struct HeterogeneousDictionaryValues<Domain> {
 
 extension MutableDictionaryProtocol where DictionaryKey == AnyHeterogeneousDictionaryKey {
     public subscript(_ key: Any.Type) -> DictionaryValue? {
+        @_transparent
         get {
             self[AnyHeterogeneousDictionaryKey(base: key)]
-        } set {
+        } 
+        
+        @_transparent
+        set {
             self[AnyHeterogeneousDictionaryKey(base: key)] = newValue
         }
+    }
+    
+    @_transparent
+    public mutating func removeValue(forKey key: Any.Type) {
+        removeValue(forKey: AnyHeterogeneousDictionaryKey(base: Metatype(key)))
     }
 }
 
 extension Dictionary where Key == AnyHeterogeneousDictionaryKey, Value == Any {
+    @_transparent
     public init<T>(_ dictionary: HeterogeneousDictionary<T>) {
         self = dictionary.storage
     }

@@ -2,6 +2,7 @@
 // Copyright (c) Vatsal Manot
 //
 
+import CoreTransferable
 import Foundation
 import Swallow
 
@@ -19,7 +20,10 @@ extension URL {
             self.creationOptions = creationOptions
         }
         
-        public init(for url: URL, creationOptions: URL.BookmarkCreationOptions = []) throws {
+        public init(
+            for url: URL,
+            creationOptions: URL.BookmarkCreationOptions = []
+        ) throws {
             self.data = try url.bookmarkData(
                 options: creationOptions,
                 includingResourceValuesForKeys: [],
@@ -108,7 +112,20 @@ extension URL.Bookmark {
     }
 }
 
-// MARK: - Supplementary -
+// MARK: - Conformances
+
+@available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+extension URL.Bookmark: Transferable {
+    public static var transferRepresentation: some TransferRepresentation {
+        CoreTransferable.ProxyRepresentation(
+            exporting: { (bookmark: URL.Bookmark) -> URL in
+                try URL(resolving: bookmark)
+            }
+        )
+    }
+}
+
+// MARK: - Supplementary
 
 extension URL {
     /// Creates a URL that refers to a location specified by resolving a given bookmark.

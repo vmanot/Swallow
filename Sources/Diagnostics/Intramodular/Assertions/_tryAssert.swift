@@ -186,8 +186,8 @@ public func _catchAndMapError<Error: Swift.Error, Result>(
 ) throws -> Result {
     do {
         return try operation()
-    } catch {
-        throw error
+    } catch(_) {
+        throw error()
     }
 }
 
@@ -205,24 +205,24 @@ public func _catchAndMapError<Error: Swift.Error, Result>(
 
 @_transparent
 public func _catchAndMapError<Error: Swift.Error, Result>(
-    to error: (AnyError) -> Error,
+    to makeError: (AnyError) -> Error,
     operation: () throws -> Result
 ) throws -> Result {
     do {
         return try operation()
     } catch {
-        throw error
+        throw makeError(AnyError(erasing: error))
     }
 }
 
 @_transparent
 public func _catchAndMapError<Error: Swift.Error, Result>(
-    to error: (AnyError) -> Error,
+    to makeError: (AnyError) -> Error,
     operation: () async throws -> Result
 ) async throws -> Result {
     do {
         return try await operation()
     } catch {
-        throw error
+        throw makeError(AnyError(erasing: error))
     }
 }

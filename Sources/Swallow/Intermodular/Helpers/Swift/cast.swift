@@ -181,7 +181,7 @@ public func _takeOpaqueExistentialUnoptimized(_ value: Any) -> Any {
     return value
 }
 
-public func _unwrapExistential(_ value: Any) -> Any {
+public func __fixed_opaqueExistential(_ value: Any) -> Any {
     let type = __fixed_type(of: value)
     
     do {

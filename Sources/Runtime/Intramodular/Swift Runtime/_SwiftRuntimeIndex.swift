@@ -30,21 +30,26 @@ public final class _SwiftRuntimeIndex {
     private var _queryIndices: QueryIndices?
     
     var lock = OSUnfairLock()
-    var queryIndices: QueryIndices {
+    
+    private var queryIndices: QueryIndices {
         get {
-            lock.withCriticalScope {
-                _queryIndices.unwrapOrInitializeInPlace {
-                    self._buildQueryIndices()
-                }
+            _queryIndices.unwrapOrInitializeInPlace {
+                self._buildQueryIndices()
             }
         }
     }
-    
+
     private var protocolsToConformingTypes: [TypeMetadata: Set<TypeMetadata>] = [:]
     private var queryResultsByConformances: [Hashable2ple<TypeMetadata, Set<QueryPredicate>>: Set<TypeMetadata>] = [:]
     
     internal init() {
         
+    }
+    
+    public func preheat() {
+        lock.withCriticalScope {
+            _ = queryIndices
+        }
     }
 }
 
@@ -52,13 +57,17 @@ extension _SwiftRuntimeIndex {
     public func fetch(
         _ predicates: [QueryPredicate]
     ) -> [Any.Type] {
-        return _fetch(predicates).map({ $0.base })
+        lock.withCriticalScope {
+            _fetch(predicates).map({ $0.base })
+        }
     }
     
     public func fetch(
         _ predicates: QueryPredicate...
     ) -> [Any.Type] {
-        return _fetch(predicates).map({ $0.base })
+        lock.withCriticalScope {
+            _fetch(predicates).map({ $0.base })
+        }
     }
 
     private func _fetch(
