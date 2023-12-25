@@ -7,11 +7,15 @@ import Foundation
 @_spi(Internal) import Swallow
 
 /// A logger that broadcasts its entries.
+@usableFromInline
 final class _PassthroughLogger: LoggerProtocol, @unchecked Sendable {
     typealias Source = PassthroughLogger.Source
     
+    @usableFromInline
     typealias LogLevel = ClientLogLevel
+    @usableFromInline
     typealias LogMessage = PassthroughLogger.Message
+    @usableFromInline
     typealias LogEntry = PassthroughLogger.LogEntry
     
     private let lock = OSUnfairLock()
@@ -44,6 +48,7 @@ final class _PassthroughLogger: LoggerProtocol, @unchecked Sendable {
         self.configuration = parent.configuration
     }
     
+    @usableFromInline
     func log(
         level: LogLevel,
         _ message: @autoclosure () -> LogMessage,
@@ -97,9 +102,12 @@ extension _PassthroughLogger: _LogExporting {
 }
 
 extension _PassthroughLogger: ScopedLogger {
+    @usableFromInline
     typealias Scope = AnyLogScope
+    @usableFromInline
     typealias ScopedLogger = _PassthroughLogger
     
+    @usableFromInline
     func scoped(to scope: Scope) throws -> ScopedLogger {
         _PassthroughLogger(parent: self, scope: scope)
     }

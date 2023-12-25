@@ -11,7 +11,8 @@ public final class PassthroughLogger: @unchecked Sendable, LoggerProtocol, Obser
     public typealias LogLevel = ClientLogLevel
     public typealias LogMessage = Message
     
-    private let base: _PassthroughLogger
+    @usableFromInline
+    let base: _PassthroughLogger
     
     private init(base: _PassthroughLogger) {
         self.base = base
@@ -42,7 +43,10 @@ public final class PassthroughLogger: @unchecked Sendable, LoggerProtocol, Obser
             )
         )
     }
-    
+}
+
+extension LoggerProtocol where Self: PassthroughLogger {
+    @_transparent
     public func log(
         level: LogLevel,
         _ message: @autoclosure () -> LogMessage,
@@ -54,8 +58,8 @@ public final class PassthroughLogger: @unchecked Sendable, LoggerProtocol, Obser
         if Thread.isMainThread {
             objectWillChange.send()
         } else {
-            DispatchQueue.main.async { [weak self] in
-                self?.objectWillChange.send()
+            DispatchQueue.main.async { 
+                self.objectWillChange.send()
             }
         }
         
