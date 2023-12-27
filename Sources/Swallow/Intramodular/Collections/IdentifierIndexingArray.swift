@@ -7,10 +7,15 @@ import Swift
 
 public typealias IdentifierIndexingArrayOf<Element: Identifiable> = IdentifierIndexingArray<Element, Element.ID>
 
+public protocol IdentifierIndexingArrayType: Collection {
+    associatedtype ID: Hashable
+}
+
 /// An array that additionally indexes elements by ID.
-public struct IdentifierIndexingArray<Element, ID: Hashable> {
+public struct IdentifierIndexingArray<Element, ID: Hashable>: IdentifierIndexingArrayType {
     private(set) var base: OrderedDictionary<ID, Element>
-    private(set) var id: (Element) -> ID
+    
+    public let id: (Element) -> ID
     
     public var identifiers: AnyRandomAccessCollection<ID> {
         .init(OrderedSet(base.keys))
@@ -20,32 +25,48 @@ public struct IdentifierIndexingArray<Element, ID: Hashable> {
         Set(base.keys)
     }
     
-    public init(_ elements: some Sequence<Element>, id: @escaping (Element) -> ID) {
+    public init(
+        _ elements: some Sequence<Element>,
+        id: @escaping (Element) -> ID
+    ) {
         self.base = OrderedDictionary(uniqueKeysWithValues: elements.map({ (key: id($0), value: $0) }))
         self.id = id
     }
     
-    public init(id: @escaping (Element) -> ID) {
+    public init(
+        id: @escaping (Element) -> ID
+    ) {
         self.init(Array<Element>(), id: id)
     }
     
-    public init(_ elements: some Sequence<Element>, id: KeyPath<Element, ID>) {
+    public init(
+        _ elements: some Sequence<Element>,
+        id: KeyPath<Element, ID>
+    ) {
         self.init(elements, id: { $0[keyPath: id] })
     }
     
-    public init(id: KeyPath<Element, ID>) {
+    public init(
+        id: KeyPath<Element, ID>
+    ) {
         self.init(id: { $0[keyPath: id] })
     }
     
-    public init(_ elements: some Sequence<Element>) where Element: Identifiable, Element.ID == ID {
+    public init(
+        _ elements: some Sequence<Element>
+    ) where Element: Identifiable, Element.ID == ID {
         self.init(elements, id: \.id)
     }
     
-    private func _idForElement(_ element: Element) -> ID {
+    private func _idForElement(
+        _ element: Element
+    ) -> ID {
         id(element)
     }
     
-    public func contains(elementIdentifiedBy id: ID) -> Bool {
+    public func contains(
+        elementIdentifiedBy id: ID
+    ) -> Bool {
         base.containsKey(id)
     }
 }
@@ -457,6 +478,29 @@ extension Sequence {
 import SwiftUI
 
 extension Binding {
+    public subscript<Element, ID: Hashable>(
+        id identifier: ID
+    ) -> Binding<Element>? where Value == IdentifierIndexingArray<Element, ID> {
+        guard let currentValue = self.wrappedValue[id: identifier] else {
+            return nil
+        }
+        
+        return Binding<Element>(
+            get: {
+                guard let value = self.wrappedValue[id: identifier] else {
+                    assertionFailure()
+                    
+                    return currentValue
+                }
+                
+                return value
+            },
+            set: {
+                self.wrappedValue[id: identifier] = $0
+            }
+        )
+    }
+
     public subscript<Element, ID: Hashable>(
         id identifier: ID,
         default defaultValue: @autoclosure @escaping () -> Element

@@ -12,11 +12,25 @@ public protocol _AnyDataCodableCoder {
 }
 
 public enum _AnyTopLevelDataCoder: Sendable {
-    case dataCodableType(
-        any DataCodable.Type,
-        strategy: (decoding: any Sendable, encoding: any Sendable)
-    )
+    public struct Custom: Sendable {
+        public let type: Any.Type
+        public let decode: @Sendable (Data) throws -> Any
+        public let encode: @Sendable (Any) throws -> Data
+        
+        public init<T>(
+            for type: T.Type,
+            decode: @escaping (Data) throws -> T,
+            encode: @escaping (T) throws -> Data
+        ) {
+            self.type = type
+            self.decode = { try decode($0) as Any }
+            self.encode = { try encode($0 as! T) }
+        }
+    }
+    
+    case dataCodableType(any DataCodable.Type, strategy: (decoding: any Sendable, encoding: any Sendable))
     case topLevelDataCoder(TopLevelDataCoder, forType: Codable.Type)
+    case custom(Custom)
     
     var type: Any.Type {
         switch self {
@@ -24,29 +38,38 @@ public enum _AnyTopLevelDataCoder: Sendable {
                 return type
             case .topLevelDataCoder(_, let type):
                 return type
+            case .custom(let coder):
+                return coder.type
         }
     }
 }
 
 extension _AnyTopLevelDataCoder: TopLevelDataCoder {
-    public func decode(from data: Data) throws -> Any {
+    public func decode(
+        from data: Data
+    ) throws -> Any {
         switch self {
-            case .dataCodableType(let type, let strategy): do {
+            case .dataCodableType(let type, let strategy):
                 return try type._opaque_init(data: data, strategy: strategy.decoding)
-            }
-            case .topLevelDataCoder(let coder, let type): do {
+            case .topLevelDataCoder(let coder, let type):
                 return try coder.decode(type, from: data)
-            }
+            case .custom(let coder):
+                return try coder.decode(data)
         }
     }
     
-    public func decode<T>(_ type: T.Type, from data: Data) throws -> T {
+    public func decode<T>(
+        _ type: T.Type,
+        from data: Data
+    ) throws -> T {
         assert(self.type == type)
         
         return try cast(decode(from: data), to: type)
     }
     
-    public func encode<T>(_ value: T) throws -> Data {
+    public func encode<T>(
+        _ value: T
+    ) throws -> Data {
         switch self {
             case .dataCodableType(let type, let strategy): do {
                 let value = try _opaque_openExistentialAndCast(value, to: type) as! (any DataCodable)
@@ -58,6 +81,9 @@ extension _AnyTopLevelDataCoder: TopLevelDataCoder {
                 let data = try coder.encode(value)
                 
                 return data
+            }
+            case .custom(let coder): do {
+                return try coder.encode(value)
             }
         }
     }
