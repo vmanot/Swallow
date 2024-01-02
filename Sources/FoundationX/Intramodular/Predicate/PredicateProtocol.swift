@@ -30,7 +30,7 @@ public struct PredicateX<Input>: PredicateProtocol {
     ) -> Self {
         let variable = PredicateExpressionsX.Variable<Input>()
         
-        return .init(
+        return Self(
             expression: PredicateExpressionsX._ConjunctionOfMany(expressions: expressions.map({ $0.expression(variable) })),
             variable: variable
         )
@@ -42,22 +42,12 @@ public struct PredicateX<Input>: PredicateProtocol {
     ) -> Self {
         let variable = PredicateExpressionsX.Variable<Input>()
         
-        return .init(
+        return Self(
             expression: expression.expression(.init(root: variable, keyPath: keyPath)),
             variable: variable
         )
     }
 }
-
-func foo(_ predicate: PredicateX<String>) {
-    
-}
-
-@available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
-func bar() {
-    foo(.where(.contains("sh"), .hasSuffix("it")))
-}
-
 
 extension PredicateExpressionX {
     public static func value<T>(

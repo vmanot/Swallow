@@ -8,11 +8,7 @@ extension PredicateExpressionsX {
     public struct Conjunction<
         LHS: PredicateExpressionX,
         RHS: PredicateExpressionX
-    >: PredicateExpressionX
-    where
-    LHS.Output == Bool,
-    RHS.Output == Bool
-    {
+    >: PredicateExpressionX where LHS.Output == Bool, RHS.Output == Bool {
         public typealias Output = Bool
         
         public let lhs: LHS

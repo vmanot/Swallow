@@ -16,7 +16,7 @@ public protocol CocoaPredicateExpression: NSExpressionConvertible {
 
 extension CocoaPredicateExpression {
     public var _desiredComparisonModifier: CocoaComparisonPredicate.Modifier {
-        .direct
+        CocoaComparisonPredicate.Modifier.direct
     }
 }
 
