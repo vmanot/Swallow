@@ -5,6 +5,7 @@
 import ObjectiveC
 import Swallow
 
+@_optimize(speed)
 @_transparent
 @usableFromInline
 func objc_realizeListAllocator<T: Wrapper, P: Pointer>(
@@ -23,6 +24,7 @@ func objc_realizeListAllocator<T: Wrapper, P: Pointer>(
     .eraseToAnyRandomAccessCollection()
 }
 
+@_optimize(speed)
 @_transparent
 @usableFromInline
 func __fast_objc_realizeListAllocator<T: Wrapper, P: Pointer>(
@@ -39,6 +41,7 @@ func __fast_objc_realizeListAllocator<T: Wrapper, P: Pointer>(
     .map(T.init)
 }
 
+@_optimize(speed)
 @_transparent
 @usableFromInline
 func objc_realizeListAllocator<T: Wrapper, P: Pointer>(
@@ -58,6 +61,7 @@ func objc_realizeListAllocator<T: Wrapper, P: Pointer>(
     .eraseToAnyRandomAccessCollection()
 }
 
+@_optimize(speed)
 @_transparent
 @usableFromInline
 func objc_realizeListAllocator<T, U: Wrapper, P: Pointer>(
@@ -78,6 +82,7 @@ func objc_realizeListAllocator<T, U: Wrapper, P: Pointer>(
     .eraseToAnyRandomAccessCollection()
 }
 
+@_optimize(speed)
 @_transparent
 @usableFromInline
 func objc_realizeListAllocator<T, U: Wrapper, P: Pointer>(
@@ -96,6 +101,7 @@ func objc_realizeListAllocator<T, U: Wrapper, P: Pointer>(
     .eraseToAnyRandomAccessCollection()
 }
 
+@_optimize(speed)
 @_transparent
 @usableFromInline
 func objc_realizeListAllocator<T, U: Wrapper, P: Pointer>(
@@ -116,6 +122,7 @@ func objc_realizeListAllocator<T, U: Wrapper, P: Pointer>(
     .eraseToAnyRandomAccessCollection()
 }
 
+@_optimize(speed)
 @_transparent
 @usableFromInline
 func objc_realizeListAllocator<T, U: Wrapper, P: Pointer>(

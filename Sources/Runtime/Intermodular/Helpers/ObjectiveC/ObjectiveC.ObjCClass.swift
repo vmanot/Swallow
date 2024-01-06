@@ -185,21 +185,27 @@ extension ObjCClass: CaseIterable {
     static var _allCases: [ObjCClass]? = nil
     
     public static var allCases: [ObjCClass] {
-        if let _allCases {
-            return _allCases
-        } else {
-            let result: [ObjCClass] = __fast_objc_realizeListAllocator({ objc_copyClassList($0) })
-            
-            self._allCases = result
-            
-            return result
+        @_optimize(speed)
+        @_transparent
+        get {
+            if let _allCases {
+                return _allCases
+            } else {
+                let result: [ObjCClass] = __fast_objc_realizeListAllocator({ objc_copyClassList($0) })
+                
+                self._allCases = result
+                
+                return result
+            }
         }
     }
 }
 
 extension ObjCClass: CustomStringConvertible {
+    @_optimize(speed)
+    @_transparent
     public var description: String {
-        return String(describing: value)
+        String(describing: value)
     }
 }
 
@@ -293,11 +299,13 @@ extension ObjCClass: ExtensibleSequence {
 }
 
 extension ObjCClass: Hashable {
+    @_optimize(speed)
     @_transparent
     public func hash(into hasher: inout Hasher) {
         hasher.combine(ObjectIdentifier(value))
     }
     
+    @_optimize(speed)
     @_transparent
     public static func == (lhs: ObjCClass, rhs: ObjCClass) -> Bool {
         lhs.value == rhs.value
@@ -305,8 +313,10 @@ extension ObjCClass: Hashable {
 }
 
 extension ObjCClass: Named, NameInitiable {
+    @_optimize(speed)
+    @_transparent
     public var name: String {
-        return .init(utf8String: class_getName(value))
+        String(utf8String: class_getName(value))
     }
     
     public init(name: String, superclass: ObjCClass, extraByteCount: Int = 0) {

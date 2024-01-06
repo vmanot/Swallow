@@ -7,10 +7,13 @@ import MachO
 @_spi(Internal) import Swallow
 
 public final class _SwiftRuntimeIndex {
-    private enum StateFlag {
+    @frozen
+    @usableFromInline
+    enum StateFlag {
         case initialIndexingComplete
     }
     
+    @frozen
     public enum QueryPredicate: Hashable {
         case conformsTo(Metatype<Any.Type>)
         case kind(Set<TypeMetadata.Kind>)
@@ -69,8 +72,10 @@ extension _SwiftRuntimeIndex {
             _fetch(predicates).map({ $0.base })
         }
     }
-
-    private func _fetch(
+    
+    @usableFromInline
+    @_optimize(speed)
+    func _fetch(
         _ predicates: [QueryPredicate]
     ) -> Set<TypeMetadata> {
         var predicates = predicates
@@ -99,8 +104,7 @@ extension _SwiftRuntimeIndex {
 }
 
 extension _SwiftRuntimeIndex {
-    ///var cachedConformances: [TypeMetadata: Set<QueryPredicate>] = [:]
-    
+    @_transparent
     private func _queryTypes(
         conformingTo protocolType: TypeMetadata,
         _ predicates: Set<QueryPredicate>
@@ -129,7 +133,9 @@ extension _SwiftRuntimeIndex {
         return result
     }
     
-    private func _buildQueryIndices() -> QueryIndices {
+    @_optimize(speed)
+    @usableFromInline
+    func _buildQueryIndices() -> QueryIndices {
         assert(!_stateFlags.contains(.initialIndexingComplete))
         
         defer {
@@ -164,6 +170,7 @@ extension _SwiftRuntimeIndex {
 }
 
 extension _SwiftRuntimeIndex {
+    @usableFromInline
     final class QueryIndices {
         let objCClasses: Set<TypeMetadata>
         let swiftTypes: Set<TypeMetadata>
@@ -180,6 +187,7 @@ extension _SwiftRuntimeIndex {
             return image._matches(DynamicLinkEditor.Image._ImagePathFilter.appleFramework)
         }
         
+        @usableFromInline
         init(
             objCClasses: Set<TypeMetadata>,
             swiftTypes: Set<TypeMetadata>
@@ -188,6 +196,8 @@ extension _SwiftRuntimeIndex {
             self.swiftTypes = swiftTypes
         }
         
+        @_optimize(speed)
+        @usableFromInline
         func fetch(_ predicates: Set<QueryPredicate>) -> Set<TypeMetadata> {
             if predicates.isEmpty {
                 return allTypes

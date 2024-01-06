@@ -108,7 +108,7 @@ extension Metatype: _UnwrappableTypeEraser {
 }
 
 /// From pointfreeco.
-private func _getTypeName(
+public func _getTypeName(
     from type: Any.Type,
     qualified: Bool = true,
     genericsAbbreviated: Bool = false

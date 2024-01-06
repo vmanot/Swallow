@@ -5,6 +5,7 @@
 import Swallow
 
 extension TypeMetadata {
+    @frozen
     public enum Kind: Equatable {
         public typealias RawValue = Int
         

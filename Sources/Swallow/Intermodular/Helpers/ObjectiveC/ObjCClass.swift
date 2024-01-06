@@ -39,6 +39,8 @@ extension ObjCClass {
 // MARK: - Conformances
 
 extension ObjCClass: CaseIterable {
+    @_optimize(speed)
+    @_transparent
     static var allCases: [ObjCClass] {
         let numberOfClasses = Int(objc_getClassList(nil, 0))
         var result: [ObjCClass] = Array(repeating: .init(NSObject.self), count: numberOfClasses)

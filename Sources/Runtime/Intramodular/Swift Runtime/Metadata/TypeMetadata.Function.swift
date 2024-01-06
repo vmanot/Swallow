@@ -5,6 +5,7 @@
 import Swallow
 
 extension TypeMetadata {
+    @frozen
     public struct Function: SwiftRuntimeTypeMetadataWrapper {
         typealias SwiftRuntimeTypeMetadata = SwiftRuntimeFunctionMetadata
         

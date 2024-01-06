@@ -5,6 +5,7 @@
 import Swallow
 
 extension TypeMetadata {
+    @frozen
     public struct Existential: SwiftRuntimeTypeMetadataWrapper {
         typealias SwiftRuntimeTypeMetadata = SwiftRuntimeProtocolMetadata
         
@@ -25,6 +26,8 @@ extension TypeMetadata {
 }
 
 extension TypeMetadata {
+    @_optimize(speed)
+    @_transparent
     public func conforms(
         to testType: Any.Type
     ) -> Bool {
@@ -62,6 +65,8 @@ extension TypeMetadata {
         return _conformsToProtocol(base, protocolDescriptor) != nil*/
     }
     
+    @_optimize(speed)
+    @_transparent
     public func _conforms(
         toExistentialMetatype testType: Any.Type
     ) -> Bool {
@@ -74,10 +79,12 @@ extension TypeMetadata {
         return _openExistential(testType, do: _conformsToMetatype)
     }
     
+    @_optimize(speed)
+    @_transparent
     public func conforms(
         to testType: TypeMetadata
     ) -> Bool {
-        return conforms(to: testType.base)
+        conforms(to: testType.base)
     }
 }
 
@@ -90,12 +97,14 @@ extension Metatype {
 }
 
 @_silgen_name("swift_conformsToProtocol")
+@usableFromInline
 func _conformsToProtocol(
     _ type: Any.Type,
     _ protocolDescriptor: UnsafeMutablePointer<SwiftRuntimeProtocolContextDescriptor>
 ) -> UnsafeRawPointer?
 
 @_silgen_name("swift_getExistentialMetatypeMetadata")
+@usableFromInline
 func _swift_getExistentialMetatypeMetadata(
     _ instanceType: Any.Type
 ) -> Any.Type?

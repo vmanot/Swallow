@@ -10,6 +10,7 @@ public final class OSUnfairLock: Sendable {
     @usableFromInline
     let base: os_unfair_lock_t
     
+    @_optimize(speed)
     public init() {
         let base = os_unfair_lock_t.allocate(capacity: 1)
         
@@ -18,6 +19,7 @@ public final class OSUnfairLock: Sendable {
         self.base = base
     }
     
+    @_optimize(speed)
     @inlinable
     @inline(__always)
     public func acquireOrBlock() {
@@ -29,6 +31,7 @@ public final class OSUnfairLock: Sendable {
         case failedToAcquireLock
     }
     
+    @_optimize(speed)
     @inlinable
     @inline(__always)
     public func acquireOrFail() throws {
@@ -39,6 +42,7 @@ public final class OSUnfairLock: Sendable {
         }
     }
     
+    @_optimize(speed)
     @inlinable
     @inline(__always)
     public func relinquish() {
@@ -53,6 +57,8 @@ public final class OSUnfairLock: Sendable {
 
 @_spi(Internal)
 extension OSUnfairLock {
+    @_optimize(speed)
+    @_transparent
     @inlinable
     @inline(__always)
     public func withCriticalScope<Result>(
