@@ -11,3 +11,7 @@ public protocol _ThrowingInitiable {
 public protocol Initiable {
     init()
 }
+
+public protocol AllCaseInitiable {
+    static var all: Self { get }
+}

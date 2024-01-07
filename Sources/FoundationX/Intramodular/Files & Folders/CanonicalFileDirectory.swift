@@ -105,6 +105,23 @@ extension CanonicalFileDirectory {
     }
 }
 
+extension URL {
+    public init(
+        directory: CanonicalFileDirectory,
+        path: String
+    ) throws {
+        self = try directory + path
+    }
+    
+    public init(
+        directory: CanonicalFileDirectory,
+        subdirectory: String,
+        filename: String
+    ) throws {
+        self = (try directory + subdirectory).appendingPathComponent(filename, isDirectory: false)
+    }
+}
+
 extension CanonicalFileDirectory {
     public static func + (
         lhs: Self,

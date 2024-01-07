@@ -207,12 +207,20 @@ extension URL {
 }
 
 extension URL {
+    public var isWebURL: Bool {
+        return scheme == "http" || scheme == "https"
+    }
+
     public var _fileNameWithoutExtension: String {
         self.deletingPathExtension().lastPathComponent
     }
 
     public var _fileNameWithExtension: String? {
         lastPathComponent
+    }
+
+    public var _fileExtension: String {
+        pathExtension
     }
 
     /// Whether the `URL` is `/`.

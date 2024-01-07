@@ -291,6 +291,14 @@ public struct _PolymorphicKeyedDecodingContainer<Key: CodingKey>: KeyedDecodingC
             return try base.decode(T.self, forKey: key)
         }
         
+        guard !(type is Published<URL>.Type) else {
+            return try base.decode(T.self, forKey: key)
+        }
+
+        guard !(type is Published<Optional<URL>>.Type) else {
+            return try base.decode(T.self, forKey: key)
+        }
+        
         do {
             return try base.decode(_PolymorphicDecodingProxy<T>.self, forKey: key).value
         } catch {
