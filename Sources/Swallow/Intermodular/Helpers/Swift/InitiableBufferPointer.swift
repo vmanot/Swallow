@@ -5,22 +5,30 @@
 import Swift
 
 public protocol InitiableBufferPointer: BufferPointer {
+    @inlinable
     init(start _: BaseAddressPointer?, count: Int)
     
+    @inlinable
     static func allocate(capacity: Int) -> Self
     
+    @inlinable
     static func initializing(from _: BaseAddressPointer, count: Int) -> Self
     
+    @inlinable
     static func initializing<S: Sequence>(from _: S) -> Self where S.Element == Element
+    @inlinable
     static func initializing<S: Sequence>(from _: S, count: Int) -> Self where S.Element == Element
     
+    @inlinable
     static func initializing<C: Collection>(from _: C) -> Self where C.Element == Element
+    @inlinable
     static func initializing<C: Collection>(from _: C, count: Int) -> Self where C.Element == Element
 }
 
 // MARK: - Implementation
 
 extension InitiableBufferPointer {
+    @_transparent
     public static func allocate(capacity: Int) -> Self {
         return self.init(start: .init(UnsafeMutablePointer<Element>.allocate(capacity: numericCast(capacity))), count: capacity)
     }
@@ -30,33 +38,29 @@ extension InitiableBufferPointer {
     /// Allocate and initialize a buffer from a given base address and a count.
     ///
     /// This copies elements from `start` until `count`.
+    @_transparent
     public static func initializing(
         from start: BaseAddressPointer,
         count: Int
     ) -> Self {
         let result = allocate(capacity: count)
         
-#if compiler(>=5.8)
         result.baseAddress?.unsafeMutablePointerRepresentation.update(
             from: start.unsafePointerRepresentation,
             count: numericCast(count)
         )
-#else
-        result.baseAddress?.unsafeMutablePointerRepresentation.assign(
-            from: start.unsafePointerRepresentation,
-            count: numericCast(count)
-        )
-#endif
-        
+
         return result
     }
     
+    @_transparent
     public static func initializing<S: Sequence>(
         from sequence: S
     ) -> Self where S.Element == Element {
         initializing(from: Array(sequence))
     }
     
+    @_transparent
     public static func initializing<S: Sequence>(
         from sequence: S,
         count: Int
@@ -72,12 +76,14 @@ extension InitiableBufferPointer {
         return .init(start: rawBufferPointer.baseAddress, count: count)
     }
     
+    @_transparent
     public static func initializing<C: Collection>(
         from collection: C
     ) -> Self where C.Element == Element {
         initializing(from: collection, count: numericCast(collection.count))
     }
     
+    @_transparent
     public static func initializing<C: Collection>(
         from collection: C,
         count: Int
@@ -143,6 +149,7 @@ extension InitiableBufferPointer {
 
 // MARK: - Helpers
 
+@_transparent
 @inlinable
 public func _reinterpretCast<T: InitiableBufferPointer, U: InitiableBufferPointer>(_ x: T) -> U? {
     return U.init(
@@ -151,6 +158,7 @@ public func _reinterpretCast<T: InitiableBufferPointer, U: InitiableBufferPointe
     )
 }
 
+@_transparent
 @inlinable
 public func _reinterpretCast<T: InitiableBufferPointer, U: InitiableBufferPointer>(_ x: T) -> U {
     return U.init(

@@ -58,6 +58,7 @@ extension InitiableBufferPointer where Self: MutableBufferPointer & MutableRepre
 }
 
 extension InitiableBufferPointer where Self: MutableRepresentationConvertible, Self.MutableRepresentation: InitiableBufferPointer & MutableBufferPointer {
+    @_transparent
     @inlinable
     public var mutableRepresentation: MutableRepresentation {
         get {
@@ -69,23 +70,25 @@ extension InitiableBufferPointer where Self: MutableRepresentationConvertible, S
 }
 
 extension Pointer where Self: MutableRepresentationConvertible, Self.ImmutableRepresentation: ConstantPointer {
+    @_transparent
     @inlinable
     public var immutableRepresentation: ImmutableRepresentation {
         get {
-            return .init(opaquePointerRepresentation)
+            return ImmutableRepresentation(opaquePointerRepresentation)
         } set {
-            self = .init(newValue.opaquePointerRepresentation)
+            self = Self(newValue.opaquePointerRepresentation)
         }
     }
 }
 
 extension Pointer where Self: MutableRepresentationConvertible, Self.MutableRepresentation: MutablePointer {
+    @_transparent
     @inlinable
     public var mutableRepresentation: MutableRepresentation {
         get {
-            return .init(opaquePointerRepresentation)
+            return MutableRepresentation(opaquePointerRepresentation)
         } set {
-            self = .init(newValue.opaquePointerRepresentation)
+            self = Self(newValue.opaquePointerRepresentation)
         }
     }
 }

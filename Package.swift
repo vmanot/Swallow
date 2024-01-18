@@ -1,4 +1,4 @@
-// swift-tools-version:5.8
+// swift-tools-version:5.9
 
 import PackageDescription
 
@@ -17,6 +17,7 @@ let package = Package(
                 "_ExpansionsRuntime",
                 "_LoremIpsum",
                 "Compute",
+                "CoreModel",
                 "Diagnostics",
                 "FoundationX",
                 "POSIX",
@@ -39,7 +40,13 @@ let package = Package(
                 "Swallow",
             ],
             swiftSettings: [
-                .unsafeFlags(["-enable-library-evolution"])
+                .unsafeFlags([
+                    "-Xfrontend",
+                    "-disable-typo-correction",
+                    "-Xfrontend",
+                    "-disable-verify-exclusivity",
+                    "-enable-library-evolution"
+                ])
             ]
         ),
         .target(
@@ -53,7 +60,30 @@ let package = Package(
                 "Swallow"
             ],
             swiftSettings: [
-                .unsafeFlags(["-enable-library-evolution"])
+                .unsafeFlags([
+                    "-Xfrontend",
+                    "-disable-typo-correction",
+                    "-Xfrontend",
+                    "-disable-verify-exclusivity",
+                    "-enable-library-evolution"
+                ])
+            ]
+        ),
+        .target(
+            name: "CoreModel",
+            dependencies: [
+                "Diagnostics",
+                .product(name: "Collections", package: "swift-collections"),
+                "Swallow"
+            ],
+            swiftSettings: [
+                .unsafeFlags([
+                    "-Xfrontend",
+                    "-disable-typo-correction",
+                    "-Xfrontend",
+                    "-disable-verify-exclusivity",
+                    "-enable-library-evolution"
+                ])
             ]
         ),
         .target(
@@ -62,7 +92,13 @@ let package = Package(
                 "Swallow"
             ],
             swiftSettings: [
-                .unsafeFlags(["-enable-library-evolution"])
+                .unsafeFlags([
+                    "-Xfrontend",
+                    "-disable-typo-correction",
+                    "-Xfrontend",
+                    "-disable-verify-exclusivity",
+                    "-enable-library-evolution"
+                ])
             ]
         ),
         .target(
@@ -71,7 +107,13 @@ let package = Package(
                 "Swallow"
             ],
             swiftSettings: [
-                .unsafeFlags(["-enable-library-evolution"])
+                .unsafeFlags([
+                    "-Xfrontend",
+                    "-disable-typo-correction",
+                    "-Xfrontend",
+                    "-disable-verify-exclusivity",
+                    "-enable-library-evolution"
+                ])
             ]
         ),
         .target(
@@ -80,7 +122,13 @@ let package = Package(
                 "Swallow"
             ],
             swiftSettings: [
-                .unsafeFlags(["-enable-library-evolution"])
+                .unsafeFlags([
+                    "-Xfrontend",
+                    "-disable-typo-correction",
+                    "-Xfrontend",
+                    "-disable-verify-exclusivity",
+                    "-enable-library-evolution"
+                ])
             ]
         ),
         .target(
@@ -89,7 +137,13 @@ let package = Package(
                 "Swallow"
             ],
             swiftSettings: [
-                .unsafeFlags(["-enable-library-evolution"])
+                .unsafeFlags([
+                    "-Xfrontend",
+                    "-disable-typo-correction",
+                    "-Xfrontend",
+                    "-disable-verify-exclusivity",
+                    "-enable-library-evolution"
+                ])
             ]
         ),
         .target(
@@ -100,7 +154,13 @@ let package = Package(
                 "Swallow"
             ],
             swiftSettings: [
-                .unsafeFlags(["-enable-library-evolution"])
+                .unsafeFlags([
+                    "-Xfrontend",
+                    "-disable-typo-correction",
+                    "-Xfrontend",
+                    "-disable-verify-exclusivity",
+                    "-enable-library-evolution"
+                ])
             ]
         ),
         .target(
@@ -112,7 +172,13 @@ let package = Package(
                 .product(name: "Collections", package: "swift-collections")
             ],
             swiftSettings: [
-                .unsafeFlags(["-enable-library-evolution"])
+                .unsafeFlags([
+                    "-Xfrontend",
+                    "-disable-typo-correction",
+                    "-Xfrontend",
+                    "-disable-verify-exclusivity",
+                    "-enable-library-evolution"
+                ])
             ]
         ),
         .testTarget(

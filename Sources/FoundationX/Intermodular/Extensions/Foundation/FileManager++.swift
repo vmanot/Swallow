@@ -13,13 +13,13 @@ extension FileManager {
     ) -> Bool {
         fileExists(atPath: url.path)
     }
-
+    
     /// Returns a Boolean value that indicates whether a file or directory exists at a specified path.
     @available(macOS 11.0, iOS 14.0, watchOS 7.0, tvOS 14.0, *)
     public func fileExists(
         at path: FilePath
     ) -> Bool {
-        fileExists(at: URL(path)!)
+        fileExists(at: URL(_filePath: path)!)
     }
     
     public func regularFileExists(
@@ -31,32 +31,32 @@ extension FileManager {
         
         return exists && !isDirectory.boolValue
     }
-
+    
     /// Returns a Boolean value that indicates whether a directory exists at a specified URL.
     public func directoryExists(
         at url: URL
     ) -> Bool {
         var isFolder: ObjCBool = false
-
+        
         fileExists(atPath: url.path, isDirectory: &isFolder)
-
+        
         if isFolder.boolValue {
             return true
         } else {
             return false
         }
     }
-
+    
     /// Returns a Boolean value that indicates whether a directory exists at a specified path.
     @available(macOS 11.0, iOS 14.0, watchOS 7.0, tvOS 14.0, *)
     public func directoryExists(
         at path: FilePath
     ) -> Bool {
-        #if os(visionOS)
+#if os(visionOS)
         return directoryExists(at: URL(filePath: path)!)
-        #else
-        return directoryExists(at: URL(path)!)
-        #endif
+#else
+        return directoryExists(at: URL(_filePath: path)!)
+#endif
     }
     
     public func isDirectory<T: URLRepresentable>(
@@ -113,7 +113,7 @@ extension FileManager {
             return result
         } else {
             let parentURL = url.resolvingSymlinksInPath().deletingLastPathComponent()
-
+            
             guard parentURL != url, !parentURL._isRootPath, !parentURL.path.isEmpty else {
                 return nil
             }
@@ -121,7 +121,7 @@ extension FileManager {
             return nearestSecurityScopedAccessibleAncestor(for: parentURL)
         }
     }
-
+    
     public func isSecurityScopedAccessible<T: URLRepresentable>(
         at location: T
     ) -> Bool {
@@ -130,7 +130,7 @@ extension FileManager {
         if ((try? _SecurityScopedBookmarks.resolvedURL(for: location.url._fromFileURLToURL())) as URL?) != nil {
             return true
         }
-                
+        
         if isReadableAndWritable(at: url) {
             return true
         } else {
@@ -143,7 +143,7 @@ extension FileManager {
             return isSecurityScopedAccessible(at: parentURL)
         }
     }
-
+    
 }
 
 extension FileManager {
@@ -219,7 +219,7 @@ extension FileManager {
     public func removeItem(
         at path: FilePath
     ) throws {
-        try removeItem(at: URL(path).unwrap())
+        try removeItem(at: URL(_filePath: path).unwrap())
     }
     
     public func removeItemIfNecessary(
@@ -271,7 +271,7 @@ extension FileManager {
             try setAttributes(attributes, ofItemAtPath: url.path)
         }
     }
-
+    
     public func contents(
         of url: URL
     ) throws -> Data {
@@ -287,20 +287,20 @@ extension FileManager {
         
         return try contents(of: url)
     }
-
+    
     public func contentsOfDirectory(
         at url: URL
     ) throws -> [URL] {
         try contentsOfDirectory(at: url, includingPropertiesForKeys: [])
     }
-
+    
     @available(macOS 11.0, iOS 14.0, watchOS 7.0, tvOS 14.0, *)
     public func contentsOfDirectory(
         at path: FilePath
     ) throws -> [URL] {
-        try contentsOfDirectory(at: URL(path).unwrap(), includingPropertiesForKeys: [])
+        try contentsOfDirectory(at: URL(_filePath: path).unwrap(), includingPropertiesForKeys: [])
     }
-
+    
     public func setContents(
         of url: URL,
         to data: Data,
@@ -329,20 +329,20 @@ extension FileManager {
             case noURLFound
             case foundMultipleURLs
         }
-
+        
         let urls = urls(for: directory, in: domainMask)
-
+        
         guard let result = urls.first else {
             throw ResolutionError.noURLFound
         }
-
+        
         guard urls.count == 1 else {
             throw ResolutionError.foundMultipleURLs
         }
-
+        
         return result
     }
-
+    
     public func documentsDirectoryURL(forUbiquityContainerIdentifier: String?) throws -> URL? {
         guard let url = url(forUbiquityContainerIdentifier: forUbiquityContainerIdentifier)?.appendingPathComponent("Documents") else {
             return nil

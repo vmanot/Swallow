@@ -17,7 +17,7 @@ extension _SwiftRuntime {
         }
     }
     
-    public struct TypeConformances: Identifiable {
+    public struct TypeConformanceList: Identifiable {
         public let type: TypeMetadata
         public let conformances: IdentifierIndexingArrayOf<TypeConformance>
         
@@ -28,9 +28,10 @@ extension _SwiftRuntime {
 }
 
 extension _SwiftRuntime {
-    static func _parseSwiftTypeConformances(
+    @_transparent
+    static func _parseSwiftTypeConformanceList(
         from image: DynamicLinkEditor.Image
-    ) -> [TypeConformances] {
+    ) -> [TypeConformanceList] {
         var result = [TypeMetadata: [TypeConformance]]()
         
         var sectionSize: UInt = 0
@@ -63,14 +64,15 @@ extension _SwiftRuntime {
         
         return result
             .filter({ !$0.value.isEmpty })
-            .map { (key, value) -> TypeConformances in
-                return TypeConformances(
+            .map { (key, value) -> TypeConformanceList in
+                return TypeConformanceList(
                     type: key,
                     conformances: IdentifierIndexingArrayOf(value.distinct())
                 )
             }
     }
     
+    @_transparent
     private static func parseConformance(
         from conformanceDescriptor: UnsafePointer<SwiftRuntimeProtocolConformanceDescriptor>
     ) -> TypeConformance? {

@@ -19,6 +19,7 @@ public final class _SwiftRuntimeIndex {
         case kind(Set<TypeMetadata.Kind>)
         case underscored(Bool)
         case nonAppleFramework
+        case pureSwift
         
         public static func kind(_ kind: TypeMetadata.Kind) -> Self {
             .kind(Set([kind]))
@@ -42,7 +43,6 @@ public final class _SwiftRuntimeIndex {
         }
     }
 
-    private var protocolsToConformingTypes: [TypeMetadata: Set<TypeMetadata>] = [:]
     private var queryResultsByConformances: [Hashable2ple<TypeMetadata, Set<QueryPredicate>>: Set<TypeMetadata>] = [:]
     
     internal init() {
@@ -150,9 +150,10 @@ extension _SwiftRuntimeIndex {
         }
         
         let conformances = imagesToSearch.flatMap { image in
-            image._parseSwiftTypeConformances().flatMap { element -> IdentifierIndexingArrayOf<_SwiftRuntime.TypeConformance> in
-                allSwiftTypes2.insert(element.type)
-                return element.conformances
+            image._parseSwiftTypeConformanceList().flatMap { conformances -> IdentifierIndexingArrayOf<_SwiftRuntime.TypeConformance> in
+                allSwiftTypes2.insert(conformances.type)
+                
+                return conformances.conformances
             }
         }
         
@@ -215,6 +216,10 @@ extension _SwiftRuntimeIndex {
                 return nonUnderscoredTypes.intersection(classTypes)
             } else if predicates == [.kind([TypeMetadata.Kind.class]), .underscored(false), .nonAppleFramework] {
                 return nonUnderscoredTypes.intersection(classTypes).subtracting(appleFramework)
+            } else if predicates == [.pureSwift, .nonAppleFramework] {
+                return swiftTypes.subtracting(appleFramework)
+            } else if predicates == [.pureSwift] {
+                return swiftTypes
             }
             
             fatalError()

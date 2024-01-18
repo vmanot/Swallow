@@ -19,7 +19,7 @@ public struct BookmarkedURL: Identifiable, URLRepresentable {
     @available(macOS 11.0, iOS 14.0, watchOS 7.0, tvOS 14.0, *)
     @inlinable
     public var path: FilePath {
-        FilePath(url)!
+        FilePath(url.absoluteString)
     }
     
     public init?(url: URL, bookmarkData: Data?) {
@@ -115,7 +115,7 @@ extension BookmarkedURL: RawRepresentable  {
     }
     
     public init?(rawValue: String) {
-        guard let url = URL(FilePath(rawValue)) else {
+        guard let url = URL(_filePath: FilePath(rawValue)) else {
             return nil
         }
         
