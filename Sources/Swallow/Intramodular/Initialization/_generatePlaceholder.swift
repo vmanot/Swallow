@@ -141,3 +141,15 @@ extension RangeReplaceableCollection {
         Self()
     }
 }
+
+extension Array where Element == Any.Type {
+    public func _initializeAll<T>(as type: T.Type = T.self) throws -> [T] {
+        try map { element in
+            if let element = element as? Initiable.Type {
+                return try cast(element.init())
+            } else {
+                return try _generatePlaceholder(ofType: element, as: T.self)
+            }
+        }
+    }
+}
