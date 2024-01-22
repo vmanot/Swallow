@@ -5,15 +5,19 @@
 import Swift
 
 /// A type-erased equatable value.
+@frozen
 public struct AnyEquatable: Equatable {
-    private var isEqualToImpl: ((Any, Any) -> Bool)
+    @usableFromInline
+    var isEqualToImpl: @Sendable (Any, Any) -> Bool
     
     public let base: any Equatable
     
+    @_transparent
     public init<T: Equatable>(erasing base: T) {
         if let base = base as? AnyEquatable {
             self = base
         } else {
+            @Sendable
             func equate(_ x: Any, _ y: Any) -> Bool {
                 assert(!(x is AnyEquatable))
                 assert(!(y is AnyEquatable))
@@ -30,6 +34,7 @@ public struct AnyEquatable: Equatable {
         }
     }
     
+    @_transparent
     public init(from x: Any) throws {
         do {
             let x = try cast(x, to: (any Equatable).self)
@@ -44,6 +49,7 @@ public struct AnyEquatable: Equatable {
         }
     }
     
+    @_transparent
     public static func equate<T>(_ lhs: T, _ rhs: T) -> Bool {
         do {
             return try AnyEquatable(from: lhs) == AnyEquatable(from: rhs)
@@ -52,6 +58,7 @@ public struct AnyEquatable: Equatable {
         }
     }
     
+    @_transparent
     public static func == (lhs: AnyEquatable, rhs: AnyEquatable) -> Bool {
         lhs.isEqualToImpl(lhs.base, rhs.base)
     }
