@@ -134,10 +134,10 @@ extension MutableDictionaryProtocol {
             self[key] = newValue
         }
     }
-    
+
     public subscript(
         key: DictionaryKey,
-        _defaultInPlaceWith defaultValue: () async -> DictionaryValue
+        _defaultInPlaceWith defaultValue: @Sendable () async -> DictionaryValue
     ) -> DictionaryValue {
         mutating get async {
             if let value = self[key] {

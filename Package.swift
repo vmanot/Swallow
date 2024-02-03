@@ -15,11 +15,11 @@ let package = Package(
             name: "Swallow",
             targets: [
                 "_ExpansionsRuntime",
-                "_LoremIpsum",
                 "Compute",
                 "CoreModel",
                 "Diagnostics",
                 "FoundationX",
+                "LoremIpsum",
                 "POSIX",
                 "PythonString",
                 "Runtime",
@@ -50,7 +50,7 @@ let package = Package(
             ]
         ),
         .target(
-            name: "_LoremIpsum"
+            name: "LoremIpsum"
         ),
         .target(
             name: "Compute",

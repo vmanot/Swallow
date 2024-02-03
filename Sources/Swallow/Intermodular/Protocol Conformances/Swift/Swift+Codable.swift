@@ -62,6 +62,7 @@ extension UnicodeScalar: Codable {
     }
 }
 
+#if !os(visionOS)
 extension Never: Codable {
     public func encode(to encoder: Encoder) throws {
         fatalError()
@@ -71,3 +72,4 @@ extension Never: Codable {
         fatalError()
     }
 }
+#endif
