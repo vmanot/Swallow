@@ -52,11 +52,11 @@ extension FileManager {
     public func directoryExists(
         at path: FilePath
     ) -> Bool {
-#if os(visionOS)
+        #if os(visionOS)
         return directoryExists(at: URL(filePath: path)!)
-#else
+        #else
         return directoryExists(at: URL(_filePath: path)!)
-#endif
+        #endif
     }
     
     public func isDirectory<T: URLRepresentable>(
@@ -72,6 +72,18 @@ extension FileManager {
         return isDirectory.boolValue
     }
     
+    public func isReadable<T: URLRepresentable>(
+        at location: T
+    ) -> Bool {
+        var url = location.url
+        
+        if isDirectory(at: url) && !url.path.hasSuffix("/") {
+            url = URL(fileURLWithPath: url.path.appending("/"))
+        }
+        
+        return isReadableFile(atPath: url.path)
+    }
+
     public func isReadableAndWritable<T: URLRepresentable>(
         at location: T
     ) -> Bool {
@@ -291,7 +303,25 @@ extension FileManager {
     public func contentsOfDirectory(
         at url: URL
     ) throws -> [URL] {
-        try contentsOfDirectory(at: url, includingPropertiesForKeys: [])
+        func alternateResult() throws -> [URL] {
+            return try contentsOfDirectory(atPath: url.path).map { path in
+                let itemURL = url.appending(URL.PathComponent(rawValue: path, isDirectory: nil))
+                
+                assert(url.path != itemURL.path)
+                
+                return itemURL
+            }
+        }
+        
+        do {
+            return try contentsOfDirectory(at: url, includingPropertiesForKeys: [.isDirectoryKey])
+        } catch(let error) {
+            do {
+                return try alternateResult()
+            } catch(_) {
+                throw error
+            }
+        }
     }
     
     @available(macOS 11.0, iOS 14.0, watchOS 7.0, tvOS 14.0, *)

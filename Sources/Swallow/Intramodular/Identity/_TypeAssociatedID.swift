@@ -17,9 +17,13 @@ public struct _TypeAssociatedID<Parent, RawValue: Hashable>: Hashable, RawRepres
 
 // MARK: - Conformances
 
-extension _TypeAssociatedID: CustomStringConvertible {
+extension _TypeAssociatedID: CustomStringConvertible, CustomTruncatedStringConvertible {
     public var description: String {
         String(describing: rawValue)
+    }
+    
+    public var truncatedDescription: String {
+        String(_describingTruncated: rawValue)
     }
 }
 

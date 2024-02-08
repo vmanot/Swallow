@@ -132,7 +132,7 @@ extension URL {
             self.isDirectory = isDirectory
         }
         
-        public static func directory(_ string: String) -> Self{
+        public static func directory(_ string: String) -> Self {
             Self(rawValue: string, isDirectory: true)
         }
     }
@@ -140,9 +140,19 @@ extension URL {
     public mutating func append(_ component: PathComponent) {
         appendPathComponent(component.rawValue)
     }
+    
+    @_disfavoredOverload
+    public mutating func append(_ component: String) {
+        append(PathComponent(rawValue: component))
+    }
 
-    public func appending(_ component: PathComponent) -> URL {
+    public func appending(_ component: PathComponent) -> Self {
         appendingPathComponent(component.rawValue)
+    }
+    
+    @_disfavoredOverload
+    public func appending(_ component: String) -> Self {
+        appending(PathComponent(rawValue: component))
     }
     
     public static func + (lhs: Self, rhs: PathComponent) -> Self {
@@ -228,6 +238,11 @@ extension URL {
         return self.path == "/" || resolvingSymlinksInPath().path == "/"
     }
     
+    /// Checks if the URL represents a hidden file or directory (i.e., starts with a dot).
+    public var _isFileDotPrefixed: Bool {
+        self.lastPathComponent.hasPrefix(".")
+    }
+
     /// Adds the missing fucking "/" at the end.
     public var _standardizedDirectoryPath: String {
         path.addingSuffixIfMissing("/")

@@ -18,8 +18,8 @@ public struct _ReadableCustomStringConvertible<Subject>: CustomDebugStringConver
             return "Optional<\(Metatype(Subject.self))>(nil)"
         }
         
-        if let base = base as? _AbbreviatedDescriptionConvertible {
-            return base._abbreviatedDescription
+        if let base = base as? CustomTruncatedStringConvertible {
+            return base.truncatedDescription
         } else if let base = base as? CustomStringConvertible {
             return base.description
         } else {

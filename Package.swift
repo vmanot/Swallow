@@ -29,7 +29,7 @@ let package = Package(
         )
     ],
     dependencies: [
-        .package(url: "https://github.com/apple/swift-collections", branch: "release/1.1"),
+        .package(url: "https://github.com/apple/swift-collections", from: "1.1.0"),
     ],
     targets: [
         .target(
@@ -41,8 +41,6 @@ let package = Package(
             ],
             swiftSettings: [
                 .unsafeFlags([
-                    "-Xfrontend",
-                    "-disable-typo-correction",
                     "-Xfrontend",
                     "-disable-verify-exclusivity",
                     "-enable-library-evolution"
@@ -62,8 +60,6 @@ let package = Package(
             swiftSettings: [
                 .unsafeFlags([
                     "-Xfrontend",
-                    "-disable-typo-correction",
-                    "-Xfrontend",
                     "-disable-verify-exclusivity",
                     "-enable-library-evolution"
                 ])
@@ -79,8 +75,6 @@ let package = Package(
             swiftSettings: [
                 .unsafeFlags([
                     "-Xfrontend",
-                    "-disable-typo-correction",
-                    "-Xfrontend",
                     "-disable-verify-exclusivity",
                     "-enable-library-evolution"
                 ])
@@ -93,8 +87,6 @@ let package = Package(
             ],
             swiftSettings: [
                 .unsafeFlags([
-                    "-Xfrontend",
-                    "-disable-typo-correction",
                     "-Xfrontend",
                     "-disable-verify-exclusivity",
                     "-enable-library-evolution"
@@ -109,8 +101,6 @@ let package = Package(
             swiftSettings: [
                 .unsafeFlags([
                     "-Xfrontend",
-                    "-disable-typo-correction",
-                    "-Xfrontend",
                     "-disable-verify-exclusivity",
                     "-enable-library-evolution"
                 ])
@@ -124,8 +114,6 @@ let package = Package(
             swiftSettings: [
                 .unsafeFlags([
                     "-Xfrontend",
-                    "-disable-typo-correction",
-                    "-Xfrontend",
                     "-disable-verify-exclusivity",
                     "-enable-library-evolution"
                 ])
@@ -138,8 +126,6 @@ let package = Package(
             ],
             swiftSettings: [
                 .unsafeFlags([
-                    "-Xfrontend",
-                    "-disable-typo-correction",
                     "-Xfrontend",
                     "-disable-verify-exclusivity",
                     "-enable-library-evolution"
@@ -156,8 +142,6 @@ let package = Package(
             swiftSettings: [
                 .unsafeFlags([
                     "-Xfrontend",
-                    "-disable-typo-correction",
-                    "-Xfrontend",
                     "-disable-verify-exclusivity",
                     "-enable-library-evolution"
                 ])
@@ -173,8 +157,6 @@ let package = Package(
             ],
             swiftSettings: [
                 .unsafeFlags([
-                    "-Xfrontend",
-                    "-disable-typo-correction",
                     "-Xfrontend",
                     "-disable-verify-exclusivity",
                     "-enable-library-evolution"
