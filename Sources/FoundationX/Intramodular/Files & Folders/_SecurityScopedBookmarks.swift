@@ -54,7 +54,7 @@ public final class _SecurityScopedBookmarks {
             if !isStale {
                 return resolvedURL
             } else {
-                throw _Error.unxpectedlyStale(resolvedURL)
+                return nil
             }
         } catch {
             throw _SecurityScopedBookmarks._Error.failedToSaveBookmarkData(error)
