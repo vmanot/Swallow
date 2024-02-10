@@ -38,7 +38,7 @@ extension _DirectoryAccessManager {
         guard FileManager.default.isDirectory(at: url) else {
             let url = try _requestAccess(to: url)
             
-            url.startAccessingSecurityScopedResource()
+            _ = url.startAccessingSecurityScopedResource()
             
             defer {
                 url.stopAccessingSecurityScopedResource()
@@ -145,7 +145,9 @@ extension _DirectoryAccessManager {
 
             openPanel.message = isKnownDirectory ? "Your app needs to access the \(directoryName) folder to continue. Please select the \(directoryName) folder to grant access."  : "Your app needs to access a folder to continue. Please select the folder to grant access."
         } else {
-            openPanel.message = "Your app needs to access \(url._fileNameWithExtension) to continue. Please select \(url._fileNameWithExtension) to grant access."
+            if let fileName = url._fileNameWithExtension {
+                openPanel.message = "Your app needs to access \(fileName) to continue. Please select \(fileName) to grant access."
+            }
         }
         
         openPanel.prompt = "Grant Access"
@@ -306,7 +308,7 @@ extension URL {
         let exists = FileManager.default.fileExists(atPath: self.path, isDirectory: &isDir)
         
         if !exists {
-            throw DirectoryCheckError.doesNotExist
+            return false
         } else if isDir.boolValue {
             return true
         } else {
