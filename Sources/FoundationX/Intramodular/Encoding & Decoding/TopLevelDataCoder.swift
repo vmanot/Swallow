@@ -97,7 +97,9 @@ extension TopLevelDataCoder where Self == JSONCoder {
         JSONCoder()
     }
     
-    public static func json(outputFormatting: JSONEncoder.OutputFormatting) -> JSONCoder {
+    public static func json(
+        outputFormatting: JSONEncoder.OutputFormatting
+    ) -> JSONCoder {
         JSONCoder(outputFormatting: outputFormatting)
     }
 }

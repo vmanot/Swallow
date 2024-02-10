@@ -41,8 +41,6 @@ let package = Package(
             ],
             swiftSettings: [
                 .unsafeFlags([
-                    "-Xfrontend",
-                    "-disable-verify-exclusivity",
                     "-enable-library-evolution"
                 ])
             ]
@@ -59,8 +57,6 @@ let package = Package(
             ],
             swiftSettings: [
                 .unsafeFlags([
-                    "-Xfrontend",
-                    "-disable-verify-exclusivity",
                     "-enable-library-evolution"
                 ])
             ]
@@ -74,8 +70,6 @@ let package = Package(
             ],
             swiftSettings: [
                 .unsafeFlags([
-                    "-Xfrontend",
-                    "-disable-verify-exclusivity",
                     "-enable-library-evolution"
                 ])
             ]
@@ -87,8 +81,6 @@ let package = Package(
             ],
             swiftSettings: [
                 .unsafeFlags([
-                    "-Xfrontend",
-                    "-disable-verify-exclusivity",
                     "-enable-library-evolution"
                 ])
             ]
@@ -100,8 +92,6 @@ let package = Package(
             ],
             swiftSettings: [
                 .unsafeFlags([
-                    "-Xfrontend",
-                    "-disable-verify-exclusivity",
                     "-enable-library-evolution"
                 ])
             ]
@@ -113,8 +103,6 @@ let package = Package(
             ],
             swiftSettings: [
                 .unsafeFlags([
-                    "-Xfrontend",
-                    "-disable-verify-exclusivity",
                     "-enable-library-evolution"
                 ])
             ]
@@ -126,8 +114,6 @@ let package = Package(
             ],
             swiftSettings: [
                 .unsafeFlags([
-                    "-Xfrontend",
-                    "-disable-verify-exclusivity",
                     "-enable-library-evolution"
                 ])
             ]
@@ -141,8 +127,6 @@ let package = Package(
             ],
             swiftSettings: [
                 .unsafeFlags([
-                    "-Xfrontend",
-                    "-disable-verify-exclusivity",
                     "-enable-library-evolution"
                 ])
             ]
@@ -157,8 +141,6 @@ let package = Package(
             ],
             swiftSettings: [
                 .unsafeFlags([
-                    "-Xfrontend",
-                    "-disable-verify-exclusivity",
                     "-enable-library-evolution"
                 ])
             ]

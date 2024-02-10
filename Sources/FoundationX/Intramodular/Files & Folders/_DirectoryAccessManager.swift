@@ -15,14 +15,14 @@ public enum _DirectoryAccessManager {
     public static func requestAccess(
         to directory: _UserHomeDirectory
     ) throws -> URL {
-        try self.requestAccess(toDirectory: directory.url)
+        try self.requestAccess(to: directory.url)
     }
 }
 
 #if os(iOS) || os(tvOS) || os(visionOS)
 extension _DirectoryAccessManager {
     public static func requestAccess(
-        toDirectory directory: URL
+        to url: URL
     ) throws -> URL {
         fatalError(.unimplemented)
     }
@@ -33,15 +33,27 @@ extension _DirectoryAccessManager {
 extension _DirectoryAccessManager {
     @MainActor
     public static func requestAccess(
-        toDirectory url: URL
+        to url: URL
     ) throws -> URL {
+        guard FileManager.default.isDirectory(at: url) else {
+            let url = try _requestAccess(to: url)
+            
+            url.startAccessingSecurityScopedResource()
+            
+            defer {
+                url.stopAccessingSecurityScopedResource()
+            }
+            
+            return try _SecurityScopedBookmarks.save(for: url)
+        }
+        
         if let resolvedURL = try _SecurityScopedBookmarks.resolvedURL(for: url) {
             do {
                 try _testWritingFile(inDirectory: resolvedURL)
                 
                 return resolvedURL
             } catch {
-                let url = try _requestAccess(toDirectory: url)
+                let url = try _requestAccess(to: url)
                 
                 do {
                     try _testWritingFile(inDirectory: url)
@@ -57,7 +69,7 @@ extension _DirectoryAccessManager {
                     guard ancestorURL.startAccessingSecurityScopedResource() else {
                         assertionFailure()
                         
-                        throw _DirectoryAccessError.invalidDirectory
+                        throw _DirectoryOrFileAccessError.invalidDirectory
                     }
                     
                     try FileManager.default.createDirectoryIfNecessary(
@@ -77,7 +89,7 @@ extension _DirectoryAccessManager {
                 return try _SecurityScopedBookmarks.save(for: url)
             }
             
-            let url = try _requestAccess(toDirectory: url)
+            let url = try _requestAccess(to: url)
             
             do {
                 try _testWritingFile(inDirectory: url)
@@ -105,28 +117,36 @@ extension _DirectoryAccessManager {
         url.stopAccessingSecurityScopedResource()
     }
     
-    
     @MainActor
     public static func _requestAccess(
-        toDirectory url: URL
+        to url: URL
     ) throws -> URL {
+        let isDirectory = try url.checkIfDirectory()
         let openPanel = NSOpenPanel()
         let openPanelDelegate = _NSOpenSavePanelDelegate(url: url)
         
         openPanel.delegate = openPanelDelegate
+        openPanel.directoryURL = isDirectory ? url : url.deletingLastPathComponent()
+
+        if isDirectory {
+            openPanel.canChooseFiles = false
+            openPanel.canChooseDirectories = true
+        } else {
+            openPanel.canChooseFiles = true
+            openPanel.canChooseDirectories = false
+        }
         
-        openPanel.canChooseFiles = false
-        openPanel.canChooseDirectories = true
         openPanel.canCreateDirectories = false
         openPanel.allowsMultipleSelection = false
-        openPanel.directoryURL = url
-        
-        let directoryName = _UserHomeDirectory(from: url)?.rawValue ?? "selected"
-        let isKnownDirectory = _UserHomeDirectory(from: url) != nil
-        
-        openPanel.message = isKnownDirectory
-        ? "Your app needs to access the \(directoryName) folder to continue. Please select the \(directoryName) folder to grant access."
-        : "Your app needs to access a folder to continue. Please select the folder to grant access."
+                
+        if isDirectory {
+            let directoryName = _UserHomeDirectory(from: url)?.rawValue ?? "selected"
+            let isKnownDirectory = _UserHomeDirectory(from: url) != nil
+
+            openPanel.message = isKnownDirectory ? "Your app needs to access the \(directoryName) folder to continue. Please select the \(directoryName) folder to grant access."  : "Your app needs to access a folder to continue. Please select the folder to grant access."
+        } else {
+            openPanel.message = "Your app needs to access \(url._fileNameWithExtension) to continue. Please select \(url._fileNameWithExtension) to grant access."
+        }
         
         openPanel.prompt = "Grant Access"
         
@@ -139,20 +159,22 @@ extension _DirectoryAccessManager {
                     
                     return result
                 } else {
-                    throw _DirectoryAccessError.accessDenied
+                    throw _DirectoryOrFileAccessError.accessDenied
                 }
             case .abort:
-                throw _DirectoryAccessError.accessCancelled
+                throw _DirectoryOrFileAccessError.accessCancelled
             default:
-                throw _DirectoryAccessError.accessDenied
+                throw _DirectoryOrFileAccessError.accessDenied
         }
     }
     
     fileprivate final class _NSOpenSavePanelDelegate: NSObject, NSOpenSavePanelDelegate {
         let currentURL: URL
+        let isDirectory: Bool?
         
         init(url: URL) {
             self.currentURL = url.resolvingSymlinksInPath()
+            self.isDirectory = try? url.checkIfDirectory()
             
             super.init()
         }
@@ -161,18 +183,27 @@ extension _DirectoryAccessManager {
             _ sender: Any,
             shouldEnable url: URL
         ) -> Bool {
-            url._standardizedDirectoryPath == currentURL._standardizedDirectoryPath
+            url == currentURL || url._standardizedDirectoryPath == currentURL._standardizedDirectoryPath
         }
         
         func panel(
             _ sender: Any,
             validate url: URL
         ) throws {
-            guard url._standardizedDirectoryPath == currentURL._standardizedDirectoryPath else {
-                throw NSError.appError(
-                    "Incorrect directory.",
-                    recoverySuggestion: "Select the directory “\(currentURL)”."
-                )
+            if isDirectory == true {
+                guard url._standardizedDirectoryPath == currentURL._standardizedDirectoryPath else {
+                    throw NSError.appError(
+                        "Incorrect directory.",
+                        recoverySuggestion: "Select the directory “\(currentURL)”."
+                    )
+                }
+            } else {
+                guard url == currentURL else {
+                    throw NSError.appError(
+                        "Incorrect file.",
+                        recoverySuggestion: "Select the file “\(currentURL)”."
+                    )
+                }
             }
         }
     }
@@ -180,16 +211,6 @@ extension _DirectoryAccessManager {
 #endif
 
 extension NSError {
-    /**
-     Use this for generic app errors.
-     
-     - Note: Prefer using a specific enum-type error whenever possible.
-     
-     - Parameter description: The description of the error. This is shown as the first line in error dialogs.
-     - Parameter recoverySuggestion: Explain how the user how they can recover from the error. For example, "Try choosing a different directory". This is usually shown as the second line in error dialogs.
-     - Parameter userInfo: Metadata to add to the error. Can be a custom key or any of the `NSLocalizedDescriptionKey` keys except `NSLocalizedDescriptionKey` and `NSLocalizedRecoverySuggestionErrorKey`.
-     - Parameter domainPostfix: String to append to the `domain` to make it easier to identify the error. The domain is the app's bundle identifier.
-     */
     static func appError(
         _ description: String,
         recoverySuggestion: String? = nil,
@@ -216,16 +237,20 @@ extension NSError {
 extension FileManager {
     @MainActor
     public func withUserGrantedAccess<T>(
-        toDirectory url: URLRepresentable,
+        to url: URLRepresentable,
         perform operation: (URL) throws -> T
     ) throws -> T {
         var url: URL = url.url
         
-        guard !isURLInApplicationContainer(url) else {
-            return try operation(url)
+        do {
+            if isURLInApplicationContainer(url) && FileManager.default.isReadable(at: url) {
+                return try operation(url)
+            }
+        } catch {
+            runtimeIssue(error)
         }
         
-        url = try _DirectoryAccessManager.requestAccess(toDirectory: url)
+        url = try _DirectoryAccessManager.requestAccess(to: url)
         
         guard url.startAccessingSecurityScopedResource() else {
             assertionFailure()
@@ -243,11 +268,11 @@ extension FileManager {
     private func isURLInApplicationContainer(
         _ url: URL
     ) -> Bool {
-        #if os(macOS)
+#if os(macOS)
         return url.path.hasPrefix(NSHomeDirectory())
-        #else
+#else
         return true
-        #endif
+#endif
     }
     
     fileprivate enum _SecurityScopedResourceAccessError: Error {
@@ -259,7 +284,7 @@ extension FileManager {
 
 extension _DirectoryAccessManager {
     @_spi(Internal)
-    public enum _DirectoryAccessError: Error {
+    public enum _DirectoryOrFileAccessError: Error {
         case accessDenied
         case accessCancelled
         case invalidDirectory
@@ -267,3 +292,34 @@ extension _DirectoryAccessManager {
     }
 }
 
+
+extension URL {
+    enum DirectoryCheckError: Error {
+        case unableToRetrieveResourceValues
+        case notADirectory
+        case doesNotExist
+        case other(Error)
+    }
+    
+    func checkIfDirectory() throws -> Bool {
+        var isDir: ObjCBool = false
+        let exists = FileManager.default.fileExists(atPath: self.path, isDirectory: &isDir)
+        
+        if !exists {
+            throw DirectoryCheckError.doesNotExist
+        } else if isDir.boolValue {
+            return true
+        } else {
+            do {
+                let resourceValues = try self.resourceValues(forKeys: [.isDirectoryKey])
+                if let isDirectory = resourceValues.isDirectory {
+                    return isDirectory
+                } else {
+                    throw DirectoryCheckError.unableToRetrieveResourceValues
+                }
+            } catch {
+                throw error
+            }
+        }
+    }
+}

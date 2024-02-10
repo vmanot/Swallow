@@ -18,7 +18,7 @@ public struct CanonicalFileDirectory: Hashable, Sendable {
         case iCloudDriveDocuments(containerID: String)
         case securityApplicationGroup(String)
         case ubiquityContainer(String)
-        case userDocuments
+        case appDocuments
     }
     
     var _name: _DirectoryName
@@ -54,8 +54,12 @@ extension CanonicalFileDirectory {
         Self(_name: .ubiquityContainer(id))
     }
     
+    public static var appDocuments: Self {
+        Self(_name: .appDocuments)
+    }
+    
     public static var userDocuments: Self {
-        Self(_name: .userDocuments)
+        Self(_name: .appDocuments)
     }
 }
 
@@ -97,9 +101,8 @@ extension CanonicalFileDirectory {
                     .url(forUbiquityContainerIdentifier: identifier)
                     .unwrap()
             }
-            case .userDocuments: do {
-                return try fileManager
-                    .url(for: .documentDirectory, in: .userDomainMask)
+            case .appDocuments: do {
+                return try fileManager.url(for: .documentDirectory, in: .userDomainMask)
             }
         }
     }
