@@ -214,7 +214,7 @@ extension DatePicker where Label == Text {
     }
 }
 
-#else
+#elseif !os(watchOS)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 extension DatePicker {

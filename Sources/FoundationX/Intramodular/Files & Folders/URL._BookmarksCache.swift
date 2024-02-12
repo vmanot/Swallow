@@ -3,12 +3,14 @@
 //
 
 import Foundation
-import Swallow
+@_spi(Internal) import Swallow
 
 extension URL {
     public final class _BookmarksCache {
         private static let defaults = UserDefaults(suiteName: Swallow._module.bundleIdentifier)!
-        private static let bookmarkKey = "SecurityScopedBookmarks"
+        private static let lock = OSUnfairLock()
+
+        @UserDefault("_BookmarksCache.items") static var items: [Bookmark] = []
         
         struct Bookmark: Codable {
             let urlPath: String
@@ -18,77 +20,61 @@ extension URL {
         public static func bookmark(
             _ url: URL
         ) throws -> URL {
-            do {
-                let url = url.standardized
-                
-                let bookmarkData = try url._bookmarkDataWithSecurityScopedAccess()
-                var bookmarks = load()
-                
-                if let index = bookmarks.firstIndex(where: { $0.urlPath == url.path }) {
-                    bookmarks[index].data = bookmarkData
-                } else {
-                    bookmarks.append(Bookmark(urlPath: url.path, data: bookmarkData))
+            try lock.withCriticalScope {
+                do {
+                    let url = url.standardized
+                    
+                    let bookmarkData = try url._bookmarkDataWithSecurityScopedAccess()
+                    var bookmarks = items
+                    
+                    if let index = bookmarks.firstIndex(where: { $0.urlPath == url.path }) {
+                        bookmarks[index].data = bookmarkData
+                    } else {
+                        bookmarks.append(Bookmark(urlPath: url.path, data: bookmarkData))
+                    }
+                    
+                    items = bookmarks
+                    
+                    return try cachedURL(for: url)!
+                } catch {
+                    throw _Error.failedToSaveBookmarkData(error)
                 }
-                
-                save(bookmarks)
-                
-                return try cachedURL(for: url)!
-            } catch {
-                throw _Error.failedToSaveBookmarkData(error)
             }
         }
         
         public static func cachedURL(
             for url: URL
         ) throws -> URL? {
-            let url = url.standardized
-            
-            guard let bookmark = load().first(where: { $0.urlPath == url.path }) else {
-                return nil
-            }
-            
-            var isStale = false
-            
-            do {
-                let resolvedURL = try URL(
-                    _resolvingBookmarkDataWithSecurityScopedAccess: bookmark.data,
-                    isStale: &isStale
-                )
+            try lock.withCriticalScope {
+                let url = url.standardized
                 
-                if !isStale {
-                    return resolvedURL
-                } else {
+                guard let item = items.first(where: { $0.urlPath == url.path }) else {
                     return nil
                 }
-            } catch {
-                throw URL._BookmarksCache._Error.failedToSaveBookmarkData(error)
-            }
-        }
-        
-        private static func save(
-            _ bookmarks: [Bookmark]
-        ) {
-            do {
-                let data = try JSONEncoder().encode(bookmarks)
                 
-                defaults.set(data, forKey: bookmarkKey)
-            } catch {
-                print("Error saving bookmarks: \(error)")
+                var isStale = false
+                
+                do {
+                    let resolvedURL = try URL(
+                        _resolvingBookmarkDataWithSecurityScopedAccess: item.data,
+                        isStale: &isStale
+                    )
+                    
+                    if !isStale {
+                        return resolvedURL
+                    } else {
+                        return nil
+                    }
+                } catch {
+                    throw URL._BookmarksCache._Error.failedToSaveBookmarkData(error)
+                }
             }
         }
-        
-        private static func load() -> [Bookmark] {
-            guard let data = defaults.data(forKey: bookmarkKey) else { return [] }
-            do {
-                return try JSONDecoder().decode([Bookmark].self, from: data)
-            } catch {
-                print("Error loading bookmarks: \(error)")
-                return []
-            }
-        }
-        
+                
         private static func removeAll() {
-            defaults.removeObject(forKey: bookmarkKey)
+            lock.withCriticalScope {
+                items = []
+            }
         }
     }
 }
@@ -131,7 +117,7 @@ extension URL {
     }
 }
 
-#if os(iOS) || os(tvOS) || os(visionOS)
+#if os(iOS) || os(tvOS) || os(visionOS) || os(watchOS)
 extension URL {
     init(
         _resolvingBookmarkDataWithSecurityScopedAccess data: Data,

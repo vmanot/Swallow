@@ -62,14 +62,22 @@ extension OSUnfairLock {
     @inlinable
     @inline(__always)
     public func withCriticalScope<Result>(
-        perform action: () -> Result
-    ) -> Result {
-        defer {
-            relinquish()
-        }
+        perform action: () throws -> Result
+    ) rethrows -> Result {
+        let result: Result
         
         acquireOrBlock()
         
-        return action()
+        do {
+            result = try action()
+            
+            relinquish()
+        } catch {
+            relinquish()
+            
+            throw error
+        }
+        
+        return result
     }
 }
