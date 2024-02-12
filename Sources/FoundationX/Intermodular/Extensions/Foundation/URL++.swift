@@ -7,6 +7,13 @@ import Swallow
 import System
 
 extension URL {
+    /// Returns the URL for the temporary directory of the current user.
+    public static var temporaryDirectory: URL {
+        return FileManager.default.temporaryDirectory
+    }
+}
+
+extension URL {
     @_disfavoredOverload
     @available(macOS 11.0, iOS 14.0, watchOS 7.0, tvOS 14.0, *)
     public init?(

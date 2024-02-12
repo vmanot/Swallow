@@ -7,3 +7,7 @@ let _isDebugBuild = true
 #else
 let _isDebugBuild = false
 #endif
+
+public enum _module {
+    
+}

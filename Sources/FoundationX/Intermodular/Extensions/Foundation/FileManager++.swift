@@ -119,9 +119,9 @@ extension FileManager {
     ) -> URL? {
         let url = location.url._fromFileURLToURL()
         
-        if let result = try? _SecurityScopedBookmarks.resolvedURL(for: location.url._fromFileURLToURL()) {
+        if let result = try? URL._BookmarksCache.resolvedURL(for: location.url._fromFileURLToURL()) {
             return result
-        } else if let result = try? _SecurityScopedBookmarks.save(for: location.url) {
+        } else if let result = try? URL._BookmarksCache.save(for: location.url) {
             return result
         } else {
             let parentURL = url.resolvingSymlinksInPath().deletingLastPathComponent()
@@ -139,7 +139,7 @@ extension FileManager {
     ) -> Bool {
         let url = location.url._fromFileURLToURL()
         
-        if ((try? _SecurityScopedBookmarks.resolvedURL(for: location.url._fromFileURLToURL())) as URL?) != nil {
+        if ((try? URL._BookmarksCache.resolvedURL(for: location.url._fromFileURLToURL())) as URL?) != nil {
             return true
         }
         

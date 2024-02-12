@@ -93,6 +93,7 @@ let package = Package(
         .target(
             name: "Expansions",
             dependencies: [
+                "_ExpansionsRuntime",
                 "ExpansionsMacros",
                 "Swallow"
             ],

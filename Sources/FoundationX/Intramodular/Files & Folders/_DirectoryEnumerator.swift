@@ -11,7 +11,10 @@ public class _DirectoryEnumerator: IteratorProtocol {
     private var currentEnumerator: FileManager.DirectoryEnumerator?
     private var currentURL: URL?
     
-    public init?(directoryURL: URL, fileManager: FileManager = .default) {
+    public init?(
+        directoryURL: URL,
+        fileManager: FileManager = .default
+    ) {
         guard fileManager.fileExists(atPath: directoryURL.path) else {
             return nil
         }

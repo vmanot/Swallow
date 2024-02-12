@@ -20,7 +20,7 @@ public enum _UserHomeDirectory: String, CaseIterable {
         get throws {
             let url = try URL._userHomeDirectory.appendingPathComponent(self.rawValue)
             
-            return try _SecurityScopedBookmarks.resolvedURL(for: url) ?? url
+            return try URL._BookmarksCache.resolvedURL(for: url) ?? url
         }
     }
     
@@ -43,7 +43,7 @@ public enum _UserHomeDirectory: String, CaseIterable {
     }
     
     public func requestAccess() async throws -> URL {
-        try await _DirectoryAccessManager.requestAccess(to: self)
+        try await _FileOrDirectorySecurityScopedAccessManager.requestAccess(to: self)
     }
 }
 
