@@ -9,26 +9,6 @@ import Cocoa
 import Foundation
 import Swallow
 
-@_spi(Internal)
-public enum _FileOrDirectorySecurityScopedAccessManager {
-    @MainActor
-    public static func requestAccess(
-        to directory: _UserHomeDirectory
-    ) throws -> URL {
-        try self.requestAccess(to: directory.url)
-    }
-}
-
-#if os(iOS) || os(tvOS) || os(visionOS)
-extension _FileOrDirectorySecurityScopedAccessManager {
-    public static func requestAccess(
-        to url: URL
-    ) throws -> URL {
-        fatalError(.unimplemented)
-    }
-}
-#endif
-
 #if os(macOS)
 extension _FileOrDirectorySecurityScopedAccessManager {
     @MainActor
@@ -40,55 +20,47 @@ extension _FileOrDirectorySecurityScopedAccessManager {
         guard isDirectory else {
             let url = try promptForAccess(to: url, isDirectory: isDirectory)
             
-            _ = url.startAccessingSecurityScopedResource()
-            
-            defer {
-                url.stopAccessingSecurityScopedResource()
+            let bookmarkedURL = try url._accessingSecurityScopedResource {
+                try URL._BookmarksCache.bookmark(url)
             }
             
-            return try URL._BookmarksCache.save(for: url)
+            return bookmarkedURL
         }
         
-        if let resolvedURL = try URL._BookmarksCache.resolvedURL(for: url) {
+        if let cachedURL = try URL._BookmarksCache.cachedURL(for: url) {
             do {
-                try _testWritingFile(inDirectory: resolvedURL)
+                if isDirectory {
+                    try _testWritingFile(inDirectory: cachedURL)
+                }
                 
-                return resolvedURL
+                return cachedURL
             } catch {
                 let url = try promptForAccess(to: url, isDirectory: isDirectory)
                 
                 do {
-                    try _testWritingFile(inDirectory: url)
+                    if isDirectory {
+                        try _testWritingFile(inDirectory: url)
+                    }
                 } catch {
-                    assertionFailure()
+                    assertionFailure(error)
                 }
                 
                 return url
             }
         } else {
-            if let ancestorURL = FileManager.default.nearestSecurityScopedAccessibleAncestor(for: url) {
-                if !FileManager.default.fileExists(at: url) {
-                    guard ancestorURL.startAccessingSecurityScopedResource() else {
-                        assertionFailure()
-                        
-                        throw _DirectoryOrFileAccessError.invalidDirectory
+            if let ancestorURL = FileManager.default.nearestAccessibleSecurityScopedAncestor(for: url) {
+                let bookmarkedURL = try ancestorURL._accessingSecurityScopedResource {
+                    if !FileManager.default.fileExists(at: url) {
+                        try FileManager.default.createDirectoryIfNecessary(
+                            at: url,
+                            withIntermediateDirectories: true
+                        )
                     }
                     
-                    try FileManager.default.createDirectoryIfNecessary(
-                        at: url,
-                        withIntermediateDirectories: true
-                    )
-                    
-                    ancestorURL.stopAccessingSecurityScopedResource()
+                    return try URL._BookmarksCache.bookmark(url)
                 }
                 
-                _ = ancestorURL.startAccessingSecurityScopedResource()
-                
-                defer {
-                    ancestorURL.stopAccessingSecurityScopedResource()
-                }
-                
-                return try URL._BookmarksCache.save(for: url)
+                return bookmarkedURL
             }
             
             let url = try promptForAccess(to: url, isDirectory: isDirectory)
@@ -174,7 +146,7 @@ extension _FileOrDirectorySecurityScopedAccessManager {
         
         init(url: URL) {
             self.currentURL = url.resolvingSymlinksInPath()
-            self.isDirectory = try? url.checkIfDirectory()
+            self.isDirectory = url._isKnownOrIndicatedToBeFileDirectory
             
             super.init()
         }
@@ -208,29 +180,56 @@ extension _FileOrDirectorySecurityScopedAccessManager {
         }
     }
 }
+#else
+extension _FileOrDirectorySecurityScopedAccessManager {
+    @MainActor
+    public static func requestAccess(
+        to url: URL
+    ) throws -> URL {
+        return url // FIXME!!!
+    }
+}
 #endif
 
 // MARK: - Supplementary
 
-extension FileManager {
-    public static func withTemporaryCopy<Result>(
-        of url: URL,
-        perform body: (URL) throws -> Result
-    ) throws -> Result {
-        let tempDirectoryURL = FileManager.default.temporaryDirectory
-        let tempFileURL = tempDirectoryURL.appendingPathComponent(url.lastPathComponent)
-        
-        try FileManager.default.copyItem(at: url, to: tempFileURL)
-        
-        let result = try body(tempFileURL)
-        
-        try FileManager.default.removeItem(at: tempFileURL)
-        
-        return result
+extension FileManager {    
+    @frozen
+    public enum _FileOrDirectoryAccessScopePreference: Hashable {
+        case automatic
+        case directory
     }
     
     @MainActor
     public func withUserGrantedAccess<T>(
+        to urlRepresentable: URLRepresentable,
+        scope: _FileOrDirectoryAccessScopePreference = .automatic,
+        perform operation: (URL) throws -> T
+    ) throws -> T {
+        let url = urlRepresentable.url
+        
+        switch scope {
+            case .automatic:
+                return try _withUserGrantedAccess(to: url, perform: operation)
+            case .directory:
+                if !url._isKnownOrIndicatedToBeFileDirectory {
+                    let directoryURL = url._immediateFileDirectory
+                    let lastPathComponent = url.lastPathComponent
+                    
+                    return try _withUserGrantedAccess(to: directoryURL) { directoryURL in
+                        let accessibleURL = directoryURL.appendingPathComponent(lastPathComponent, isDirectory: false)
+                        
+                        return try operation(accessibleURL)
+                    }
+                } else {
+                    return try _withUserGrantedAccess(to: url, perform: operation)
+                }
+        }
+    }
+    
+    @MainActor
+    @usableFromInline
+    func _withUserGrantedAccess<T>(
         to url: URLRepresentable,
         perform operation: (URL) throws -> T
     ) throws -> T {
@@ -238,7 +237,9 @@ extension FileManager {
         
         do {
             if FileManager.default.isReadable(at: url), url.isKnownSecurityScopedAccessExempt {
-                return try operation(url)
+                return try url._accessingSecurityScopedResource {
+                    return try operation(url)
+                }
             }
         } catch {
             runtimeIssue(error)
@@ -246,21 +247,9 @@ extension FileManager {
         
         url = try _FileOrDirectorySecurityScopedAccessManager.requestAccess(to: url)
         
-        guard url.startAccessingSecurityScopedResource() else {
-            assertionFailure()
-            
-            throw _SecurityScopedResourceAccessError.invalidAccess
+        return try url._accessingSecurityScopedResource {
+            try operation(url)
         }
-        
-        let result = try operation(url)
-        
-        url.stopAccessingSecurityScopedResource()
-        
-        return result
-    }
-    
-    fileprivate enum _SecurityScopedResourceAccessError: Error {
-        case invalidAccess
     }
 }
 
@@ -294,34 +283,3 @@ extension _FileOrDirectorySecurityScopedAccessManager {
     }
 }
 
-
-extension URL {
-    enum DirectoryCheckError: Error {
-        case unableToRetrieveResourceValues
-        case notADirectory
-        case doesNotExist
-        case other(Error)
-    }
-    
-    func checkIfDirectory() throws -> Bool {
-        var isDir: ObjCBool = false
-        let exists = FileManager.default.fileExists(atPath: self.path, isDirectory: &isDir)
-        
-        if !exists {
-            return false
-        } else if isDir.boolValue {
-            return true
-        } else {
-            do {
-                let resourceValues = try self.resourceValues(forKeys: [.isDirectoryKey])
-                if let isDirectory = resourceValues.isDirectory {
-                    return isDirectory
-                } else {
-                    throw DirectoryCheckError.unableToRetrieveResourceValues
-                }
-            } catch {
-                throw error
-            }
-        }
-    }
-}

@@ -15,8 +15,8 @@ extension URL {
             var data: Data
         }
         
-        public static func save(
-            for url: URL
+        public static func bookmark(
+            _ url: URL
         ) throws -> URL {
             do {
                 let url = url.standardized
@@ -32,13 +32,13 @@ extension URL {
                 
                 save(bookmarks)
                 
-                return try resolvedURL(for: url)!
+                return try cachedURL(for: url)!
             } catch {
                 throw _Error.failedToSaveBookmarkData(error)
             }
         }
         
-        public static func resolvedURL(
+        public static func cachedURL(
             for url: URL
         ) throws -> URL? {
             let url = url.standardized

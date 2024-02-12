@@ -52,11 +52,11 @@ extension FileManager {
     public func directoryExists(
         at path: FilePath
     ) -> Bool {
-        #if os(visionOS)
+#if os(visionOS)
         return directoryExists(at: URL(filePath: path)!)
-        #else
+#else
         return directoryExists(at: URL(_filePath: path)!)
-        #endif
+#endif
     }
     
     public func isDirectory<T: URLRepresentable>(
@@ -83,7 +83,7 @@ extension FileManager {
         
         return isReadableFile(atPath: url.path)
     }
-
+    
     public func isReadableAndWritable<T: URLRepresentable>(
         at location: T
     ) -> Bool {
@@ -114,14 +114,14 @@ extension FileManager {
         }
     }
     
-    public func nearestSecurityScopedAccessibleAncestor<T: URLRepresentable>(
+    public func nearestAccessibleSecurityScopedAncestor<T: URLRepresentable>(
         for location: T
     ) -> URL? {
         let url = location.url._fromFileURLToURL()
         
-        if let result = try? URL._BookmarksCache.resolvedURL(for: location.url._fromFileURLToURL()) {
+        if let result = try? URL._BookmarksCache.cachedURL(for: location.url._fromFileURLToURL()) {
             return result
-        } else if let result = try? URL._BookmarksCache.save(for: location.url) {
+        } else if let result = try? URL._BookmarksCache.bookmark(location.url) {
             return result
         } else {
             let parentURL = url.resolvingSymlinksInPath().deletingLastPathComponent()
@@ -130,7 +130,7 @@ extension FileManager {
                 return nil
             }
             
-            return nearestSecurityScopedAccessibleAncestor(for: parentURL)
+            return nearestAccessibleSecurityScopedAncestor(for: parentURL)
         }
     }
     
@@ -139,7 +139,7 @@ extension FileManager {
     ) -> Bool {
         let url = location.url._fromFileURLToURL()
         
-        if ((try? URL._BookmarksCache.resolvedURL(for: location.url._fromFileURLToURL())) as URL?) != nil {
+        if ((try? URL._BookmarksCache.cachedURL(for: location.url._fromFileURLToURL())) as URL?) != nil {
             return true
         }
         
@@ -227,6 +227,41 @@ extension FileManager {
         )
     }
     
+    public func copyItemIfNecessary(
+        at sourceURL: URL,
+        to destinationURL: URL
+    ) throws {
+        guard !FileManager.default.fileExists(at: destinationURL) else {
+            // FIXME: Validate via file hashes
+            
+            return
+        }
+        
+        try copyItem(at: sourceURL, to: destinationURL)
+    }
+    
+    public func withTemporaryCopy<Result>(
+        of url: URL,
+        perform body: (URL) throws -> Result
+    ) throws -> Result {
+        let tempDirectoryURL = FileManager.default.temporaryDirectory
+        let tempFileURL = tempDirectoryURL.appendingPathComponent(url.lastPathComponent)
+        
+        try copyItemIfNecessary(at: url, to: tempFileURL)
+        
+        do {
+            let result = try body(tempFileURL)
+            
+            try removeItemIfNecessary(at: tempFileURL)
+            
+            return result
+        } catch {
+            try removeItemIfNecessary(at: tempFileURL)
+            
+            throw error
+        }
+    }
+
     @available(macOS 11.0, iOS 14.0, watchOS 7.0, tvOS 14.0, *)
     public func removeItem(
         at path: FilePath

@@ -7,13 +7,6 @@ import Swallow
 import System
 
 extension URL {
-    /// Returns the URL for the temporary directory of the current user.
-    public static var temporaryDirectory: URL {
-        return FileManager.default.temporaryDirectory
-    }
-}
-
-extension URL {
     @_disfavoredOverload
     @available(macOS 11.0, iOS 14.0, watchOS 7.0, tvOS 14.0, *)
     public init?(
@@ -126,6 +119,11 @@ extension URL {
             return URL(fileURLWithPath: path)
         }
     }
+    
+    /// Returns the URL for the temporary directory of the current user.
+    public static var temporaryDirectory: URL {
+        return FileManager.default.temporaryDirectory
+    }
 }
 
 extension URL {
@@ -138,7 +136,11 @@ extension URL {
             self.rawValue = rawValue
             self.isDirectory = isDirectory
         }
-        
+    
+        public static func file(_ string: String) -> Self {
+            Self(rawValue: string, isDirectory: false)
+        }
+
         public static func directory(_ string: String) -> Self {
             Self(rawValue: string, isDirectory: true)
         }
@@ -174,6 +176,30 @@ extension URL {
         }
         
         return appendingPathComponent(pathComponent, isDirectory: true)
+    }
+}
+
+extension URL {
+    @frozen
+    public enum _SecurityScopedResourceAccessError: Error {
+        case failedToAccessSecurityScopedResource(for: URL)
+    }
+    
+    @_transparent
+    public func _accessingSecurityScopedResource<T>(
+        _ operation: () throws -> T
+    ) throws -> T {
+        let isAccessing = self.startAccessingSecurityScopedResource()
+        
+        guard isAccessing else {
+            throw _SecurityScopedResourceAccessError.failedToAccessSecurityScopedResource(for: self)
+        }
+        
+        let result = try operation()
+        
+        self.stopAccessingSecurityScopedResource()
+        
+        return result
     }
 }
 
@@ -250,9 +276,40 @@ extension URL {
         self.lastPathComponent.hasPrefix(".")
     }
 
+    /// Checks if the URL represents a directory.
+    public var _isKnownOrIndicatedToBeFileDirectory: Bool {
+        // Attempt to determine if the URL points to a directory by its path.
+        let path = self.path
+        var isDirectory = (path.last == "/")
+        
+        // Use file system to check if path exists and is a directory when possible.
+        if self.scheme == "file" {
+            var isDir: ObjCBool = false
+            
+            if FileManager.default.fileExists(atPath: path, isDirectory: &isDir) {
+                isDirectory = isDir.boolValue
+                
+                if !isDirectory {
+                    let resourceValues = try? self.resourceValues(forKeys: [.isDirectoryKey])
+                    
+                    if let _isDirectory = resourceValues?.isDirectory, _isDirectory != isDirectory {
+                        isDirectory = _isDirectory
+                    }
+                }
+            }
+        }
+        
+        return isDirectory
+    }
+
     /// Adds the missing fucking "/" at the end.
     public var _standardizedDirectoryPath: String {
         path.addingSuffixIfMissing("/")
+    }
+
+    /// Returns the immediate ancestor directory if the URL is a file or the URL itself if it is a directory.
+    public var _immediateFileDirectory: URL {
+        _isKnownOrIndicatedToBeFileDirectory ? self : self.deletingLastPathComponent()
     }
 
     public func _fromFileURLToURL() -> URL {
