@@ -149,6 +149,13 @@ extension NSAttributedString {
         }
     }
     
+    public func enumerateAttributes(
+        options: NSAttributedString.EnumerationOptions = [],
+        using block: ([NSAttributedString.Key: Any], NSRange, UnsafeMutablePointer<ObjCBool>) -> Void
+    ) {
+        enumerateAttributes(in: stringBounds, options: options, using: block)
+    }
+    
     public func enumerateSequence(
         for attribute: NSAttributedString.Key? = nil
     ) -> EnumerateAttributesSequence {

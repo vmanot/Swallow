@@ -43,7 +43,7 @@ public enum _UserHomeDirectory: String, CaseIterable {
     }
     
     public func requestAccess() async throws -> URL {
-        try await _FileOrDirectorySecurityScopedAccessManager.requestAccess(to: self)
+        try _FileOrDirectorySecurityScopedAccessManager.requestAccess(to: self)
     }
 }
 
@@ -56,7 +56,6 @@ extension _UserHomeDirectory {
 }
 
 public enum _FileOrDirectorySecurityScopedAccessManager {
-    @MainActor
     public static func requestAccess(
         to directory: _UserHomeDirectory
     ) throws -> URL {

@@ -487,7 +487,11 @@ extension RangeReplaceableCollection {
             return replaceSubrange(subranges.first.forceUnwrap(), with: replacements.first.forceUnwrap())
         }
         
-        let sortedReplacements = subranges.zip(replacements).sorted(by: { $0.0 <~= $1.0 }).lazy.map({ ($0.0, Optional.some($0.1)) })
+        let sortedReplacements = subranges
+            .zip(replacements)
+            .sorted(by: { $0.0 <~= $1.0 })
+            .lazy
+            .map({ ($0.0, Optional.some($0.1)) })
         
         let first = sortedReplacements.first.forceUnwrap()
         let last = sortedReplacements.last.forceUnwrap()

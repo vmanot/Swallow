@@ -69,7 +69,9 @@ public macro _StaticProtocolMember<T>(
 import _ExpansionsRuntime
 import Runtime
 
-public struct module {
+public typealias module = _module
+
+public struct _module {
     private static var initialized: Bool = false
     
     public static func initialize() {

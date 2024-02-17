@@ -18,12 +18,13 @@ public struct OnceMacro: DeclarationMacro {
         
         let result = DeclSyntax(
             """
-            struct \(name): _PerformOnce {
-                init() {
+            @frozen
+            public struct \(name): _PerformOnce {
+                public init() {
                 
                 }
             
-                func perform() {
+                public func perform() {
                     func _perform<T>(_ fn: () throws -> T) throws -> T {
                         try fn()
                     }

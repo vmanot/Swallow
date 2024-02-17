@@ -83,31 +83,30 @@ extension RangeProtocol  {
     }
 }
 
+/// Defines custom infix operators for exclusive range comparison.
 infix operator <~=: ComparisonPrecedence
 infix operator >~=: ComparisonPrecedence
 
+/// Compares whether the first exclusive range is less than or equal to the second exclusive range
+/// based on their bounds.
+/// - Parameters:
+///   - lhs: An exclusive range conforming to `ExclusiveRangeProtocol`.
+///   - rhs: Another exclusive range conforming to `ExclusiveRangeProtocol`.
+/// - Returns: A boolean value indicating if `lhs` is less than or equal to `rhs` by comparing
+/// both their lower and upper bounds.
 public func <~= <T: ExclusiveRangeProtocol>(lhs: T, rhs: T) -> Bool {
-    guard lhs.upperBound <= rhs.upperBound else {
-        return false
-    }
-
-    guard lhs.lowerBound <= rhs.lowerBound else {
-        return false
-    }
-
-    return true
+    return lhs.upperBound <= rhs.upperBound && lhs.lowerBound <= rhs.lowerBound
 }
 
+/// Compares whether the first exclusive range is greater than or equal to the second exclusive range
+/// based on their bounds.
+/// - Parameters:
+///   - lhs: An exclusive range conforming to `ExclusiveRangeProtocol`.
+///   - rhs: Another exclusive range conforming to `ExclusiveRangeProtocol`.
+/// - Returns: A boolean value indicating if `lhs` is greater than or equal to `rhs` by comparing
+/// both their lower and upper bounds.
 public func >~= <T: ExclusiveRangeProtocol>(lhs: T, rhs: T) -> Bool {
-    guard lhs.upperBound >= rhs.upperBound else {
-        return false
-    }
-
-    guard lhs.lowerBound >= rhs.lowerBound else {
-        return false
-    }
-
-    return true
+    return lhs.upperBound >= rhs.upperBound && lhs.lowerBound >= rhs.lowerBound
 }
 
 public func ..< <T: ExclusiveRangeProtocol & BoundInitiableRangeProtocol>(lhs: T.Bound, rhs: T.Bound) -> T {

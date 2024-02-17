@@ -6,10 +6,10 @@ import Foundation
 @_spi(Internal) import Swallow
 
 extension URL {
-    public final class _BookmarksCache {
+    public final class _BookmarksCache: @unchecked Sendable {
         private static let defaults = UserDefaults(suiteName: Swallow._module.bundleIdentifier)!
         private static let lock = OSUnfairLock()
-
+        
         @UserDefault("_BookmarksCache.items") static var items: [Bookmark] = []
         
         struct Bookmark: Codable {
@@ -20,25 +20,28 @@ extension URL {
         public static func bookmark(
             _ url: URL
         ) throws -> URL {
-            try lock.withCriticalScope {
-                do {
-                    let url = url.standardized
-                    
-                    let bookmarkData = try url._bookmarkDataWithSecurityScopedAccess()
-                    var bookmarks = items
-                    
-                    if let index = bookmarks.firstIndex(where: { $0.urlPath == url.path }) {
-                        bookmarks[index].data = bookmarkData
-                    } else {
-                        bookmarks.append(Bookmark(urlPath: url.path, data: bookmarkData))
-                    }
-                    
-                    items = bookmarks
-                    
-                    return try cachedURL(for: url)!
-                } catch {
-                    throw _Error.failedToSaveBookmarkData(error)
+            var bookmarks = lock.withCriticalScope {
+                self.items
+            }
+            
+            do {
+                let url = url.standardized
+                
+                let bookmarkData = try url._bookmarkDataWithSecurityScopedAccess()
+                
+                if let index = bookmarks.firstIndex(where: { $0.urlPath == url.path }) {
+                    bookmarks[index].data = bookmarkData
+                } else {
+                    bookmarks.append(Bookmark(urlPath: url.path, data: bookmarkData))
                 }
+                
+                lock.withCriticalScope {
+                    self.items = bookmarks
+                }
+                
+                return try cachedURL(for: url)!
+            } catch {
+                throw _Error.failedToSaveBookmarkData(error)
             }
         }
         
@@ -70,7 +73,7 @@ extension URL {
                 }
             }
         }
-                
+        
         private static func removeAll() {
             lock.withCriticalScope {
                 items = []

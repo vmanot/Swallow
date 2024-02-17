@@ -11,7 +11,6 @@ import Swallow
 
 #if os(macOS)
 extension _FileOrDirectorySecurityScopedAccessManager {
-    @MainActor
     public static func requestAccess(
         to url: URL
     ) throws -> URL {
@@ -182,7 +181,6 @@ extension _FileOrDirectorySecurityScopedAccessManager {
 }
 #else
 extension _FileOrDirectorySecurityScopedAccessManager {
-    @MainActor
     public static func requestAccess(
         to url: URL
     ) throws -> URL {
@@ -200,7 +198,6 @@ extension FileManager {
         case directory
     }
     
-    @MainActor
     public func withUserGrantedAccess<T>(
         to urlRepresentable: URLRepresentable,
         scope: _FileOrDirectoryAccessScopePreference = .automatic,
@@ -227,7 +224,6 @@ extension FileManager {
         }
     }
     
-    @MainActor
     @usableFromInline
     func _withUserGrantedAccess<T>(
         to url: URLRepresentable,
