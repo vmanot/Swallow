@@ -27,6 +27,12 @@ extension URL {
             do {
                 let url = url.standardized
                 
+                if !FileManager.default.fileExists(at: url) {
+                    runtimeIssue("Scoped bookmarks can only be created for existing files or directories. \(url) does not exist.")
+                    
+                    return url
+                }
+                
                 let bookmarkData = try url._bookmarkDataWithSecurityScopedAccess()
                 
                 if let index = bookmarks.firstIndex(where: { $0.urlPath == url.path }) {
@@ -102,7 +108,12 @@ extension URL {
         for directory in knownDirectories {
             do {
                 let directoryURL: URL
-                directoryURL = try fileManager.url(for: directory, in: .userDomainMask, appropriateFor: nil, create: false)
+                directoryURL = try fileManager.url(
+                    for: directory,
+                    in: .userDomainMask,
+                    appropriateFor: nil,
+                    create: false
+                )
                 
                 if self.standardizedFileURL.absoluteString.hasPrefix(directoryURL.standardizedFileURL.absoluteString) {
                     return false // The URL is within a known directory and likely doesn't require security-scoped access
@@ -148,7 +159,11 @@ extension URL {
     }
     
     func _bookmarkDataWithSecurityScopedAccess() throws -> Data {
-        try bookmarkData(
+        if !isFileURL {
+            runtimeIssue("Scoped bookmarks can only be created for existing files or directories")
+        }
+        
+        return try bookmarkData(
             options: .withSecurityScope,
             includingResourceValuesForKeys: nil,
             relativeTo: nil
