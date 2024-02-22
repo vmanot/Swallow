@@ -4,8 +4,15 @@
 
 import Swift
 
-private enum _PlaceholderGenerationFailure: Error {
+private enum _PlaceholderGenerationFailure: CustomStringConvertible, Error {
     case unsupportedType(Any.Type)
+     
+    var description: String {
+        switch self {
+            case .unsupportedType(let type):
+                return "Failed to generate a placeholder for type: \(type)"
+        }
+    }
 }
 
 public func _generatePlaceholder<Result>(

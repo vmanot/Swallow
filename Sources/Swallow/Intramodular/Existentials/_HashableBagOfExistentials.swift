@@ -7,6 +7,10 @@ import Swift
 public struct _HashableBagOfExistentials<Existential> {
     private var base: _BagOfExistentials<Existential>
     
+    public var count: Int {
+        base.count
+    }
+    
     init(base: _BagOfExistentials<Existential>) {
         self.base = base
     }

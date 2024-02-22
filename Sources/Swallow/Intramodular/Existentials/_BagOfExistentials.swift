@@ -33,6 +33,10 @@ public struct _BagOfExistentials<Existential>: @unchecked Sendable {
         )
     }
     
+    public var count: Int {
+        allElements.count
+    }
+    
     public func all<T>(ofType type: T.Type) -> AnyCollection<T> {
         AnyCollection(allElements.lazy.compactMap({ $0 as? T }))
     }

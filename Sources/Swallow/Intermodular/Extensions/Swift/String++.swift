@@ -14,7 +14,7 @@ extension String {
     public init(utf16CodeUnit: UTF16.CodeUnit) {
         self.init(utf16CodeUnits: [utf16CodeUnit], count: 1)
     }
-
+    
     public subscript(
         _utf16Range range: Range<Int>
     ) -> Substring {
@@ -152,7 +152,7 @@ extension String {
             !characterSet.contains($0)
         }))
     }
-
+    
     public func removingCharacters(in string: String) -> String {
         removingCharacters(in: CharacterSet(charactersIn: string))
     }
@@ -176,7 +176,7 @@ extension String {
         
         return String(self[..<range.upperBound])
     }
-
+    
     @_disfavoredOverload
     public func trim(prefix: String, suffix: String) -> Substring {
         if hasPrefix(prefix) && hasSuffix(suffix) {
@@ -202,6 +202,65 @@ extension String {
     
     public mutating func appendTabIndentedLine( _ count: Int, _ string: String) {
         appendLine(String(repeatElement("\t", count: count)) + string)
+    }
+    
+    public mutating func modifyLines(
+        _ modify: (inout String) -> Void
+    ) {
+        // Define a structure to hold line content and its original newline character
+        struct Line {
+            var content: String
+            let newline: String
+        }
+        
+        // Array to hold lines along with their respective newline characters
+        var linesWithNewlines: [Line] = []
+        var searchStartIndex = self.startIndex
+        
+        // Regular expression to match newline characters (\n, \r\n, or \r)
+        let newlineRegex = try! NSRegularExpression(pattern: "\r\n|[\n\r]")
+        
+        // Iterate over the string to find and split by newline characters
+        while let match = newlineRegex.firstMatch(in: self, range: NSRange(searchStartIndex..<self.endIndex, in: self)) {
+            let range = Range(match.range, in: self)!
+            let lineContent = String(self[searchStartIndex..<range.lowerBound])
+            let newlineStr = String(self[range.lowerBound..<range.upperBound])
+            linesWithNewlines.append(Line(content: lineContent, newline: newlineStr))
+            searchStartIndex = range.upperBound
+        }
+        
+        // Add the last line if there's any content left without a trailing newline
+        if searchStartIndex < self.endIndex {
+            linesWithNewlines.append(Line(content: String(self[searchStartIndex..<self.endIndex]), newline: ""))
+        }
+        
+        // Modify each line using the provided closure and collect the results
+        for i in linesWithNewlines.indices {
+            var lineToModify = linesWithNewlines[i].content
+            
+            modify(&lineToModify)
+            
+            linesWithNewlines[i].content = lineToModify
+        }
+        
+        // Reconstruct the string, preserving original newline characters
+        self = linesWithNewlines
+            .map {
+                $0.content + $0.newline
+            }
+            .joined()
+    }
+    
+    public func modifyingLines(_ modify: (inout String) -> Void) -> String {
+        withMutableScope(self) {
+            $0.modifyLines(modify)
+        }
+    }
+    
+    public func mapLines(_ transform: (String) -> String) -> String {
+        withMutableScope(self) {
+            $0.modifyLines({ $0 = transform($0) })
+        }
     }
 }
 
