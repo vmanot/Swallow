@@ -72,7 +72,7 @@ extension FileManager {
         return isDirectory.boolValue
     }
     
-    public func isReadable<T: URLRepresentable>(
+    public func fileExistsAndIsReadable<T: URLRepresentable>(
         at location: T
     ) -> Bool {
         var url = location.url
@@ -84,18 +84,37 @@ extension FileManager {
         return isReadableFile(atPath: url.path)
     }
     
+    public func isReadable<T: URLRepresentable>(
+        at location: T
+    ) -> Bool {
+        fileExistsAndIsReadable(at: location)
+    }
+    
     public func isReadableAndWritable<T: URLRepresentable>(
         at location: T
     ) -> Bool {
         var url = location.url
         
+        // Check if the file/directory exists
+        if !fileExists(atPath: url.path) {
+            // If it doesn't exist, recursively check parent directories
+            while url.pathComponents.count > 1 {
+                url.deleteLastPathComponent()
+                if isReadableFile(atPath: url.path) && isWritableFile(atPath: url.path) {
+                    return true
+                }
+            }
+            return false
+        }
+        
+        // If it exists, check its readability and writability
         if isDirectory(at: url) && !url.path.hasSuffix("/") {
             url = URL(fileURLWithPath: url.path.appending("/"))
         }
         
         return isReadableFile(atPath: url.path) && isWritableFile(atPath: url.path)
     }
-    
+
     public func isReadableAndWritable<T: URLRepresentable>(
         atOrAncestorOf location: T
     ) -> Bool {
