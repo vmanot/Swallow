@@ -1,5 +1,3 @@
-prefix operator /
-
 /// Returns whether or not a root value matches a particular case path.
 ///
 /// ```swift
