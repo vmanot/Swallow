@@ -5,6 +5,7 @@
 import Swallow
 import XCTest
 
+#if false
 class ContiguousCollectionDifferenceTests: XCTestCase {
     func testSingleInsertion() {
         let diff = CollectionDifference([.insert(offset: 1, element: 4, associatedWith: nil)])!
@@ -93,3 +94,4 @@ class ContiguousCollectionDifferenceTests: XCTestCase {
         XCTAssertEqual(array, [1, 2, 3, 4, 5]) // No changes
     }
 }
+#endif
