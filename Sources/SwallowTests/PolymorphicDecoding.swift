@@ -4,6 +4,7 @@
 
 import Combine
 
+#if DEBUG
 @testable import Swallow
 
 import XCTest
@@ -92,3 +93,4 @@ private class Monkey: Animal {
         try encoder.encode(screeches, forKey: AnyStringKey(stringValue: "screeches"))
     }
 }
+#endif
