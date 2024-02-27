@@ -4,9 +4,6 @@
 
 import Foundation
 import os.log
-#if DEBUG
-import _SwiftOSOverlayShims
-#endif
 
 public struct XcodeRuntimeIssueLogger {
     /// Returns the shared default runtime issue logger with a generic category.
