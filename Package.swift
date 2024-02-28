@@ -14,6 +14,7 @@ let package = Package(
     products: [
         .library(
             name: "Swallow",
+            type: .dynamic,
             targets: [
                 "_ExpansionsRuntime",
                 "SE0270_RangeSet",

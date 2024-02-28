@@ -23,7 +23,7 @@ public protocol LogStoreProtocol {
 
 // MARK: - Implemented Conformances
 
-#if canImport(OSLog)
+#if canImport(OSLog) && false
 import OSLog
 @available(macOS 10.15, iOS 15.0, watchOS 8.0, tvOS 15.0, *)
 extension OSLogStore: LogStoreProtocol {

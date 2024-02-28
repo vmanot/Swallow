@@ -112,7 +112,7 @@ extension os.OSLogType: LogLevelProtocol {
 }
 #endif
 
-#if canImport(OSLog)
+#if canImport(OSLog) && false
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension OSLogEntryLog.Level: LogLevelProtocol {
     public var stringValue: String {
