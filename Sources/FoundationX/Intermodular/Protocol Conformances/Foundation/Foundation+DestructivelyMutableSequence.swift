@@ -30,7 +30,9 @@ extension NSMutableArray: DestructivelyMutableSequence {
         }
     }
     
-    public func removeAll(where predicate: ((Element) throws -> Bool)) rethrows {
+    public func removeAll(
+        where predicate: ((Element) throws -> Bool)
+    ) rethrows {
         var _self = self
         
         try _self._removeAll(where: predicate)

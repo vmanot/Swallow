@@ -164,7 +164,7 @@ extension Sequence {
     ) rethrows -> [Element] {
         var result: [Element] = []
         
-        for element in result {
+        for element in self {
             if try predicate(element) {
                 result.append(element)
             } else {
@@ -181,7 +181,7 @@ extension Sequence {
     ) rethrows -> IdentifierIndexingArrayOf<Element> where Element: Identifiable {
         var result: IdentifierIndexingArrayOf<Element> = []
         
-        for element in result {
+        for element in self {
             if try predicate(element) {
                 result.append(element)
             } else {
