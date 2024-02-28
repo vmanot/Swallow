@@ -265,6 +265,10 @@ extension URL {
     public var _fileExtension: String {
         pathExtension
     }
+    
+    public var _actuallyStandardizedFileURL: URL {
+        URL(fileURLWithPath: standardizedFileURL.path)
+    }
 
     /// Whether the `URL` is `/`.
     public var _isRootPath: Bool {

@@ -111,6 +111,13 @@ public func _unwrapPossibleTypeEraser<T>(
     }
 }
 
+public enum _TypeErasingRuntimeCastError: Error {
+    case failedToCast(Any, to: Any.Type)
+}
+
+/// Casts a given value to a desired type, wrapping the value in a type eraser if needed.
+///
+/// If type-erasure is needed, the target type must conform to `_UnwrappableTypeEraser`.
 public func _castTypeErasingIfNeeded<T, U>(
     _ value: T,
     to type: U.Type = U.self,
@@ -126,7 +133,7 @@ public func _castTypeErasingIfNeeded<T, U>(
         } else if let type = type as? any _UnwrappableTypeEraser.Type {
             return try cast(type.init(_opaque_erasing: value), to: U.self)
         } else {
-            throw Never.Reason.unsupported
+            throw _TypeErasingRuntimeCastError.failedToCast(value, to: type)
         }
     } catch {
         throw RuntimeCastError.invalidTypeCast(

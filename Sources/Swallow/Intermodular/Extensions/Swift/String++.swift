@@ -10,6 +10,23 @@ extension String {
         self = string.withUTF8Buffer({ String(decoding: $0, as: UTF8.self) })
     }
     
+    public init(
+        describing operation: () throws -> some CustomStringConvertible,
+        recovery: () -> String
+    ) {
+        do {
+            let result = try operation()
+            
+            if let result = result as? String {
+                self = result
+            } else {
+                self = result.description
+            }
+        } catch {
+            self = recovery()
+        }
+    }
+
     /// Creates a new string from a single UTF-16 code unit.
     public init(utf16CodeUnit: UTF16.CodeUnit) {
         self.init(utf16CodeUnits: [utf16CodeUnit], count: 1)
