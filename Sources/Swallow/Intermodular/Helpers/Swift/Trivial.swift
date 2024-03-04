@@ -6,7 +6,7 @@ import Darwin
 import Swift
 
 /// A trivial (Darwin) type.
-public protocol Trivial: CVarArg, Equatable, Sendable {
+public protocol Trivial: CVarArg, Equatable {
     static var null: Self { get }
     
     init(null: Void)

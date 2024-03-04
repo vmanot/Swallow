@@ -8,7 +8,7 @@ import Swallow
 @frozen
 public struct OpaqueExistentialContainer: CustomDebugStringConvertible {
     @frozen
-    public struct Buffer: Wrapper, Trivial {
+    public struct Buffer: Wrapper, @unchecked Sendable, Trivial{
         public typealias Value = (UnsafeMutableRawPointer?, UnsafeMutableRawPointer?, UnsafeMutableRawPointer?)
         
         public var pointer0: UnsafeMutableRawPointer?
