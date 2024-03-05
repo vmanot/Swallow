@@ -98,7 +98,11 @@ extension _HashableExistential {
                             
                             self.init(_wrappedValue: value as! WrappedValue)
                         default:
-                            self.init(_wrappedValue: _HashablePlaceholderNil() as! WrappedValue)
+                            if let _wrappedValue = _HashablePlaceholderNil() as? WrappedValue {
+                                self.init(_wrappedValue: _wrappedValue)
+                            } else {
+                                self.init(_wrappedValue: value as! WrappedValue)
+                            }
                     }
                     
                     if let placeholder = _HashablePlaceholderNil() as? WrappedValue {

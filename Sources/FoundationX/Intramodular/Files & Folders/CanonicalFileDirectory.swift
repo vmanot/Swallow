@@ -18,6 +18,7 @@ public struct CanonicalFileDirectory: Hashable, Sendable {
         case iCloudDriveDocuments(containerID: String)
         case securityApplicationGroup(String)
         case ubiquityContainer(String)
+        case appResources
         case appDocuments
     }
     
@@ -54,12 +55,16 @@ extension CanonicalFileDirectory {
         Self(_name: .ubiquityContainer(id))
     }
     
+    public static var appResources: Self {
+        Self(_name: .appResources)
+    }
+
     public static var appDocuments: Self {
         Self(_name: .appDocuments)
     }
     
     public static var userDocuments: Self {
-        Self(_name: .appDocuments)
+        Self(_name: .appDocuments) // FIXME: How does this differ from `appDocuments`?
     }
 }
 
@@ -100,6 +105,9 @@ extension CanonicalFileDirectory {
                 return try fileManager
                     .url(forUbiquityContainerIdentifier: identifier)
                     .unwrap()
+            }
+            case .appResources: do {
+                return Bundle.mainAppBundle.bundleURL
             }
             case .appDocuments: do {
                 return try fileManager.url(for: .documentDirectory, in: .userDomainMask)
@@ -162,5 +170,12 @@ extension URL {
         directory: CanonicalFileDirectory
     ) throws {
         self = try directory.toURL()
+    }
+}
+
+extension Bundle {
+    fileprivate static var mainAppBundle: Bundle {
+        // Bundle.main always points to the main application bundle in an app context
+        return Bundle.main
     }
 }

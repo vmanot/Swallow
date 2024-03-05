@@ -201,6 +201,23 @@ extension URL {
         
         return result
     }
+    
+    @_transparent
+    public func _accessingSecurityScopedResource<T>(
+        _ operation: () async throws -> T
+    ) async throws -> T {
+        let isAccessing = self.startAccessingSecurityScopedResource()
+        
+        guard isAccessing else {
+            throw _SecurityScopedResourceAccessError.failedToAccessSecurityScopedResource(for: self)
+        }
+        
+        let result = try await operation()
+        
+        self.stopAccessingSecurityScopedResource()
+        
+        return result
+    }
 }
 
 extension URL {

@@ -191,7 +191,7 @@ extension _FileOrDirectorySecurityScopedAccessManager {
 
 // MARK: - Supplementary
 
-extension FileManager {    
+extension FileManager {
     @frozen
     public enum _FileOrDirectoryAccessScopePreference: Hashable {
         case automatic
@@ -224,6 +224,33 @@ extension FileManager {
         }
     }
     
+    @MainActor
+    public func withUserGrantedAccess<T>(
+        to urlRepresentable: URLRepresentable,
+        scope: _FileOrDirectoryAccessScopePreference = .automatic,
+        perform operation: (URL) async throws -> T
+    ) async throws -> T {
+        let url = urlRepresentable.url
+        
+        switch scope {
+            case .automatic:
+                return try await _withUserGrantedAccess(to: url, perform: operation)
+            case .directory:
+                if !url._isKnownOrIndicatedToBeFileDirectory {
+                    let directoryURL = url._immediateFileDirectory
+                    let lastPathComponent = url.lastPathComponent
+                    
+                    return try await _withUserGrantedAccess(to: directoryURL) { directoryURL in
+                        let accessibleURL = directoryURL.appendingPathComponent(lastPathComponent, isDirectory: false)
+                        
+                        return try await operation(accessibleURL)
+                    }
+                } else {
+                    return try await _withUserGrantedAccess(to: url, perform: operation)
+                }
+        }
+    }
+    
     @usableFromInline
     func _withUserGrantedAccess<T>(
         to url: URLRepresentable,
@@ -245,6 +272,31 @@ extension FileManager {
         
         return try url._accessingSecurityScopedResource {
             try operation(url)
+        }
+    }
+    
+    @MainActor
+    @usableFromInline
+    func _withUserGrantedAccess<T>(
+        to url: URLRepresentable,
+        perform operation: (URL) async throws -> T
+    ) async throws -> T {
+        var url: URL = url.url
+        
+        do {
+            if FileManager.default.isReadable(at: url), url.isKnownSecurityScopedAccessExempt {
+                return try await url._accessingSecurityScopedResource {
+                    return try await operation(url)
+                }
+            }
+        } catch {
+            runtimeIssue(error)
+        }
+        
+        url = try _FileOrDirectorySecurityScopedAccessManager.requestAccess(to: url)
+        
+        return try await url._accessingSecurityScopedResource {
+            try await operation(url)
         }
     }
 }
@@ -278,4 +330,3 @@ extension _FileOrDirectorySecurityScopedAccessManager {
         case other(Error)
     }
 }
-
