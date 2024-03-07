@@ -5,6 +5,7 @@
 import Swift
 
 extension Sequence {
+    @_transparent
     public func _mapToSet<T: Hashable>(
         _ transform: (Element) throws -> T
     ) rethrows -> Set<T> {

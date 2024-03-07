@@ -15,7 +15,7 @@ extension URL {
         #if os(visionOS)
         self.init(filePath: _filePath)
         #else
-        self.init(fileURLWithPath: String(_filePath))
+        self.init(fileURLWithPath: String(decoding: _filePath))
         #endif
     }
     

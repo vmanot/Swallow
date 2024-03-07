@@ -22,3 +22,20 @@ public struct _SwiftRuntime {
         
     }
 }
+
+extension TypeMetadata {
+    public static func _queryAll(
+        _ predicates: _SwiftRuntimeIndex.QueryPredicate...
+    ) throws -> Array<Any.Type> {
+        _SwiftRuntime.index.fetch(predicates)
+    }
+    
+    public static func _queryAll<T>(
+        _ predicates: _SwiftRuntimeIndex.QueryPredicate...,
+        returning: Array<T>.Type = Array<T>.self
+    ) throws -> Array<T> {
+        return try _SwiftRuntime.index
+            .fetch(predicates)
+            .map({ try cast($0) })
+    }
+}

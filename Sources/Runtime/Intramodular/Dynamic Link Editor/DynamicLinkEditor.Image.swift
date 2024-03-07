@@ -8,7 +8,7 @@ import Swallow
 
 extension DynamicLinkEditor {
     @frozen
-    public struct Image: Hashable, Identifiable, Sendable {
+    public struct Image: Hashable, Identifiable, @unchecked Sendable {
         public let index: UInt32
         public let name: String
         public let header: UnsafePointer<mach_header>

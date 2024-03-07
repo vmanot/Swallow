@@ -13,8 +13,13 @@ public struct TypeMetadata: _TypeMetadataType {
         self.base = base
     }
     
+    @_optimize(speed)
     public func hash(into hasher: inout Hasher) {
         hasher.combine(ObjectIdentifier(base))
+    }
+    
+    public static func == (lhs: Self, rhs: Self) -> Bool {
+        lhs.base == rhs.base
     }
 }
 

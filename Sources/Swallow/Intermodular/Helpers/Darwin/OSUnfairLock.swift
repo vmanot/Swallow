@@ -6,7 +6,7 @@ import Darwin
 
 /// An `os_unfair_lock` wrapper.
 @_spi(Internal)
-public final class OSUnfairLock: Sendable {
+public final class OSUnfairLock: @unchecked Sendable {
     @usableFromInline
     let base: os_unfair_lock_t
     

@@ -41,7 +41,6 @@ let package = Package(
             name: "_ExpansionsRuntime",
             dependencies: [
                 "Diagnostics",
-                "Runtime",
                 "Swallow",
             ],
             swiftSettings: [
@@ -208,6 +207,7 @@ let package = Package(
         .target(
             name: "Runtime",
             dependencies: [
+                "_ExpansionsRuntime",
                 "Compute",
                 "FoundationX",
                 "Swallow"

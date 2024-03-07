@@ -2,6 +2,7 @@
 // Copyright (c) Vatsal Manot
 //
 
+import _ExpansionsRuntime
 import Foundation
 import MachO
 @_spi(Internal) import Swallow
@@ -42,7 +43,7 @@ public final class _SwiftRuntimeIndex {
             }
         }
     }
-
+    
     private var queryResultsByConformances: [Hashable2ple<TypeMetadata, Set<QueryPredicate>>: Set<TypeMetadata>] = [:]
     
     internal init() {
@@ -68,9 +69,7 @@ extension _SwiftRuntimeIndex {
     public func fetch(
         _ predicates: QueryPredicate...
     ) -> [Any.Type] {
-        lock.withCriticalScope {
-            _fetch(predicates).map({ $0.base })
-        }
+        fetch(predicates)
     }
     
     @usableFromInline
@@ -143,26 +142,26 @@ extension _SwiftRuntimeIndex {
         }
         
         var allSwiftTypes: Set<TypeMetadata> = []
-        var allSwiftTypes2: Set<TypeMetadata> = []
+        let allRuntimeDiscoveredTypes = RuntimeDiscoverableTypes.enumerate().map({ TypeMetadata($0) })
         
+        allSwiftTypes.formUnion(consume allRuntimeDiscoveredTypes)
+
         let imagesToSearch = DynamicLinkEditor.Image.allCases.filter {
             !$0._matches(DynamicLinkEditor.Image._ImagePathFilter.appleFramework)
         }
         
-        let conformances = imagesToSearch.flatMap { image in
-            image._parseSwiftTypeConformanceList().flatMap { conformances -> IdentifierIndexingArrayOf<_SwiftRuntime.TypeConformance> in
-                allSwiftTypes2.insert(conformances.type)
+        imagesToSearch.forEach { image in
+            image._parseSwiftTypeConformanceList().forEach { (conformanceList: _SwiftRuntime.TypeConformanceList) in
+                allSwiftTypes.insert(conformanceList.type)
                 
-                return conformances.conformances
+                for conformance in conformanceList.conformances {
+                    if let type = conformance.type {
+                        allSwiftTypes.insert(type)
+                    }
+                }
             }
         }
-        
-        for conformance in conformances {
-            if let type = conformance.type {
-                allSwiftTypes.insert(type)
-            }
-        }
-        
+                
         return QueryIndices(
             objCClasses: ObjCClass.allCases._mapToSet({ TypeMetadata($0.base) }),
             swiftTypes: allSwiftTypes

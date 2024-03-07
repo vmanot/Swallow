@@ -28,6 +28,7 @@ extension _SwiftRuntime {
 }
 
 extension _SwiftRuntime {
+    @_optimize(speed)
     @_transparent
     static func _parseSwiftTypeConformanceList(
         from image: DynamicLinkEditor.Image
@@ -72,6 +73,7 @@ extension _SwiftRuntime {
             }
     }
     
+    @_optimize(speed)
     @_transparent
     private static func parseConformance(
         from conformanceDescriptor: UnsafePointer<SwiftRuntimeProtocolConformanceDescriptor>

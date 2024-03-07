@@ -144,7 +144,9 @@ extension Optional {
 #endif
 
 extension Optional {
+    @_transparent
     @discardableResult
+    @inlinable
     public mutating func unwrapOrInitializeInPlace(
         default fallback: () throws -> Wrapped
     ) rethrows -> Wrapped {
@@ -159,7 +161,9 @@ extension Optional {
         }
     }
     
+    @_transparent
     @discardableResult
+    @inlinable
     public mutating func unwrapOrInitializeInPlace(
         default fallback: () async throws -> Wrapped
     ) async rethrows -> Wrapped {
@@ -174,7 +178,9 @@ extension Optional {
         }
     }
 
+    @_transparent
     @discardableResult
+    @inlinable
     public mutating func unwrapOrInitializeInPlace(
         default fallback: () throws -> Wrapped?
     ) throws -> Wrapped {
@@ -189,7 +195,9 @@ extension Optional {
         }
     }
     
+    @_transparent
     @discardableResult
+    @inlinable
     public mutating func unwrapOrInitializeInPlace(
         default fallback: () async throws -> Wrapped?
     ) async throws -> Wrapped {
@@ -204,7 +212,9 @@ extension Optional {
         }
     }
     
+    @_transparent
     @discardableResult
+    @inlinable
     public mutating func unwrapWithMutableScope<Result>(
         _ operation: (inout Wrapped) throws -> Result
     ) throws -> Result {
@@ -221,6 +231,7 @@ extension Optional {
 #if DEBUG
 extension Optional {
     /// Force unwraps this `Optional`.
+    @_transparent
     @inlinable
     public func forceUnwrap(
         file: StaticString = #file,

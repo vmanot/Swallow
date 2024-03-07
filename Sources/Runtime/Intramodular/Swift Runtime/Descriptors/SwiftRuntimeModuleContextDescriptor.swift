@@ -4,6 +4,8 @@
 
 import Swift
 
+@frozen
+@usableFromInline
 struct SwiftRuntimeModuleContextDescriptor {
     let flags: SwiftRuntimeContextDescriptorFlags
     let parent: Int32

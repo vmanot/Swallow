@@ -70,6 +70,8 @@ extension TypeMetadata {
     public func _conforms(
         toExistentialMetatype testType: Any.Type
     ) -> Bool {
+        @_optimize(speed)
+        @_transparent
         func _conformsToMetatype<A>(
             _ type: A.Type
         ) -> Bool {

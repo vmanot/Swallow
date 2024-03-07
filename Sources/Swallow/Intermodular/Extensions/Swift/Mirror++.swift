@@ -5,6 +5,20 @@
 import Swift
 
 extension Mirror {
+    public init<Subject>(
+        _ subject: Subject,
+        displayStyle: Mirror.DisplayStyle? = nil,
+        ancestorRepresentation: Mirror.AncestorRepresentation = .generated,
+        children: () -> KeyValuePairs<String, Any?>
+    ) {
+        self.init(
+            subject,
+            children: KeyValuePairs(Dictionary(children()).compactMapValues({ $0 })),
+            displayStyle: displayStyle,
+            ancestorRepresentation: ancestorRepresentation
+        )
+    }
+
     /// The `children` of this `Mirror` enumerated as a dictionary.
     public var dictionaryRepresentation: [String: Any] {
         children

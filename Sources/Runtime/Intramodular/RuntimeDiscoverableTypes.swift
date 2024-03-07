@@ -2,9 +2,8 @@
 // Copyright (c) Vatsal Manot
 //
 
-@_implementationOnly import Diagnostics
+import _ExpansionsRuntime
 import Foundation
-@_implementationOnly import Runtime
 import Swallow
 
 public final class RuntimeDiscoverableTypes {
@@ -63,33 +62,4 @@ public struct RuntimeDiscoveredTypes<T, U> {
         self.type = type
         self.wrappedValue = RuntimeDiscoverableTypes.enumerate(typesConformingTo: type)
     }
-}
-
-@objc open class _RuntimeTypeDiscovery: NSObject {
-    open class var type: Any.Type {
-        assertionFailure()
-        
-        return Never.self
-    }
-}
-
-@objc open class _RuntimeConversion: NSObject {
-    open class var type: Any.Type {
-        assertionFailure()
-        
-        return Never.self
-    }
-}
-
-public protocol _NonGenericRuntimeConversionProtocol {
-    associatedtype Source
-    associatedtype Destination
-    
-    func __convert(_ source: Source) throws -> Destination
-}
-
-public protocol _PerformOnce: Initiable {
-    init()
-    
-    func perform()
 }

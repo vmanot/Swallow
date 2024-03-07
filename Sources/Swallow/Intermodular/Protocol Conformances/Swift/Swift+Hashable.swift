@@ -11,12 +11,14 @@ extension Either: Hashable where LeftValue: Hashable, RightValue: Hashable {
     }
 }
 
+@frozen
 public struct EmptyValue: Codable, Hashable {
     public init() {
         
     }
 }
 
+@frozen
 public struct HashableImplOnly<Value: Hashable>: Hashable {
     public let value: Value
     
@@ -25,6 +27,7 @@ public struct HashableImplOnly<Value: Hashable>: Hashable {
     }
 }
 
+@frozen
 public struct Hashable2ple<T0: Hashable, T1: Hashable>: Hashable, Wrapper {
     public let value: (T0, T1)
     
