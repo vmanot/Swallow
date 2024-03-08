@@ -352,4 +352,16 @@ extension URL {
         
         return fileURL
     }
+    
+    public var _fileResourceIdentifierKey: NSObject? {
+        get throws {
+            let resourceValues = try self.resourceValues(forKeys: [.fileResourceIdentifierKey])
+            
+            if let fileID = resourceValues.fileResourceIdentifier {
+                return try cast(fileID, to: NSObject.self)
+            } else {
+                return nil
+            }
+        }
+    }
 }

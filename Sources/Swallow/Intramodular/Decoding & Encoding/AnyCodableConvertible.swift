@@ -28,7 +28,7 @@ extension Dictionary: AnyCodableConvertible {
         TODO.here(.fix)
         
         return .dictionary(try mapKeysAndValues({
-            .init(stringValue: try cast($0, to: String.self))
+            AnyCodingKey(stringValue: try cast($0, to: String.self))
         }, {
             try cast($0, to: AnyCodableConvertible.self).toAnyCodable()
         }))

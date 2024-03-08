@@ -213,6 +213,18 @@ public struct AnyNumber: Codable, Hashable, Sendable {
         self.storage = .opaque(value)
     }
     
+    public init<T: BinaryInteger>(_ value: T) {
+        let number = value as! any Number
+        
+        self.init(number) // FIXME: Hack, bad performance
+    }
+    
+    public init<T: FloatingPoint>(_ value: T) {
+        let number = value as! any Number
+        
+        self.init(number) // FIXME: Hack, bad performance
+    }
+    
     public init(opaque value: any Number) {
         self.storage = .opaque(value)
     }

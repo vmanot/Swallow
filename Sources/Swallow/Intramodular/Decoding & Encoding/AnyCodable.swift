@@ -18,6 +18,19 @@ public enum AnyCodable: @unchecked Sendable {
     
     /// Do **not** use this case yourself. This is meant for internal use only.
     case _lazy(Codable)
+    
+    public static func number<T: BinaryInteger>(_ number: T) -> Self {
+        .number(AnyNumber(number))
+    }
+    
+    public static func number<T: FloatingPoint>(_ number: T) -> Self {
+        .number(AnyNumber(number))
+    }
+    
+    @_disfavoredOverload
+    public static func dictionary(_ dictionary: [String: AnyCodable]) -> Self {
+        .dictionary(dictionary.mapKeys(AnyCodingKey.init(stringValue:)))
+    }
 }
 
 // MARK: - Initializers
@@ -53,7 +66,7 @@ extension AnyCodable {
     }
     
     public init(
-        destructuring value: Codable
+        destructuring value: Encodable
     ) throws {
         self = try ObjectDecoder().decode(
             AnyCodable.self,
@@ -66,11 +79,21 @@ extension AnyCodable {
 
 extension AnyCodable {
     public var _dictionaryValue: [AnyCodingKey: AnyCodable]? {
-        guard case .dictionary(let value) = self else {
-            return nil
+        get {
+            guard case .dictionary(let value) = self else {
+                return nil
+            }
+            
+            return value
+        } set {
+            guard let newValue else {
+                assertionFailure(.illegal)
+                
+                return
+            }
+            
+            self = .dictionary(newValue)
         }
-        
-        return value
     }
     
     public var _arrayValue: [AnyCodable]? {
@@ -411,7 +434,20 @@ extension AnyCodable: ObjectiveCBridgeable {
             case let value as NSArray:
                 return .array(try cast(value as [AnyObject], to: [NSCoding].self).map({ try AnyCodable.bridgeFromObjectiveC($0) }))
             case let value as NSDictionary:
-                return .dictionary(try cast(value as [NSObject : AnyObject], to: [String: NSCoding].self).mapKeysAndValues({ .init(stringValue: try cast($0, to: NSString.self) as String) }, { try AnyCodable.bridgeFromObjectiveC($0) }))
+                return .dictionary(
+                    try cast(
+                        value as [NSObject : AnyObject],
+                        to: [String: NSCoding].self
+                    )
+                    .mapKeysAndValues(
+                        {
+                            AnyCodingKey(stringValue: try cast($0, to: NSString.self) as String)
+                        },
+                        { 
+                            try AnyCodable.bridgeFromObjectiveC($0)
+                        }
+                    )
+                )
             default:
                 throw RuntimeCastError.invalidTypeCast(
                     from: type(of: source),
