@@ -94,6 +94,7 @@ let package = Package(
             dependencies: [
                 "_ExpansionsRuntime",
                 "ExpansionsMacros",
+                "Runtime",
                 "Swallow"
             ],
             path: "Sources/Expansions"
