@@ -99,14 +99,17 @@ extension TypeMetadata {
 // MARK: - Helpers
 
 extension TypeMetadata {
-    private var _contextDescriptorFlags: SwiftRuntimeContextDescriptorFlags {
+    @usableFromInline
+    var _contextDescriptorFlags: SwiftRuntimeContextDescriptorFlags {
         unsafeBitCast(self, to: UnsafePointer<SwiftRuntimeContextDescriptorFlags>.self).pointee
     }
     
-    private var _kind: TypeMetadata.Kind? {
+    @usableFromInline
+    var _kind: TypeMetadata.Kind? {
         TypeMetadata.Kind(rawValue: unsafeBitCast(base, to: UnsafePointer<Int>.self)[0])
     }
     
+    @_transparent
     public var kind: TypeMetadata.Kind {
         if let _kind = _contextDescriptorFlags.kind {
             switch _kind {

@@ -33,18 +33,22 @@ struct SwiftRuntimeContextDescriptorFlags: OptionSet {
         self.rawValue = rawValue
     }
 
+    @usableFromInline
     var kind: Kind? {
         Kind(rawValue: Int(rawValue) & 0x1F)
     }
     
+    @usableFromInline
     var version: UInt8 {
         UInt8((rawValue >> 0x8) & 0xFF)
     }
     
+    @usableFromInline
     var kindSpecificFlags: UInt16 {
         UInt16((rawValue >> 0x10) & 0xFFFF)
     }
     
+    @usableFromInline
     var isGeneric: Bool {
         UInt8(rawValue & 0x80) != 0
     }

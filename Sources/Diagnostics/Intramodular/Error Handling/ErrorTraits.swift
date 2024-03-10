@@ -13,6 +13,7 @@ extension _ErrorTraitsBuilding {
     public typealias Domain = _SubsystemDomainErrorTrait
 }
 
+@frozen
 public struct ErrorTraits: Hashable, @unchecked Sendable {
     public typealias Element = any _ErrorTrait
     

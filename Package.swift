@@ -73,10 +73,20 @@ let package = Package(
             path: "Sources/MacroBuilderCompilerPlugin"
         ),
         .target(
-            name: "LoremIpsum"
+            name: "LoremIpsum",
+            swiftSettings: [
+                .unsafeFlags([
+                    "-enable-library-evolution"
+                ])
+            ]
         ),
         .target(
-            name: "SE0270_RangeSet"
+            name: "SE0270_RangeSet",
+            swiftSettings: [
+                .unsafeFlags([
+                    "-enable-library-evolution"
+                ])
+            ]
         ),
         .target(
             name: "Swallow",
@@ -97,7 +107,12 @@ let package = Package(
                 "Runtime",
                 "Swallow"
             ],
-            path: "Sources/Expansions"
+            path: "Sources/Expansions",
+            swiftSettings: [
+                .unsafeFlags([
+                    "-enable-library-evolution"
+                ])
+            ]
         ),
         .target(
             name: "MacroBuilder",

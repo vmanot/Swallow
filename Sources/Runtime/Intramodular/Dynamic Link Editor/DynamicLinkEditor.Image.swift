@@ -31,10 +31,12 @@ extension DynamicLinkEditor {
 }
 
 extension DynamicLinkEditor.Image {
-    private static var _imagesByName: [String: DynamicLinkEditor.Image] = {
+    @usableFromInline
+    static var _imagesByName: [String: DynamicLinkEditor.Image] = {
         Self.allCases.groupFirstOnly(by: \.name)
     }()
     
+    @_transparent
     public init?(name: String) {
         guard let image = Self._imagesByName[name] ?? Self.allCases.first(where: { $0.name == name }) else {
             return nil
@@ -53,11 +55,10 @@ extension DynamicLinkEditor.Image {
 // MARK: - Conformances
 
 extension DynamicLinkEditor.Image: CaseIterable {
-    public static var allCases: [Self] {
-        self._allCases()
-    }
+    public static let allCases: [Self] = {
+        DynamicLinkEditor.Image._allCases()
+    }()
     
-    @_transparent
     public static func _allCases() -> [DynamicLinkEditor.Image] {
         let images: UInt32 = _dyld_image_count()
         var result: [DynamicLinkEditor.Image] = []
@@ -121,6 +122,7 @@ extension DynamicLinkEditor.Image {
         filter.matches(self)
     }
     
+    @_transparent
     func _matches(_ filters: Set<_ImagePathFilter>) -> Bool {
         filters.contains(where: { $0.matches(self) })
     }
@@ -135,14 +137,19 @@ extension DynamicLinkEditor.Image {
 }
 
 extension ObjCClass {
+    private static var _dyldImageNameCache: [ObjectIdentifier: String] = [:]
+    
     public var _dyldImageName: String? {
-        guard let name = class_getImageName(value) else {
-            return nil
+        try? ObjCClass._dyldImageNameCache[ObjectIdentifier(self.base)].unwrapOrInitializeInPlace { () -> String? in
+            guard let name = class_getImageName(value) else {
+                return nil
+            }
+            
+            return String(cString: name)
         }
-        
-        return String(cString: name)
     }
     
+    @_transparent
     public var dyldImage: DynamicLinkEditor.Image? {
         _dyldImageName.map({ DynamicLinkEditor.Image(name: $0)! })
     }

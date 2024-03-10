@@ -31,20 +31,11 @@ public final class _SwiftRuntimeIndex {
         }
     }
     
-    private var _stateFlags: Set<StateFlag> = []
-    private var _queryIndices: QueryIndices?
+    private lazy var _stateFlags: Set<StateFlag> = []
+    private lazy var _queryResultsByConformances: [AnyHashable: Set<TypeMetadata>] = [:]
+    private var _queryIndices = QueryIndices()
     
     var lock = OSUnfairLock()
-    
-    private var queryIndices: QueryIndices {
-        get {
-            _queryIndices.unwrapOrInitializeInPlace {
-                self._buildQueryIndices()
-            }
-        }
-    }
-    
-    private var queryResultsByConformances: [Hashable2ple<TypeMetadata, Set<QueryPredicate>>: Set<TypeMetadata>] = [:]
     
     internal init() {
         
@@ -52,12 +43,13 @@ public final class _SwiftRuntimeIndex {
     
     public func preheat() {
         lock.withCriticalScope {
-            _ = queryIndices
+            _ = _queryIndices
         }
     }
 }
 
 extension _SwiftRuntimeIndex {
+    @_optimize(speed)
     public func fetch(
         _ predicates: [QueryPredicate]
     ) -> [Any.Type] {
@@ -66,6 +58,7 @@ extension _SwiftRuntimeIndex {
         }
     }
     
+    @_optimize(speed)
     public func fetch(
         _ predicates: QueryPredicate...
     ) -> [Any.Type] {
@@ -92,136 +85,172 @@ extension _SwiftRuntimeIndex {
         if let protocolType {
             let protocolType = TypeMetadata(protocolType)
             let predicates = Set(predicates)
+            let key: AnyHashable = Hashable2ple((protocolType, predicates))
             
-            return queryResultsByConformances[Hashable2ple((protocolType, predicates))].unwrapOrInitializeInPlace {
-                return _queryTypes(conformingTo: protocolType, predicates)
+            if let result = _queryResultsByConformances[key] {
+                return result
+            } else {
+                let result = _queryTypes(conformingTo: protocolType, predicates)
+                
+                _queryResultsByConformances[key] = result
+                
+                return result
             }
         } else {
-            return queryIndices.fetch(Set(predicates))
+            return _queryIndices.fetch(Set(predicates))
         }
     }
-}
-
-extension _SwiftRuntimeIndex {
-    @_transparent
+    
     private func _queryTypes(
         conformingTo protocolType: TypeMetadata,
         _ predicates: Set<QueryPredicate>
     ) -> Set<TypeMetadata> {
-        let doesTypeConformToProtocol: (TypeMetadata) -> Bool
-        
-        if protocolType.kind == .existential, let protocolExistentialMetatype = _swift_getExistentialMetatypeMetadata(protocolType.base) {
-            doesTypeConformToProtocol = {
-                $0._conforms(toExistentialMetatype: protocolExistentialMetatype)
-            }
-        } else {
-            doesTypeConformToProtocol = {
-                $0.conforms(to: protocolType)
-            }
-        }
+        let types: Set<TypeMetadata> = _queryIndices.fetch(predicates)
         
         var result: Set<TypeMetadata> = []
-        let types = queryIndices.fetch(predicates)
         
-        for type in types {
-            if doesTypeConformToProtocol(type) {
-                result.insert(type)
+        if protocolType.kind == .existential, let protocolExistentialMetatype: Any.Type = _swift_getExistentialMetatypeMetadata(protocolType.base) {
+            for type in types {
+                if type._conforms(toExistentialMetatype: protocolExistentialMetatype) {
+                    result.insert(type)
+                }
+            }
+        } else {
+            for type in types {
+                if type.conforms(to: protocolType) {
+                    result.insert(type)
+                }
             }
         }
         
         return result
-    }
-    
-    @_optimize(speed)
-    @usableFromInline
-    func _buildQueryIndices() -> QueryIndices {
-        assert(!_stateFlags.contains(.initialIndexingComplete))
-        
-        defer {
-            _stateFlags.insert(.initialIndexingComplete)
-        }
-        
-        var allSwiftTypes: Set<TypeMetadata> = []
-        let allRuntimeDiscoveredTypes = RuntimeDiscoverableTypes.enumerate().map({ TypeMetadata($0) })
-        
-        allSwiftTypes.formUnion(consume allRuntimeDiscoveredTypes)
-
-        let imagesToSearch = DynamicLinkEditor.Image.allCases.filter {
-            !$0._matches(DynamicLinkEditor.Image._ImagePathFilter.appleFramework)
-        }
-        
-        imagesToSearch.forEach { image in
-            image._parseSwiftTypeConformanceList().forEach { (conformanceList: _SwiftRuntime.TypeConformanceList) in
-                allSwiftTypes.insert(conformanceList.type)
-                
-                for conformance in conformanceList.conformances {
-                    if let type = conformance.type {
-                        allSwiftTypes.insert(type)
-                    }
-                }
-            }
-        }
-                
-        return QueryIndices(
-            objCClasses: ObjCClass.allCases._mapToSet({ TypeMetadata($0.base) }),
-            swiftTypes: allSwiftTypes
-        )
     }
 }
 
 extension _SwiftRuntimeIndex {
     @usableFromInline
     final class QueryIndices {
-        let objCClasses: Set<TypeMetadata>
-        let swiftTypes: Set<TypeMetadata>
+        private lazy var objCClasses: Set<TypeMetadata> = {
+            Set(ObjCClass.allCases.map({ TypeMetadata($0.base) }))
+        }()
         
-        lazy var allTypes = objCClasses.union(swiftTypes)
-        
-        lazy var nonUnderscoredTypes: Set<TypeMetadata> = allTypes.filter({ !$0.name.hasPrefix("_") })
-        lazy var classTypes: Set<TypeMetadata> = allTypes.filter({ swift_isClassType($0.base) })
-        lazy var appleFramework: Set<TypeMetadata> = allTypes.filter {
-            guard let classType = ObjCClass($0.base), let image = classType.dyldImage else {
-                return false
+        private lazy var appleFrameworkObjCClasses: Set<TypeMetadata> = {
+            objCClasses.filter { cls in
+                guard let image = ObjCClass(cls.base as! AnyClass).dyldImage else {
+                    return false
+                }
+                
+                return image._matches(DynamicLinkEditor.Image._ImagePathFilter.appleFramework)
+            }
+        }()
+
+        private lazy var nonAppleSwiftTypes: Set<TypeMetadata> = {
+            var allSwiftTypes: Set<TypeMetadata> = []
+            let allRuntimeDiscoveredTypes = RuntimeDiscoverableTypes.enumerate().map({ TypeMetadata($0) })
+            
+            allSwiftTypes.formUnion(consume allRuntimeDiscoveredTypes)
+            
+            let imagesToSearch = DynamicLinkEditor.Image.allCases.filter {
+                !$0._matches(DynamicLinkEditor.Image._ImagePathFilter.appleFramework)
             }
             
-            return image._matches(DynamicLinkEditor.Image._ImagePathFilter.appleFramework)
-        }
-        
-        @usableFromInline
-        init(
-            objCClasses: Set<TypeMetadata>,
-            swiftTypes: Set<TypeMetadata>
-        ) {
-            self.objCClasses = objCClasses
-            self.swiftTypes = swiftTypes
-        }
-        
+            imagesToSearch.forEach { (image: DynamicLinkEditor.Image) in
+                image._parseSwiftTypeConformanceList().forEach { (conformanceList: _SwiftRuntime.TypeConformanceList) in
+                    if conformanceList.type._isIndexWorthy {
+                        allSwiftTypes.insert(conformanceList.type)
+                    }
+                    
+                    for conformance in conformanceList.conformances {
+                        if let type = conformance.type, type._isIndexWorthy {
+                            allSwiftTypes.insert(type)
+                        }
+                    }
+                }
+            }
+            
+            return allSwiftTypes
+        }()
+                
+        private lazy var nonUnderscoredTypes: Set<TypeMetadata> = {
+            allTypes.filter({ !$0.name.hasPrefix("_") })
+        }()
+                    
+        private lazy var allTypes: Set<TypeMetadata> = {
+            objCClasses.union(nonAppleSwiftTypes) // FIXME
+        }()
+
         @_optimize(speed)
         @usableFromInline
         func fetch(_ predicates: Set<QueryPredicate>) -> Set<TypeMetadata> {
-            if predicates.isEmpty {
+            guard !predicates.isEmpty else {
                 return allTypes
             }
             
             if predicates == [.kind([TypeMetadata.Kind.class])] {
-                return classTypes
+                return objCClasses
             } else if predicates == [.nonAppleFramework] {
-                return allTypes.subtracting(appleFramework)
+                return allTypes.subtracting(appleFrameworkObjCClasses)
             } else if predicates == [.underscored(false)] {
                 return nonUnderscoredTypes
             } else if predicates == [.underscored(false), .nonAppleFramework] {
-                return nonUnderscoredTypes.subtracting(appleFramework)
+                return nonUnderscoredTypes.subtracting(appleFrameworkObjCClasses)
             } else if predicates == [.kind([TypeMetadata.Kind.class]), .underscored(false)] {
-                return nonUnderscoredTypes.intersection(classTypes)
+                return nonUnderscoredTypes.intersection(objCClasses)
             } else if predicates == [.kind([TypeMetadata.Kind.class]), .underscored(false), .nonAppleFramework] {
-                return nonUnderscoredTypes.intersection(classTypes).subtracting(appleFramework)
+                return nonUnderscoredTypes.intersection(objCClasses).subtracting(appleFrameworkObjCClasses)
             } else if predicates == [.pureSwift, .nonAppleFramework] {
-                return swiftTypes.subtracting(appleFramework)
+                return nonAppleSwiftTypes
             } else if predicates == [.pureSwift] {
-                return swiftTypes
+                runtimeIssue(Never.Reason.unimplemented)
+                
+                return nonAppleSwiftTypes
             }
             
             fatalError()
         }
+    }
+}
+
+extension TypeMetadata {
+    fileprivate var _isIndexWorthy: Bool {
+        let typeName = _typeName(base)
+        
+        guard !typeName.hasPrefix("__C.") else {
+            return false
+        }
+        
+        guard
+            !typeName.hasPrefix("SwiftCompiler"),
+            !typeName.hasPrefix("SwiftDiagnostics"),
+            !typeName.hasPrefix("SwiftOperators"),
+            !typeName.hasPrefix("SwiftParser"),
+            !typeName.hasPrefix("SwiftParserDiagnostics"),
+            !typeName.hasPrefix("SwiftSyntax"),
+            !typeName.hasPrefix("extension in SwiftParser")
+        else {
+            return false
+        }
+    
+        guard !typeName.hasPrefix("POSIX") else {
+            return false
+        }
+
+        guard !typeName.hasPrefix("SwiftUIIntrospect") else {
+            return false
+        }
+        
+        guard !typeName.hasPrefix("_SWXMLHash") else {
+            return false
+        }
+        
+        guard !typeName.hasPrefix("_XMLCoder") else {
+            return false
+        }
+
+        guard !typeName.hasSuffix(".CodingKeys") else {
+            return false
+        }
+
+        return true
     }
 }

@@ -85,7 +85,7 @@ extension Metatype: Hashable {
 
 extension Metatype: Named {
     public var name: String {
-        _getTypeName(from: _unwrapBase())
+        _getSanitizedTypeName(from: _unwrapBase())
     }
 }
 
@@ -108,7 +108,7 @@ extension Metatype: _UnwrappableTypeEraser {
 }
 
 /// From pointfreeco.
-public func _getTypeName(
+public func _getSanitizedTypeName(
     from type: Any.Type,
     qualified: Bool = true,
     genericsAbbreviated: Bool = false

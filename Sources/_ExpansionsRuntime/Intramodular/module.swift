@@ -6,7 +6,7 @@
 import Foundation
 import Swallow
 
-@objc open class _RuntimeTypeDiscovery: NSObject {
+@objc(_Swallow_RuntimeTypeDiscovery) open class _RuntimeTypeDiscovery: NSObject {
     open class var type: Any.Type {
         assertionFailure()
         

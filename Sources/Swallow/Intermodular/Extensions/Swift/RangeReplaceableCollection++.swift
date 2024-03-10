@@ -295,6 +295,7 @@ extension RangeReplaceableCollection {
     }
     
     @_disfavoredOverload
+    @_transparent
     public mutating func remove<T>(
         byUnwrapping transform: (Element) throws -> T?
     ) rethrows -> [T] {

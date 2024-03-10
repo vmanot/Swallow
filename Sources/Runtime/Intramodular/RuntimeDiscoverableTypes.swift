@@ -4,27 +4,15 @@
 
 import _ExpansionsRuntime
 import Foundation
-import Swallow
+@_spi(Internal) import Swallow
 
-public final class RuntimeDiscoverableTypes {
-    private static var cache: [Any.Type]?
+public enum RuntimeDiscoverableTypes {
+    private static var lock = OSUnfairLock()
     
     public static func enumerate() -> [Any.Type] {
-        if let cache = cache {
-            return cache
+        lock.withCriticalScope {
+            ObjCClass._RuntimeTypeDiscovery_allCases.map({ $0.type })
         }
-        
-        let allClasses = Array(ObjCClass.allCases)
-        let superclass = ObjCClass(_RuntimeTypeDiscovery.self)
-        
-        let result = allClasses
-            .filter({ $0.superclass == superclass })
-            .map({ $0.value as! _RuntimeTypeDiscovery.Type })
-            .map({ $0.type })
-        
-        cache = result
-        
-        return result
     }
     
     public static func enumerate<T, U>(

@@ -85,7 +85,7 @@ public struct _module {
             initialized = true
         }
         
-        let onces = _SwiftRuntime._index.fetch(.pureSwift, .conformsTo((any _PerformOnce).self))
+        let onces = _SwiftRuntime._index.fetch(.conformsTo((any _PerformOnce).self), .nonAppleFramework, .pureSwift)
         
         onces.forEach {
             let type = $0 as! any _PerformOnce.Type

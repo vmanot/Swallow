@@ -81,7 +81,6 @@ public struct HashableMacro: ExtensionMacro, MemberMacro {
             return variable.bindings
                 .compactMap { binding -> TokenSyntax? in
                     let syntax: TokenSyntax? = binding
-                        .as(PatternBindingSyntax.self)?
                         .pattern
                         .as(IdentifierPatternSyntax.self)?
                         .identifier

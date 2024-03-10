@@ -25,11 +25,13 @@ public struct OnceMacro: DeclarationMacro {
                 }
             
                 public func perform() {
-                    func _perform<T>(_ fn: () throws -> T) throws -> T {
-                        try fn()
+                    Task { @MainActor in
+                        func _perform<T>(_ fn: () async throws -> T) async throws -> T {
+                            try await fn()
+                        }
+                
+                        try! await _perform(\(node.trailingClosure))
                     }
-            
-                    try! _perform(\(node.trailingClosure))
                 }
             }
             """

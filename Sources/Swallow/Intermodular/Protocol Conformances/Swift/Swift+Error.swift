@@ -5,6 +5,7 @@
 import Swift
 
 /// A type-erased error.
+@frozen
 public struct AnyError: CustomDebugStringConvertible, Error, Hashable, @unchecked Sendable {
     public let base: Error
     
@@ -82,6 +83,7 @@ public struct CustomStringError: Codable, CustomStringConvertible, Error, Expres
 /// A placeholder error to use in lieu of a proper domain-specific error.
 ///
 /// This is a glorified `TODO`.
+@frozen
 public struct _PlaceholderError: Hashable, Error, CustomStringConvertible, Sendable {
     public let note: String?
     public let location: SourceCodeLocation?
@@ -119,6 +121,7 @@ public struct _PlaceholderError: Hashable, Error, CustomStringConvertible, Senda
 }
 
 /// A thin wrapper that can wrap an arbitrary value as a Swift error.
+@frozen
 public struct Erroneous<Value>: Error, Wrapper {
     public let value: Value
     
@@ -149,6 +152,7 @@ extension Erroneous: Sendable where Value: Sendable {
     
 }
 
+@frozen
 public struct ErrorPair<T: Error, U: Error>: CustomDebugStringConvertible, CustomStringConvertible, Error, Wrapper, @unchecked Sendable {
     public typealias Value = (T, U)
     

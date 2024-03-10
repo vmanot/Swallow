@@ -6,10 +6,10 @@ import Swift
 
 @_transparent
 public func with<V>(
-    _ initialValue: V,
+    _ initialValue: consuming V,
     modify: (inout V) throws -> ()
 ) rethrows -> V {
-    var value = initialValue
+    var value = consume initialValue
     
     try modify(&value)
     
@@ -18,10 +18,10 @@ public func with<V>(
 
 @_transparent
 public func withMutableScope<V>(
-    _ initialValue: V,
+    _ initialValue: consuming V,
     modify: (inout V) throws -> ()
 ) rethrows -> V {
-    var value = initialValue
+    var value = consume initialValue
     
     try modify(&value)
     
@@ -29,7 +29,10 @@ public func withMutableScope<V>(
 }
 
 @inlinable
-public func build<T>(_ x: T, with f: ((inout T) throws -> ())) rethrows -> T {
+public func build<T>(
+    _ x: consuming T,
+    with f: ((inout T) throws -> ())
+) rethrows -> T {
     var _x = x
 
     try f(&_x)
@@ -38,17 +41,29 @@ public func build<T>(_ x: T, with f: ((inout T) throws -> ())) rethrows -> T {
 }
 
 @inlinable
-public func build<T>(_ x: inout T, with f: ((T, T) -> T), _ y: T) {
+public func build<T>(
+    _ x: inout T,
+    with f: ((T, T) -> T),
+    _ y: T
+) {
     x = f(x, y)
 }
 
 @inlinable
-public func build<T, U>(_ x: inout T, with f: ((T, U) -> T), _ y: U) {
+public func build<T, U>(
+    _ x: inout T,
+    with f: ((T, U) -> T),
+    _ y: U
+) {
     x = f(x, y)
 }
 
 @inlinable
-public func build<T, U, V>(_ x: T, with f: ((inout T) throws -> ((U) -> V)), _ y: U) rethrows -> T {
+public func build<T, U, V>(
+    _ x: consuming T,
+    with f: ((inout T) throws -> ((U) -> V)),
+    _ y: U
+) rethrows -> T {
     var x = x
 
     _ =  try f(&x)(y)
@@ -57,7 +72,11 @@ public func build<T, U, V>(_ x: T, with f: ((inout T) throws -> ((U) -> V)), _ y
 }
 
 @inlinable
-public func build<T, U, V>(_ x: T, with f: ((inout T) throws -> ((U) throws -> V)), _ y: U) throws -> T {
+public func build<T, U, V>(
+    _ x: consuming T,
+    with f: ((inout T) throws -> ((U) throws -> V)),
+    _ y: U
+) throws -> T {
     var x = x
 
     _ =  try f(&x)(y)
@@ -66,7 +85,10 @@ public func build<T, U, V>(_ x: T, with f: ((inout T) throws -> ((U) throws -> V
 }
 
 @inlinable
-public func build<T, U>(_ x: T, with f: ((inout T) throws -> (() -> U))) rethrows -> T {
+public func build<T, U>(
+    _ x: consuming T,
+    with f: ((inout T) throws -> (() -> U))
+) rethrows -> T {
     var x = x
 
     _ = try f(&x)()
@@ -75,7 +97,10 @@ public func build<T, U>(_ x: T, with f: ((inout T) throws -> (() -> U))) rethrow
 }
 
 @inlinable
-public func build<T, U>(_ x: T, with f: ((inout T) throws -> (() throws -> U))) throws -> T {
+public func build<T, U>(
+    _ x: consuming T,
+    with f: ((inout T) throws -> (() throws -> U))
+) throws -> T {
     var x = x
 
     _ = try f(&x)()
@@ -84,31 +109,14 @@ public func build<T, U>(_ x: T, with f: ((inout T) throws -> (() throws -> U))) 
 }
 
 @inlinable
-public func build<T, U, V>(_ x: T, with f: ((inout T, U) throws -> V), _ y: U) rethrows -> T {
+public func build<T, U, V>(
+    _ x: consuming T,
+    with f: ((inout T, U) throws -> V),
+    _ y: U
+) rethrows -> T {
     var x = x
 
     _ = try f(&x, y)
-
-    return x
-}
-
-@inlinable
-public func build<T: AnyObject, U, V>(_ x: T, with f: ((T) throws -> ((U) -> V)), _ y: U) rethrows -> T {
-    _ =  try f(x)(y)
-
-    return x
-}
-
-@inlinable
-public func build<T: AnyObject, U>(_ x: T, with f: ((T) throws -> (() -> U))) rethrows -> T {
-    _ = try f(x)()
-
-    return x
-}
-
-@inlinable
-public func build<T: AnyObject, U, V>(_ x: T, with f: ((T, U) throws -> V), _ y: U) rethrows -> T {
-    _ = try f(x, y)
 
     return x
 }

@@ -42,13 +42,21 @@ extension TypeMetadata: MetatypeRepresentable {
 }
 
 extension TypeMetadata: Named {
-    public var name: String {
+    public var _qualifiedName: String {
+        _typeName(base, qualified: true)
+    }
+
+    public var _unqualifiedName: String {
         _typeName(base, qualified: true)
     }
     
     @available(macOS 11.0, iOS 14.0, watchOS 7.0, tvOS 14.0, *) 
     public var mangledName: String? {
         _mangledTypeName(base)
+    }
+    
+    public var name: String {
+        _qualifiedName
     }
 }
 

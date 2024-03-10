@@ -226,6 +226,8 @@ extension Sequence {
 }
 
 extension Sequence {
+    @_transparent
+    @inlinable
     public func group<ID: Hashable>(
         by identify: (Element) throws -> ID
     ) rethrows -> [ID: [Element]] {
@@ -238,6 +240,8 @@ extension Sequence {
         return result
     }
     
+    @_transparent
+    @inlinable
     public func groupFirstOnly<ID: Hashable>(
         by identify: (Element) throws -> ID
     ) rethrows -> [ID: Element] {
@@ -254,6 +258,8 @@ extension Sequence {
         return result
     }
     
+    @_transparent
+    @inlinable
     public func _flatMapToTuples<T: Sequence>(
         by values: (Element) throws -> T
     ) rethrows -> [(Element, T.Element)] {
@@ -266,6 +272,8 @@ extension Sequence {
         return result
     }
     
+    @_transparent
+    @inlinable
     public func _orderedMapToKeys<Key: Hashable>(
         _ key: (Element) throws -> Key
     ) rethrows -> OrderedDictionary<Key, [Element]> {
@@ -279,6 +287,8 @@ extension Sequence {
         )
     }
     
+    @_transparent
+    @inlinable
     public func _mapToDictionary<Value>(
         _ value: (Element) throws -> Value
     ) rethrows -> Dictionary<Element, Value> where Element: Hashable {
@@ -287,6 +297,8 @@ extension Sequence {
         })
     }
     
+    @_transparent
+    @inlinable
     public func _mapToDictionary<Key: Hashable, Value>(
         key: (Element) throws -> Key,
         value: (Element) throws -> Value
@@ -296,6 +308,8 @@ extension Sequence {
         })
     }
 
+    @_transparent
+    @inlinable
     public func _mapToDictionary<Key: Hashable, Value>(
         key: KeyPath<Element, Key>,
         _ value: (Element) throws -> Value
@@ -333,6 +347,8 @@ extension Sequence {
         })
     }
     
+    @_transparent
+    @inlinable
     public func multiplicativelyKeyed<Key: Hashable>(
         by keys: (Element) throws -> some Sequence<Key>
     ) rethrows -> [Key: [Element]] {

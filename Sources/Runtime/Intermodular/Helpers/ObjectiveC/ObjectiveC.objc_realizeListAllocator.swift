@@ -28,7 +28,8 @@ func objc_realizeListAllocator<T: Wrapper, P: Pointer>(
 @_transparent
 @usableFromInline
 func __fast_objc_realizeListAllocator<T: Wrapper, P: Pointer>(
-    _ f: ((UnsafeMutablePointer<UInt32>?) -> P?)
+    _ f: ((UnsafeMutablePointer<UInt32>?) -> P?),
+    enumerate: (T) -> Void = { _ in }
 ) -> [T] where P.Pointee == T.Value {
     var count: UInt32 = 0
     let baseAddress = f(&count)
@@ -38,7 +39,13 @@ func __fast_objc_realizeListAllocator<T: Wrapper, P: Pointer>(
         count: count,
         isAutodeallocating: true
     )
-    .map(T.init)
+    .map({ (value: P.Pointee) -> T in
+        let result = T.init(value)
+        
+        enumerate(result)
+        
+        return result
+    })
 }
 
 @_optimize(speed)

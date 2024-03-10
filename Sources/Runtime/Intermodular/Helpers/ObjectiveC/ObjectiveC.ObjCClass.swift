@@ -2,9 +2,10 @@
 // Copyright (c) Vatsal Manot
 //
 
+import _ExpansionsRuntime
 import Foundation
 import ObjectiveC
-import Swallow
+@_spi(Internal) import Swallow
 
 public struct ObjCClass: CustomDebugStringConvertible, ExpressibleByStringLiteral, Wrapper {
     public typealias Value = AnyClass
@@ -181,21 +182,38 @@ extension ObjCClass: ApproximatelyEquatable {
 }
 
 extension ObjCClass: CaseIterable {
-    @usableFromInline
-    static var _allCases: [ObjCClass]? = nil
+    private static var _allCases_lock = OSUnfairLock()
     
+    private static var _cached_RuntimeTypeDiscovery_allCases: [_RuntimeTypeDiscovery.Type]?
+    private static var _cached_allCases: [ObjCClass]? = nil
+
+    public static var _RuntimeTypeDiscovery_allCases: [_RuntimeTypeDiscovery.Type] {
+        _ = allCases
+        
+        return _allCases_lock.withCriticalScope {
+            return _cached_RuntimeTypeDiscovery_allCases ?? []
+        }
+    }
+        
     public static var allCases: [ObjCClass] {
-        @_optimize(speed)
-        @_transparent
         get {
-            if let _allCases {
-                return _allCases
-            } else {
-                let result: [ObjCClass] = __fast_objc_realizeListAllocator({ objc_copyClassList($0) })
-                
-                self._allCases = result
-                
-                return result
+            _allCases_lock.withCriticalScope {
+                if let _cached_allCases {
+                    return _cached_allCases
+                } else {
+                    var _RuntimeTypeDiscovery_allCases: [_RuntimeTypeDiscovery.Type] = []
+                    
+                    let result: [ObjCClass] = __fast_objc_realizeListAllocator({ objc_copyClassList($0) }) { cls in
+                        if let superclassName = cls.superclass?.name, superclassName == "_Swallow_RuntimeTypeDiscovery" {
+                            _RuntimeTypeDiscovery_allCases.append(cls.value as! _RuntimeTypeDiscovery.Type)
+                        }
+                    }
+                    
+                    self._cached_RuntimeTypeDiscovery_allCases = _RuntimeTypeDiscovery_allCases
+                    self._cached_allCases = result
+                    
+                    return result
+                }
             }
         }
     }
