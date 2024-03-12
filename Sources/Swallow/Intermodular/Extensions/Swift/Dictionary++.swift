@@ -67,6 +67,26 @@ extension Dictionary {
         })
     }
     
+    public mutating func _unsafelyMerge<S: Sequence>(
+        uniqueKeysWithValues other: S
+    ) where S.Element == (Key, Value) {
+        merge(other, uniquingKeysWith: { lhs, rhs in
+            assertionFailure()
+            
+            return lhs
+        })
+    }
+    
+    public mutating func _unsafelyMerge(
+        _ other: Self
+    ) {
+        merge(other, uniquingKeysWith: { lhs, rhs in
+            assertionFailure()
+            
+            return lhs
+        })
+    }
+    
     /// Creates a dictionary by merging key-value pairs in a sequence into the dictionary, using a combining closure to determine the value for duplicate keys.
     public func merging<S: Sequence>(
         uniqueKeysWithValues other: S

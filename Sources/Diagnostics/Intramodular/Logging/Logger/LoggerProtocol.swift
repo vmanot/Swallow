@@ -23,6 +23,7 @@ public protocol LoggerProtocol: Sendable {
 
 extension LoggerProtocol {
     @_disfavoredOverload
+    @_transparent
     public func log(
         level: LogLevel,
         _ message: @autoclosure () -> String,
@@ -42,6 +43,7 @@ extension LoggerProtocol {
     }
     
     @_disfavoredOverload
+    @_transparent
     public func debug(
         _ message:  @autoclosure () -> String,
         metadata: [String: Any]? = nil,
@@ -60,6 +62,7 @@ extension LoggerProtocol {
     }
     
     @_disfavoredOverload
+    @_transparent
     public func error(
         _ error:  @autoclosure () -> String,
         metadata: [String: Any]? = nil,
@@ -78,6 +81,7 @@ extension LoggerProtocol {
     }
 
     @_disfavoredOverload
+    @_transparent
     public func error(
         _ error:  @autoclosure () -> Error,
         metadata: [String: Any]? = nil,
@@ -97,6 +101,7 @@ extension LoggerProtocol {
 }
 
 extension LoggerProtocol where LogLevel: ClientLogLevelProtocol {
+    @_transparent
     public func info(
         _ message: @autoclosure () -> String,
         metadata: [String: Any]? = nil,
@@ -114,6 +119,7 @@ extension LoggerProtocol where LogLevel: ClientLogLevelProtocol {
         )
     }
     
+    @_transparent
     public func warning(
         _ warning:  @autoclosure () -> String,
         metadata: [String: Any]? = nil,
@@ -131,6 +137,7 @@ extension LoggerProtocol where LogLevel: ClientLogLevelProtocol {
         )
     }
     
+    @_transparent
     public func warning(
         _ warning:  @autoclosure () -> Error,
         metadata: [String: Any]? = nil,

@@ -10,20 +10,20 @@ public enum Preprocessor {
     public struct Point: CustomStringConvertible, Hashable, Sendable {
         public var file: String
         public var fileID: String?
-        public var function: String
-        public var line: UInt
+        public var function: String?
+        public var line: UInt?
         public var column: UInt?
         
         public init(
             file: StaticString,
             fileID: StaticString?,
-            function: StaticString,
-            line: UInt,
+            function: StaticString?,
+            line: UInt?,
             column: UInt?
         ) {
             self.file = file.description
             self.fileID = fileID?.description
-            self.function = function.description
+            self.function = function?.description
             self.line = line
             self.column = column
         }

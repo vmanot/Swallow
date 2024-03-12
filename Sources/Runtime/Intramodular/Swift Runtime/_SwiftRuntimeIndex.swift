@@ -189,7 +189,7 @@ extension _SwiftRuntimeIndex {
             if predicates == [.kind([TypeMetadata.Kind.class])] {
                 return objCClasses
             } else if predicates == [.nonAppleFramework] {
-                return allTypes.subtracting(appleFrameworkObjCClasses)
+                return nonAppleSwiftTypes // FIXME
             } else if predicates == [.underscored(false)] {
                 return nonUnderscoredTypes
             } else if predicates == [.underscored(false), .nonAppleFramework] {

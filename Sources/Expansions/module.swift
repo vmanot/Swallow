@@ -6,6 +6,8 @@
 @_exported import Foundation
 @_exported import Swallow
 
+@_spi(Internal) import Swallow
+
 @attached(member, names: arbitrary)
 public macro AddCaseBoolean() = #externalMacro(
     module: "ExpansionsMacros",
@@ -72,25 +74,26 @@ import Runtime
 public typealias module = _module
 
 public struct _module {
+    private static let lock = OSUnfairLock()
     private static var initialized: Bool = false
     
     public static func initialize() {
-        guard !initialized else {
-            assertionFailure()
+        lock.withCriticalScope {
+            guard !initialized else {
+                return
+            }
             
-            return
-        }
-        
-        defer {
-            initialized = true
-        }
-        
-        let onces = _SwiftRuntime._index.fetch(.conformsTo((any _PerformOnce).self), .nonAppleFramework, .pureSwift)
-        
-        onces.forEach {
-            let type = $0 as! any _PerformOnce.Type
+            defer {
+                initialized = true
+            }
             
-            type.init().perform()
+            let onces = _SwiftRuntime._index.fetch(.conformsTo((any _PerformOnce).self), .nonAppleFramework, .pureSwift)
+            
+            onces.forEach {
+                let type = $0 as! any _PerformOnce.Type
+                
+                type.init().perform()
+            }
         }
     }
 }

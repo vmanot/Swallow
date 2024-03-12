@@ -21,6 +21,19 @@ public enum SourceCodeLocation: Hashable, SourceCodeLocationInitiable, Sendable 
         }
     }
     
+    public var line: UInt? {
+        switch self {
+            case .regular(_, let line):
+                return line
+            case .exact(let point):
+                return point.line
+            case .unavailable:
+                return nil
+        }
+    }
+}
+
+extension SourceCodeLocation {
     public init(_ point: Preprocessor.Point) {
         self = .exact(point)
     }
@@ -44,6 +57,21 @@ public enum SourceCodeLocation: Hashable, SourceCodeLocationInitiable, Sendable 
                 line: line,
                 column: column
             )
+        )
+    }
+        
+    public init(
+        fileID: StaticString = #fileID,
+        function: StaticString = #function,
+        line: UInt = #line,
+        column: UInt? = nil
+    ) {
+        self.init(
+            file: fileID,
+            fileID: fileID,
+            function: function,
+            line: line,
+            column: column
         )
     }
     
@@ -95,7 +123,15 @@ extension SourceCodeLocationInitiable {
         line: UInt,
         column: UInt?
     ) {
-        self.init(SourceCodeLocation(file: file, fileID: fileID, function: function, line: line, column: column))
+        self.init(
+            SourceCodeLocation(
+                file: file,
+                fileID: fileID,
+                function: function,
+                line: line,
+                column: column
+            )
+        )
     }
     
     public init(
@@ -105,6 +141,14 @@ extension SourceCodeLocationInitiable {
         line: UInt,
         column: UInt?
     ) {
-        self.init(SourceCodeLocation(file: file, fileID: fileID, function: function, line: line, column: column))
+        self.init(
+            SourceCodeLocation(
+                file: file,
+                fileID: fileID,
+                function: function,
+                line: line,
+                column: column
+            )
+        )
     }
 }
