@@ -269,3 +269,7 @@ extension Collection {
             ._mapToDictionary(key: \.key, { lastDictionary![$0.key]! })
     }
 }
+
+public struct _GenericHeterogeneousDictionaryKey<Domain, Value>: HeterogeneousDictionaryKey {
+    
+}

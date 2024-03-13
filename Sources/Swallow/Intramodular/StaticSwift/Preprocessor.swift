@@ -42,16 +42,28 @@ public enum Preprocessor {
             self.column = column
         }
         
+        public var _fileOrFileID: String {
+            fileID?.description ?? file.description
+        }
+        
         public var debugDescription: String {
-            if let column = column {
-                return "file: \(file.description), function: \(function), line: \(line), column: \(column)"
+            if let line {
+                if let column = column {
+                    return "file: \(_fileOrFileID), function: \(function), line: \(line), column: \(column)"
+                } else {
+                    return "file: \(_fileOrFileID), function: \(function), line: \(line)"
+                }
             } else {
-                return "file: \(file.description), function: \(function), line: \(line)"
+                return "file: \(_fileOrFileID), function: \(function)"
             }
         }
         
         public var description: String {
-            "\(fileID ?? file):\(line)"
+            if let line {
+                "\(_fileOrFileID):\(line)"
+            } else {
+                "\(_fileOrFileID)"
+            }
         }
     }
 }

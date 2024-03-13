@@ -35,7 +35,7 @@ extension ObjCClass: _NominalTypeMetadataType {
     }()
     
     public var isBaseSwiftObject: Bool {
-        superclass == Self._swiftObjectBaseClass
+        self == Self._swiftObjectBaseClass
     }
 
     @_transparent

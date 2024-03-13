@@ -13,7 +13,11 @@ public protocol _VisitableMirror<Subject> {
     ) throws
 }
 
-public struct AnyNominalOrTupleMirror<Subject>: _VisitableMirror, MirrorType {
+public protocol _AnyNominalOrTupleMirror_Type {
+    
+}
+
+public struct AnyNominalOrTupleMirror<Subject>: _AnyNominalOrTupleMirror_Type, _VisitableMirror, MirrorType {
     public var subject: Any
     public let typeMetadata: TypeMetadata.NominalOrTuple
     
@@ -76,9 +80,13 @@ public struct AnyNominalOrTupleMirror<Subject>: _VisitableMirror, MirrorType {
             TypeMetadata.NominalOrTuple(type(of: x))
         }
         
+        guard let metadata = _openExistential(subject, do: _typeMetadataFromValue) ?? TypeMetadata.NominalOrTuple.of(subject) else {
+            return nil
+        }
+        
         self.init(
             unchecked: subject,
-            typeMetadata: _openExistential(subject, do: _typeMetadataFromValue) ?? TypeMetadata.NominalOrTuple.of(subject)
+            typeMetadata: metadata
         )
     }
     
@@ -89,7 +97,62 @@ public struct AnyNominalOrTupleMirror<Subject>: _VisitableMirror, MirrorType {
     
     @inlinable
     public init(reflecting subject: Subject) throws {
-        self = try Self(_subject: __fixed_opaqueExistential(subject)).unwrap()
+        do {
+            self = try Self(_subject: __fixed_opaqueExistential(subject)).unwrap()
+        } catch {
+            do {
+                self = try Self(_subject: subject).unwrap()
+            } catch(_) {
+                runtimeIssue("Failed to reflect subject of type: \(type(of: _unwrapPossiblyOptionalAny(subject)))")
+                
+                throw error
+            }
+        }
+    }
+}
+
+public struct _TypedAnyNominalOrTupleMirrorElement<T> {
+    public let key: AnyCodingKey
+    public let value: T
+}
+
+extension AnyNominalOrTupleMirror {
+    public typealias _TypedElement<T> = _TypedAnyNominalOrTupleMirrorElement<T>
+    
+    public func forEachChild<T>(
+        conformingTo protocol: T.Type,
+        _ operation: (_TypedElement<T>) throws -> Void
+    ) rethrows {
+        for (key, value) in self.allChildren {
+            if TypeMetadata.of(value).conforms(to: `protocol`) {
+                let element = _TypedElement(key: key, value: value as! T)
+                
+                try operation(element)
+            }
+        }
+    }
+    
+    public func recursiveForEachChild<T>(
+        conformingTo protocolType: T.Type,
+        _ operation: (_TypedElement<T>) throws -> Void
+    ) rethrows {
+        for (key, value) in self.allChildren {
+            if TypeMetadata.of(value).conforms(to: protocolType) {
+                let element = _TypedElement(key: key, value: value as! T)
+                
+                try operation(element)
+            }
+            
+            if value is _AnyNominalOrTupleMirror_Type {
+                fatalError()
+            }
+            
+            guard let valueMirror = AnyNominalOrTupleMirror<Any>(value) else {
+                continue
+            }
+            
+            try valueMirror.recursiveForEachChild(conformingTo: protocolType, operation)
+        }
     }
 }
 
@@ -166,7 +229,9 @@ extension AnyNominalOrTupleMirror {
     
     public subscript(_ key: AnyCodingKey) -> Any {
         get {
-            self[fieldForKey(key)!]
+            let field = fieldForKey(key)!
+            
+            return try! _opaque_swift_getFieldValue(key.stringValue, field.type.base, self.subject)
         } set {
             guard let field = fieldForKey(key) else {
                 assertionFailure()

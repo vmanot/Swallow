@@ -10,7 +10,7 @@ public struct _SwiftRuntimeField {
     public let type: Any.Type
 }
 
-private struct _SwiftRuntimeFieldByOffset {
+package struct _SwiftRuntimeFieldByOffset {
     let type: Any.Type
     let offset: Int
 }
@@ -40,6 +40,22 @@ public func _swift_getFields<InstanceType>(
     }
     
     return fields
+}
+
+public func _opaque_swift_getFieldValue(
+    _ key: String,
+    _ type: Any.Type,
+    _ instance: Any
+) throws -> Any {
+    func _getFieldValueFromInstance<T>(_ x: T) throws -> Any {
+        func _getFieldValueOfType<U>(_ type: U.Type) throws -> Any {
+            try _swift_getFieldValue(key, type, x)
+        }
+        
+        return  try _openExistential(type, do: _getFieldValueOfType)
+    }
+    
+    return try _openExistential(__fixed_opaqueExistential(instance), do: _getFieldValueFromInstance)
 }
 
 public func _swift_getFieldValue<Value, InstanceType>(
@@ -78,7 +94,7 @@ public func _swift_setFieldValue<Value, InstanceType>(
     try __swift_setFieldValue(key, value, &instance)
 }
 
-private func __swift_setFieldValue<Value, InstanceType>(
+package func __swift_setFieldValue<Value, InstanceType>(
     _ key: String,
     _ value: Value,
     _ instance: inout InstanceType
@@ -97,7 +113,7 @@ private func __swift_setFieldValue<Value, InstanceType>(
     }
 }
 
-private struct _SwiftRuntimeFieldLookupCache {
+package struct _SwiftRuntimeFieldLookupCache {
     private static var lock: os_unfair_lock_t = {
         let lock = os_unfair_lock_t.allocate(capacity: 1)
         
@@ -107,7 +123,7 @@ private struct _SwiftRuntimeFieldLookupCache {
     }()
     
     private static var storage = [UnsafeRawPointer: [String: _SwiftRuntimeFieldByOffset]]()
-            
+    
     static subscript(type: Any.Type, key: String) -> _SwiftRuntimeFieldByOffset? {
         get {
             storage[unsafeBitCast(type, to: UnsafeRawPointer.self)]?[key]
@@ -119,7 +135,7 @@ private struct _SwiftRuntimeFieldLookupCache {
     }
 }
 
-private func _swift_getField<Value>(
+package func _swift_getField<Value>(
     _ key: String,
     _ type: Value.Type,
     _ instanceType: Any.Type
@@ -127,7 +143,7 @@ private func _swift_getField<Value>(
     if let field = _SwiftRuntimeFieldLookupCache[type, key] {
         return field
     }
-
+    
     do {
         let field = try _swift_getField_slow(key, type, instanceType)
         
@@ -139,7 +155,7 @@ private func _swift_getField<Value>(
     }
 }
 
-private func _swift_getField_slow<Value>(
+package func _swift_getField_slow<Value>(
     _ key: String,
     _ type: Value.Type,
     _ instanceType: Any.Type

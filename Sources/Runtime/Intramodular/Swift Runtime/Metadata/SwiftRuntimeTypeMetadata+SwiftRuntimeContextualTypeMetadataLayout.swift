@@ -71,21 +71,34 @@ extension SwiftRuntimeTypeMetadata where MetadataLayout: SwiftRuntimeContextualT
             return []
         }
         
+        guard kind != .enum else {
+            return [] // FIXME: !!!
+        }
+        
         let offsets = fieldOffsets()
         let fieldDescriptor = metadata.pointee.contextDescriptor.pointee
             .fieldDescriptor
             .advanced()
         
         let genericVector = genericArgumentVector()
+        let numberOfFields = numberOfFields()
         
-        return (0..<numberOfFields()).map { index in
+        if _typeName(base).contains("SwiftUI.StoredLocationBase<Swift.Optional<Foundation.UUID>>") {
+            guard Mirror(reflecting: self).children.count == numberOfFields else {
+                return []
+            }
+        }
+        
+        return (0..<numberOfFields).map { index in
             let record = fieldDescriptor
                 .pointee
                 .fields
                 .element(at: index)
             
+            let fieldName: String = record.pointee.fieldName()
+
             return NominalTypeMetadata.Field(
-                name: record.pointee.fieldName(),
+                name: fieldName,
                 type: TypeMetadata(
                     record.pointee.type(
                         genericContext: metadata.pointee.contextDescriptor,
