@@ -13,6 +13,10 @@ extension Sequence {
 
 // MARK: - First
 
+public enum SequenceFirstAndOnlyError<S: Sequence>: Error {
+    case foundAnother(S.Element)
+}
+
 extension Sequence {
     @_disfavoredOverload
     public func first<T>(
@@ -86,22 +90,22 @@ extension Sequence {
         var result: T?
         
         try self.removeAll(where: { (element: Element) in
-            guard let _result = try transform(element) else {
+            guard let transformedElement = try transform(element) else {
                 return false
             }
             
             if result == nil {
-                result = _result
+                result = transformedElement
                 
                 return true
             } else {
-                throw _PlaceholderError()
+                throw SequenceFirstAndOnlyError<Self>.foundAnother(element)
             }
         })
         
         return result
     }
-    
+        
     @_disfavoredOverload
     public func firstAndOnly<T>(
         byUnwrapping transform: (Element) throws -> T?
@@ -109,12 +113,12 @@ extension Sequence {
         var result: T?
         
         for element in self {
-            if let match = try transform(element) {
+            if let transformedElement = try transform(element) {
                 guard result == nil else {
-                    throw _PlaceholderError()
+                    throw SequenceFirstAndOnlyError<Self>.foundAnother(element)
                 }
                 
-                result = match
+                result = transformedElement
             }
         }
         
@@ -128,12 +132,12 @@ extension Sequence {
         var result: T?
         
         for element in self {
-            if let match = try await transform(element) {
+            if let transformedElement = try await transform(element) {
                 guard result == nil else {
-                    throw _PlaceholderError()
+                    throw SequenceFirstAndOnlyError<Self>.foundAnother(element)
                 }
                 
-                result = match
+                result = transformedElement
             }
         }
         
@@ -152,6 +156,12 @@ extension Sequence {
         where predicate: (Element) throws -> Bool
     ) throws -> Element? {
         try firstAndOnly(byUnwrapping: { try predicate($0) ? $0 : nil })
+    }
+    
+    public func firstAndOnly(
+        where predicate: (Element) async throws -> Bool
+    ) async throws -> Element? {
+        try await firstAndOnly(byUnwrapping: { try await predicate($0) ? $0 : nil })
     }
 }
 

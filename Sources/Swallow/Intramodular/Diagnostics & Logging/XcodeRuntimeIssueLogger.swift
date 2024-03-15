@@ -5,11 +5,13 @@
 import Foundation
 import os.log
 
+@frozen
 public struct XcodeRuntimeIssueLogger {
     /// Returns the shared default runtime issue logger with a generic category.
     public static let `default` = Self(category: "runtime-warning")
     
-    private static let commonSubsystem = "com.apple.runtime-issues"
+    @usableFromInline
+    static let commonSubsystem = "com.apple.runtime-issues"
     
     @usableFromInline
     let log: OSLog
@@ -17,6 +19,7 @@ public struct XcodeRuntimeIssueLogger {
     let callsiteCache = CallsiteCache()
     
     /// Initializes a custom runtime issue logger with a custom category.
+    @_transparent
     public init(category: StaticString) {
         self.log = OSLog(subsystem: Self.commonSubsystem, category: String(_staticString: category))
     }
@@ -137,6 +140,11 @@ extension XcodeRuntimeIssueLogger {
         
         private var lock = OSUnfairLock()
         private var invocations = Set<Invocation>()
+        
+        @usableFromInline
+        init() {
+            
+        }
         
         /// Returns whether to raise a runtime issue in a file on a particular line.
         ///

@@ -60,22 +60,46 @@ extension AnyHashable: _UnwrappableHashableTypeEraser {
 
 // MARK: Auxiliary -
 
+public func _unwrappedType<T>(
+    from type: T.Type
+) -> Any.Type {
+    if let type = type as? (any OptionalProtocol.Type) {
+        return type._opaque_Optional_WrappedType
+    } else if let type = __fixed_type(of: type) as? (any OptionalProtocol.Type) {
+        return type
+    } else {
+        return type
+    }
+}
+
+public func _unwrappedType(
+    from type: Any.Type
+) -> Any.Type {
+    if let type = type as? (any OptionalProtocol.Type) {
+        return type._opaque_Optional_WrappedType
+    } else if let type = __fixed_type(of: type) as? (any OptionalProtocol.Type) {
+        return type
+    } else {
+        return type
+    }
+}
+
 /// Get the unwrapped type of a given value.
 ///
 /// Similar to `Swift.type(of:)`, but unwraps optionals and type erasers.
 ///
 /// For e.g. `_unwrappedType(of: AnyHashable(1))` would be `Int.self` as opposed to `AnyHashable.self`.
 public func _unwrappedType(
-    of x: Any
+    ofValue x: Any
 ) -> Any.Type {
     if let x = x as? (any OptionalProtocol) {
         if let _x = x._wrapped {
-            return _unwrappedType(of: _x)
+            return _unwrappedType(ofValue: _x)
         } else {
             return _getUnwrappedType(from: type(of: x)._opaque_Optional_WrappedType)
         }
     } else if let _x = x as? (any _UnwrappableTypeEraser) {
-        return _unwrappedType(of: _x._unwrapBase())
+        return _unwrappedType(ofValue: _x._unwrapBase())
     } else if let _x = x as? (any _SwallowMetatypeType) {
         return _getUnwrappedType(from: _x._unwrapBase())
     } else {
@@ -97,7 +121,7 @@ public func _unwrapPossiblyTypeErasedValue<T>(
     if let __x: Any = _x {
         return _takeOpaqueExistentialUnoptimized(__x)
     } else {
-        return _x 
+        return _x
     }
 }
 

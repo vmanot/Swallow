@@ -81,12 +81,8 @@ extension IdentifierIndexingArray {
     public mutating func append<S: Sequence>(
         contentsOf newElements: S
     ) where S.Element == Element {
-        let id = self._idForElement
-        
-        _naivelyModifyBase {
-            $0.append(contentsOf: newElements.lazy.map {
-                (id($0), $0)
-            })
+        for element in newElements {
+            base.updateValue(element, forKey: self._idForElement(element))
         }
     }
     

@@ -39,10 +39,16 @@ public struct UserDefault<Value: Codable> {
         } nonmutating set {
             _cachedValue = newValue
             
-            try! store.encode(newValue, forKey: key)
+            _commit(newValue)
         }
     }
     
+    fileprivate func _commit(_ newValue: Value? = nil) {
+        try! store.encode(newValue ?? self.wrappedValue, forKey: key)
+    }
+}
+
+extension UserDefault {
     public init(
         _ key: String,
         default defaultValue: Value,
@@ -92,6 +98,9 @@ public struct UserDefault<Value: Codable> {
 extension UserDefault {
     @propertyWrapper
     public struct Published {
+        @usableFromInline
+        var subscription = ReferenceBox<(ObjectIdentifier, AnyCancellable)?>(wrappedValue: nil)
+        
         @UserDefault
         public var wrappedValue: Value
         
@@ -106,12 +115,55 @@ extension UserDefault {
             storage storageKeyPath: ReferenceWritableKeyPath<EnclosingSelf, Published>
         ) -> Value where EnclosingSelf.ObjectWillChangePublisher == ObservableObjectPublisher {
             get {
-                object[keyPath: storageKeyPath].wrappedValue
+                let result: Value = object[keyPath: storageKeyPath].wrappedValue
+                
+                if Value.self is any ObservableObject.Type {
+                    if object[keyPath: storageKeyPath].subscription.wrappedValue == nil  {
+                        object[keyPath: storageKeyPath]._createSubscriptionIfNecessary(for: result)
+                    }
+                }
+
+                return result
             } set {
-                object.objectWillChange.send()
+                if Thread.isMainThread {
+                    object.objectWillChange.send()
+                } else {
+                    DispatchQueue.main.async {
+                        object.objectWillChange.send()
+                    }
+                }
                 
                 object[keyPath: storageKeyPath].wrappedValue = newValue
             }
+        }
+        
+        @usableFromInline
+        func _createSubscriptionIfNecessary(for value: Value) {
+            guard isAnyObject(value) else {
+                return
+            }
+            
+            guard let value = value as? (any ObservableObject) else {
+                return
+            }
+            
+            if let existing = self.subscription.wrappedValue {
+                guard existing.0 != ObjectIdentifier(value) else {
+                    return
+                }
+            }
+            
+            guard let objectWillChange = (value.objectWillChange as any Publisher) as? ObservableObjectPublisher else {
+                return
+            }
+            
+            let subscription: AnyCancellable = objectWillChange.sink {
+                DispatchQueue.main.async {
+                    self._wrappedValue._commit()
+                }
+            }
+            
+            self.subscription.wrappedValue = (ObjectIdentifier(value), subscription)
         }
         
         public init(

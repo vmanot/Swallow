@@ -11,7 +11,15 @@ public enum RuntimeDiscoverableTypes {
     
     public static func enumerate() -> [Any.Type] {
         lock.withCriticalScope {
-            ObjCClass._RuntimeTypeDiscovery_allCases.map({ $0.type })
+            ObjCClass._RuntimeTypeDiscovery_allCases.flatMap {
+                var result: [Any.Type] = [$0.type]
+                
+                if let type = $0.type as? any _TypeIterableStaticNamespaceType.Type {
+                    result.append(contentsOf: type._allNamespaceTypes.map({ $0 as! Any.Type }))
+                }
+                
+                return result
+            }
         }
     }
     

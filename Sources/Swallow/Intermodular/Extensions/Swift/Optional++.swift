@@ -93,6 +93,7 @@ extension Optional {
         }
     }
     
+    @_transparent
     @inlinable
     public func unwrapOrThrow(
         _ error: @autoclosure () throws -> Error

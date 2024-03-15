@@ -47,15 +47,21 @@ public enum Preprocessor {
         }
         
         public var debugDescription: String {
-            if let line {
-                if let column = column {
-                    return "file: \(_fileOrFileID), function: \(function), line: \(line), column: \(column)"
-                } else {
-                    return "file: \(_fileOrFileID), function: \(function), line: \(line)"
-                }
-            } else {
-                return "file: \(_fileOrFileID), function: \(function)"
+            var result = "file: \(_fileOrFileID)"
+            
+            if let function {
+                result += ", function: \(function)"
             }
+
+            if let line {
+                result += ", line: \(line)"
+            }
+            
+            if line != nil, let column {
+                result += ", column: \(column)"
+            }
+
+            return result
         }
         
         public var description: String {

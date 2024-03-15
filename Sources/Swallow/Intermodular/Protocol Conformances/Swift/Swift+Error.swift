@@ -6,11 +6,17 @@ import Swift
 
 /// A type-erased error.
 @frozen
-public struct AnyError: CustomDebugStringConvertible, Error, Hashable, @unchecked Sendable {
+public struct AnyError: CustomStringConvertible, CustomDebugStringConvertible, Error, Hashable, @unchecked Sendable {
     public let base: Error
     
     public var description: String {
-        return CustomStringConvertibleOnly(base).description
+        if let base = base as? AnyError {
+            assertionFailure()
+            
+            return base.description
+        } else {
+            return String(describing: base)
+        }
     }
     
     public var localizedDescription: String {
@@ -66,7 +72,7 @@ public struct CustomStringError: Codable, CustomStringConvertible, Error, Expres
     public init<T>(describing subject: T) {
         self.description = String(describing: subject)
     }
-
+    
     public init(_ description: String) {
         self.description = description
     }
@@ -92,13 +98,16 @@ public struct _PlaceholderError: Hashable, Error, CustomStringConvertible, Senda
         return "Placeholder error at \(location ?? "<unspecified>" as Any)"
     }
     
-    private init(note: String? = nil, location: SourceCodeLocation? = nil) {
+    @_transparent
+    @usableFromInline
+    init(note: String? = nil, location: SourceCodeLocation? = nil) {
         self.note = note
         self.location = location
         
         runtimeIssue("This is a placeholder error and should not be used in production.")
     }
     
+    @_transparent
     public init(
         file: StaticString = #file,
         fileID: StaticString = #fileID,

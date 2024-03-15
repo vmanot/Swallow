@@ -31,7 +31,23 @@ public struct RuntimeDiscoverableMacro: PeerMacro {
             return [syntax]
         } else if let declaration = declaration.asProtocol(NamedDeclSyntax.self) {
             let name = declaration.name.text
-
+            
+            let syntax = DeclSyntax(
+                """
+                @objc class \(raw: name)_RuntimeTypeDiscovery: _RuntimeTypeDiscovery {
+                    override open class var type: Any.Type {
+                        \(raw: name).self
+                    }
+                
+                    override init() {
+                    
+                    }
+                }
+                """
+            )
+            
+            return [syntax]
+        } else if let declaration = declaration.as(ExtensionDeclSyntax.self)?.trimmed, let name: String = declaration.concreteTypeName {
             let syntax = DeclSyntax(
                 """
                 @objc class \(raw: name)_RuntimeTypeDiscovery: _RuntimeTypeDiscovery {
@@ -49,6 +65,22 @@ public struct RuntimeDiscoverableMacro: PeerMacro {
             return [syntax]
         } else {
             throw CustomError.message("Failed to use @RuntimeDiscoverable.")
+        }
+    }
+}
+
+extension DeclGroupSyntax {
+    /// The name of the concrete type represented by this `DeclGroupSyntax`.
+    /// This excludes protocols, which return nil.
+    fileprivate var concreteTypeName: String? {
+        switch self.kind {
+            case .actorDecl, .classDecl, .enumDecl, .structDecl:
+                return self.asProtocol(NamedDeclSyntax.self)?.name.text
+            case .extensionDecl:
+                return self.as(ExtensionDeclSyntax.self)?.extendedType.trimmedDescription
+            default:
+                // New types of decls are not presumed to be valid.
+                return nil
         }
     }
 }
