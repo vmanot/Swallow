@@ -2,7 +2,7 @@
 // Copyright (c) Vatsal Manot
 //
 
-import SwiftUIX
+import Swift
 
 public protocol _StaticGraphNodeDefinition {
     associatedtype Value
