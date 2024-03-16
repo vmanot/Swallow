@@ -14,16 +14,22 @@ extension Data {
 extension Data {
     public init?(
         resourceWithName name: String,
+        fileExtension: String? = nil,
         bundle: Bundle? = nil
     ) {
         let bundle = bundle ?? Bundle.main
         
+        let fileNameWithoutExtension: String = URL(fileURLWithPath: "./\(name)")._fileNameWithoutExtension
+        let inferredFileExtension: String = URL(fileURLWithPath: "./\(name)")._fileExtension
+        
+        let url =  nil
+            ?? bundle.url(forResource: name, withExtension: fileExtension)
+            ?? bundle.url(forResource: name, withExtension: nil)
+            ?? bundle.url(forResource: fileNameWithoutExtension, withExtension: inferredFileExtension)
+    
         guard
-            let url = bundle.url(
-                forResource: name,
-                withExtension: nil
-            ),
-            let data = try? Data(contentsOf: url) 
+            let url = url,
+            let data = try? Data(contentsOf: url)
         else {
             return nil
         }
