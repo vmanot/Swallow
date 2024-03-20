@@ -21,11 +21,13 @@ public protocol MutablePropertyWrapper<WrappedValue>: PropertyWrapper {
 
 // MARK: - Extensions
 
-extension ParameterlessPropertyWrapper {
+extension PropertyWrapper {
     public static var _opaque_WrappedValue: Any.Type {
         WrappedValue.self
     }
-    
+}
+
+extension ParameterlessPropertyWrapper {
     public init(_opaque_wrappedValue value: Any) throws {
         try self.init(wrappedValue: cast(value, to: WrappedValue.self))
     }

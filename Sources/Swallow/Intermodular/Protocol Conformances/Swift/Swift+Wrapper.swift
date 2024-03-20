@@ -262,23 +262,29 @@ public struct Weak<Value>: PropertyWrapper {
     }
 }
 
+@frozen
 @propertyWrapper
-public struct WeakObjectPointer<Value: AnyObject>: Hashable {
-    public weak var wrappedValue: Value?
+public struct WeakObjectPointer<Value>: Hashable {
+    package var _wrappedValueBox: Weak<Value>
     
-    private let id: ObjectIdentifier?
-    
+    public var wrappedValue: Value? {
+        get {
+            _wrappedValueBox.wrappedValue
+        } set {
+            _wrappedValueBox.wrappedValue = newValue
+        }
+    }
+        
     public init(wrappedValue: Value? = nil) {
-        self.wrappedValue = wrappedValue
-        self.id = wrappedValue.map(ObjectIdentifier.init)
+        self._wrappedValueBox = .init(wrappedValue: wrappedValue)
     }
     
     public func hash(into hasher: inout Hasher) {
-        wrappedValue.map(ObjectIdentifier.init).hash(into: &hasher)
+        _wrappedValueBox.wrappedValue.map({ $0 as AnyObject }).map({ ObjectIdentifier($0) })?.hash(into: &hasher)
     }
     
     public static func == (lhs: Self, rhs: Self) -> Bool {
-        return lhs.id == rhs.id
+        return lhs.hashValue == rhs.hashValue
     }
 }
 

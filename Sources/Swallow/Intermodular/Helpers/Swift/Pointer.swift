@@ -120,7 +120,10 @@ extension Pointer {
 // MARK: - Auxiliary
 
 @_transparent
-public func unsafePartialBitCast<T, U>(_ x: T, to _: U.Type) -> U {
+public func unsafePartialBitCast<T, U>(
+    _ x: T,
+    to _: U.Type
+) -> U {
     withUnsafePointer(to: x) { ptr in
         ptr.withMemoryRebound(to: U.self, capacity: 1) { ptr in
             return ptr.pointee

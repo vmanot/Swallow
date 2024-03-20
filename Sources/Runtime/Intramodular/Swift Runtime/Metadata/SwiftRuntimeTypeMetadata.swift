@@ -71,7 +71,7 @@ extension SwiftRuntimeTypeMetadata where MetadataLayout == SwiftRuntimeFunctionM
             .mutableRepresentation
             .pointee
             .argumentVector
-            .vector(count: numberOfArguments() + 1)
+            .vector(count: numberOfParameters + 1)
         
         let argumentTypes = argumentAndResultTypes.removing(at: 0)
         let resultType = argumentAndResultTypes[0]
@@ -79,27 +79,27 @@ extension SwiftRuntimeTypeMetadata where MetadataLayout == SwiftRuntimeFunctionM
         return (argumentTypes, resultType)
     }
     
-    func numberOfArguments() -> Int {
-        return metadata.pointee.flags & 0x00FFFFFF
+    var numberOfParameters: Int {
+        metadata.pointee.flags.numberOfParameters
     }
     
-    func `throws`() -> Bool {
-        return metadata.pointee.flags & 0x01000000 != 0
+    var `throws`: Bool {
+        return metadata.pointee.flags.throws
     }
 }
 
-extension SwiftRuntimeTypeMetadata where MetadataLayout == SwiftRuntimeProtocolMetadataLayout {
+/*extension SwiftRuntimeTypeMetadata where MetadataLayout == SwiftRuntimeProtocolMetadataLayout {
     func mangledName() -> String {
         let cString = metadata
             .pointee
-            .protocolDescriptorVector
+            ._associatedTypeNames
             .pointee
             .mangledName
             .advanced()
         
         return String(cString: cString)
     }
-}
+}*/
 
 extension SwiftRuntimeTypeMetadata where MetadataLayout == SwiftRuntimeTupleMetadataLayout {
     func numberOfElements() -> Int {
@@ -127,8 +127,9 @@ extension SwiftRuntimeTypeMetadata where MetadataLayout == SwiftRuntimeTupleMeta
 typealias SwiftRuntimeGenericMetadata = SwiftRuntimeTypeMetadata<SwiftRuntimeGenericMetadataLayout>
 typealias SwiftRuntimeClassMetadata = SwiftRuntimeTypeMetadata<SwiftRuntimeClassMetadataLayout>
 typealias SwiftRuntimeEnumMetadata = SwiftRuntimeTypeMetadata<SwiftRuntimeEnumMetadataLayout>
+typealias SwiftRuntimeExistentialMetadata = SwiftRuntimeTypeMetadata<SwiftRuntimeExistentialMetadataLayout>
 typealias SwiftRuntimeFunctionMetadata = SwiftRuntimeTypeMetadata<SwiftRuntimeFunctionMetadataLayout>
-typealias SwiftRuntimeProtocolMetadata = SwiftRuntimeTypeMetadata<SwiftRuntimeProtocolMetadataLayout>
+// typealias SwiftRuntimeProtocolMetadata = SwiftRuntimeTypeMetadata<SwiftRuntimeProtocolMetadataLayout>
 typealias SwiftRuntimeStructMetadata = SwiftRuntimeTypeMetadata<SwiftRuntimeStructMetadataLayout>
 typealias SwiftRuntimeTupleMetadata = SwiftRuntimeTypeMetadata<SwiftRuntimeTupleMetadataLayout>
 

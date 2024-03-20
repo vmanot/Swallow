@@ -53,6 +53,7 @@ extension String {
 }
 
 extension String {
+    @_disfavoredOverload
     public func dropFirst() -> Substring {
         self.dropFirst(1)
     }
@@ -70,6 +71,7 @@ extension String {
         hasPrefix(prefix) ? self : (prefix + self)
     }
     
+    @_disfavoredOverload
     public func dropLast() -> Substring {
         return dropLast(1)
     }

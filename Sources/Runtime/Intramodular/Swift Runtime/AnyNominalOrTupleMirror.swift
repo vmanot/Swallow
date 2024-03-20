@@ -2,6 +2,7 @@
 // Copyright (c) Vatsal Manot
 //
 
+import OrderedCollections
 import Swallow
 
 public protocol _VisitableMirror<Subject> {
@@ -50,7 +51,7 @@ public struct AnyNominalOrTupleMirror<Subject>: _AnyNominalOrTupleMirror_Type, _
         
         self._cachedFieldsByName = Dictionary(
             OrderedDictionary(
-                values: typeMetadata.fields.map { field in
+                typeMetadata.fields.map { field in
                     if field.type._isInvalid {
                         mirror = mirror ?? Mirror(reflecting: subject)
                         
@@ -68,8 +69,8 @@ public struct AnyNominalOrTupleMirror<Subject>: _AnyNominalOrTupleMirror_Type, _
                     } else {
                         return field
                     }
-                },
-                uniquelyKeyedBy: { AnyCodingKey(stringValue: $0.name) }
+                }.map({ (AnyCodingKey(stringValue: $0.name), $0) }),
+                uniquingKeysWith: { lhs, rhs in lhs }
             )
         )
     }
@@ -120,14 +121,20 @@ extension AnyNominalOrTupleMirror {
     public typealias _TypedElement<T> = _TypedAnyNominalOrTupleMirrorElement<T>
     
     public func forEachChild<T>(
-        conformingTo protocol: T.Type,
-        _ operation: (_TypedElement<T>) throws -> Void
+        conformingTo protocolType: T.Type,
+        _ operation: (_TypedElement<T>) throws -> Void,
+        ingoring: (_TypedElement<Any>) -> Void
     ) rethrows {
         for (key, value) in self.allChildren {
-            if TypeMetadata.of(value).conforms(to: `protocol`) {
-                let element = _TypedElement(key: key, value: value as! T)
+            if TypeMetadata.of(value).conforms(to: protocolType) {
+                let element = _TypedElement<T>(
+                    key: key,
+                    value: value as! T
+                )
                 
                 try operation(element)
+            } else {
+                ingoring(_TypedElement<Any>(key: key, value: value))
             }
         }
     }
@@ -229,9 +236,9 @@ extension AnyNominalOrTupleMirror {
     
     public subscript(_ key: AnyCodingKey) -> Any {
         get {
-            let field = fieldForKey(key)!
+            var subject = self.subject
             
-            return try! _opaque_swift_getFieldValue(key.stringValue, field.type.base, self.subject)
+            return swift_value(of: &subject, key: key.stringValue)
         } set {
             guard let field = fieldForKey(key) else {
                 assertionFailure()
@@ -266,7 +273,7 @@ extension AnyNominalOrTupleMirror: Sequence {
     }
     
     public func makeIterator() -> AnyIterator<Element> {
-        AnyIterator(keys.lazy.map(({ ($0, self[$0]) })).makeIterator())
+        keys.map({ ($0, self[$0]) }).makeIterator().eraseToAnyIterator()
     }
 }
 

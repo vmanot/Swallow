@@ -47,15 +47,29 @@ public func _opaque_swift_getFieldValue(
     _ type: Any.Type,
     _ instance: Any
 ) throws -> Any {
-    func _getFieldValueFromInstance<T>(_ x: T) throws -> Any {
-        func _getFieldValueOfType<U>(_ type: U.Type) throws -> Any {
-            try _swift_getFieldValue(key, type, x)
-        }
-        
-        return  try _openExistential(type, do: _getFieldValueOfType)
+    func _getFieldValueOfType<U>(_ type: U.Type) throws -> Any {
+        try _partiallyopaque_swift_getFieldValue(key, type, instance)
     }
     
-    return try _openExistential(__fixed_opaqueExistential(instance), do: _getFieldValueFromInstance)
+    return try _openExistential(type, do: _getFieldValueOfType)
+}
+
+private func _partiallyopaque_swift_getFieldValue<Value>(
+    _ key: String,
+    _ type: Value.Type,
+    _ instance: Any
+) throws -> Value {
+    let field = try _swift_getField_slow(key, type, Swift.type(of: instance))
+    
+    return try withUnsafeInstancePointer(instance) { pointer in
+        func project<S>(_ type: S.Type) -> Value {
+            pointer.advanced(by: field.offset).withMemoryRebound(to: S.self, capacity: 1) { ptr in
+                unsafePartialBitCast(ptr.pointee, to: Value.self)
+            }
+        }
+        
+        return _openExistential(field.type, do: project)
+    }
 }
 
 public func _swift_getFieldValue<Value, InstanceType>(
@@ -129,7 +143,10 @@ package struct _SwiftRuntimeFieldLookupCache {
             storage[unsafeBitCast(type, to: UnsafeRawPointer.self)]?[key]
         }
         set {
-            os_unfair_lock_lock(lock); defer { os_unfair_lock_unlock(lock) }
+            os_unfair_lock_lock(lock); defer {
+                os_unfair_lock_unlock(lock)
+            }
+            
             storage[unsafeBitCast(type, to: UnsafeRawPointer.self), default: [:]][key] = newValue
         }
     }

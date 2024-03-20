@@ -15,12 +15,9 @@ let package = Package(
         .library(
             name: "Swallow",
             targets: [
-                "_ExpansionsRuntime",
                 "SE0270_RangeSet",
                 "Swallow",
-                "Expansions",
-                "MacroBuilder",
-                "SwiftSyntaxUtilities",
+                "SwallowMacrosClient",
                 "Compute",
                 "CoreModel",
                 "Diagnostics",
@@ -30,6 +27,10 @@ let package = Package(
                 "PythonString",
                 "Runtime",
             ]
+        ),
+        .library(
+            name: "MacroBuilder",
+            targets: ["MacroBuilder"]
         )
     ],
     dependencies: [
@@ -38,7 +39,7 @@ let package = Package(
     ],
     targets: [
         .target(
-            name: "_ExpansionsRuntime",
+            name: "_SwallowMacrosRuntime",
             dependencies: [
                 "Diagnostics",
                 "Swallow",
@@ -50,7 +51,7 @@ let package = Package(
             ]
         ),
         .macro(
-            name: "ExpansionsMacros",
+            name: "SwallowMacros",
             dependencies: [
                 "Swallow",
                 .product(name: "SwiftDiagnostics", package: "swift-syntax"),
@@ -62,15 +63,7 @@ let package = Package(
                 .product(name: "SwiftCompilerPlugin", package: "swift-syntax"),
                 "SwiftSyntaxUtilities",
             ],
-            path: "Sources/ExpansionsMacros"
-        ),
-        .macro(
-            name: "MacroBuilderCompilerPlugin",
-            dependencies: [
-                "MacroBuilderCore",
-                "Swallow"
-            ],
-            path: "Sources/MacroBuilderCompilerPlugin"
+            path: "Sources/SwallowMacros"
         ),
         .target(
             name: "LoremIpsum",
@@ -100,14 +93,14 @@ let package = Package(
             ]
         ),
         .target(
-            name: "Expansions",
+            name: "SwallowMacrosClient",
             dependencies: [
-                "_ExpansionsRuntime",
-                "ExpansionsMacros",
+                "_SwallowMacrosRuntime",
+                "SwallowMacros",
                 "Runtime",
                 "Swallow"
             ],
-            path: "Sources/Expansions",
+            path: "Sources/SwallowMacrosClient",
             swiftSettings: [
                 .unsafeFlags([
                     "-enable-library-evolution"
@@ -117,9 +110,9 @@ let package = Package(
         .target(
             name: "MacroBuilder",
             dependencies: [
-                "Expansions",
                 "MacroBuilderCore",
                 "Swallow",
+                "SwiftSyntaxUtilities",
                 .product(name: "SwiftSyntax", package: "swift-syntax"),
                 .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
                 .product(name: "SwiftOperators", package: "swift-syntax"),
@@ -132,7 +125,7 @@ let package = Package(
         .target(
             name: "MacroBuilderCore",
             dependencies: [
-                "ExpansionsMacros",
+                "SwallowMacros",
                 "Swallow",
             ],
             path: "Sources/MacroBuilderCore"
@@ -223,7 +216,7 @@ let package = Package(
         .target(
             name: "Runtime",
             dependencies: [
-                "_ExpansionsRuntime",
+                "_SwallowMacrosRuntime",
                 "Compute",
                 "FoundationX",
                 "Swallow"
@@ -239,7 +232,8 @@ let package = Package(
             dependencies: [
                 "Runtime",
                 "Swallow"
-            ]
+            ],
+            path: "Tests/Swallow"
         ),
     ]
 )

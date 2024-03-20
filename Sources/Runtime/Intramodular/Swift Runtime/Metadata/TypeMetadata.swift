@@ -2,6 +2,7 @@
 // Copyright (c) Vatsal Manot
 //
 
+import ObjectiveC
 import Swallow
 
 @frozen
@@ -98,5 +99,34 @@ extension Metatype {
     /// - Not to be confused with `Optional<T.Type>` -> `T.Type`.
     public var unwrapped: Metatype<Any.Type> {
         Metatype<Any.Type>(_getUnwrappedType(from: _unwrapBase()))
+    }
+}
+
+extension TypeMetadata {
+    /// Determines if the current type is covariant to the specified type.
+    ///
+    /// Covariance allows a type to be used in place of its supertype. For example,
+    /// if type `B` is a subtype of type `A`, then `B` is covariant to `A`.
+    ///
+    /// - Parameter other: The type to check for covariance against.
+    /// - Returns: `true` if the current type is covariant to the specified type, otherwise `false`.
+    public func _isCovariant(to other: TypeMetadata) -> Bool {
+        func _checkIsCovariant<T>(_ type: T.Type) -> Bool {
+            func _isCovariant<U>(to otherType: U.Type) -> Bool {
+                let result = type == otherType || type is U.Type
+                
+                if !result {
+                    if let type = type as? AnyClass, let otherType = otherType as? AnyClass {
+                        return unsafeBitCast(type, to: NSObject.Type.self).isSubclass(of: unsafeBitCast(otherType, to: NSObject.Type.self))
+                    }
+                }
+                
+                return result
+            }
+            
+            return _openExistential(other.base, do: _isCovariant(to:))
+        }
+        
+        return _openExistential(self.base, do: _checkIsCovariant)
     }
 }

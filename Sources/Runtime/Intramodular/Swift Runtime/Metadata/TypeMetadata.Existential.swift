@@ -7,7 +7,7 @@ import Swallow
 extension TypeMetadata {
     @frozen
     public struct Existential: SwiftRuntimeTypeMetadataWrapper {
-        typealias SwiftRuntimeTypeMetadata = SwiftRuntimeProtocolMetadata
+        typealias SwiftRuntimeTypeMetadata = SwiftRuntimeExistentialMetadata
         
         public let base: Any.Type
         
@@ -20,7 +20,11 @@ extension TypeMetadata {
         }
         
         public var mangledName: String {
-            return metadata.mangledName()
+                        if #available(macOS 11.0, iOS 14.0, watchOS 7.0, tvOS 14.0, *) {
+                TypeMetadata(base).mangledName!
+            } else {
+                fatalError()
+            }
         }
     }
 }
@@ -52,17 +56,17 @@ extension TypeMetadata {
                 return true
             }
         }
-
+        
         /*guard let protocolType = TypeMetadata.Existential(testType) else {
-            return false
-        }*/
-
+         return false
+         }*/
+        
         return false
         
         /*
-        let protocolDescriptor = protocolType.metadata.metadata.pointee.protocolDescriptorVector
-        
-        return _conformsToProtocol(base, protocolDescriptor) != nil*/
+         let protocolDescriptor = protocolType.metadata.metadata.pointee.protocolDescriptorVector
+         
+         return _conformsToProtocol(base, protocolDescriptor) != nil*/
     }
     
     @_optimize(speed)
@@ -110,3 +114,41 @@ func _conformsToProtocol(
 func _swift_getExistentialMetatypeMetadata(
     _ instanceType: Any.Type
 ) -> Any.Type?
+
+extension TypeMetadata.Existential {
+    /// A discriminator to determine the special protocolness of an existential.
+    public enum SpecialProtocol: UInt8 {
+        /// Every other protocol (not special at all, sorry.)
+        case none = 0
+        
+        /// Swift.Error
+        case error = 1
+    }
+    
+    /// The flags that describe some existential metadata.
+    public struct Flags {
+        /// Flags as represented in bits.
+        public let bits: UInt32
+        
+        /// The number of witness tables that are needed for this existential.
+        public var numWitnessTables: Int {
+            Int(bits & 0xFFFFFF)
+        }
+        
+        /// The kind of special protocol this is.
+        public var specialProtocol: SpecialProtocol {
+            SpecialProtocol(rawValue: UInt8((bits & 0x3F000000) >> 24))!
+        }
+        
+        /// Whether this existential has a superclass constraint.
+        public var hasSuperclassConstraint: Bool {
+            bits & 0x40000000 != 0
+        }
+        
+        /// Whether this existential is class constrained. E.g. AnyObject constraint.
+        public var isClassConstraint: Bool {
+            // Note this is inverted on purpose
+            bits & 0x80000000 == 0
+        }
+    }
+}

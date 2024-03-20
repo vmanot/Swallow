@@ -6,7 +6,7 @@ import Swift
 
 @frozen
 @usableFromInline
-struct SwiftRuntimeClassContextDescriptor: SwiftRuntimeContextDescriptor {
+struct SwiftRuntimeClassContextDescriptor: SwiftRuntimeContextDescriptorProtocol {
     @usableFromInline
     var flags: Flags
     @usableFromInline

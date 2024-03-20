@@ -2,7 +2,7 @@
 // Copyright (c) Vatsal Manot
 //
 
-@_implementationOnly import Collections
+import OrderedCollections
 import Swift
 
 public typealias IdentifierIndexingArrayOf<Element: Identifiable> = IdentifierIndexingArray<Element, Element.ID>
@@ -13,7 +13,7 @@ public protocol IdentifierIndexingArrayType: Collection {
 
 /// An array that additionally indexes elements by ID.
 public struct IdentifierIndexingArray<Element, ID: Hashable>: IdentifierIndexingArrayType {
-    private(set) var base: OrderedDictionary<ID, Element>
+    private(set) var base: OrderedCollections.OrderedDictionary<ID, Element>
     
     public let id: (Element) -> ID
     
@@ -29,7 +29,9 @@ public struct IdentifierIndexingArray<Element, ID: Hashable>: IdentifierIndexing
         _ elements: some Sequence<Element>,
         id: @escaping (Element) -> ID
     ) {
-        self.base = OrderedDictionary(uniqueKeysWithValues: elements.map({ (key: id($0), value: $0) }))
+        self.base = OrderedCollections.OrderedDictionary(
+            uniqueKeysWithValues: elements.map({ (key: id($0), value: $0) })
+        )
         self.id = id
     }
     
@@ -67,7 +69,7 @@ public struct IdentifierIndexingArray<Element, ID: Hashable>: IdentifierIndexing
     public func contains(
         elementIdentifiedBy id: ID
     ) -> Bool {
-        base.containsKey(id)
+        base.keys.contains(id)
     }
 }
 
@@ -192,24 +194,24 @@ extension IdentifierIndexingArray: MutableCollection, MutableSequence, RandomAcc
     }
     
     public var startIndex: Int {
-        base.startIndex
+        0
     }
     
     public var endIndex: Int {
-        base.endIndex
+        base.count
     }
     
     public subscript(_ index: Int) -> Element {
         get {
-            guard index < base.endIndex else {
+            guard index < endIndex else {
                 assertionFailure()
                 
                 return try! _generatePlaceholder()
             }
             
-            return base[index].value
+            return base.elements[index].value
         } set {
-            base[index] = (_idForElement(newValue), newValue)
+            base.updateValue(newValue, forKey: _idForElement(newValue), insertingAt: index)
         }
     }
     
@@ -227,7 +229,7 @@ extension IdentifierIndexingArray: MutableCollection, MutableSequence, RandomAcc
     
     public subscript(id identifier: ID) -> Element? {
         get {
-            base.value(forKey: identifier)
+            base[identifier]
         } set {
             if let index = base.index(forKey: identifier) {
                 if let newValue = newValue {
@@ -288,7 +290,7 @@ extension IdentifierIndexingArray {
     public mutating func insert(
         _ newElement: Element
     ) {
-        self.base.insert((_idForElement(newElement), newElement), at: 0)
+        base.updateValue(newElement, forKey: _idForElement(newElement), insertingAt: 0)
     }
     
     public mutating func replaceSubrange<C: Collection>(
@@ -319,7 +321,7 @@ extension IdentifierIndexingArray {
     }
     
     public mutating func remove(_ element: Element) {
-        self[id: _idForElement(element)] = nil
+        base.removeValue(forKey: _idForElement(element))
     }
     
     public mutating func removeAll(after index: Index) {
@@ -336,34 +338,24 @@ extension IdentifierIndexingArray {
     public mutating func remove(
         elementIdentifiedBy id: ID
     ) -> Element? {
-        guard let element = base[id] else {
+        guard let element = base.removeValue(forKey: id) else {
             return nil
         }
-        
-        remove(element)
-        
+                
         return element
     }
     
     public mutating func removeAll(
         identifiedBy sequence: some Sequence<ID>
     ) {
-        for element in sequence {
-            remove(elementIdentifiedBy: element)
-        }
+        let keys = Set(sequence)
+        
+        base.removeAll(where: { keys.contains($0.key) })
     }
     
     @discardableResult
     public mutating func update(_ element: Element) -> Element? {
-        guard let index = self.index(of: _idForElement(element)) else {
-            return nil
-        }
-        
-        let oldElement = self[index]
-        
-        self[index] = element
-        
-        return oldElement
+        base.updateValue(element, forKey: _idForElement(element))
     }
     
     /// Updates a given identifiable element if already present, inserts it otherwise.
@@ -428,18 +420,22 @@ extension IdentifierIndexingArray: @unchecked Sendable where Element: Sendable, 
 
 extension IdentifierIndexingArray: Sequence {
     public func makeIterator() -> AnyIterator<Element> {
-        .init(base.lazy.map({ $0.value }).makeIterator())
+        AnyIterator(base.values.makeIterator())
     }
 }
 
 extension IdentifierIndexingArray: Decodable where Element: Decodable, Element: Identifiable, Element.ID == ID {
-    public init(from decoder: Decoder) throws {
+    public init(
+        from decoder: Decoder
+    ) throws {
         self.init(try decoder.singleValueContainer().decode([Element].self), id: \.id)
     }
 }
 
 extension IdentifierIndexingArray: Encodable where Element: Encodable, Element: Identifiable, Element.ID == ID {
-    public func encode(to encoder: Encoder) throws {
+    public func encode(
+        to encoder: Encoder
+    ) throws {
         try base.map({ $0.value }).encode(to: encoder)
     }
 }

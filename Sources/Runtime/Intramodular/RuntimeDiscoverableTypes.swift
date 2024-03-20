@@ -2,7 +2,7 @@
 // Copyright (c) Vatsal Manot
 //
 
-import _ExpansionsRuntime
+import _SwallowMacrosRuntime
 import Foundation
 @_spi(Internal) import Swallow
 

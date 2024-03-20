@@ -23,6 +23,9 @@ public func swift_reflectionMirror_recursiveChildOffset(
     index: Int
 ) -> Int
 
+@_silgen_name("swift_getMetadataKind")
+public func swift_getMetadataKind(_: Any.Type) -> UInt
+
 @_silgen_name("swift_demangle")
 @usableFromInline
 func _stdlib_demangleImpl(

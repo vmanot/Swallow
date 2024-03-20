@@ -66,3 +66,7 @@ extension Indirect: Hashable where Value: Hashable {
         wrappedValue.hash(into: &hasher)
     }
 }
+
+extension Indirect: @unchecked Sendable where Value: Sendable {
+    
+}

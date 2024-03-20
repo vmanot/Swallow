@@ -55,7 +55,7 @@ struct SwiftRuntimeContextDescriptorFlags: OptionSet {
 }
 
 @usableFromInline
-protocol SwiftRuntimeContextDescriptor {
+protocol SwiftRuntimeContextDescriptorProtocol {
     associatedtype FieldOffsetVectorOffsetType: FixedWidthInteger
     
     typealias Flags = SwiftRuntimeContextDescriptorFlags

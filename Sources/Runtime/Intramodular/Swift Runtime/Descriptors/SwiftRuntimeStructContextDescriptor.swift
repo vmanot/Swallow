@@ -4,7 +4,7 @@
 
 import Swift
 
-struct SwiftRuntimeStructContextDescriptor: SwiftRuntimeContextDescriptor {
+struct SwiftRuntimeStructContextDescriptor: SwiftRuntimeContextDescriptorProtocol {
     typealias FieldTypeAccessor = @convention(c) (UnsafePointer<Int>) -> UnsafePointer<Int>
     
     var flags: Flags

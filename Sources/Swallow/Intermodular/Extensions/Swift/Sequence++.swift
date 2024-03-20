@@ -2,12 +2,35 @@
 // Copyright (c) Vatsal Manot
 //
 
-@_implementationOnly import Collections
+import OrderedCollections
 import Swift
 
 extension Sequence {
     public func eraseToAnySequence() -> AnySequence<Element> {
         .init(self)
+    }
+}
+
+// MARK: - anySatisfy/allSatisfy
+
+extension Sequence {
+    public func anySatisfies(
+        _ keyPath: KeyPath<Element, Bool>
+    ) -> Bool {
+        for each in self where each[keyPath: keyPath] {
+            return true
+        }
+        
+        return false
+    }
+    
+    
+    public func allSatisfy(
+        _ keyPath: KeyPath<Element, Bool>
+    ) -> Bool {
+        return allSatisfy { element in
+            element[keyPath: keyPath]
+        }
     }
 }
 

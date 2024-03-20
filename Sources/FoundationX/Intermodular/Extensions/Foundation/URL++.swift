@@ -12,11 +12,11 @@ extension URL {
     public init?(
         _filePath: FilePath
     ) {
-        #if os(visionOS)
+#if os(visionOS)
         self.init(filePath: _filePath)
-        #else
+#else
         self.init(fileURLWithPath: String(decoding: _filePath))
-        #endif
+#endif
     }
     
     public init?(
@@ -50,7 +50,7 @@ extension URL {
         relativeTo baseURL: URL
     ) -> String {
         TODO.whole(.addressEdgeCase, .refactor)
-
+        
         if absoluteString.hasPrefix(baseURL.absoluteString) {
             return absoluteString
                 .dropPrefixIfPresent(baseURL.absoluteString)
@@ -73,7 +73,7 @@ extension URL {
     public subscript(key: URLResourceKey) -> Result<URLResourceValues, Error> {
         self[[key]]
     }
-
+    
     public mutating func setResourceValues(_ body: (inout URLResourceValues) throws -> Void) throws {
         var values = URLResourceValues()
         
@@ -90,7 +90,7 @@ extension URL {
             in: .userDomainMask
         )
     }
-
+    
     public static func securityAppGroupContainer(
         for identifier: String
     ) throws -> URL {
@@ -98,7 +98,7 @@ extension URL {
             forSecurityApplicationGroupIdentifier: identifier
         ).unwrap()
     }
-
+    
     /// The real home directory of the user.
     @_spi(Internal)
     public static var _userHomeDirectory: URL {
@@ -131,21 +131,21 @@ extension URL {
     public struct PathComponent: Hashable, Sendable {
         public let rawValue: String
         public let isDirectory: Bool?
-
+        
         public init(rawValue: String, isDirectory: Bool? = nil) {
             self.rawValue = rawValue
             self.isDirectory = isDirectory
         }
-    
+        
         public static func file(_ string: String) -> Self {
             Self(rawValue: string, isDirectory: false)
         }
-
+        
         public static func directory(_ string: String) -> Self {
             Self(rawValue: string, isDirectory: true)
         }
     }
-
+    
     public mutating func append(_ component: PathComponent) {
         appendPathComponent(component.rawValue)
     }
@@ -154,7 +154,7 @@ extension URL {
     public mutating func append(_ component: String) {
         append(PathComponent(rawValue: component))
     }
-
+    
     public func appending(_ component: PathComponent) -> Self {
         appendingPathComponent(component.rawValue)
     }
@@ -167,7 +167,7 @@ extension URL {
     public static func + (lhs: Self, rhs: PathComponent) -> Self {
         lhs.appending(rhs)
     }
-
+    
     public func appendingDirectoryPathComponent(
         _ pathComponent: String?
     ) -> URL {
@@ -244,7 +244,7 @@ extension URL {
             self = components.url!
         }
     }
-
+    
     public var _removingPercentEncoding: URL {
         get throws {
             guard let decodedString = self.absoluteString.removingPercentEncoding else {
@@ -270,15 +270,15 @@ extension URL {
     public var isWebURL: Bool {
         return scheme == "http" || scheme == "https"
     }
-
+    
     public var _fileNameWithoutExtension: String {
         self.deletingPathExtension().lastPathComponent
     }
-
+    
     public var _fileNameWithExtension: String? {
         lastPathComponent
     }
-
+    
     public var _fileExtension: String {
         pathExtension
     }
@@ -286,7 +286,7 @@ extension URL {
     public var _actuallyStandardizedFileURL: URL {
         URL(fileURLWithPath: standardizedFileURL.path)
     }
-
+    
     /// Whether the `URL` is `/`.
     public var _isRootPath: Bool {
         return self.path == "/" || resolvingSymlinksInPath().path == "/"
@@ -296,7 +296,7 @@ extension URL {
     public var _isFileDotPrefixed: Bool {
         self.lastPathComponent.hasPrefix(".")
     }
-
+    
     /// Checks if the URL represents a directory.
     public var _isKnownOrIndicatedToBeFileDirectory: Bool {
         // Attempt to determine if the URL points to a directory by its path.
@@ -322,17 +322,17 @@ extension URL {
         
         return isDirectory
     }
-
+    
     /// Adds the missing fucking "/" at the end.
     public var _standardizedDirectoryPath: String {
         path.addingSuffixIfMissing("/")
     }
-
+    
     /// Returns the immediate ancestor directory if the URL is a file or the URL itself if it is a directory.
     public var _immediateFileDirectory: URL {
         _isKnownOrIndicatedToBeFileDirectory ? self : self.deletingLastPathComponent()
     }
-
+    
     public func _fromFileURLToURL() -> URL {
         guard isFileURL else {
             return self
@@ -340,7 +340,7 @@ extension URL {
         
         return URL(string: resolvingSymlinksInPath().path)!
     }
-
+    
     public static func temporaryFile(
         name: String,
         data: Data
@@ -363,5 +363,7 @@ extension URL {
                 return nil
             }
         }
+        
+        
     }
 }

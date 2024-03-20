@@ -8,7 +8,7 @@ import SwiftSyntax
 import SwiftSyntaxBuilder
 import SwiftSyntaxMacros
 
-enum CustomError: CustomStringConvertible, Error {
+public enum CustomError: CustomStringConvertible, Error {
     struct _CustomErrorMessage: DiagnosticMessage, Error {
         let message: String
         let diagnosticID: MessageID
@@ -17,7 +17,7 @@ enum CustomError: CustomStringConvertible, Error {
     
     case message(String)
     
-    var description: String {
+    public var description: String {
         switch self {
             case .message(let text): 
                 return text

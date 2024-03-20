@@ -4,6 +4,17 @@
 
 import Swift
 
+public struct _AnyIdentifiableIdentifier: Hashable {
+    @_HashableExistential
+    public var _swiftType: Any.Type
+    public let id: AnyHashable
+    
+    public init<T>(from x: T) where T: Identifiable {
+        self._swiftType = type(of: x)
+        self.id = x.id
+    }
+}
+
 public struct AnyIdentifiable<ID>: Identifiable {
     public let base: any Identifiable<ID>
     

@@ -2,6 +2,7 @@
 // Copyright (c) Vatsal Manot
 //
 
+import OrderedCollections
 import Swift
 
 public protocol KeyedValues<Key, Value>: Collection where Element == (key: Key, value: Value) {
@@ -16,20 +17,6 @@ public protocol KeyedValues<Key, Value>: Collection where Element == (key: Key, 
 }
 
 // MARK: - Implemented Conformances
-
-extension OrderedDictionary: KeyedValues {
-    public init(
-        uniqueKeysWithValues values: some KeyedValues<Key, Value>
-    ) {
-        self.init(uniqueKeysWithValues: values.lazy.map({ (key: $0.key, value: $0.value) }))
-    }
-    
-    public func unorderedMapValues<T>(
-        _ transform: (Value) throws -> T
-    ) rethrows -> Dictionary<Key, T> {
-        try Dictionary(mapValues(transform))
-    }
-}
 
 extension Dictionary: KeyedValues {
     public init(
