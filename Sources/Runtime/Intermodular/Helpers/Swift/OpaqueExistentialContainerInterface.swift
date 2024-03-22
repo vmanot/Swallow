@@ -191,7 +191,7 @@ extension OpaqueExistentialContainer: UnmanagedProtocol {
             let type = TypeMetadata.of(value)
             let buffer = Buffer((unsafeBitCast(try! cast(value, to: AnyObject.self)), nil, nil))
             
-            return .init(buffer: buffer, type: type!)
+            return .init(buffer: buffer, type: type)
         } else {
             var result = unsafeBitCast(value, to: OpaqueExistentialContainer.self)
             

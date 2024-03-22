@@ -4,6 +4,20 @@
 
 import Swallow
 
+@usableFromInline
+protocol SwiftRuntimeContextDescriptorProtocol {
+    associatedtype FieldOffsetVectorOffsetType: FixedWidthInteger
+    
+    typealias Flags = SwiftRuntimeContextDescriptorFlags
+    
+    var flags: Flags { get set }
+    var mangledName: SwiftRuntimeUnsafeRelativePointer<Int32, CChar> { get set }
+    var fieldDescriptor: SwiftRuntimeUnsafeRelativePointer<Int32, SwiftRuntimeFieldDescriptor> { get set }
+    var numberOfFields: Int32 { get set }
+    var fieldOffsetVectorOffset: SwiftRuntimeUnsafeRelativeVectorPointer<Int32, FieldOffsetVectorOffsetType> { get set }
+    var genericContextHeader: TargetTypeGenericContextDescriptorHeader { get set }
+}
+
 // https://github.com/apple/swift/blob/f13167d9d162e69d1aac6ce022b19f6a80c62aba/include/swift/ABI/MetadataValues.h#L1237-L1312
 @frozen
 @usableFromInline
@@ -52,18 +66,4 @@ struct SwiftRuntimeContextDescriptorFlags: OptionSet {
     var isGeneric: Bool {
         UInt8(rawValue & 0x80) != 0
     }
-}
-
-@usableFromInline
-protocol SwiftRuntimeContextDescriptorProtocol {
-    associatedtype FieldOffsetVectorOffsetType: FixedWidthInteger
-    
-    typealias Flags = SwiftRuntimeContextDescriptorFlags
-    
-    var flags: Flags { get set }
-    var mangledName: SwiftRuntimeUnsafeRelativePointer<Int32, CChar> { get set }
-    var fieldDescriptor: SwiftRuntimeUnsafeRelativePointer<Int32, SwiftRuntimeFieldDescriptor> { get set }
-    var numberOfFields: Int32 { get set }
-    var fieldOffsetVectorOffset: SwiftRuntimeUnsafeRelativeVectorPointer<Int32, FieldOffsetVectorOffsetType> { get set }
-    var genericContextHeader: TargetTypeGenericContextDescriptorHeader { get set }
 }

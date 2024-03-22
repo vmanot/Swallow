@@ -9,6 +9,17 @@ import Swift
 @frozen
 @usableFromInline
 struct SwiftRuntimeFieldDescriptor {
+    enum Kind: UInt16 {
+        case `struct` = 0
+        case `class` = 1
+        case `enum` = 2
+        case multiPayloadEnum = 3
+        case `protocol` = 4
+        case classProtocol = 5
+        case objcProtocol = 6
+        case objcClass = 7
+    }
+
     var mangledTypeNameOffset: Int32
     var superClassOffset: Int32
     var _kind: UInt16
@@ -16,8 +27,8 @@ struct SwiftRuntimeFieldDescriptor {
     var numFields: Int32
     var fields: SwiftRuntimeUnsafeRelativeVector<FieldRecord>
     
-    var kind: FieldDescriptorKind {
-        FieldDescriptorKind(rawValue: _kind)!
+    var kind: Kind {
+        Kind(rawValue: _kind)!
     }
 }
 
@@ -61,7 +72,9 @@ struct FieldRecord {
     }
     
     @_transparent
-    private func getSymbolicMangledNameLength(_ base: UnsafeRawPointer) -> Int32 {
+    private func getSymbolicMangledNameLength(
+        _ base: UnsafeRawPointer
+    ) -> Int32 {
         var end = base
         
         while let current = Optional(end.load(as: UInt8.self)), current != 0 {
@@ -75,15 +88,4 @@ struct FieldRecord {
         
         return Int32(end - base)
     }
-}
-
-enum FieldDescriptorKind: UInt16 {
-    case `struct`
-    case `class`
-    case `enum`
-    case multiPayloadEnum
-    case `protocol`
-    case classProtocol
-    case objcProtocol
-    case objcClass
 }

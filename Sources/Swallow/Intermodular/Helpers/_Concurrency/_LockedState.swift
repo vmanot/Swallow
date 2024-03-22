@@ -3,7 +3,6 @@
 //
 
 import Darwin
-import Swallow
 
 @frozen
 public struct _LockedState<State> {

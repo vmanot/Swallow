@@ -73,13 +73,12 @@ extension AttributeSyntax {
 }
 
 extension PatternBindingSyntax {
-    
     public var isStored: Bool {
-        return accessor == nil
+        return accessorBlock == nil
     }
     
     public var isComputed: Bool {
-        return accessor != nil
+        return accessorBlock != nil
     }
     
     public var hasInitializer: Bool {
@@ -91,8 +90,7 @@ extension PatternBindingSyntax {
     }
 }
 
-extension AttributeSyntax.Argument {
-    
+extension AttributeSyntax.Arguments {
     public func getArg(at offset: Int, name: String) -> ExprSyntax? {
         guard case .argumentList(let args) = self else {
             return nil
@@ -159,27 +157,30 @@ extension InitializerDeclSyntax {
     public var signatureStandin: SignatureStandin {
         var parameters = [String]()
         for parameter in signature.parameterClause.parameters {
-            parameters.append(parameter.firstName.text + ":" + (parameter.type.genericSubstitution(genericParameterClause?.genericParameterList) ?? "" ))
+            parameters.append(parameter.firstName.text + ":" + (parameter.type.genericSubstitution(genericParameterClause?.parameters) ?? "" ))
         }
+        
         let returnType = signature.returnClause?.type.genericSubstitution(genericParameterClause?.parameters) ?? "Void"
-        return SignatureStandin(parameters: parameters, returnType: returnType)
+        
+        return SignatureStandin(
+            parameters: parameters,
+            returnType: returnType
+        )
     }
     
     public func isEquivalent(to other: InitializerDeclSyntax) -> Bool {
         return signatureStandin == other.signatureStandin
     }
-    
 }
 
-
-extension TupleExprElementListSyntax {
+extension LabeledExprListSyntax {
     public static func makeArgList(
         parameters: [FunctionParameterSyntax],
         usesTemplateArguments: Bool
-    ) -> TupleExprElementListSyntax {
+    ) -> LabeledExprListSyntax {
         let parameterCount = parameters.count
         let args = parameters.enumerated().map {
-            (index, eachParam) -> TupleExprElementSyntax in
+            (index, eachParam) -> LabeledExprSyntax in
             
             let label = eachParam.firstName
             let name = eachParam.secondName ?? eachParam.firstName
@@ -189,9 +190,11 @@ extension TupleExprElementListSyntax {
             } else {
                 nameToken = name
             }
-            var syntax = TupleExprElementSyntax(
+            var syntax = LabeledExprSyntax(
                 label: label.trimmed.text,
-                expression: IdentifierExprSyntax(identifier: nameToken)
+                expression: DeclReferenceExprSyntax(
+                    baseName: nameToken
+                )
             ).with(\.colon, .colonToken(trailingTrivia: .spaces(1)))
             
             if parameterCount > 0 && (index + 1) < parameterCount {
@@ -201,7 +204,8 @@ extension TupleExprElementListSyntax {
             
             return syntax
         }
-        return TupleExprElementListSyntax(args)
+        
+        return LabeledExprListSyntax(args)
     }
 }
 

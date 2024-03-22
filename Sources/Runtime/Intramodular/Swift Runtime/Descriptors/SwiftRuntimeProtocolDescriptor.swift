@@ -10,7 +10,6 @@ struct SwiftRuntimeProtocolMetadataLayout {
         let _parent: Int32
     }
     
-    
     let base: _ContextDescriptor
     let name: SwiftRuntimeUnsafeRelativePointer<Int32, CChar>
     let numRequirementsInSignature: UInt32

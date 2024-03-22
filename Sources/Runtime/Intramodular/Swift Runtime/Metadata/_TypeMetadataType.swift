@@ -13,7 +13,7 @@ public protocol _TypeMetadataType: Hashable {
     
     var _isInvalid: Bool { get }
     
-    init(_unsafe base: Any.Type)
+    init(_unchecked base: Any.Type)
     init?(_ base: Any.Type)
 }
 
@@ -60,10 +60,10 @@ extension _TypeMetadataType {
             return nil
         }
                 
-        return .init(_unsafe: superclass.value)
+        return .init(_unchecked: superclass.value)
     }
     
-    public init(_unsafe base: Any.Type) {
+    public init(_unchecked base: Any.Type) {
         self = Self(base)!
     }
 }
@@ -77,7 +77,7 @@ extension _NominalTypeMetadataType {
 // MARK: - Extensions
 
 extension _TypeMetadataType {
-    var _isBaseSwiftObject: Bool {
+    package var _isBaseSwiftObject: Bool {
         guard let cls = ObjCClass(base) else {
             return false
         }
@@ -85,7 +85,8 @@ extension _TypeMetadataType {
         return cls.isBaseSwiftObject
     }
     
-    public static func of<T>(_ value: T) -> Self! {
+    @_disfavoredOverload
+    public static func of<T>(_ value: T) -> Self? {
         Self(type(of: value as Any))
     }
 }

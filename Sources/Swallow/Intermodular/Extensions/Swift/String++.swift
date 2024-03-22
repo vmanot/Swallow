@@ -158,6 +158,7 @@ extension String {
 }
 
 extension String {
+    @_disfavoredOverload
     public func contains(only characterSet: CharacterSet) -> Bool {
         CharacterSet(charactersIn: self).isSubset(of: characterSet)
     }

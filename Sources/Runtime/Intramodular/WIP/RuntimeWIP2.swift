@@ -15,10 +15,10 @@ fileprivate func synchronized<T : AnyObject, U>(_ obj: T, closure: () -> U) -> U
 }
 
 /// Metadata for a type.
-fileprivate struct Metadata {
+public struct _SwiftRuntimeTypeMetadataInterface {
     
     /// The metadata kind for a type.
-    fileprivate enum Kind: UInt {
+    public enum Kind: UInt {
         // With "flags":
         // runtimePrivate = 0x100
         // nonHeap = 0x200
@@ -78,7 +78,7 @@ fileprivate struct Metadata {
         public let offset: Int
         
         /// Metadata of the property.
-        public let metadata: Metadata
+        public let metadata: _SwiftRuntimeTypeMetadataInterface
     }
     
     private let container: ProtocolTypeContainer
@@ -95,7 +95,7 @@ fileprivate struct Metadata {
     /// Accessible properties of the type.
     public let properties: [Property]
     
-    private static func enumProperties(
+    public static func enumProperties(
         type: Any.Type,
         kind: Kind
     ) -> [Property] {
@@ -130,14 +130,8 @@ fileprivate struct Metadata {
         self.properties = Self.enumProperties(type: type, kind: self.kind)
     }
     
-    func get(from pointer: UnsafeRawPointer) -> Any? {
-        let value = container.accessor.get(from: pointer)
-        
-        // Optional
-        if kind == .optional {
-            let mirror = Mirror(reflecting: value)
-            return mirror.children.first?.value
-        }
+    func get(from pointer: UnsafeRawPointer) -> Any {
+        let value: Any = container.accessor.get(from: pointer)
         
         return value
     }
@@ -151,13 +145,13 @@ fileprivate class MetadataCache {
     
     static let shared = MetadataCache()
     
-    private var cache = [String : Metadata]()
+    private var cache = [String : _SwiftRuntimeTypeMetadataInterface]()
     
-    func metadata(of type: Any.Type) -> Metadata {
+    func metadata(of type: Any.Type) -> _SwiftRuntimeTypeMetadataInterface {
         synchronized(self) {
             let key = String(describing: type)
             guard let metadata = cache[key] else {
-                let metadata = Metadata(type: type)
+                let metadata = _SwiftRuntimeTypeMetadataInterface(type: type)
                 cache[key] = metadata
                 return metadata
             }
@@ -209,7 +203,10 @@ struct ProtocolTypeContainer {
     }
 }
 
-fileprivate func withPointer<T>(_ instance: inout T, _ body: (UnsafeMutableRawPointer, Metadata) -> Any?) -> Any? {
+fileprivate func withPointer<T>(
+    _ instance: inout T,
+    _ body: (UnsafeMutableRawPointer, _SwiftRuntimeTypeMetadataInterface) -> Any?
+) -> Any? {
     withUnsafePointer(to: &instance) {
         let metadata = swift_metadata(of: T.self)
         if metadata.kind == .struct {
@@ -247,8 +244,12 @@ fileprivate func withPointer<T>(_ instance: inout T, _ body: (UnsafeMutableRawPo
 }
 
 @discardableResult
-fileprivate func withProperty<T>(_ instance: inout T, keyPath: [String], _ body: (Metadata, UnsafeMutableRawPointer) -> Any?) -> Any? {
-    withPointer(&instance) { pointer, metadata in
+fileprivate func withProperty<T>(
+    _ instance: inout T,
+    keyPath: [String],
+    _ body: (_SwiftRuntimeTypeMetadataInterface, UnsafeMutableRawPointer) -> Any?
+) -> Any? {
+    withPointer(&instance) { pointer, metadata -> Any? in
         var keys = keyPath
         guard let key = keys.popLast(), let property = (metadata.properties.first { $0.name == key }) else {
             return nil
@@ -259,16 +260,17 @@ fileprivate func withProperty<T>(_ instance: inout T, keyPath: [String], _ body:
         if keys.isEmpty {
             return body(property.metadata, pointer)
         }
-        else if var value = property.metadata.get(from: pointer) {
-            defer {
-                let metadata = swift_metadata(of: type(of: value))
-                if metadata.kind == .struct {
-                    property.metadata.set(value: value, pointer: pointer)
-                }
+        
+        var value = property.metadata.get(from: pointer)
+        
+        defer {
+            let metadata = swift_metadata(of: type(of: value))
+            if metadata.kind == .struct {
+                property.metadata.set(value: value, pointer: pointer)
             }
-            return withProperty(&value, keyPath: keys, body)
         }
-        return nil
+        
+        return withProperty(&value, keyPath: keys, body)
     }
 }
 
@@ -279,7 +281,9 @@ fileprivate func withProperty<T>(_ instance: inout T, keyPath: [String], _ body:
 /// - Parameters:
 ///     - type: Type of a metatype instance.
 /// - Returns: Metadata of the type.
-fileprivate func swift_metadata(of type: Any.Type) -> Metadata {
+fileprivate func swift_metadata(
+    of type: Any.Type
+) -> _SwiftRuntimeTypeMetadataInterface {
     MetadataCache.shared.metadata(of: type)
 }
 
@@ -288,7 +292,9 @@ fileprivate func swift_metadata(of type: Any.Type) -> Metadata {
 /// - Parameters:
 ///     - instance: Instance of any type.
 /// - Returns: Metadata of the type.
-fileprivate func swift_metadata(of instance: Any) -> Metadata {
+fileprivate func swift_metadata(
+    of instance: Any
+) -> _SwiftRuntimeTypeMetadataInterface {
     let type = type(of: instance)
     return swift_metadata(of: type)
 }
@@ -301,7 +307,10 @@ fileprivate func swift_metadata(of instance: Any) -> Metadata {
 ///            relationship.property (with one or more relationships):
 ///            for example “department.name” or “department.manager.lastName.”
 /// - Returns: The value for the property identified by a name or a key path.
-public func swift_value<T>(of instance: inout T, key: String) -> Any? {
+public func swift_value<T>(
+    of instance: inout T,
+    key: String
+) -> Any {
     let keyPath: [String] = key.components(separatedBy: ".").reversed()
     let result = withProperty(&instance, keyPath: keyPath) { metadata, pointer in
         metadata.get(from: pointer)
@@ -311,7 +320,7 @@ public func swift_value<T>(of instance: inout T, key: String) -> Any? {
         return result
     }
     
-    return result
+    return result as Any
 }
 
 /// Sets a property of an instance specified by a given name or a key path to a given value.

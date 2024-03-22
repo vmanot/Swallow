@@ -125,11 +125,18 @@ extension FunctionDeclSyntax {
     
     public var signatureStandin: SignatureStandin {
         var parameters = [String]()
-        for parameter in signature.input.parameterList {
-            parameters.append(parameter.firstName.text + ":" + (parameter.type.genericSubstitution(genericParameterClause?.genericParameterList) ?? "" ))
+        for parameter in signature.parameterClause.parameters {
+            parameters.append(parameter.firstName.text + ":" + (parameter.type.genericSubstitution(genericParameterClause?.parameters) ?? "" ))
         }
-        let returnType = signature.output?.returnType.genericSubstitution(genericParameterClause?.genericParameterList) ?? "Void"
-        return SignatureStandin(isInstance: isInstance, identifier: identifier.text, parameters: parameters, returnType: returnType)
+        
+        let returnType = signature.returnClause?.type.genericSubstitution(genericParameterClause?.parameters) ?? "Void"
+        
+        return SignatureStandin(
+            isInstance: isInstance,
+            identifier: name.text,
+            parameters: parameters,
+            returnType: returnType
+        )
     }
     
     public func isEquivalent(to other: FunctionDeclSyntax) -> Bool {
@@ -155,10 +162,11 @@ extension TypeSyntax {
 }
 
 extension DeclGroupSyntax {
-    
-    public func hasMemberFunction(equvalentTo other: FunctionDeclSyntax) -> Bool {
+    public func hasMemberFunction(
+        equvalentTo other: FunctionDeclSyntax
+    ) -> Bool {
         for member in memberBlock.members {
-            if let function = member.as(MemberDeclListItemSyntax.self)?.decl.as(FunctionDeclSyntax.self) {
+            if let function = member.decl.as(FunctionDeclSyntax.self) {
                 if function.isEquivalent(to: other) {
                     return true
                 }
@@ -167,9 +175,11 @@ extension DeclGroupSyntax {
         return false
     }
     
-    public func hasMemberProperty(equivalentTo other: VariableDeclSyntax) -> Bool {
+    public func hasMemberProperty(
+        equivalentTo other: VariableDeclSyntax
+    ) -> Bool {
         for member in memberBlock.members {
-            if let variable = member.as(MemberDeclListItemSyntax.self)?.decl.as(VariableDeclSyntax.self) {
+            if let variable = member.decl.as(VariableDeclSyntax.self) {
                 if variable.isEquivalent(to: other) {
                     return true
                 }
@@ -178,7 +188,10 @@ extension DeclGroupSyntax {
         return false
     }
     
-    public func addIfNeeded(_ decl: DeclSyntax?, to declarations: inout [DeclSyntax]) {
+    public func addIfNeeded(
+        _ decl: DeclSyntax?,
+        to declarations: inout [DeclSyntax]
+    ) {
         guard let decl else { return }
         if let fn = decl.as(FunctionDeclSyntax.self) {
             if !hasMemberFunction(equvalentTo: fn) {
@@ -210,5 +223,4 @@ extension DeclGroupSyntax {
     public var isEnum: Bool {
         return self.is(EnumDeclSyntax.self)
     }
-    
 }

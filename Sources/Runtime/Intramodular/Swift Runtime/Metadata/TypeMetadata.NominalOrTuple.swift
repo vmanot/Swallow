@@ -11,38 +11,28 @@ extension TypeMetadata {
 public struct NominalOrTupleTypeMetadata: _TypeMetadataType {
     public let base: Any.Type
     
-    public init(_unsafe base: Any.Type) {
+    public init(_unchecked base: Any.Type) {
         self.base = base
     }
         
     public init?(_ base: Any.Type) {
-        if let type = TypeMetadata.Nominal(base) {
-            assert(Self(_checked: base) != nil)
-            
-            self.base = type.base
-        } else if let type = TypeMetadata.Tuple(base) {
-            assert(Self(_checked: base) != nil)
-
-            self.base = type.base
-        } else {
-            return nil
-        }
+        self.init(_checked: base)
     }
     
     private init?(_checked base: Any.Type) {
         switch TypeMetadata(base).kind {
             case .struct:
-                self.init(_unsafe: base)
+                self.init(_unchecked: base)
             case .enum:
-                self.init(_unsafe: base)
+                self.init(_unchecked: base)
             case .tuple:
-                self.init(_unsafe: base)
+                self.init(_unchecked: base)
             case .function:
                 return nil
             case .existential:
                 return nil
             case .class:
-                self.init(_unsafe: base)
+                self.init(_unchecked: base)
             case .objCClassWrapper:
                 return nil
             default:
@@ -53,16 +43,20 @@ public struct NominalOrTupleTypeMetadata: _TypeMetadataType {
     public var fields: [NominalTypeMetadata.Field] {
         if let type = TypeMetadata.Tuple(base) {
             return type.fields
+        } else if let type = TypeMetadata.Nominal(base) {
+            return type.fields
         } else {
-            return TypeMetadata.Nominal(base)!.fields
+            fatalError()
         }
     }
     
     public var allFields: [NominalTypeMetadata.Field] {
         if let type = TypeMetadata.Tuple(base) {
             return type.fields
+        } else if let type = TypeMetadata.Nominal(base) {
+            return type.allFields
         } else {
-            return TypeMetadata.Nominal(base)!.allFields
+            fatalError()
         }
     }
 }

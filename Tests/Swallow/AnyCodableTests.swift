@@ -3,9 +3,7 @@
 //
 
 import Combine
-
-@testable import Swallow
-
+import Swallow
 import XCTest
 
 final class AnyCodableTests: XCTestCase {

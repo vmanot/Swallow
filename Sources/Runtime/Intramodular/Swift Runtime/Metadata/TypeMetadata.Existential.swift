@@ -29,6 +29,29 @@ extension TypeMetadata {
     }
 }
 
+/*extension TypeMetadata.Existential {
+    public var protocols: [SwiftRuntimeProtocolConformanceDescriptor] {
+        Array(unsafeUninitializedCapacity: numProtocols) {
+            var start = trailing
+            
+            if flags.hasSuperclassConstraint {
+                start = start.offset(of: 1)
+            }
+            
+            for i in 0 ..< numProtocols {
+                let proto = start.load(
+                    fromByteOffset: i * MemoryLayout<ProtocolDescriptor>.size,
+                    as: ProtocolDescriptor.self
+                )
+                
+                $0[i] = proto
+            }
+            
+            $1 = numProtocols
+        }
+    }
+}
+*/
 extension TypeMetadata {
     @_optimize(speed)
     @_transparent
@@ -104,9 +127,9 @@ extension Metatype {
 
 @_silgen_name("swift_conformsToProtocol")
 @usableFromInline
-func _conformsToProtocol(
+func _swift_conformsToProtocol(
     _ type: Any.Type,
-    _ protocolDescriptor: UnsafeMutablePointer<SwiftRuntimeProtocolContextDescriptor>
+    _ protocolDescriptor: UnsafeRawPointer
 ) -> UnsafeRawPointer?
 
 @_silgen_name("swift_getExistentialMetatypeMetadata")
