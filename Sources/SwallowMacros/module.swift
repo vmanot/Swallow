@@ -8,6 +8,7 @@ import SwiftSyntaxMacros
 @main
 public struct module: CompilerPlugin {
     public let providingMacros: [Macro.Type] = [
+        AssociatedObjectMacro.self,
         GenerateDuplicateMacro.self,
         AddCaseBooleanMacro.self,
         HashableMacro.self,

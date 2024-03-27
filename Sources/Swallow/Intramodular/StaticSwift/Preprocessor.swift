@@ -7,7 +7,7 @@ import Swift
 /// A namespace for preprocessor-magic related structures.
 public enum Preprocessor {
     /// A textual point in the source code of the program.
-    public struct Point: CustomStringConvertible, Hashable, Sendable {
+    public struct Point: Codable, CustomStringConvertible, Hashable, Sendable {
         public var file: String
         public var fileID: String?
         public var function: String?

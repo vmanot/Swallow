@@ -10,7 +10,7 @@ import Swallow
 public struct ObjCTypeEncoding: Hashable, Wrapper {
     public typealias Value = String
     
-    public let value: Value
+    public let value: String
     
     public init(_ value: Value) {
         self.value = value

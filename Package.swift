@@ -24,13 +24,14 @@ let package = Package(
                 "FoundationX",
                 "LoremIpsum",
                 "POSIX",
-                "PythonString",
                 "Runtime",
             ]
         ),
         .library(
             name: "MacroBuilder",
-            targets: ["MacroBuilder"]
+            targets: [
+                "MacroBuilder"
+            ]
         )
     ],
     dependencies: [
@@ -44,16 +45,11 @@ let package = Package(
                 "Diagnostics",
                 "Swallow",
             ],
-            swiftSettings: [
-                .unsafeFlags([
-                    "-enable-library-evolution"
-                ])
-            ]
+            swiftSettings: []
         ),
         .macro(
             name: "SwallowMacros",
             dependencies: [
-                "Swallow",
                 .product(name: "SwiftDiagnostics", package: "swift-syntax"),
                 .product(name: "SwiftSyntax", package: "swift-syntax"),
                 .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
@@ -67,30 +63,19 @@ let package = Package(
         ),
         .target(
             name: "LoremIpsum",
-            swiftSettings: [
-                .unsafeFlags([
-                    "-enable-library-evolution"
-                ])
-            ]
+            swiftSettings: []
         ),
         .target(
             name: "SE0270_RangeSet",
-            swiftSettings: [
-                .unsafeFlags([
-                    "-enable-library-evolution"
-                ])
-            ]
+            swiftSettings: []
         ),
         .target(
             name: "Swallow",
             dependencies: [
-                .product(name: "Collections", package: "swift-collections")
+                .product(name: "Collections", package: "swift-collections"),
+                "RuntimeC",
             ],
-            swiftSettings: [
-                .unsafeFlags([
-                    "-enable-library-evolution"
-                ])
-            ]
+            swiftSettings: []
         ),
         .target(
             name: "SwallowMacrosClient",
@@ -101,11 +86,7 @@ let package = Package(
                 "Swallow"
             ],
             path: "Sources/SwallowMacrosClient",
-            swiftSettings: [
-                .unsafeFlags([
-                    "-enable-library-evolution"
-                ])
-            ]
+            swiftSettings: []
         ),
         .target(
             name: "MacroBuilder",
@@ -150,11 +131,7 @@ let package = Package(
                 .product(name: "Collections", package: "swift-collections"),
                 "Swallow"
             ],
-            swiftSettings: [
-                .unsafeFlags([
-                    "-enable-library-evolution"
-                ])
-            ]
+            swiftSettings: []
         ),
         .target(
             name: "CoreModel",
@@ -163,55 +140,31 @@ let package = Package(
                 .product(name: "Collections", package: "swift-collections"),
                 "Swallow"
             ],
-            swiftSettings: [
-                .unsafeFlags([
-                    "-enable-library-evolution"
-                ])
-            ]
+            swiftSettings: []
         ),
         .target(
             name: "Diagnostics",
             dependencies: [
                 "Swallow"
             ],
-            swiftSettings: [
-                .unsafeFlags([
-                    "-enable-library-evolution"
-                ])
-            ]
+            swiftSettings: []
         ),
         .target(
             name: "FoundationX",
             dependencies: [
                 "Swallow"
             ],
-            swiftSettings: [
-                .unsafeFlags([
-                    "-enable-library-evolution"
-                ])
-            ]
+            swiftSettings: []
         ),
         .target(
             name: "POSIX",
             dependencies: [
                 "Swallow"
             ],
-            swiftSettings: [
-                .unsafeFlags([
-                    "-enable-library-evolution"
-                ])
-            ]
+            swiftSettings: []
         ),
         .target(
-            name: "PythonString",
-            dependencies: [
-                "Swallow"
-            ],
-            swiftSettings: [
-                .unsafeFlags([
-                    "-enable-library-evolution"
-                ])
-            ]
+            name: "RuntimeC"
         ),
         .target(
             name: "Runtime",
@@ -221,11 +174,7 @@ let package = Package(
                 "FoundationX",
                 "Swallow"
             ],
-            swiftSettings: [
-                .unsafeFlags([
-                    "-enable-library-evolution"
-                ])
-            ]
+            swiftSettings: []
         ),
         .testTarget(
             name: "SwallowTests",

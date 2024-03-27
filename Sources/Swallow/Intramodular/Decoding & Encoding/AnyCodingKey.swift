@@ -142,3 +142,9 @@ extension AnyCodingKey: _UnwrappableTypeEraser {
         }
     }
 }
+
+extension AnyCodingKey {
+    public func lowercased() -> Self {
+        AnyCodingKey(stringValue: self.stringValue.lowercased())
+    }
+}

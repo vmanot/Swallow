@@ -116,11 +116,7 @@ extension DeclGroupSyntax {
         
         return false
     }
-    
-    public var isStruct: Bool {
-        return self.is(StructDeclSyntax.self)
-    }
-    
+        
     public func addIfNeeded<Declaration: DeclSyntaxProtocol>(
         _ decl: Declaration?,
         to declarations: inout [DeclSyntax]

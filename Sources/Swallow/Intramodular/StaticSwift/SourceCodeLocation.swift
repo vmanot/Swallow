@@ -5,7 +5,7 @@
 import Swift
 
 /// A type capable of representing the location of a line of code.
-public enum SourceCodeLocation: Hashable, SourceCodeLocationInitiable, Sendable {
+public enum SourceCodeLocation: Codable, Hashable, SourceCodeLocationInitiable, Sendable {
     case regular(file: String, line: UInt)
     case exact(Preprocessor.Point)
     case unavailable
@@ -21,12 +21,34 @@ public enum SourceCodeLocation: Hashable, SourceCodeLocationInitiable, Sendable 
         }
     }
     
+    public var function: String? {
+        switch self {
+            case .regular(_, _):
+                return nil
+            case .exact(let point):
+                return point.function
+            case .unavailable:
+                return nil
+        }
+    }
+
     public var line: UInt? {
         switch self {
             case .regular(_, let line):
                 return line
             case .exact(let point):
                 return point.line
+            case .unavailable:
+                return nil
+        }
+    }
+    
+    public var column: UInt? {
+        switch self {
+            case .regular(_, _):
+                return nil
+            case .exact(let point):
+                return point.column
             case .unavailable:
                 return nil
         }

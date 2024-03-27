@@ -6,7 +6,7 @@ import SwiftSyntax
 import SwiftSyntaxBuilder
 import SwiftSyntaxMacros
 import SwiftSyntaxUtilities
-
+   
 extension FunctionDeclSyntax {
     
 }
@@ -67,3 +67,4 @@ struct GenerateDuplicateMacro: PeerMacro {
         return [DeclSyntax(funcDecl)]
     }
 }
+

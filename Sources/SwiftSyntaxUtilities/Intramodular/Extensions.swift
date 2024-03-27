@@ -1,4 +1,4 @@
-//===------------------------------------------------------------------===//
+//===----------------------------------------------------------------------===//
 //
 // This source file is part of the Swift.org open source project
 //
@@ -7,30 +7,17 @@
 //
 // See https://swift.org/LICENSE.txt for license information
 //
-//===------------------------------------------------------------------===//
+//===----------------------------------------------------------------------===//
 
 import SwiftSyntax
+import SwiftSyntaxMacros
+import SwiftDiagnostics
+import SwiftOperators
+import SwiftSyntaxBuilder
 
 extension VariableDeclSyntax {
-    
     public var identifierPattern: IdentifierPatternSyntax? {
         bindings.first?.pattern.as(IdentifierPatternSyntax.self)
-    }
-    
-    public var identifier: TokenSyntax? {
-        identifierPattern?.identifier
-    }
-    
-    public func firstMacroApplication(_ name: String) -> AttributeSyntax? {
-        for each in attributes where each.hasName(name) {
-            switch each {
-                case .attribute(let attrSyntax):
-                    return attrSyntax
-                case .ifConfigDecl:
-                    break
-            }
-        }
-        return nil
     }
     
     public var isInstance: Bool {
@@ -41,8 +28,59 @@ extension VariableDeclSyntax {
                 }
             }
         }
-        
         return true
+    }
+    
+    public var identifier: TokenSyntax? {
+        identifierPattern?.identifier
+    }
+    
+    public var type: TypeSyntax? {
+        bindings.first?.typeAnnotation?.type
+    }
+    
+    public func accessorsMatching(_ predicate: (TokenKind) -> Bool) -> [AccessorDeclSyntax] {
+        let accessors: [AccessorDeclListSyntax.Element] = bindings.compactMap { patternBinding in
+            switch patternBinding.accessorBlock?.accessors {
+                case .accessors(let accessors):
+                    return accessors
+                default:
+                    return nil
+            }
+        }.flatMap { $0 }
+        return accessors.compactMap { accessor in
+            if predicate(accessor.accessorSpecifier.tokenKind) {
+                return accessor
+            } else {
+                return nil
+            }
+        }
+    }
+    
+    public var willSetAccessors: [AccessorDeclSyntax] {
+        accessorsMatching { $0 == .keyword(.willSet) }
+    }
+    public var didSetAccessors: [AccessorDeclSyntax] {
+        accessorsMatching { $0 == .keyword(.didSet) }
+    }
+    
+    public var isComputed: Bool {
+        if accessorsMatching({ $0 == .keyword(.get) }).count > 0 {
+            return true
+        } else {
+            return bindings.contains { binding in
+                if case .getter = binding.accessorBlock?.accessors {
+                    return true
+                } else {
+                    return false
+                }
+            }
+        }
+    }
+    
+    
+    public var isImmutable: Bool {
+        return bindingSpecifier.tokenKind == .keyword(.let)
     }
     
     public func isEquivalent(to other: VariableDeclSyntax) -> Bool {
@@ -52,9 +90,37 @@ extension VariableDeclSyntax {
         return identifier?.text == other.identifier?.text
     }
     
+    public var initializer: InitializerClauseSyntax? {
+        bindings.first?.initializer
+    }
+    
+    public func hasMacroApplication(_ name: String) -> Bool {
+        for attribute in attributes {
+            switch attribute {
+                case .attribute(let attr):
+                    if attr.attributeName.tokens(viewMode: .all).map({ $0.tokenKind }) == [.identifier(name)] {
+                        return true
+                    }
+                default:
+                    break
+            }
+        }
+        return false
+    }
 }
 
 extension TypeSyntax {
+    public var identifier: String? {
+        for token in tokens(viewMode: .all) {
+            switch token.tokenKind {
+                case .identifier(let identifier):
+                    return identifier
+                default:
+                    break
+            }
+        }
+        return nil
+    }
     
     public func genericSubstitution(_ parameters: GenericParameterListSyntax?) -> String? {
         var genericParameters = [String : TypeSyntax?]()
@@ -100,11 +166,10 @@ extension TypeSyntax {
         
         return substituted
     }
-    
 }
 
 extension FunctionDeclSyntax {
-    var isInstance: Bool {
+    public var isInstance: Bool {
         for modifier in modifiers {
             for token in modifier.tokens(viewMode: .all) {
                 if token.tokenKind == .keyword(.static) || token.tokenKind == .keyword(.class) {
@@ -112,7 +177,6 @@ extension FunctionDeclSyntax {
                 }
             }
         }
-        
         return true
     }
     
@@ -128,43 +192,27 @@ extension FunctionDeclSyntax {
         for parameter in signature.parameterClause.parameters {
             parameters.append(parameter.firstName.text + ":" + (parameter.type.genericSubstitution(genericParameterClause?.parameters) ?? "" ))
         }
-        
         let returnType = signature.returnClause?.type.genericSubstitution(genericParameterClause?.parameters) ?? "Void"
-        
-        return SignatureStandin(
-            isInstance: isInstance,
-            identifier: name.text,
-            parameters: parameters,
-            returnType: returnType
-        )
+        return SignatureStandin(isInstance: isInstance, identifier: name.text, parameters: parameters, returnType: returnType)
     }
     
-    public func isEquivalent(to other: FunctionDeclSyntax) -> Bool {
+    func isEquivalent(to other: FunctionDeclSyntax) -> Bool {
         return signatureStandin == other.signatureStandin
     }
-    
-}
-
-extension TypeSyntax {
-    
-    public var identifier: String? {
-        for token in tokens(viewMode: .all) {
-            switch token.tokenKind {
-                case .identifier(let identifier):
-                    return identifier
-                default:
-                    break
-            }
-        }
-        return nil
-    }
-    
 }
 
 extension DeclGroupSyntax {
-    public func hasMemberFunction(
-        equvalentTo other: FunctionDeclSyntax
-    ) -> Bool {
+    public var memberFunctionStandins: [FunctionDeclSyntax.SignatureStandin] {
+        var standins = [FunctionDeclSyntax.SignatureStandin]()
+        for member in memberBlock.members {
+            if let function = member.decl.as(FunctionDeclSyntax.self) {
+                standins.append(function.signatureStandin)
+            }
+        }
+        return standins
+    }
+    
+    public func hasMemberFunction(equvalentTo other: FunctionDeclSyntax) -> Bool {
         for member in memberBlock.members {
             if let function = member.decl.as(FunctionDeclSyntax.self) {
                 if function.isEquivalent(to: other) {
@@ -175,9 +223,7 @@ extension DeclGroupSyntax {
         return false
     }
     
-    public func hasMemberProperty(
-        equivalentTo other: VariableDeclSyntax
-    ) -> Bool {
+    public func hasMemberProperty(equivalentTo other: VariableDeclSyntax) -> Bool {
         for member in memberBlock.members {
             if let variable = member.decl.as(VariableDeclSyntax.self) {
                 if variable.isEquivalent(to: other) {
@@ -188,10 +234,16 @@ extension DeclGroupSyntax {
         return false
     }
     
-    public func addIfNeeded(
-        _ decl: DeclSyntax?,
-        to declarations: inout [DeclSyntax]
-    ) {
+    public var definedVariables: [VariableDeclSyntax] {
+        memberBlock.members.compactMap { member in
+            if let variableDecl = member.decl.as(VariableDeclSyntax.self) {
+                return variableDecl
+            }
+            return nil
+        }
+    }
+    
+    public func addIfNeeded(_ decl: DeclSyntax?, to declarations: inout [DeclSyntax]) {
         guard let decl else { return }
         if let fn = decl.as(FunctionDeclSyntax.self) {
             if !hasMemberFunction(equvalentTo: fn) {
@@ -199,14 +251,6 @@ extension DeclGroupSyntax {
             }
         } else if let property = decl.as(VariableDeclSyntax.self) {
             if !hasMemberProperty(equivalentTo: property) {
-                declarations.append(decl)
-            }
-        } else if let `struct` = decl.as(StructDeclSyntax.self) {
-            if !hasMemberStruct(equivalentTo: `struct`) {
-                declarations.append(decl)
-            }
-        } else if let `init` = decl.as(InitializerDeclSyntax.self) {
-            if !hasMemberInit(equivalentTo: `init`) {
                 declarations.append(decl)
             }
         }
@@ -222,5 +266,9 @@ extension DeclGroupSyntax {
     
     public var isEnum: Bool {
         return self.is(EnumDeclSyntax.self)
+    }
+    
+    public var isStruct: Bool {
+        return self.is(StructDeclSyntax.self)
     }
 }

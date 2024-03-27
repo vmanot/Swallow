@@ -144,6 +144,18 @@ extension AnyCodable {
             try self[key: AnyCodingKey(stringValue: codingKey)]
         }
     }
+    
+    public subscript(
+        key codingKey: String,
+        caseInsensitive caseInsensitive: Bool
+    ) -> AnyCodable? {
+        get throws {
+            let key = AnyCodingKey(stringValue: codingKey).lowercased()
+            let value = try cast(self.value, to: [AnyCodingKey: AnyCodable].self)
+
+            return try value[value.keys.firstAndOnly(where: { $0.lowercased() == key }).unwrap()]
+        }
+    }
 }
 
 // MARK: - Conformances

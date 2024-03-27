@@ -130,16 +130,19 @@ extension _opaque_Number {
 // MARK: - Extensions
 
 extension _opaque_Number {
+    @_disfavoredOverload
     @inlinable
     public init<T: _opaque_Number>(_ value: T) {
         self = Self(checked: value)!; TODO.here(.improve)
     }
     
+    @_disfavoredOverload
     @inlinable
     public init<T: _opaque_Number & BinaryInteger>(_ value: T) {
         self = Self(checked: value)!; TODO.here(.improve)
     }
     
+    @_disfavoredOverload
     @inlinable
     public init<T: _opaque_Number & BinaryFloatingPoint>(_ value: T) {
         self = Self(checked: value)!; TODO.here(.improve) 
@@ -147,11 +150,13 @@ extension _opaque_Number {
 }
 
 extension _opaque_Number where Self: BinaryInteger {
-    @inlinable
+    @_disfavoredOverload
+    @_transparent
     public init<T: _opaque_Number & BinaryInteger>(_ value: T) {
-        self = Self(use_stdlib_init: value)
+        self = numericCast(value)
     }
     
+    @_disfavoredOverload
     @inlinable
     public init<T: _opaque_Number & BinaryFloatingPoint>(_ value: T) {
         self = Self(use_stdlib_init: value)

@@ -34,7 +34,7 @@ public struct NominalOrTupleTypeMetadata: _TypeMetadataType {
             case .class:
                 self.init(_unchecked: base)
             case .objCClassWrapper:
-                return nil
+                self.init(_unchecked: base)
             default:
                 return nil
         }

@@ -2,6 +2,7 @@
 // Copyright (c) Vatsal Manot
 //
 
+import Foundation
 import ObjectiveC
 import Swallow
 
@@ -37,12 +38,12 @@ extension ObjCClass: _NominalTypeMetadataType {
     public var isBaseSwiftObject: Bool {
         self == Self._swiftObjectBaseClass
     }
-
+    
     @_transparent
     public var base: Any.Type {
         value
     }
-
+    
     public var mangledName: String {
         return name
     }
@@ -52,12 +53,16 @@ extension ObjCClass: _NominalTypeMetadataType {
             return []
         }
         
-        return instanceVariables.map {
-            .init(
-                name: $0.name,
-                type: .init($0.typeEncoding.toMetatype()),
-                offset: $0.offset
+        return instanceVariables.map { variable -> NominalTypeMetadata.Field in
+            let type: TypeMetadata? = NSClassFromString(String(variable.typeEncoding.value.dropPrefixIfPresent("@\"").dropSuffixIfPresent("\""))).map({ TypeMetadata($0) })
+            
+            let field = NominalTypeMetadata.Field(
+                name: variable.name,
+                type: type ?? .init(variable.typeEncoding.toMetatype()),
+                offset: variable.offset
             )
+            
+            return field
         }
     }
     

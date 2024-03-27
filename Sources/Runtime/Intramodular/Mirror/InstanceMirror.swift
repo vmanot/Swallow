@@ -2,7 +2,7 @@
 // Copyright (c) Vatsal Manot
 //
 
-@_implementationOnly import OrderedCollections
+import OrderedCollections
 @_spi(Internal) import Swallow
 
 public struct InstanceMirror<Subject>: _InstanceMirrorType, _VisitableMirror, MirrorType {
@@ -30,6 +30,8 @@ public struct InstanceMirror<Subject>: _InstanceMirrorType, _VisitableMirror, Mi
         }
         
         guard let metadata = _openExistential(subject, do: _typeMetadataFromValue) ?? TypeMetadata.NominalOrTuple.of(subject) else {
+            assertionFailure()
+            
             return nil
         }
         
@@ -147,9 +149,13 @@ extension InstanceMirror {
     
     public subscript(_ key: AnyCodingKey) -> Any {
         get {
-            var subject = self.subject
+            func getValue<T>(from x: T) -> Any {
+                var x = x
+                
+                return swift_value(of: &x, key: key.stringValue)
+            }
             
-            return swift_value(of: &subject, key: key.stringValue)
+            return _openExistential(subject, do: getValue)
         } set {
             guard let field = fieldForKey(key) else {
                 assertionFailure()

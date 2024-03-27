@@ -5,10 +5,12 @@
 import Swift
 
 extension BinaryInteger {
+    @_transparent
     public init<T: BinaryInteger>(use_stdlib_init value: T) {
         self.init(value)
     }
     
+    @_transparent
     public init<T: BinaryFloatingPoint>(use_stdlib_init value: T) {
         self.init(value)
     }

@@ -6,6 +6,18 @@ import Swallow
 import SwiftSyntax
 
 extension ExprSyntax {
+    public var isNil: Bool {
+        kind == .nilLiteralExpr
+    }
+}
+
+extension Sequence where Element == ExprSyntax {
+    public func allSatisfy(_ kind: SyntaxKind) -> Bool {
+        allSatisfy({ $0.kind == kind })
+    }
+}
+
+extension ExprSyntax {
     func _decodeLiteralValueOrAsString() throws -> AnyCodable? {
         do {
             return try decodeLiteral()

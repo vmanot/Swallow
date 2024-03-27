@@ -64,3 +64,57 @@ public macro _StaticProtocolMember<T>(
     module: "SwallowMacros",
     type: "_StaticProtocolMember"
 )
+
+// MARK: - Auxiliary
+
+@_exported import ObjectiveC
+
+public typealias Policy = objc_AssociationPolicy
+
+@attached(peer, names: arbitrary)
+@attached(accessor)
+public macro AssociatedObject(
+    _ policy: Policy
+) = #externalMacro(
+    module: "SwallowMacros",
+    type: "AssociatedObjectMacro"
+)
+
+@attached(peer, names: arbitrary)
+@attached(accessor)
+public macro AssociatedObject(
+    _ policy: Policy,
+    key: Any
+) = #externalMacro(
+    module: "SwallowMacros",
+    type: "AssociatedObjectMacro"
+)
+
+@attached(accessor)
+public macro _AssociatedObject(
+    _ policy: Policy
+) = #externalMacro(
+    module: "SwallowMacros",
+    type: "AssociatedObjectMacro"
+)
+
+public func getAssociatedObject(
+    _ object: AnyObject,
+    _ key: UnsafeRawPointer
+) -> Any? {
+    objc_getAssociatedObject(object, key)
+}
+
+public func setAssociatedObject(
+    _ object: AnyObject,
+    _ key: UnsafeRawPointer,
+    _ value: Any?,
+    _ policy: objc_AssociationPolicy = .retain(.nonatomic)
+) {
+    objc_setAssociatedObject(
+        object,
+        key,
+        value,
+        policy
+    )
+}

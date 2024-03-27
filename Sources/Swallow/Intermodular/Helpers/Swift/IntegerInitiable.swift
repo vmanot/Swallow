@@ -28,21 +28,25 @@ public protocol IntegerInitiable: SignedIntegerInitiable, UnsignedIntegerInitiab
 // MARK: - Implementation
 
 extension UnsignedIntegerInitiable {
+    @_transparent
     @inlinable
     public init(_ value: UInt8) {
         self.init(UInt(use_stdlib_init: value))
     }
     
+    @_transparent
     @inlinable
     public init(_ value: UInt16) {
         self.init(UInt(use_stdlib_init: value))
     }
     
+    @_transparent
     @inlinable
     public init(_ value: UInt32) {
         self.init(UInt(use_stdlib_init: value))
     }
     
+    @_transparent
     @inlinable
     public init(_ value: UInt64) {
         self.init(UInt(use_stdlib_init: value))
@@ -50,21 +54,25 @@ extension UnsignedIntegerInitiable {
 }
 
 extension SignedIntegerInitiable {
+    @_transparent
     @inlinable
     public init(_ value: Int8) {
         self.init(Int(use_stdlib_init: value))
     }
     
+    @_transparent
     @inlinable
     public init(_ value: Int16) {
         self.init(Int(use_stdlib_init: value))
     }
     
+    @_transparent
     @inlinable
     public init(_ value: Int32) {
         self.init(Int(use_stdlib_init: value))
     }
     
+    @_transparent
     @inlinable
     public init(_ value: Int64) {
         self.init(Int(use_stdlib_init: value))
