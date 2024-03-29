@@ -52,10 +52,10 @@ public struct RuntimeConversionMacro: PeerMacro {
             rightBrace: .rightBraceToken(leadingTrivia: [])
         )
         declaration.modifiers.removeAll(where: { $0.name.description.contains("private") })
-
+        
         let result = DeclSyntax(
         """
-        struct \(name): _NonGenericRuntimeConversionProtocol {
+        class \(name): _NonGenericRuntimeConversionProtocol {
             \(declaration)
         }
         """
@@ -64,3 +64,4 @@ public struct RuntimeConversionMacro: PeerMacro {
         return [result]
     }
 }
+

@@ -19,19 +19,13 @@ public struct OnceMacro: DeclarationMacro {
         let result = DeclSyntax(
             """
             @frozen
-            public struct \(name): _PerformOnce {
+            public struct \(name): _PerformOnceOnAppLaunch {
                 public init() {
                 
                 }
             
-                public func perform() {
-                    Task { @MainActor in
-                        func _perform<T>(_ fn: () async throws -> T) async throws -> T {
-                            try await fn()
-                        }
-                
-                        try! await _perform(\(node.trailingClosure))
-                    }
+                public func perform() -> _SyncOrAsyncValue<Void> {
+                    _SyncOrAsyncValue(evaluating: \(node.trailingClosure))
                 }
             }
             """

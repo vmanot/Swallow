@@ -5,7 +5,7 @@
 import Swallow
 
 /// A directed acyclic graph of nodes.
-public final class _AnyPatternMatchingGraph<G: _StaticGraphTypeDefinition> {
+public final class _AnyPatternMatchingGraph<G: _StaticGraphTypeDefinition>: _PatternMatchingDirectedAcyclicGraph {
     public typealias Node = _AnyPatternMatchingGraphNode<G>
     public typealias NodeValue = Node.Value
     public typealias Edge = _AnyPatternMatchingGraphEdge<G>

@@ -18,15 +18,7 @@ extension _RuntimeFunctionDiscovery {
     }
 }
 
-struct FunctionArguments_Arity0 {
-    
-}
-
 @objc(_Swallow_RuntimeFunctionDiscovery) open class _RuntimeFunctionDiscovery: NSObject {
-    /*protocol FunctionCaller {
-        func call(with arguments: [String: Any]) throws -> FunctionInvocationResult
-    }*/
-    
     public struct FunctionCaller: HashEquatable {
         public enum FunctionInvocationResult {
             case result(Result<Any, Error>)
@@ -89,25 +81,4 @@ struct FunctionArguments_Arity0 {
         
         return Never.self
     }
-}
-
-@objc open class _RuntimeConversion: NSObject {
-    open class var type: Any.Type {
-        assertionFailure()
-        
-        return Never.self
-    }
-}
-
-public protocol _NonGenericRuntimeConversionProtocol {
-    associatedtype Source
-    associatedtype Destination
-    
-    func __convert(_ source: Source) throws -> Destination
-}
-
-public protocol _PerformOnce: Initiable {
-    init()
-    
-    func perform()
 }

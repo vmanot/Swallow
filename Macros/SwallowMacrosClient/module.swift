@@ -3,29 +3,28 @@
 //
 
 import _SwallowMacrosRuntime
+import Foundation
 import Runtime
 @_spi(Internal) import Swallow
 
-public typealias module = _module
-
-public struct _module {
+@objc(_SwallowMacrosClient_module) public class _module: NSObject {
     private static let lock = OSUnfairLock()
     private static var initialized: Bool = false
     
-    public static func initialize() {
-        lock.withCriticalScope {
-            guard !initialized else {
+    public override init() {
+        Self.lock.withCriticalScope {
+            guard !Self.initialized else {
                 return
             }
             
             defer {
-                initialized = true
+                Self.initialized = true
             }
             
-            let onces = _SwiftRuntime._index.fetch(.conformsTo((any _PerformOnce).self), .nonAppleFramework, .pureSwift)
+            let onces = _SwiftRuntime._index.fetch(.conformsTo((any _PerformOnceOnAppLaunch).self), .nonAppleFramework, .pureSwift)
             
             onces.forEach {
-                let type = $0 as! any _PerformOnce.Type
+                let type = $0 as! any _PerformOnceOnAppLaunch.Type
                 
                 type.init().perform()
             }

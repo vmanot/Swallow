@@ -45,21 +45,8 @@ let package = Package(
                 "Diagnostics",
                 "Swallow",
             ],
+            path: "Macros/_SwallowMacrosRuntime",
             swiftSettings: []
-        ),
-        .macro(
-            name: "SwallowMacros",
-            dependencies: [
-                .product(name: "SwiftDiagnostics", package: "swift-syntax"),
-                .product(name: "SwiftSyntax", package: "swift-syntax"),
-                .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
-                .product(name: "SwiftOperators", package: "swift-syntax"),
-                .product(name: "SwiftParser", package: "swift-syntax"),
-                .product(name: "SwiftParserDiagnostics", package: "swift-syntax"),
-                .product(name: "SwiftCompilerPlugin", package: "swift-syntax"),
-                "SwiftSyntaxUtilities",
-            ],
-            path: "Sources/SwallowMacros"
         ),
         .target(
             name: "LoremIpsum",
@@ -76,53 +63,6 @@ let package = Package(
                 "RuntimeC",
             ],
             swiftSettings: []
-        ),
-        .target(
-            name: "SwallowMacrosClient",
-            dependencies: [
-                "_SwallowMacrosRuntime",
-                "SwallowMacros",
-                "Runtime",
-                "Swallow"
-            ],
-            path: "Sources/SwallowMacrosClient",
-            swiftSettings: []
-        ),
-        .target(
-            name: "MacroBuilder",
-            dependencies: [
-                "MacroBuilderCore",
-                "Swallow",
-                "SwiftSyntaxUtilities",
-                .product(name: "SwiftSyntax", package: "swift-syntax"),
-                .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
-                .product(name: "SwiftOperators", package: "swift-syntax"),
-                .product(name: "SwiftParser", package: "swift-syntax"),
-                .product(name: "SwiftParserDiagnostics", package: "swift-syntax"),
-                .product(name: "SwiftCompilerPlugin", package: "swift-syntax"),
-            ],
-            path: "Sources/MacroBuilder"
-        ),
-        .target(
-            name: "MacroBuilderCore",
-            dependencies: [
-                "SwallowMacros",
-                "Swallow",
-            ],
-            path: "Sources/MacroBuilderCore"
-        ),
-        .target(
-            name: "SwiftSyntaxUtilities",
-            dependencies: [
-                .product(name: "SwiftSyntax", package: "swift-syntax"),
-                .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
-                .product(name: "SwiftOperators", package: "swift-syntax"),
-                .product(name: "SwiftParser", package: "swift-syntax"),
-                .product(name: "SwiftParserDiagnostics", package: "swift-syntax"),
-                .product(name: "SwiftCompilerPlugin", package: "swift-syntax"),
-                "Swallow",
-            ],
-            path: "Sources/SwiftSyntaxUtilities"
         ),
         .target(
             name: "Compute",
@@ -175,6 +115,67 @@ let package = Package(
                 "Swallow"
             ],
             swiftSettings: []
+        ),
+        .macro(
+            name: "SwallowMacros",
+            dependencies: [
+                .product(name: "SwiftDiagnostics", package: "swift-syntax"),
+                .product(name: "SwiftSyntax", package: "swift-syntax"),
+                .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
+                .product(name: "SwiftOperators", package: "swift-syntax"),
+                .product(name: "SwiftParser", package: "swift-syntax"),
+                .product(name: "SwiftParserDiagnostics", package: "swift-syntax"),
+                .product(name: "SwiftCompilerPlugin", package: "swift-syntax"),
+                "SwiftSyntaxUtilities",
+            ],
+            path: "Macros/SwallowMacros"
+        ),
+        .target(
+            name: "SwallowMacrosClient",
+            dependencies: [
+                "_SwallowMacrosRuntime",
+                "SwallowMacros",
+                "Runtime",
+                "Swallow"
+            ],
+            path: "Macros/SwallowMacrosClient",
+            swiftSettings: []
+        ),
+        .target(
+            name: "MacroBuilder",
+            dependencies: [
+                "MacroBuilderCore",
+                "Swallow",
+                "SwiftSyntaxUtilities",
+                .product(name: "SwiftSyntax", package: "swift-syntax"),
+                .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
+                .product(name: "SwiftOperators", package: "swift-syntax"),
+                .product(name: "SwiftParser", package: "swift-syntax"),
+                .product(name: "SwiftParserDiagnostics", package: "swift-syntax"),
+                .product(name: "SwiftCompilerPlugin", package: "swift-syntax"),
+            ],
+            path: "Macros/MacroBuilder"
+        ),
+        .target(
+            name: "MacroBuilderCore",
+            dependencies: [
+                "SwallowMacros",
+                "Swallow",
+            ],
+            path: "Macros/MacroBuilderCore"
+        ),
+        .target(
+            name: "SwiftSyntaxUtilities",
+            dependencies: [
+                .product(name: "SwiftSyntax", package: "swift-syntax"),
+                .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
+                .product(name: "SwiftOperators", package: "swift-syntax"),
+                .product(name: "SwiftParser", package: "swift-syntax"),
+                .product(name: "SwiftParserDiagnostics", package: "swift-syntax"),
+                .product(name: "SwiftCompilerPlugin", package: "swift-syntax"),
+                "Swallow",
+            ],
+            path: "Macros/SwiftSyntaxUtilities"
         ),
         .testTarget(
             name: "SwallowTests",

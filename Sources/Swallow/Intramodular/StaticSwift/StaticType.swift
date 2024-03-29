@@ -37,8 +37,20 @@ public protocol _StaticInteger: _StaticValue where Value == Int {
     
 }
 
-public struct _AllCasesOf<T>: _StaticType {
+public struct _NamespaceOf<SwiftType>: _StaticType {
+    public init() {
+        
+    }
     
+    public static var inferred: Self.Type {
+        self
+    }
+}
+
+public struct _AllCasesOf<SwiftType>: _StaticType {
+    public init() {
+        
+    }
 }
 
 // MARK: - Default Implementation

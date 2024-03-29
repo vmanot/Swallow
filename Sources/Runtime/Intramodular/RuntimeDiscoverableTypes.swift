@@ -59,3 +59,13 @@ public struct RuntimeDiscoveredTypes<T, U> {
         self.wrappedValue = RuntimeDiscoverableTypes.enumerate(typesConformingTo: type)
     }
 }
+
+extension _RuntimeFunctionDiscovery {
+    public static func allCases() -> [_RuntimeFunctionDiscovery.Type] {
+        ObjCClass.allCases.compactMap({ ($0.superclass?.name == "_Swallow_RuntimeFunctionDiscovery") ? $0.value as? _RuntimeFunctionDiscovery.Type : nil })
+    }
+    
+    public static var sourceCodeLocation: SourceCodeLocation {
+        self.attributes.first(byUnwrapping: /_RuntimeFunctionDiscovery.FunctionAttribute.sourceCodeLocation)!
+    }
+}
