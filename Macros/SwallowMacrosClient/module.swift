@@ -7,6 +7,12 @@ import Foundation
 import Runtime
 @_spi(Internal) import Swallow
 
+public enum module {
+    public static func initialize() {
+        
+    }
+}
+
 @objc(_SwallowMacrosClient_module) public class _module: NSObject {
     private static let lock = OSUnfairLock()
     private static var initialized: Bool = false

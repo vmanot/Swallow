@@ -163,18 +163,22 @@ extension ExtensibleSequence {
         lhs.append(rhs)
     }
     
+    @_disfavoredOverload
     public static func + <S: Sequence>(lhs: Self, rhs: S) -> Self where S.Element == Element {
         return lhs.appending(contentsOf: rhs)
     }
     
+    @_disfavoredOverload
     public static func += <S: Sequence>(lhs: inout Self, rhs: S) where S.Element == Element {
         lhs.append(contentsOf: rhs)
     }
     
+    @_disfavoredOverload
     public static func + <S: ExtensibleSequence>(lhs: Self, rhs: S) -> Self where S.Element == Element {
         return lhs.appending(contentsOf: rhs)
     }
     
+    @_disfavoredOverload
     public static func += <S: ExtensibleSequence>(lhs: inout Self, rhs: S) where S.Element == Element {
         lhs.append(contentsOf: rhs)
     }
