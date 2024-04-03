@@ -54,9 +54,12 @@ public struct RuntimeDiscoveredTypes<T, U> {
     public let type: T.Type
     public let wrappedValue: [U]
     
-    public init(type: T.Type) {
+    public init(type: T.Type, transform: ([U]) -> [U] = { $0 }) {
         self.type = type
-        self.wrappedValue = RuntimeDiscoverableTypes.enumerate(typesConformingTo: type)
+        
+        let value: [U] = try! TypeMetadata._queryAll(.nonAppleFramework, .conformsTo(type))
+        
+        self.wrappedValue = transform(value)
     }
 }
 

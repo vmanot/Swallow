@@ -46,12 +46,6 @@ extension DynamicLinkEditor.Image {
     }
 }
 
-extension DynamicLinkEditor.Image {
-    public func _parseSwiftTypeConformanceList() -> [_SwiftRuntime.TypeConformanceList] {
-        _SwiftRuntime._parseSwiftTypeConformanceList(from: self)
-    }
-}
-
 // MARK: - Conformances
 
 extension DynamicLinkEditor.Image: CaseIterable {

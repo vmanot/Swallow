@@ -25,6 +25,7 @@ let package = Package(
                 "LoremIpsum",
                 "POSIX",
                 "Runtime",
+                "RuntimeC",
             ]
         ),
         .library(

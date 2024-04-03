@@ -58,6 +58,10 @@ extension TypeMetadata {
     public func conforms(
         to testType: Any.Type
     ) -> Bool {
+        if base == testType {
+            return true
+        }
+        
         func _conformsToType<A>(
             _ type: A.Type
         ) -> Bool {

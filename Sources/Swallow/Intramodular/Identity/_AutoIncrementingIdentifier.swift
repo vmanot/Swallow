@@ -10,8 +10,11 @@ private var counters: _LockedState<[_AutoIncrementingIdentifierKey: _LockedState
 public struct _AutoIncrementingIdentifier<T>: Hashable, Codable, Sendable {
     private let file: String
     
-    @_spi(Internal)
-    public let id: UInt
+    public let rawValue: UInt
+    
+    public var id: UInt {
+        rawValue
+    }
     
     private var key: _AutoIncrementingIdentifierKey {
         Hashable2ple((file, Metatype(T.self)))
@@ -26,7 +29,7 @@ public struct _AutoIncrementingIdentifier<T>: Hashable, Codable, Sendable {
         let key: _AutoIncrementingIdentifierKey = Hashable2ple((AnyHashable(file.description), Metatype(T.self)))
         
         self.file = file.description
-        self.id = Self.nextID(key: key).withLock { value in
+        self.rawValue = Self.nextID(key: key).withLock { value in
             defer {
                 (value, _) = value.addingReportingOverflow(1)
             }
@@ -49,16 +52,16 @@ public struct _AutoIncrementingIdentifier<T>: Hashable, Codable, Sendable {
 
 extension _AutoIncrementingIdentifier: CustomStringConvertible {
     public var description: String {
-        id.description
+        rawValue.description
     }
 }
 
 extension _AutoIncrementingIdentifier: Comparable {
     public static func < (lhs: Self, rhs: Self) -> Bool {
-        lhs.id < rhs.id
+        lhs.rawValue < rhs.rawValue
     }
     
     public static func > (lhs: Self, rhs: Self) -> Bool {
-        lhs.id > rhs.id
+        lhs.rawValue > rhs.rawValue
     }
 }

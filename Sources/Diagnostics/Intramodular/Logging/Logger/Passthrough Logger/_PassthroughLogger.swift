@@ -28,7 +28,7 @@ final class _PassthroughLogger: LoggerProtocol, @unchecked Sendable {
     
     private lazy var _platformLogger: OSLoggerProtocol? = {
         if #available(macOS 11.0, iOS 14.0, watchOS 7.0, tvOS 14.0, *) {
-            return OSLogger(subsystem: Bundle.main.bundleIdentifier!, category: "Diagnostics")
+            return OSLogger(subsystem: Bundle.main.bundleIdentifier ?? "<main>", category: "Diagnostics")
         } else {
             return nil
         }

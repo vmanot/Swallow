@@ -51,20 +51,20 @@ public final class _SwiftRuntimeIndex {
 extension _SwiftRuntimeIndex {
     @_optimize(speed)
     public func fetch(
+        _ predicates: QueryPredicate...
+    ) -> [Any.Type] {
+        fetch(predicates)
+    }
+
+    @_optimize(speed)
+    public func fetch(
         _ predicates: [QueryPredicate]
     ) -> [Any.Type] {
         lock.withCriticalScope {
             _fetch(predicates).map({ $0.base })
         }
     }
-    
-    @_optimize(speed)
-    public func fetch(
-        _ predicates: QueryPredicate...
-    ) -> [Any.Type] {
-        fetch(predicates)
-    }
-    
+        
     @usableFromInline
     @_optimize(speed)
     func _fetch(
@@ -144,7 +144,7 @@ extension _SwiftRuntimeIndex {
             }
         }()
 
-        private lazy var nonAppleSwiftTypes: Set<TypeMetadata> = {
+        private var nonAppleSwiftTypes: Set<TypeMetadata> = {
             var allSwiftTypes: Set<TypeMetadata> = []
             let allRuntimeDiscoveredTypes = RuntimeDiscoverableTypes.enumerate().map({ TypeMetadata($0) })
             
@@ -154,10 +154,10 @@ extension _SwiftRuntimeIndex {
                 !$0._matches(DynamicLinkEditor.Image._ImagePathFilter.appleFramework)
             }
             
-            imagesToSearch.forEach { (image: DynamicLinkEditor.Image) in
-                image._parseSwiftTypeConformanceList().forEach { (conformanceList: _SwiftRuntime.TypeConformanceList) in
-                    if conformanceList.type._isIndexWorthy {
-                        allSwiftTypes.insert(conformanceList.type)
+            for image in imagesToSearch {
+                for conformanceList in image._parseTypeConformanceList() {
+                    if let type = conformanceList.type, type._isIndexWorthy {
+                        allSwiftTypes.insert(type)
                     }
                     
                     for conformance in conformanceList.conformances {

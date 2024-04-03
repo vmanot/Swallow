@@ -2,6 +2,7 @@
 // Copyright (c) Vatsal Manot
 //
 
+import Foundation
 import MachO
 import Swallow
 
@@ -18,7 +19,7 @@ extension _SwiftRuntime {
     }
     
     public struct TypeConformanceList: Identifiable {
-        public let type: TypeMetadata
+        public let type: TypeMetadata?
         public let conformances: IdentifierIndexingArrayOf<TypeConformance>
         
         public var id: AnyHashable {
@@ -27,18 +28,14 @@ extension _SwiftRuntime {
     }
 }
 
-extension _SwiftRuntime {
-    @_optimize(speed)
-    @_transparent
-    static func _parseSwiftTypeConformanceList(
-        from image: DynamicLinkEditor.Image
-    ) -> [TypeConformanceList] {
-        var result = [TypeMetadata: [TypeConformance]]()
+extension DynamicLinkEditor.Image {
+    public func _parseTypeConformanceList() -> [_SwiftRuntime.TypeConformanceList] {
+        var result = [TypeMetadata: [_SwiftRuntime.TypeConformance]]()
         
         var sectionSize: UInt = 0
         let sectStart = UnsafeRawPointer(
             getsectiondata(
-                UnsafeRawPointer(image.header).assumingMemoryBound(to: mach_header_64.self),
+                UnsafeRawPointer(self.header).assumingMemoryBound(to: mach_header_64.self),
                 "__TEXT",
                 "__swift5_proto",
                 &sectionSize
@@ -50,11 +47,19 @@ extension _SwiftRuntime {
         }
         
         for _ in 0..<(Int(sectionSize) / MemoryLayout<Int32>.size) {
-            let conformance = UnsafeRawPointer(sectData)
+            let conformance = UnsafeMutableRawPointer(mutating: sectData)
                 .advanced(by: Int(sectData.pointee))
                 .assumingMemoryBound(to: SwiftRuntimeProtocolConformanceDescriptor.self)
+
+            guard let contextDescriptor = conformance.pointee.contextDescriptor else {
+                continue
+            }
             
-            if let conformance = parseConformance(from: conformance) {
+            guard String(utf8String: contextDescriptor.pointee.mangledName.advanced()) != nil else {
+                continue
+            }
+            
+            if let conformance = Self.parseConformance(from: conformance) {
                 if let type = conformance.type {
                     result[type, default: []].append(conformance)
                 }
@@ -65,19 +70,17 @@ extension _SwiftRuntime {
         
         return result
             .filter({ !$0.value.isEmpty })
-            .map { (key, value) -> TypeConformanceList in
-                return TypeConformanceList(
+            .map { (key, value) -> _SwiftRuntime.TypeConformanceList in
+                return _SwiftRuntime.TypeConformanceList(
                     type: key,
                     conformances: IdentifierIndexingArrayOf(value.distinct())
                 )
             }
     }
     
-    @_optimize(speed)
-    @_transparent
     private static func parseConformance(
         from conformanceDescriptor: UnsafePointer<SwiftRuntimeProtocolConformanceDescriptor>
-    ) -> TypeConformance? {
+    ) -> _SwiftRuntime.TypeConformance? {
         let flags = conformanceDescriptor.pointee.conformanceFlags
         
         guard let kind = flags.kind else {
@@ -133,7 +136,7 @@ extension _SwiftRuntime {
             return nil
         }
         
-        return TypeConformance(
+        return _SwiftRuntime.TypeConformance(
             type: type.map({ TypeMetadata($0) }),
             typeName: typeName,
             protocolName: protocolName
@@ -153,7 +156,15 @@ extension _SwiftRuntime {
                     .advanced(by: Int(descriptor.pointee.name))
                     .assumingMemoryBound(to: CChar.self)
                 
+                guard descriptor.pointee.accessFunction != 0 else {
+                    return nil
+                }
+                
                 let typeName = String(cString: name)
+                
+                guard !typeName.hasProblematicCharacters else {
+                    return nil
+                }
                 
                 if descriptor.pointee.parent != 0 {
                     let parent = UnsafeRawPointer(descriptor)
@@ -177,5 +188,12 @@ extension _SwiftRuntime {
             default:
                 return nil
         }
+    }
+}
+
+extension String {
+    var hasProblematicCharacters: Bool {
+        let problematicCharacters = CharacterSet(charactersIn: "\u{FFFD}\u{0000}-\u{001F}\u{007F}-\u{009F}�")
+        return self.rangeOfCharacter(from: problematicCharacters) != nil
     }
 }
