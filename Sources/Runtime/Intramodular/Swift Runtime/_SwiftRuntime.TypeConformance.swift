@@ -192,8 +192,9 @@ extension DynamicLinkEditor.Image {
 }
 
 extension String {
-    var hasProblematicCharacters: Bool {
+    fileprivate var hasProblematicCharacters: Bool {
         let problematicCharacters = CharacterSet(charactersIn: "\u{FFFD}\u{0000}-\u{001F}\u{007F}-\u{009F}�")
+        
         return self.rangeOfCharacter(from: problematicCharacters) != nil
     }
 }
