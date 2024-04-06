@@ -159,11 +159,7 @@ extension URL {
     }
     
     func _bookmarkDataWithSecurityScopedAccess() throws -> Data {
-        if !isFileURL {
-            runtimeIssue("Scoped bookmarks can only be created for existing files or directories")
-        }
-        
-        return try bookmarkData(
+        return try _fromURLToFileURL().bookmarkData(
             options: .withSecurityScope,
             includingResourceValuesForKeys: nil,
             relativeTo: nil

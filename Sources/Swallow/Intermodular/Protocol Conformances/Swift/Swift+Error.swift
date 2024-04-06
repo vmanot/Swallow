@@ -50,7 +50,7 @@ public struct AnyError: CustomStringConvertible, CustomDebugStringConvertible, E
     }
     
     public static func == (lhs: Self, rhs: Self) -> Bool {
-        lhs.description == rhs.description && lhs.localizedDescription == rhs.localizedDescription
+        lhs.hashValue == rhs.hashValue
     }
 }
 

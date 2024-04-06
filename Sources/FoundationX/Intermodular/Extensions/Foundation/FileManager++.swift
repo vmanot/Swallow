@@ -475,5 +475,13 @@ extension FileManager {
             .contentsOfDirectory(at: directory)
             .firstAndOnly(where: { UTType(filenameExtension: $0._fileExtension) == fileExtension })
     }
+    
+    public func items<T: _ThrowingInitiableFromURL>(
+        ofType type: T.Type,
+        at url: URL
+    ) throws -> [T] {
+        try contentsOfDirectory(at: url).compactMap({ try? T.init(url: $0) })
+    }
 }
+
 #endif

@@ -11,6 +11,7 @@ import Swallow
 
 #if os(macOS)
 extension _FileOrDirectorySecurityScopedAccessManager {
+    @MainActor
     public static func requestAccess(
         to url: URL
     ) throws -> URL {
@@ -26,7 +27,7 @@ extension _FileOrDirectorySecurityScopedAccessManager {
             return bookmarkedURL
         }
         
-        if let cachedURL = try URL._BookmarksCache.cachedURL(for: url) {
+        if let cachedURL = try? URL._BookmarksCache.cachedURL(for: url) {
             do {
                 if isDirectory {
                     try _testWritingFile(inDirectory: cachedURL)
@@ -48,7 +49,7 @@ extension _FileOrDirectorySecurityScopedAccessManager {
             }
         } else {
             if let ancestorURL = FileManager.default.nearestAccessibleSecurityScopedAncestor(for: url) {
-                let bookmarkedURL = try ancestorURL._accessingSecurityScopedResource {
+                let bookmarkedURL = try? ancestorURL._accessingSecurityScopedResource {
                     if !FileManager.default.fileExists(at: url) {
                         try FileManager.default.createDirectoryIfNecessary(
                             at: url,
@@ -59,7 +60,9 @@ extension _FileOrDirectorySecurityScopedAccessManager {
                     return try URL._BookmarksCache.bookmark(url)
                 }
                 
-                return bookmarkedURL
+                if let bookmarkedURL {
+                    return bookmarkedURL
+                }
             }
             
             let url = try promptForAccess(to: url, isDirectory: isDirectory)
@@ -90,12 +93,23 @@ extension _FileOrDirectorySecurityScopedAccessManager {
         url.stopAccessingSecurityScopedResource()
     }
     
+    @MainActor
     private static func promptForAccess(
         to url: URL,
         isDirectory: Bool
     ) throws -> URL {
+        let openPanelDelegate = _NSOpenSavePanelDelegate(url: url)
         let openPanel = configureOpenPanel(for: url, isDirectory: isDirectory)
+        
+        openPanel.delegate = openPanelDelegate
+        
+        if ProcessInfo.processInfo._isRunningWithinXCTest {
+            openPanel.becomeKey()
+            openPanel.orderFront(nil)
+        }
+        
         let response = openPanel.runModal()
+        
         switch response {
             case .OK, .continue:
                 guard let selectedURL = openPanel.url else {
@@ -115,8 +129,8 @@ extension _FileOrDirectorySecurityScopedAccessManager {
     ) -> NSOpenPanel {
         let openPanel = NSOpenPanel()
         
-        openPanel.directoryURL = isDirectory ? url : url.deletingLastPathComponent()
-        openPanel.canChooseFiles = !isDirectory
+        openPanel.directoryURL = url.deletingLastPathComponent()
+        openPanel.canChooseFiles = true
         openPanel.canChooseDirectories = isDirectory
         openPanel.canCreateDirectories = false
         openPanel.allowsMultipleSelection = false
@@ -198,6 +212,7 @@ extension FileManager {
         case directory
     }
     
+    @MainActor
     public func withUserGrantedAccess<T>(
         to urlRepresentable: URLRepresentable,
         scope: _FileOrDirectoryAccessScopePreference = .automatic,
@@ -251,6 +266,7 @@ extension FileManager {
         }
     }
     
+    @MainActor
     @usableFromInline
     func _withUserGrantedAccess<T>(
         to url: URLRepresentable,

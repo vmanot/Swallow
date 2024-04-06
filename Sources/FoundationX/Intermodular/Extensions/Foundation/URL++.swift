@@ -85,12 +85,16 @@ extension URL {
 
 extension URL {
     public static var userDocuments: URL! {
-        try? FileManager.default.url(
-            for: .documentDirectory,
-            in: .userDomainMask
-        )
+        @_disfavoredOverload
+        get {
+            try? FileManager.default.url(
+                for: .documentDirectory,
+                in: .userDomainMask
+            )
+        }
     }
     
+    @_disfavoredOverload
     public static func securityAppGroupContainer(
         for identifier: String
     ) throws -> URL {
@@ -102,6 +106,7 @@ extension URL {
     /// The real home directory of the user.
     @_spi(Internal)
     public static var _userHomeDirectory: URL {
+        @_disfavoredOverload
         get throws {
             enum _Error: Swift.Error {
                 case invalidHomeDirectory
@@ -121,8 +126,12 @@ extension URL {
     }
     
     /// Returns the URL for the temporary directory of the current user.
+    @_disfavoredOverload
     public static var temporaryDirectory: URL {
-        return FileManager.default.temporaryDirectory
+        @_disfavoredOverload
+        get {
+            return FileManager.default.temporaryDirectory
+        }
     }
 }
 
@@ -299,6 +308,10 @@ extension URL {
     
     /// Checks if the URL represents a directory.
     public var _isKnownOrIndicatedToBeFileDirectory: Bool {
+        if FileManager.default.isDirectory(at: self) {
+            return true
+        }
+        
         // Attempt to determine if the URL points to a directory by its path.
         let path = self.path
         var isDirectory = (path.last == "/")
@@ -341,6 +354,21 @@ extension URL {
         return URL(string: resolvingSymlinksInPath().path)!
     }
     
+    public func _fromURLToFileURL() -> URL {
+        if self.isFileURL {
+            return self
+        }
+        
+        let pathComponents = self.pathComponents
+        var fileURL = URL(fileURLWithPath: "/")
+        
+        for component in pathComponents {
+            fileURL.appendPathComponent(component)
+        }
+        
+        return fileURL
+    }
+    
     public static func temporaryFile(
         name: String,
         data: Data
@@ -363,7 +391,5 @@ extension URL {
                 return nil
             }
         }
-        
-        
     }
 }

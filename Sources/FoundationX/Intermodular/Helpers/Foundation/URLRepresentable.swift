@@ -13,6 +13,18 @@ public protocol URLRepresentable: URLConvertible {
     init?(url: URL)
 }
 
+public protocol _ThrowingInitiableFromURL {
+    init(url: URL) throws
+}
+
+extension _ThrowingInitiableFromURL {
+    public init(filePath: String) throws {
+        let url = URL(fileURLWithPath: filePath)
+        
+        try self.init(url: url)
+    }
+}
+
 // MARK: - API
 
 extension String {
