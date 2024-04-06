@@ -9,14 +9,20 @@ public enum TODO {
     public static subscript<T>(
         dynamicMember action: KeyPath<_Actions, Action>
     ) -> _CallFunctionAsFunction<T> {
-        _CallFunctionAsFunction()
+        @_transparent
+        get {
+            _CallFunctionAsFunction()
+        }
     }
     
     @_disfavoredOverload
     public static subscript(
         dynamicMember action: KeyPath<AbstractReturnValue._InstanceKeyPaths, AbstractReturnValue>
     ) -> Never {
-        fatalError("Unimplemented function or code path")
+        @_transparent
+        get {
+            fatalError("Unimplemented function or code path")
+        }
     }
 }
 

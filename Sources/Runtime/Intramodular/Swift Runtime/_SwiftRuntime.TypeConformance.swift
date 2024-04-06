@@ -50,15 +50,7 @@ extension DynamicLinkEditor.Image {
             let conformance = UnsafeMutableRawPointer(mutating: sectData)
                 .advanced(by: Int(sectData.pointee))
                 .assumingMemoryBound(to: SwiftRuntimeProtocolConformanceDescriptor.self)
-
-            guard let contextDescriptor = conformance.pointee.contextDescriptor else {
-                continue
-            }
-            
-            guard String(utf8String: contextDescriptor.pointee.mangledName.advanced()) != nil else {
-                continue
-            }
-            
+                        
             if let conformance = Self.parseConformance(from: conformance) {
                 if let type = conformance.type {
                     result[type, default: []].append(conformance)

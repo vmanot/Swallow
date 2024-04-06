@@ -286,6 +286,10 @@ extension String {
     public func trimmingWhitespace() -> String {
         trimmingCharacters(in: .whitespaces)
     }
+    
+    public func trimmingWhitespaceAndNewlines() -> String {
+        trimmingCharacters(in: .whitespacesAndNewlines)
+    }
 }
 
 extension String {

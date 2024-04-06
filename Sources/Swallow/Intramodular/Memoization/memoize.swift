@@ -22,6 +22,21 @@ public func _memoize<Key: Hashable, Result>(
 
 @inlinable
 @inline(__always)
+public func _memoize<Key: Hashable, Result>(
+    uniquingWith key: Key,
+    file: StaticString = #fileID,
+    function: StaticString = #function,
+    line: UInt = #line,
+    column: UInt = #column,
+    operation: () async throws -> Result
+) async throws -> Result {
+    let location = SourceCodeLocation(file: file, function: function, line: line, column: column)
+    
+    return try await _GloballyMemoizedValues[location][key, operation: operation]
+}
+
+@inlinable
+@inline(__always)
 public func _memoize<K0: Hashable, K1: Hashable, Result>(
     uniquingWith key: (K0, K1),
     file: StaticString = #fileID,
@@ -102,10 +117,31 @@ struct _GloballyMemoizedValues {
             operation fn: () -> Result
         ) -> Result {
             get {
-                lock.withCriticalScope {
+                let result: Result = fn()
+
+                return lock.withCriticalScope {
                     guard let result = storage[key.hashValue].map({ $0 as! Result }) else {
-                        let result = fn()
+                    storage[key.hashValue] = result
                         
+                        return result
+                    }
+                    
+                    return result
+                }
+            }
+        }
+        
+        @inline(__always)
+        @usableFromInline
+        subscript<Key: Hashable, Result>(
+            _ key: Key,
+            operation fn: () async throws -> Result
+        ) -> Result {
+            get async throws {
+                let result: Result = try await fn()
+                
+                return lock.withCriticalScope {
+                    guard let result = storage[key.hashValue].map({ $0 as! Result }) else {
                         storage[key.hashValue] = result
                         
                         return result

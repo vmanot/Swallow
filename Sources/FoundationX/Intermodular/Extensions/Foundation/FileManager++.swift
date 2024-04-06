@@ -124,7 +124,7 @@ extension FileManager {
         
         return isReadableFile(atPath: url.path) && isWritableFile(atPath: url.path)
     }
-
+    
     public func isReadableAndWritable<T: URLRepresentable>(
         atOrAncestorOf location: T
     ) -> Bool {
@@ -290,7 +290,7 @@ extension FileManager {
             throw error
         }
     }
-
+    
     @available(macOS 11.0, iOS 14.0, watchOS 7.0, tvOS 14.0, *)
     public func removeItem(
         at path: FilePath
@@ -437,7 +437,9 @@ extension FileManager {
         return result
     }
     
-    public func documentsDirectoryURL(forUbiquityContainerIdentifier: String?) throws -> URL? {
+    public func documentsDirectoryURL(
+        forUbiquityContainerIdentifier: String?
+    ) throws -> URL? {
         guard let url = url(forUbiquityContainerIdentifier: forUbiquityContainerIdentifier)?.appendingPathComponent("Documents") else {
             return nil
         }
@@ -451,3 +453,27 @@ extension FileManager {
         return url
     }
 }
+
+#if canImport(UniformTypeIdentifiers)
+import UniformTypeIdentifiers
+
+extension FileManager {
+    public func first(
+        _ fileExtension: UTType,
+        in directory: URL
+    ) throws -> URL? {
+        try self
+            .contentsOfDirectory(at: directory)
+            .first(where: { UTType(filenameExtension: $0._fileExtension) == fileExtension })
+    }
+
+    public func firstAndOnly(
+        _ fileExtension: UTType,
+        in directory: URL
+    ) throws -> URL? {
+        try self
+            .contentsOfDirectory(at: directory)
+            .firstAndOnly(where: { UTType(filenameExtension: $0._fileExtension) == fileExtension })
+    }
+}
+#endif
