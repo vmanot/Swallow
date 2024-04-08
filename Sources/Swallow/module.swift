@@ -2,12 +2,12 @@
 // Copyright (c) Vatsal Manot
 //
 
-@_implementationOnly import RuntimeC
+@_implementationOnly import _RuntimeC
 
 import Swift
 
 public func _associated_object_key() -> UnsafeRawPointer {
-    RuntimeC._associated_object_key()
+    _RuntimeC._associated_object_key()
 }
 
 public enum _module {

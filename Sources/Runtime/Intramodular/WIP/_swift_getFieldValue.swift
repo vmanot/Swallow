@@ -138,7 +138,10 @@ package struct _SwiftRuntimeFieldLookupCache {
     
     private static var storage = [UnsafeRawPointer: [String: _SwiftRuntimeFieldByOffset]]()
     
-    static subscript(type: Any.Type, key: String) -> _SwiftRuntimeFieldByOffset? {
+    static subscript(
+        type: Any.Type,
+        key: String
+    ) -> _SwiftRuntimeFieldByOffset? {
         get {
             storage[unsafeBitCast(type, to: UnsafeRawPointer.self)]?[key]
         }
@@ -209,44 +212,6 @@ package func _swift_getField_slow<Value>(
     }
     
     throw _SwiftRuntimeFieldNotFoundError(type: Value.self, key: key, instance: instanceType)
-}
-
-private func withUnsafeInstancePointer<InstanceType, Result>(
-    _ instance: InstanceType,
-    _ body: (UnsafeRawPointer) throws -> Result
-) throws -> Result {
-    if swift_isClassType(InstanceType.self) {
-        return try withUnsafePointer(to: instance) {
-            try $0.withMemoryRebound(to: UnsafeRawPointer.self, capacity: 1) {
-                try body($0.pointee)
-            }
-        }
-    } else {
-        return try withUnsafePointer(to: instance) {
-            let ptr = UnsafeRawPointer($0)
-            
-            return try body(ptr)
-        }
-    }
-}
-
-private func withUnsafeMutableInstancePointer<InstanceType, Result>(
-    _ instance: inout InstanceType,
-    _ body: (UnsafeMutableRawPointer) throws -> Result
-) throws -> Result {
-    if swift_isClassType(InstanceType.self) {
-        return try withUnsafeMutablePointer(to: &instance) {
-            try $0.withMemoryRebound(to: UnsafeMutableRawPointer.self, capacity: 1) {
-                try body($0.pointee)
-            }
-        }
-    } else {
-        return try withUnsafeMutablePointer(to: &instance) {
-            let ptr = UnsafeMutableRawPointer(mutating: $0)
-            
-            return try body(ptr)
-        }
-    }
 }
 
 // MARK: - Error Handling

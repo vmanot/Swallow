@@ -5,15 +5,6 @@
 import ObjectiveC
 import Swallow
 
-@discardableResult
-fileprivate func synchronized<T : AnyObject, U>(_ obj: T, closure: () -> U) -> U {
-    objc_sync_enter(obj)
-    defer {
-        objc_sync_exit(obj)
-    }
-    return closure()
-}
-
 /// Metadata for a type.
 public struct _SwiftRuntimeTypeMetadataInterface {
     
@@ -148,7 +139,7 @@ fileprivate class MetadataCache {
     private var cache = [String : _SwiftRuntimeTypeMetadataInterface]()
     
     func metadata(of type: Any.Type) -> _SwiftRuntimeTypeMetadataInterface {
-        synchronized(self) {
+        objc_sync(self) {
             let key = String(describing: type)
             guard let metadata = cache[key] else {
                 let metadata = _SwiftRuntimeTypeMetadataInterface(type: type)

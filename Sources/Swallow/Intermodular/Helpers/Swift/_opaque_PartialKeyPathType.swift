@@ -18,6 +18,10 @@ public protocol _opaque_PartialKeyPathType: AnyKeyPath {
     func _opaque_applyPartialKeyPath(on instance: Any) throws -> Any
 }
 
+public protocol _PartialKeyPathType: _opaque_PartialKeyPathType {
+    associatedtype Root
+}
+
 public protocol _opaque_KeyPathType: _opaque_PartialKeyPathType {
     static var _opaque_ValueType: Any.Type { get }
     
@@ -43,7 +47,7 @@ extension AnyKeyPath: _Swallow_KeyPathType {
     }
 }
 
-extension PartialKeyPath: _opaque_PartialKeyPathType {
+extension PartialKeyPath: _PartialKeyPathType {
     public static var _opaque_RootType: Any.Type {
         Root.self
     }

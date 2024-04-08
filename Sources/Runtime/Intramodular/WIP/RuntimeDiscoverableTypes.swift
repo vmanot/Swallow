@@ -49,23 +49,6 @@ public enum RuntimeDiscoverableTypes {
     }
 }
 
-@available(*, deprecated, renamed: "StaticMirrorQuery")
-public typealias RuntimeDiscoveredTypes<T, U> = _StaticMirrorQuery<T, U>
-
-@propertyWrapper
-public struct _StaticMirrorQuery<T, U> {
-    public let type: T.Type
-    public let wrappedValue: [U]
-    
-    public init(type: T.Type, transform: ([U]) -> [U] = { $0 }) {
-        self.type = type
-        
-        let value: [U] = try! TypeMetadata._queryAll(.nonAppleFramework, .conformsTo(type))
-        
-        self.wrappedValue = transform(value)
-    }
-}
-
 extension _RuntimeFunctionDiscovery {
     public static func allCases() -> [_RuntimeFunctionDiscovery.Type] {
         ObjCClass.allCases.compactMap({ ($0.superclass?.name == "_Swallow_RuntimeFunctionDiscovery") ? $0.value as? _RuntimeFunctionDiscovery.Type : nil })

@@ -5,6 +5,7 @@
 import Foundation
 import System
 import Swift
+import UniformTypeIdentifiers
 
 extension FileManager {
     /// Returns a Boolean value that indicates whether a file or directory exists at a specified URL.
@@ -507,6 +508,7 @@ extension FileManager {
 #if canImport(UniformTypeIdentifiers)
 import UniformTypeIdentifiers
 
+@available(macOS 11.0, iOS 14.0, watchOS 7.0, tvOS 14.0, *)
 extension FileManager {
     public func first(
         _ fileExtension: UTType,
@@ -533,5 +535,4 @@ extension FileManager {
         try contentsOfDirectory(at: url).compactMap({ try? T.init(url: $0) })
     }
 }
-
 #endif

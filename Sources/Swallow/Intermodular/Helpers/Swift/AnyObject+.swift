@@ -5,14 +5,7 @@
 import ObjectiveC
 import Swift
 
-public protocol _FinalClassAnyObject {
-    
-}
-
-extension _FinalClassAnyObject {
-    public typealias _Self = _FinalClassAnyObject
-}
-
+@_transparent
 public func isClass(
     _ cls: AnyClass,
     descendantOf otherCls: AnyClass
@@ -38,6 +31,7 @@ public func isClass(
     return false
 }
 
+@_transparent
 public func isType(
     _ type: Any.Type,
     descendantOf otherType: Any.Type
@@ -54,10 +48,12 @@ public func swift_isClassType(
     _: Any.Type
 ) -> Bool
 
+@_transparent
 public func isAnyObject<T>(_ x: T) -> Bool {
     return swift_isClassType(type(of: x))
 }
 
+@_transparent
 public func isAnyObject<T>(_ x: T?) -> Bool {
     return swift_isClassType(T.self)
 }

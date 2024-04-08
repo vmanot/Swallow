@@ -24,8 +24,9 @@ let package = Package(
                 "FoundationX",
                 "LoremIpsum",
                 "POSIX",
+                "_RuntimeKeyPath",
+                "_RuntimeC",
                 "Runtime",
-                "RuntimeC",
             ]
         ),
         .library(
@@ -61,7 +62,7 @@ let package = Package(
             name: "Swallow",
             dependencies: [
                 .product(name: "Collections", package: "swift-collections"),
-                "RuntimeC",
+                "_RuntimeC",
             ],
             swiftSettings: []
         ),
@@ -105,11 +106,23 @@ let package = Package(
             swiftSettings: []
         ),
         .target(
-            name: "RuntimeC"
+            name: "_RuntimeC"
+        ),
+        .target(
+            name: "_RuntimeKeyPath",
+            dependencies: [
+                "_SwallowMacrosRuntime",
+                "Compute",
+                "FoundationX",
+                "Swallow"
+            ],
+            swiftSettings: [.unsafeFlags(["-parse-stdlib"])]
         ),
         .target(
             name: "Runtime",
             dependencies: [
+                "_RuntimeC",
+                "_RuntimeKeyPath",
                 "_SwallowMacrosRuntime",
                 "Compute",
                 "FoundationX",

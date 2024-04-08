@@ -6,32 +6,34 @@ import Swallow
 
 extension TypeMetadata {
     @frozen
-    public enum Kind: Equatable {
-        public typealias RawValue = Int
-        
-        struct Flags {
-            static let kindIsNonHeap = 0x200
-            static let kindIsRuntimePrivate = 0x100
-            static let kindIsNonType = 0x400
+    public enum Kind: UInt, Equatable {
+        case `class` = 0
+        case `struct` = 0x200     // 0 | nonHeap
+        case `enum` = 0x201       // 1 | nonHeap
+        case optional = 0x202     // 2 | nonHeap
+        case foreignClass = 0x203 // 3 | nonHeap
+        case opaque = 0x300       // 0 | runtimePrivate | nonHeap
+        case tuple = 0x301        // 1 | runtimePrivate | nonHeap
+        case function = 0x302     // 2 | runtimePrivate | nonHeap
+        case existential = 0x303  // 3 | runtimePrivate | nonHeap
+        case metatype = 0x304     // 4 | runtimePrivate | nonHeap
+        case objCClassWrapper = 0x305     // 5 | runtimePrivate | nonHeap
+        case existentialMetatype = 0x306  // 6 | runtimePrivate | nonHeap
+        case heapLocalVariable = 0x400    // 0 | nonType
+        case heapGenericLocalVariable = 0x500 // 0 | nonType | runtimePrivate
+        case errorObject = 0x501  // 1 | nonType | runtimePrivate
+        case unknown = 0xffff
+
+        init(_ type: Any.Type) {
+            let v = swift_getMetadataKind(type)
+            if let result = Self(rawValue: v) {
+                self = result
+            } else {
+                self = .unknown
+            }
         }
-        
-        case `struct`
-        case `enum`
-        case optional
-        case opaque
-        case tuple
-        case function
-        case existential
-        case metatype
-        case objCClassWrapper
-        case existentialMetatype
-        case foreignClass
-        case heapLocalVariable
-        case heapGenericLocalVariable
-        case errorObject
-        case `class`
-        
-        public init?(rawValue: RawValue) {
+
+        public init?(_rawValue rawValue: Int) {
             switch rawValue {
                 case 1:
                     self = .struct
@@ -96,6 +98,14 @@ extension TypeMetadata {
     }
 }
 
+extension TypeMetadata {
+    struct Flags {
+        static let kindIsRuntimePrivate = 0x100
+        static let kindIsNonHeap = 0x200
+        static let kindIsNonType = 0x400
+    }
+}
+
 // MARK: - Helpers
 
 extension TypeMetadata {
@@ -103,10 +113,12 @@ extension TypeMetadata {
     var _contextDescriptorFlags: SwiftRuntimeContextDescriptorFlags {
         unsafeBitCast(self, to: UnsafePointer<SwiftRuntimeContextDescriptorFlags>.self).pointee
     }
-    
+}
+
+extension TypeMetadata {
     @usableFromInline
     var _kind: TypeMetadata.Kind? {
-        TypeMetadata.Kind(rawValue: unsafeBitCast(base, to: UnsafePointer<Int>.self)[0])
+        TypeMetadata.Kind(base)
     }
     
     @_transparent
@@ -149,7 +161,7 @@ extension TypeMetadata {
                         }
                     }
                 }
-
+                
                 assertionFailure()
                 
                 return .class
@@ -158,7 +170,9 @@ extension TypeMetadata {
         
         return kind
     }
-    
+}
+
+extension TypeMetadata {
     public var typed: Any {
         switch kind {
             case .`struct`:
