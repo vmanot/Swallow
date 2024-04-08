@@ -6,6 +6,20 @@ import Swallow
 import SwiftSyntax
 
 extension ExprSyntax {
+    public mutating func prepend(_ other: ExprSyntax, separator: String) {
+        self = prepending(other, separator: separator)
+    }
+    
+    public func prepending(_ other: ExprSyntax, separator: String) -> ExprSyntax {
+        if self.description == "" {
+            return other
+        } else {
+            return "\(other)\(raw: separator)\(self)"
+        }
+    }
+    
+}
+extension ExprSyntax {
     public var isNil: Bool {
         kind == .nilLiteralExpr
     }

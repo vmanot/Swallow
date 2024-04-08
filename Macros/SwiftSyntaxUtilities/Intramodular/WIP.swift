@@ -2,8 +2,8 @@
 // Copyright (c) Vatsal Manot
 //
 
-import SwiftSyntax
 import Swift
+import SwiftSyntax
 
 extension WithAttributesSyntax {
     public func hasMacroApplication(_ name: String) -> Bool {

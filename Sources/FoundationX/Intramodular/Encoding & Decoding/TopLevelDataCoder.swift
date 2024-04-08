@@ -7,7 +7,7 @@ import Foundation
 import Swallow
 
 /// A type that defines methods for encoding & decoding data.
-public protocol TopLevelDataCoder: Sendable {
+public protocol TopLevelDataCoder: Sendable, TopLevelDecoder, TopLevelEncoder where Input == Foundation.Data, Output == Foundation.Data {
     func decode<T: Decodable>(_ type: T.Type, from data: Data) throws -> T
     func encode<T: Encodable>(_ value: T) throws -> Data
 }

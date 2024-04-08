@@ -57,7 +57,6 @@ public struct HashableMacro: ExtensionMacro, MemberMacro {
                 case .keyword(.fileprivate):
                     return true
                 case .keyword(.private):
-                    // The added functions should never be private
                     return false
                 default:
                     return false
@@ -67,8 +66,7 @@ public struct HashableMacro: ExtensionMacro, MemberMacro {
         let memberList = declaration.memberBlock.members
         
         let propertyNames = memberList.flatMap({ member -> [TokenSyntax] in
-            // is a property
-            guard let variable = member.decl.as(VariableDeclSyntax.self) else {
+            guard let variable = member.decl.as(VariableDeclSyntax.self), !variable.isComputed else {
                 return []
             }
             

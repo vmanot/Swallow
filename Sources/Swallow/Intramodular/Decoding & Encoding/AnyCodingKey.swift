@@ -84,6 +84,12 @@ extension AnyCodingKey: Codable {
     }
 }
 
+extension AnyCodingKey: Comparable {
+    public static func < (lhs: Self, rhs: Self) -> Bool {
+        lhs.stringValue < rhs.stringValue
+    }
+}
+
 extension AnyCodingKey: CustomDebugStringConvertible, CustomStringConvertible {
     public var debugDescription: String {
         stringValue.debugDescription

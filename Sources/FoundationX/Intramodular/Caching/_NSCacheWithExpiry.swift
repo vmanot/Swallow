@@ -5,7 +5,7 @@
 import Foundation
 import Swallow
 
-public struct _NSCacheWithExpiry<Key: Hashable, Value> {
+public struct _NSCacheWithExpiry<Key: Hashable, Value>: @unchecked Sendable {
     private let base: NSCache<CacheKey, CachedObject>
     private let expiryInterval: TimeInterval
     
@@ -14,6 +14,10 @@ public struct _NSCacheWithExpiry<Key: Hashable, Value> {
     ) {
         self.base = NSCache<CacheKey, CachedObject>()
         self.expiryInterval = expiryInterval
+    }
+    
+    public init() {
+        self.init(expiryInterval: .maximum)
     }
 }
 

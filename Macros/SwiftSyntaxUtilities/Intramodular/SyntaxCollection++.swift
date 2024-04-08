@@ -2,6 +2,7 @@
 // Copyright (c) Vatsal Manot
 //
 
+import Swift
 import SwiftSyntax
 
 extension SyntaxCollection {
@@ -19,6 +20,10 @@ extension SyntaxCollection {
             }
         }
         
+        guard !indicesToRemove.isEmpty else {
+            return
+        }
+
         indicesToRemove.reversed().forEach {
             self.remove(at: $0)
         }
@@ -35,8 +40,12 @@ extension SyntaxCollection {
             }
         }
         
-        indicesToRemove.reversed().forEach {
-            self.remove(at: $0)
+        guard !indicesToRemove.isEmpty else {
+            return
+        }
+
+        for index in indicesToRemove.reversed() {
+            self.remove(at: index)
         }
     }
 }

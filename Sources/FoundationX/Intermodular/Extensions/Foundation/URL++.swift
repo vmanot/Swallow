@@ -8,6 +8,13 @@ import System
 
 extension URL {
     @_disfavoredOverload
+    public init(_ url: URL, _: Void = ()) {
+        self = url
+    }
+}
+
+extension URL {
+    @_disfavoredOverload
     @available(macOS 11.0, iOS 14.0, watchOS 7.0, tvOS 14.0, *)
     public init?(
         _filePath: FilePath
@@ -29,6 +36,13 @@ extension URL {
         }
         
         self = url
+    }
+    
+    @_disfavoredOverload
+    public init(
+        _filePath path: String?
+    ) throws {
+        try self.init(fileURLWithPath: path.unwrap())
     }
     
     public init?(

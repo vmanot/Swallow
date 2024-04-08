@@ -5,29 +5,22 @@
 import Swift
 import SwiftDiagnostics
 import SwiftSyntax
-import SwiftSyntaxBuilder
-import SwiftSyntaxMacros
 
-public enum CustomError: CustomStringConvertible, Error {
-    struct _CustomErrorMessage: DiagnosticMessage, Error {
-        let message: String
-        let diagnosticID: MessageID
-        let severity: DiagnosticSeverity
+public enum CustomError: Error {
+    case message(AnyDiagnosticMessage)
+            
+    public init(file: String = #fileID) {
+        self = .message(AnyDiagnosticMessage(stringLiteral: "An unknown error occurred in \(file)."))
     }
-    
-    case message(String)
-    
-    public var description: String {
-        switch self {
-            case .message(let text): 
-                return text
-        }
-    }
+}
 
-    static func diagnostic(
+// MARK: - Initializers
+
+extension CustomError {
+    public static func diagnostic(
         node: Syntax,
         position: AbsolutePosition? = nil,
-        message: _CustomErrorMessage,
+        message: AnyDiagnosticMessage,
         highlights: [Syntax]? = nil,
         notes: [Note] = [],
         fixIts: [FixIt] = []
@@ -37,14 +30,15 @@ public enum CustomError: CustomStringConvertible, Error {
             message: message
         )
     }
-        
-    init(file: String = #fileID) {
-        self = CustomError.message("An unknown error occurred in \(file).")
-    }
 }
 
-extension CustomError._CustomErrorMessage: FixItMessage {
-    var fixItID: MessageID {
-        diagnosticID
+// MARK: - Conformances
+
+extension CustomError: CustomStringConvertible {
+    public var description: String {
+        switch self {
+            case .message(let message):
+                return message.message
+        }
     }
 }

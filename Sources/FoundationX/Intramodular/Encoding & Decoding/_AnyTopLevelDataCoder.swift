@@ -6,11 +6,6 @@ import Combine
 import Foundation
 import Swallow
 
-public protocol _AnyDataCodableCoder {
-    func decode<T>(_ type: T.Type, from data: Data) throws -> T
-    func encode<T>(_ value: T) throws -> Data
-}
-
 public enum _AnyTopLevelDataCoder: Sendable {
     public struct Custom: Sendable {
         public let type: Any.Type
@@ -29,7 +24,7 @@ public enum _AnyTopLevelDataCoder: Sendable {
     }
     
     case dataCodableType(any DataCodable.Type, strategy: (decoding: any Sendable, encoding: any Sendable))
-    case topLevelDataCoder(TopLevelDataCoder, forType: Codable.Type)
+    case topLevelDataCoder(any TopLevelDataCoder, forType: Codable.Type)
     case custom(Custom)
     
     var type: Any.Type {

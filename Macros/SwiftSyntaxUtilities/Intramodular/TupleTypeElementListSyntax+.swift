@@ -1,14 +1,9 @@
 //
-//  TupleTypeElementListSyntax+.swift
-//
-//
-//  Created by p-x9 on 2024/01/24.
-//  
+// Copyright (c) Vatsal Manot
 //
 
-import Foundation
+import Swift
 import SwiftSyntax
-import SwiftSyntaxBuilder
 
 extension TupleTypeElementListSyntax {
     init(_ types: [TypeSyntax]) {

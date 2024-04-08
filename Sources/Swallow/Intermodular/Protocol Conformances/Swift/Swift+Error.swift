@@ -73,6 +73,10 @@ public struct CustomStringError: Codable, CustomStringConvertible, Error, Expres
         self.description = String(describing: subject)
     }
     
+    public init<T>(_ subject: T) {
+        self.description = String(describing: subject)
+    }
+    
     public init(_ description: String) {
         self.description = description
     }

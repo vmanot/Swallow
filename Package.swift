@@ -182,7 +182,10 @@ let package = Package(
             name: "SwallowTests",
             dependencies: [
                 "Runtime",
-                "Swallow"
+                "Swallow",
+                "SwallowMacros",
+                "SwallowMacrosClient",
+                "SwiftSyntaxUtilities",
             ],
             path: "Tests/Swallow"
         ),

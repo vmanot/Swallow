@@ -5,7 +5,11 @@
 import Foundation
 import Swallow
 
-public protocol URLConvertible {
+public protocol _URLConvertible {
+    var url: URL { get }
+}
+
+public protocol URLConvertible: _URLConvertible {
     var url: URL { get }
 }
 

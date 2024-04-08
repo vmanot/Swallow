@@ -49,8 +49,11 @@ public enum RuntimeDiscoverableTypes {
     }
 }
 
+@available(*, deprecated, renamed: "StaticMirrorQuery")
+public typealias RuntimeDiscoveredTypes<T, U> = _StaticMirrorQuery<T, U>
+
 @propertyWrapper
-public struct RuntimeDiscoveredTypes<T, U> {
+public struct _StaticMirrorQuery<T, U> {
     public let type: T.Type
     public let wrappedValue: [U]
     

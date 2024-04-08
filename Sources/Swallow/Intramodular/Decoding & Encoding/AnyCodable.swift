@@ -145,15 +145,29 @@ extension AnyCodable {
         }
     }
     
+    struct DictionaryKeyMatchingError: CustomStringConvertible, Error {
+        let data: AnyCodable
+        let key: String
+        
+        public var description: String {
+            "Failed to find key: \(key) in data:\n\(data)"
+        }
+    }
+    
     public subscript(
         key codingKey: String,
         caseInsensitive caseInsensitive: Bool
     ) -> AnyCodable? {
         get throws {
-            let key = AnyCodingKey(stringValue: codingKey).lowercased()
-            let value = try cast(self.value, to: [AnyCodingKey: AnyCodable].self)
-
-            return try value[value.keys.firstAndOnly(where: { $0.lowercased() == key }).unwrap()]
+            do {
+                let key = AnyCodingKey(stringValue: codingKey).lowercased()
+                let value = try cast(self.value, to: [AnyCodingKey: AnyCodable].self)
+                let matchedKey: AnyCodingKey = try value.keys.firstAndOnly(where: { $0.lowercased() == key }).unwrap()
+                
+                return value[matchedKey]
+            } catch {
+                throw DictionaryKeyMatchingError(data: self, key: codingKey)
+            }
         }
     }
 }

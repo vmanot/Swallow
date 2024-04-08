@@ -415,6 +415,56 @@ extension FileManager {
 }
 
 extension FileManager {
+    public func copyFolders(
+        from sourceURLs: [URL],
+        to destination: _URLConvertible,
+        replaceExisting: Bool
+    ) throws {
+        let destinationURL = destination.url
+        
+        if !fileExists(atPath: destinationURL.path) {
+            try createDirectory(at: destinationURL, withIntermediateDirectories: true, attributes: nil)
+        } else {
+            guard isDirectory(at: destinationURL) else {
+                throw Never.Reason.illegal
+            }
+        }
+        
+        for sourceURL in sourceURLs {
+            let folderName = sourceURL.lastPathComponent
+            let destinationFolderURL = destinationURL.appendingPathComponent(folderName)
+            
+            if fileExists(atPath: destinationFolderURL.path) {
+                if replaceExisting {
+                    try removeItem(at: destinationFolderURL)
+                } else {
+                    throw Never.Reason.illegal
+                }
+            }
+            
+            try copyItem(at: sourceURL, to: destinationFolderURL)
+        }
+    }
+}
+
+extension FileManager {
+    public func isDirectoryPracticallyEmpty(
+        at location: some URLRepresentable
+    ) -> Bool {
+        guard let contents = try? contentsOfDirectory(at: location.url) else {
+            return false
+        }
+        
+        let ignoredFiles = [".DS_Store", ".localized", ".fseventsd", ".Spotlight-V100", ".TemporaryItems", ".Trashes"]
+        let filteredContents = contents.filter { item in
+            !ignoredFiles.contains(item.lastPathComponent) && !item.lastPathComponent.hasPrefix("._")
+        }
+        
+        return filteredContents.isEmpty
+    }
+}
+
+extension FileManager {
     public func url(
         for directory: SearchPathDirectory,
         in domainMask: SearchPathDomainMask

@@ -21,6 +21,10 @@ extension HeterogeneousDictionaryKey {
     }
 }
 
+public protocol HeterogeneousDictionaryProtocol {
+    associatedtype _HeterogenousDictionaryKeyType
+}
+
 /// A dictionary that can store values of varying types while preserving strong types
 /// (i.e. without resorting to `Any`).
 ///
@@ -31,7 +35,8 @@ extension HeterogeneousDictionaryKey {
 ///
 /// This type can’t easily conform to `Collection` because `Collection`
 /// assumes a single `Element` type.
-public struct HeterogeneousDictionary<Domain> {
+public struct HeterogeneousDictionary<Domain>: HeterogeneousDictionaryProtocol {
+    public typealias _HeterogenousDictionaryKeyType = HeterogeneousDictionaryKey
     public typealias DictionaryValue = Any
     
     @usableFromInline
