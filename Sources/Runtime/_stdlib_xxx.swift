@@ -137,7 +137,7 @@ public func _swift_isClassType(
 
 // MARK: - Auxiliary
 
-public struct _SwiftRuntimeTypeFieldReflectionMetadata {
+public struct _SwiftRuntimeTypeFieldReflectionMetadata: CustomStringConvertible {
     public typealias Deallocate = @convention(c) (UnsafePointer<CChar>?) -> Void
     
     @usableFromInline
@@ -148,6 +148,14 @@ public struct _SwiftRuntimeTypeFieldReflectionMetadata {
     let isStrong: Bool = false
     @usableFromInline
     let isVar: Bool = false
+    
+    public var description: String {
+        guard let name else {
+            return "<unnamed field>"
+        }
+        
+        return String(validatingUTF8: name) ?? "<error>"
+    }
 }
 
 public struct _SwiftRuntimeEachFieldOptions: OptionSet {

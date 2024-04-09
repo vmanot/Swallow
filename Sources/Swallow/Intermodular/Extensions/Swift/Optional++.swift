@@ -258,13 +258,3 @@ extension Optional where Wrapped: Collection {
         map({ $0.isEmpty }) ?? true
     }
 }
-
-infix operator !! : NilCoalescingPrecedence
-
-public func !!<T>(lhs: T?, rhs: String) -> T {
-    guard let lhs else {
-        fatalError(CustomStringError(description: rhs))
-    }
-    
-    return lhs
-}

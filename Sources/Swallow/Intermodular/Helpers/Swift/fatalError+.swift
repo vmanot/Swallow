@@ -14,3 +14,14 @@ public func fatalError(
 ) -> Never {
     try! error.throw()
 }
+
+infix operator !! : NilCoalescingPrecedence
+
+@_transparent
+public func !!<T>(lhs: T?, rhs: String) -> T {
+    guard let lhs else {
+        fatalError(CustomStringError(description: rhs))
+    }
+    
+    return lhs
+}

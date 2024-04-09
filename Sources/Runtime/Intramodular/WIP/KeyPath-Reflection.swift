@@ -8,8 +8,9 @@ extension _PartialKeyPathType {
     public static func _unsafe_allKeyPaths() -> [PartialKeyPath<Root>] {
         var keyPaths = [PartialKeyPath<Root>]()
         
-        let success = _forEachFieldWithKeyPath(of: Root.self) { _, keyPath in
+        let success = _forEachFieldWithKeyPath(of: Root.self, options: [.ignoreFunctions]) { _, keyPath in
             keyPaths.append(keyPath)
+            
             return true
         }
         

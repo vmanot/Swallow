@@ -16,16 +16,11 @@ public struct _EachFieldOptions: OptionSet {
     }
     
     /// Require the top-level type to be a class.
-    ///
-    /// If this is not set, the top-level type is required to be a struct or
-    /// tuple.
     public static var classType = _EachFieldOptions(rawValue: 1 << 0)
-    
     /// Ignore fields that can't be introspected.
-    ///
-    /// If not set, the presence of things that can't be introspected causes
-    /// the function to immediately return `false`.
     public static var ignoreUnknown = _EachFieldOptions(rawValue: 1 << 1)
+    /// Ignore fields that contain closures.
+    public static var ignoreFunctions = _EachFieldOptions(rawValue: 1 << 2)
 }
 
 /// Calls the given closure on every field of the specified type.
@@ -96,8 +91,10 @@ public func _forEachFieldWithKeyPath<Root>(
     if _swift_isClassType(type) != options.contains(.classType) {
         return false
     }
-    let ignoreUnknown = options.contains(.ignoreUnknown)
     
+    let ignoreUnknown = options.contains(.ignoreUnknown)
+    let ignoreFunctions = options.contains(.ignoreFunctions)
+
     let childCount = swift_reflectionMirror_recursiveCount(type)
     for i in 0..<childCount {
         let offset = swift_reflectionMirror_recursiveChildOffset(type, index: i)
@@ -120,6 +117,10 @@ public func _forEachFieldWithKeyPath<Root>(
         }
         
         if !supportedType || !field.isStrong {
+            if kind == .function && ignoreFunctions {
+                continue
+            }
+            
             if !ignoreUnknown {
                 return false
             }
