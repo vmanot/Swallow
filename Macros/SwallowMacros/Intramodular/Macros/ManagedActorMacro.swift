@@ -29,7 +29,7 @@ extension ManagedActorMacro: ExtensionMacro {
     ) throws -> [ExtensionDeclSyntax] {
         let declarationName: TokenSyntax = declaration._namedDecl!.name
         
-        var result = ExtensionDeclSyntax(
+        let result = ExtensionDeclSyntax(
             extendedType: type,
             inheritanceClause: InheritanceClauseSyntax(
                 inheritedTypes: InheritedTypeListSyntax(itemsBuilder: {
@@ -94,12 +94,12 @@ extension ManagedActorMacro: PeerMacro {
         let classDecl = (declaration as! ClassDeclSyntax)
         
         let functions = classDecl.memberBlock.members.compactMap({ $0.decl.as(FunctionDeclSyntax.self) })
-        let syntax = classDecl.expand(
+        /*let syntax = classDecl.expand(
             macros: [
                 "ManagedActor": ManagedActorMacro.self,
             ],
             in: context
-        )
+        )*/
         
         let memberList: MemberBlockItemListSyntax = MemberBlockItemListSyntax(
             functions

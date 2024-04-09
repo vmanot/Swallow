@@ -33,44 +33,56 @@ extension DynamicLinkEditor.Image {
         var result = [TypeMetadata: [_SwiftRuntime.TypeConformance]]()
         
         var sectionSize: UInt = 0
-        let sectStart = UnsafeRawPointer(
+        let rawHeaderPointer = UnsafeRawPointer(self.header)
+        #if !os(watchOS)
+        let sectionStart = UnsafeRawPointer(
             getsectiondata(
-                UnsafeRawPointer(self.header).assumingMemoryBound(to: mach_header_64.self),
+                rawHeaderPointer.assumingMemoryBound(to: _mach_header_type.self),
                 "__TEXT",
                 "__swift5_proto",
                 &sectionSize
             )
-        )?.assumingMemoryBound(to: Int32.self)
+        )
+        #else
+        let sectionStart = UnsafeRawPointer(
+            getsectiondata(
+                rawHeaderPointer.assumingMemoryBound(to: _inferredType()),
+                "__TEXT",
+                "__swift5_proto",
+                &sectionSize
+            )
+        )
+        #endif
         
-        guard var sectData = sectStart else {
+        guard var sectionData = sectionStart?.assumingMemoryBound(to: Int32.self) else {
             return []
         }
         
         for _ in 0..<(Int(sectionSize) / MemoryLayout<Int32>.size) {
-            let conformance = UnsafeMutableRawPointer(mutating: sectData)
-                .advanced(by: Int(sectData.pointee))
+            let conformance = UnsafeMutableRawPointer(mutating: sectionData)
+                .advanced(by: Int(sectionData.pointee))
                 .assumingMemoryBound(to: SwiftRuntimeProtocolConformanceDescriptor.self)
                         
-            if let conformance = Self.parseConformance(from: conformance) {
+            if let conformance = Self._parseConformance(from: conformance) {
                 if let type = conformance.type {
                     result[type, default: []].append(conformance)
                 }
             }
             
-            sectData = sectData.successor()
+            sectionData = sectionData.successor()
         }
         
         return result
             .filter({ !$0.value.isEmpty })
-            .map { (key, value) -> _SwiftRuntime.TypeConformanceList in
-                return _SwiftRuntime.TypeConformanceList(
+            .map { (key: TypeMetadata, value: [_SwiftRuntime.TypeConformance]) -> _SwiftRuntime.TypeConformanceList in
+                _SwiftRuntime.TypeConformanceList(
                     type: key,
                     conformances: IdentifierIndexingArrayOf(value.distinct())
                 )
             }
     }
     
-    private static func parseConformance(
+    private static func _parseConformance(
         from conformanceDescriptor: UnsafePointer<SwiftRuntimeProtocolConformanceDescriptor>
     ) -> _SwiftRuntime.TypeConformance? {
         let flags = conformanceDescriptor.pointee.conformanceFlags

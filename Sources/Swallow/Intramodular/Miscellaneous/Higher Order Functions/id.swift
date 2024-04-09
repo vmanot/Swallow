@@ -28,3 +28,7 @@ public func id<T, U, V>(_ f: @escaping ((T, U) -> V)) -> (((T, U)) -> V) {
 public func id<T, U, V>(_ f: @escaping ((inout T, inout U) -> V)) -> ((inout (T, U)) -> V) {
     return { f(&$0.0, &$0.1) }
 }
+
+public func _inferredType<T>() -> T.Type {
+    T.self
+}

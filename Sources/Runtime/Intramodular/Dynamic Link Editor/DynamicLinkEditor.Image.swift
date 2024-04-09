@@ -6,6 +6,12 @@ import MachO
 import ObjectiveC
 import Swallow
 
+#if !os(watchOS)
+public typealias _mach_header_type = mach_header
+#else
+public typealias _mach_header_type = mach_header_64
+#endif
+
 extension DynamicLinkEditor {
     @frozen
     public struct Image: Hashable, Identifiable, @unchecked Sendable {
