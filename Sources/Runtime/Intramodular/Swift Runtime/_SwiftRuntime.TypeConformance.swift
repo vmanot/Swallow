@@ -34,6 +34,7 @@ extension DynamicLinkEditor.Image {
         
         var sectionSize: UInt = 0
         let rawHeaderPointer = UnsafeRawPointer(self.header)
+        
         #if !os(watchOS)
         let sectionStart = UnsafeRawPointer(
             getsectiondata(

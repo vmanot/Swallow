@@ -151,7 +151,7 @@ extension URL {
 
 extension URL {
     /// A file path component suitable for a base URL to append.
-    public struct PathComponent: Hashable, Sendable {
+    public struct PathComponent: ExpressibleByStringLiteral, Codable, Hashable, Sendable {
         public let rawValue: String
         public let isDirectory: Bool?
         
@@ -160,12 +160,24 @@ extension URL {
             self.isDirectory = isDirectory
         }
         
+        public init(stringLiteral value: String) {
+            self.init(rawValue: value)
+        }
+        
         public static func file(_ string: String) -> Self {
             Self(rawValue: string, isDirectory: false)
         }
         
         public static func directory(_ string: String) -> Self {
             Self(rawValue: string, isDirectory: true)
+        }
+    }
+    
+    public struct RelativePath: Codable, Hashable, Sendable {
+        public let components: [URL.PathComponent]
+        
+        public init(components: [URL.PathComponent]) {
+            self.components = components
         }
     }
     
@@ -187,6 +199,10 @@ extension URL {
         appending(PathComponent(rawValue: component))
     }
     
+    public func appending(_ path: RelativePath) -> Self {
+        path.components.reduce(into: self, { $0.append($1) })
+    }
+
     public static func + (lhs: Self, rhs: PathComponent) -> Self {
         lhs.appending(rhs)
     }
