@@ -60,10 +60,18 @@ extension DynamicLinkEditor.Image {
         }
         
         for _ in 0..<(Int(sectionSize) / MemoryLayout<Int32>.size) {
-            let conformance = UnsafeMutableRawPointer(mutating: sectionData)
+            let conformance: UnsafeMutablePointer<SwiftRuntimeProtocolConformanceDescriptor> = UnsafeMutableRawPointer(mutating: sectionData)
                 .advanced(by: Int(sectionData.pointee))
                 .assumingMemoryBound(to: SwiftRuntimeProtocolConformanceDescriptor.self)
                         
+            guard let contextDescriptor = conformance.pointee.contextDescriptor else {
+                continue
+            }
+            
+            guard String(utf8String: contextDescriptor.pointee.mangledName.advanced()) != nil else {
+                continue
+            }
+
             if let conformance = Self._parseConformance(from: conformance) {
                 if let type = conformance.type {
                     result[type, default: []].append(conformance)
@@ -156,7 +164,7 @@ extension DynamicLinkEditor.Image {
         
         switch flags.kind {
             case .module, .enum, .struct, .class:
-                let name = UnsafeRawPointer(descriptor)
+                let name: UnsafePointer<CChar> = UnsafeRawPointer(descriptor)
                     .advanced(by: MemoryLayout<SwiftRuntimeModuleContextDescriptor>.offset(of: \.name)!)
                     .advanced(by: Int(descriptor.pointee.name))
                     .assumingMemoryBound(to: CChar.self)

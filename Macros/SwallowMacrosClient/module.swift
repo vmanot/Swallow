@@ -30,7 +30,11 @@ public enum module {
                     Self.initialized = true
                 }
                 
-                let onces = _SwiftRuntime._index.fetch(.conformsTo((any _PerformOnceOnAppLaunch).self), .nonAppleFramework, .pureSwift)
+                let onces = _SwiftRuntime._index.fetch(
+                    .conformsTo((any _PerformOnceOnAppLaunch).self),
+                    .nonAppleFramework,
+                    .pureSwift
+                )
                 
                 onces.forEach {
                     let type = $0 as! any _PerformOnceOnAppLaunch.Type
