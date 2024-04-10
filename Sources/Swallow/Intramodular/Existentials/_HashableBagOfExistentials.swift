@@ -4,6 +4,7 @@
 
 import Swift
 
+@frozen
 public struct _HashableBagOfExistentials<Existential> {
     private var base: _BagOfExistentials<Existential>
     
@@ -14,19 +15,9 @@ public struct _HashableBagOfExistentials<Existential> {
     init(base: _BagOfExistentials<Existential>) {
         self.base = base
     }
-    
-    public init() {
-        self.base = .init()
-    }
-    
-    public init() where Existential == Any {
-        self.base = .init()
-    }
-    
-    public init(_ elements: some Sequence<Existential>) {
-        self.base = .init(elements)
-    }
-    
+}
+
+extension _HashableBagOfExistentials {
     public func all<T>(ofType type: T.Type) -> AnyCollection<T> {
         base.all(ofType: type)
     }
@@ -140,6 +131,16 @@ extension _HashableBagOfExistentials: Hashable {
     }
 }
 
+extension _HashableBagOfExistentials: Initiable {
+    public init() {
+        self.base = .init()
+    }
+    
+    public init() where Existential == Any {
+        self.base = .init()
+    }
+}
+
 extension _HashableBagOfExistentials: MergeOperatable {
     public mutating func mergeInPlace(
         with other: Self
@@ -149,6 +150,10 @@ extension _HashableBagOfExistentials: MergeOperatable {
 }
 
 extension _HashableBagOfExistentials: Sequence {
+    public init(_ elements: some Sequence<Existential>) {
+        self.base = .init(elements)
+    }
+
     public func makeIterator() -> AnyIterator<Existential> {
         base.makeIterator()
     }

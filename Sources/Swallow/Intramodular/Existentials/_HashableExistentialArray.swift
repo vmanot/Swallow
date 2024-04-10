@@ -4,6 +4,7 @@
 
 import Swift
 
+@frozen
 public struct _HashableExistentialArray<Existential>: Hashable, Initiable {
     private var base: [_HashableExistential<Existential>]
     

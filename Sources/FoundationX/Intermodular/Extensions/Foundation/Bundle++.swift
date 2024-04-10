@@ -74,3 +74,57 @@ extension Bundle {
         infoDictionary?[kCFBundleNameKey as String] as? String
     }
 }
+
+extension Bundle {
+    public func getAllResourceURLs(
+        for fileExtension: String? = nil
+    ) -> [URL] {
+        guard let enumerator = FileManager.default.enumerator(
+            at: bundleURL,
+            includingPropertiesForKeys: nil
+        ) else {
+            return []
+        }
+        
+        var resourceURLs: [URL] = []
+        
+        while let fileURL = enumerator.nextObject() as? URL {
+            if let fileExtension = fileExtension, fileURL.pathExtension != fileExtension {
+                continue
+            }
+            
+            if fileURL.hasDirectoryPath {
+                resourceURLs.append(contentsOf: getAllResourceURLs(in: fileURL, fileExtension: fileExtension))
+            } else {
+                resourceURLs.append(fileURL)
+            }
+        }
+        
+        return resourceURLs
+    }
+    
+    private func getAllResourceURLs(
+        in directoryURL: URL,
+        fileExtension: String? = nil
+    ) -> [URL] {
+        guard let enumerator = FileManager.default.enumerator(at: directoryURL, includingPropertiesForKeys: nil) else {
+            return []
+        }
+        
+        var resourceURLs: [URL] = []
+        
+        while let fileURL = enumerator.nextObject() as? URL {
+            if let fileExtension = fileExtension, fileURL.pathExtension != fileExtension {
+                continue
+            }
+            
+            if fileURL.hasDirectoryPath {
+                resourceURLs.append(contentsOf: getAllResourceURLs(in: fileURL, fileExtension: fileExtension))
+            } else {
+                resourceURLs.append(fileURL)
+            }
+        }
+        
+        return resourceURLs
+    }
+}

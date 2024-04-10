@@ -7,22 +7,6 @@ import Foundation
 import Swallow
 
 public enum _AnyTopLevelDataCoder: Sendable {
-    public struct Custom: Sendable {
-        public let type: Any.Type
-        public let decode: @Sendable (Data) throws -> Any
-        public let encode: @Sendable (Any) throws -> Data
-        
-        public init<T>(
-            for type: T.Type,
-            decode: @escaping (Data) throws -> T,
-            encode: @escaping (T) throws -> Data
-        ) {
-            self.type = type
-            self.decode = { try decode($0) as Any }
-            self.encode = { try encode($0 as! T) }
-        }
-    }
-    
     case dataCodableType(any DataCodable.Type, strategy: (decoding: any Sendable, encoding: any Sendable))
     case topLevelDataCoder(any TopLevelDataCoder, forType: Codable.Type)
     case custom(Custom)
@@ -85,6 +69,26 @@ extension _AnyTopLevelDataCoder: TopLevelDataCoder {
 }
 
 // MARK: - Auxiliary
+
+extension _AnyTopLevelDataCoder {
+    public struct Custom: Sendable {
+        public let type: Any.Type
+        public let decode: @Sendable (Data) throws -> Any
+        public let encode: @Sendable (Any) throws -> Data
+        
+        public init<T>(
+            for type: T.Type,
+            decode: @escaping (Data) throws -> T,
+            encode: @escaping (T) throws -> Data
+        ) {
+            self.type = type
+            self.decode = { try decode($0) as Any }
+            self.encode = { try encode($0 as! T) }
+        }
+    }
+}
+
+// MARK: - Internal
 
 struct _DataCodableCoder<Output: DataCodable> {
     let type: Output.Type

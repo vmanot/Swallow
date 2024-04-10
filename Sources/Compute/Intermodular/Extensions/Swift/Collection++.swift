@@ -4,6 +4,12 @@
 
 import Swift
 
+extension Collection where Element: Hashable {
+    public func _asSet() -> Set<Element> {
+        return Set(self)
+    }
+}
+
 extension Collection where Element: Equatable {
     /// The Levenshtein distance between the receiver and the comparate.
     public func minimumEditDistance(to other: Self) -> Int {

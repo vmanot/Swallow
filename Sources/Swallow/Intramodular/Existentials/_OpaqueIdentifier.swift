@@ -4,6 +4,7 @@
 
 import Swift
 
+@frozen
 public struct _OpaqueIdentifier: Hashable, @unchecked Sendable {
     private let sourceType: ObjectIdentifier
     private let _base: AnyHashable

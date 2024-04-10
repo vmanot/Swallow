@@ -178,16 +178,6 @@ extension _HashableExistential: @unchecked Sendable {
 
 // MARK: - Auxiliary
 
-public protocol _UnsafeHashable {
-    func _unsafelyHash(into hasher: inout Hasher) throws
-}
-
-extension HeterogeneousDictionary: _UnsafeHashable {
-    public func _unsafelyHash(into hasher: inout Hasher) throws {
-        try storage.mapValues({ try _HashableExistential(erasing: $0) }).hash(into: &hasher)
-    }
-}
-
 extension _HashableExistential {
     fileprivate struct _HashablePlaceholderNil: ExpressibleByNilLiteral, Hashable, Sendable {
         init() {
@@ -197,44 +187,5 @@ extension _HashableExistential {
         init(nilLiteral: ()) {
             self.init()
         }
-    }
-}
-
-public struct _TypeHashingAnyHashable: Hashable, _UnwrappableHashableTypeEraser {
-    private let _base: AnyHashable
-    
-    public var base: any Hashable {
-        _base.base as! (any Hashable)
-    }
-    
-    public init<H: Hashable>(_ base: H) {
-        self._base = AnyHashable(base)
-    }
-    
-    public init(_erasing base: any Hashable) {
-        self = base._eraseToTypeHashingAnyHashable()
-    }
-    
-    public func _unwrapBase() -> _UnwrappedBaseType {
-        base
-    }
-        
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(ObjectIdentifier(type(of: _base.base)))
-        hasher.combine(_base)
-    }
-    
-    public static func == (lhs: Self, rhs: Self) -> Bool {
-        guard type(of: lhs._base.base) == type(of: rhs._base.base) else {
-            return false
-        }
-        
-        return rhs._base == lhs._base
-    }
-}
-
-extension Hashable {
-    public func _eraseToTypeHashingAnyHashable() -> _TypeHashingAnyHashable {
-        _TypeHashingAnyHashable(self)
     }
 }
