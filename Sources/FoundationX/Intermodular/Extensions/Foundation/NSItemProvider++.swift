@@ -42,16 +42,24 @@ extension NSItemProvider {
 
 @available(macOS 11.0, iOS 14.0, watchOS 7.0, tvOS 14.0, *)
 extension NSItemProvider {
-    public func loadURL(relativeTo url: URL? = nil) async throws -> URL {
+    public func loadURL(relativeTo url: URL?) async throws -> URL {
         let item = try await loadItem(for: .url)
         
         return try URL(dataRepresentation: cast(item, to: Data.self), relativeTo: url).unwrap()
     }
     
-    public func loadFileURL(relativeTo url: URL? = nil) async throws -> URL {
+    public func loadURL() async throws -> URL {
+        try await loadURL(relativeTo: nil)
+    }
+    
+    public func loadFileURL(relativeTo url: URL?) async throws -> URL {
         let item = try await loadItem(for: .fileURL)
         
         return try URL(dataRepresentation: cast(item, to: Data.self), relativeTo: url).unwrap()
+    }
+    
+    public func loadFileURL() async throws -> URL {
+        try await loadFileURL(relativeTo: nil)
     }
     
     public func loadPlaintext() async throws -> String {

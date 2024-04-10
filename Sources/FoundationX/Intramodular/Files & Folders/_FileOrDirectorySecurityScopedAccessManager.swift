@@ -214,7 +214,7 @@ extension FileManager {
     
     @MainActor
     public func withUserGrantedAccess<T>(
-        to urlRepresentable: URLRepresentable,
+        to urlRepresentable: some URLRepresentable,
         scope: _FileOrDirectoryAccessScopePreference = .automatic,
         perform operation: (URL) throws -> T
     ) throws -> T {
@@ -241,7 +241,7 @@ extension FileManager {
     
     @MainActor
     public func withUserGrantedAccess<T>(
-        to urlRepresentable: URLRepresentable,
+        to urlRepresentable: some URLRepresentable,
         scope: _FileOrDirectoryAccessScopePreference = .automatic,
         perform operation: (URL) async throws -> T
     ) async throws -> T {
@@ -267,8 +267,7 @@ extension FileManager {
     }
     
     @MainActor
-    @usableFromInline
-    func _withUserGrantedAccess<T>(
+    private func _withUserGrantedAccess<T>(
         to url: URLRepresentable,
         perform operation: (URL) throws -> T
     ) throws -> T {
@@ -292,8 +291,7 @@ extension FileManager {
     }
     
     @MainActor
-    @usableFromInline
-    func _withUserGrantedAccess<T>(
+    private func _withUserGrantedAccess<T>(
         to url: URLRepresentable,
         perform operation: (URL) async throws -> T
     ) async throws -> T {

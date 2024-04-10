@@ -155,13 +155,17 @@ extension _SwiftRuntimeIndex {
             }
             
             for image in imagesToSearch {
-                for conformanceList in image._parseTypeConformanceList() {
+                for conformanceList in image._parseSwiftProtocolConformancesPerType2() {
                     if let type = conformanceList.type, type._isIndexWorthy {
                         allSwiftTypes.insert(type)
                     }
                     
                     for conformance in conformanceList.conformances {
                         if let type = conformance.type, type._isIndexWorthy {
+                            allSwiftTypes.insert(type)
+                        }
+                        
+                        if let type = conformance.protocolType {
                             allSwiftTypes.insert(type)
                         }
                     }

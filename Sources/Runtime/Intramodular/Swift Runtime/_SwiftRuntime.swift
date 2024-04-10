@@ -23,6 +23,50 @@ public struct _SwiftRuntime {
     }
 }
 
+extension _SwiftRuntime {
+    public struct ProtocolConformanceListForType: Identifiable {
+        @frozen
+        public struct Conformance: Hashable, Identifiable {
+            @usableFromInline
+            var conformance: __swift5_proto_Conformance?
+            
+            public var type: TypeMetadata?
+            public let typeName: String?
+            public let protocolType: TypeMetadata?
+            public let protocolName: String?
+            
+            public var id: AnyHashable {
+                if let conformance {
+                    return conformance.hashValue
+                } else {
+                    return hashValue
+                }
+            }
+
+            init(
+                conformance: __swift5_proto_Conformance?,
+                type: TypeMetadata? = nil,
+                typeName: String?,
+                protocolType: TypeMetadata? = nil,
+                protocolName: String?
+            ) {
+                self.conformance = conformance
+                self.type = type
+                self.typeName = typeName
+                self.protocolType = protocolType
+                self.protocolName = protocolName
+            }
+        }
+
+        public let type: TypeMetadata?
+        public let conformances: IdentifierIndexingArrayOf<Conformance>
+        
+        public var id: AnyHashable {
+            type
+        }
+    }
+}
+
 extension TypeMetadata {
     public static func _queryAll(
         _ predicates: _SwiftRuntimeIndex.QueryPredicate...

@@ -449,16 +449,26 @@ extension FileManager {
 }
 
 extension FileManager {
+    public var _practicallyIgnoredFilenames: [String] {
+        return [
+            ".DS_Store",
+            ".localized",
+            ".fseventsd",
+            ".Spotlight-V100",
+            ".TemporaryItems",
+            ".Trashes"
+        ]
+    }
+    
     public func isDirectoryPracticallyEmpty(
         at location: some URLRepresentable
     ) -> Bool {
         guard let contents = try? contentsOfDirectory(at: location.url) else {
             return false
         }
-        
-        let ignoredFiles = [".DS_Store", ".localized", ".fseventsd", ".Spotlight-V100", ".TemporaryItems", ".Trashes"]
+                
         let filteredContents = contents.filter { item in
-            !ignoredFiles.contains(item.lastPathComponent) && !item.lastPathComponent.hasPrefix("._")
+            !_practicallyIgnoredFilenames.contains(item.lastPathComponent) && !item.lastPathComponent.hasPrefix("._")
         }
         
         return filteredContents.isEmpty

@@ -27,6 +27,11 @@ public struct BookmarkedURL: Identifiable, URLRepresentable {
         self.bookmarkData = bookmarkData
     }
     
+    public init(url: URL, bookmarkCreationOptions: URL.BookmarkCreationOptions) throws {
+        self.url = url
+        self.bookmarkData = try URL.Bookmark(for: url).data
+    }
+    
     public init?(url: URL) {
         self.init(url: url, bookmarkData: try? url.bookmarkData())
     }
@@ -70,10 +75,14 @@ extension BookmarkedURL: Codable {
                 self = try Self(url: try container.decode(URL.self)).unwrap()
             }
         } catch {
-            let container = try decoder.container(keyedBy: CodingKeys.self)
-            
-            url = try container.decode(URL.self, forKey: .url)
-            bookmarkData = try container.decodeIfPresent(Data.self, forKey: .bookmarkData)
+            if let bookmark = try? URL.Bookmark(from: decoder) {
+                self = try Self(url: try bookmark.resolve().url).unwrap()
+            } else {
+                let container = try decoder.container(keyedBy: CodingKeys.self)
+                
+                url = try container.decode(URL.self, forKey: .url)
+                bookmarkData = try container.decodeIfPresent(Data.self, forKey: .bookmarkData)
+            }
         }
     }
 }

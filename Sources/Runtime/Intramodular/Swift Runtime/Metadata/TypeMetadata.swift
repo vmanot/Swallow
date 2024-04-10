@@ -20,7 +20,7 @@ public struct TypeMetadata: _TypeMetadataType {
     }
     
     public static func == (lhs: Self, rhs: Self) -> Bool {
-        lhs.base == rhs.base
+        ObjectIdentifier(lhs.base) == ObjectIdentifier(rhs.base)
     }
     
     public static func of(_ x: Any) -> Self {

@@ -182,3 +182,27 @@ public struct _SwiftRuntimeEachFieldOptions: OptionSet {
     }
 }
 
+
+public struct _swift_RelativeDirectPointer<Pointee> {
+    var offset: Int32
+    
+    func address(from pointer: UnsafeRawPointer) -> UnsafeRawPointer {
+        return pointer + UnsafeRawPointer.Stride(self.offset)
+    }
+}
+
+public struct _swift_RelativeIndirectablePointer<Pointee> {
+    var offset: Int32
+    
+    func address(from pointer: UnsafeRawPointer) -> UnsafeRawPointer {
+        let dest = pointer + Int(self.offset & ~1)
+        
+        // If the low bit is set, then this is an indirect address. Otherwise,
+        // it's direct.
+        if Int(offset) & 1 == 1 {
+            return dest.load(as: UnsafeRawPointer.self)
+        } else {
+            return dest
+        }
+    }
+}

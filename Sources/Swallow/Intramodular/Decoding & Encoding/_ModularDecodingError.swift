@@ -6,7 +6,7 @@ import Foundation
 import Swift
 
 public enum _ModularDecodingError: Error {
-    case unsafeSerializationUnsupported(Any.Type)
+    case unsafeSerializationUnsupported(Any.Type, value: Any?)
     case typeMismatch(Any.Type, Context, AnyCodable?)
     case valueNotFound(Any.Type, Context, AnyCodable?)
     case keyNotFound(CodingKey, Context, AnyCodable?)

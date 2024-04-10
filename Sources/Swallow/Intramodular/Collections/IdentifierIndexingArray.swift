@@ -36,6 +36,21 @@ public struct IdentifierIndexingArray<Element, ID: Hashable>: IdentifierIndexing
     }
     
     public init(
+        _ elements: some Sequence<Element>,
+        id: @escaping (Element) -> ID
+    ) where Element: Equatable {
+        self.base = OrderedCollections.OrderedDictionary(
+            elements.map({ (key: id($0), value: $0) }),
+            uniquingKeysWith: { (lhs: Element, rhs: Element) -> Element in
+                assert(id(lhs) == id(rhs))
+                
+                return lhs
+            }
+        )
+        self.id = id
+    }
+    
+    public init(
         id: @escaping (Element) -> ID
     ) {
         self.init(Array<Element>(), id: id)
@@ -49,6 +64,13 @@ public struct IdentifierIndexingArray<Element, ID: Hashable>: IdentifierIndexing
     }
     
     public init(
+        _ elements: some Sequence<Element>,
+        id: KeyPath<Element, ID>
+    ) where Element: Equatable {
+        self.init(elements, id: { $0[keyPath: id] })
+    }
+    
+    public init(
         id: KeyPath<Element, ID>
     ) {
         self.init(id: { $0[keyPath: id] })
@@ -57,6 +79,12 @@ public struct IdentifierIndexingArray<Element, ID: Hashable>: IdentifierIndexing
     public init(
         _ elements: some Sequence<Element>
     ) where Element: Identifiable, Element.ID == ID {
+        self.init(elements, id: \.id)
+    }
+    
+    public init(
+        _ elements: some Sequence<Element>
+    ) where Element: Equatable & Identifiable, Element.ID == ID {
         self.init(elements, id: \.id)
     }
     
@@ -341,7 +369,7 @@ extension IdentifierIndexingArray {
         guard let element = base.removeValue(forKey: id) else {
             return nil
         }
-                
+        
         return element
     }
     
@@ -393,7 +421,7 @@ extension IdentifierIndexingArray {
     ) rethrows where S.Element == Element {
         try elements.forEach({ try upsert($0, uniquingValuesWith: unique) })
     }
-
+    
     public mutating func remove(
         atOffsets indexSet: IndexSet
     ) {
@@ -492,7 +520,7 @@ extension Binding {
             }
         )
     }
-
+    
     public subscript<Element, ID: Hashable>(
         id identifier: ID,
         default defaultValue: @autoclosure @escaping () -> Element

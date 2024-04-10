@@ -24,10 +24,10 @@ extension Never {
         public let _base: _Base
         
         @_transparent
-        public init(_base base: _Base) {
+        public init(_base base: _Base, file: StaticString = #fileID) {
             self._base = base
             
-            runtimeIssue("This code path should never be invoked (reason: \(base.rawValue)).")
+            runtimeIssue("This code path should never be invoked (reason: \(base.rawValue), file: \(file).")
         }
     }
 }

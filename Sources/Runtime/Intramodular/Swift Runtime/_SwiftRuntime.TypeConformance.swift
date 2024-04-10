@@ -6,36 +6,14 @@ import Foundation
 import MachO
 import Swallow
 
-extension _SwiftRuntime {
-    @frozen
-    public struct TypeConformance: Hashable, Identifiable {
-        public var type: TypeMetadata?
-        public let typeName: String
-        public let protocolName: String?
-        
-        public var id: AnyHashable {
-            hashValue
-        }
-    }
-    
-    public struct TypeConformanceList: Identifiable {
-        public let type: TypeMetadata?
-        public let conformances: IdentifierIndexingArrayOf<TypeConformance>
-        
-        public var id: AnyHashable {
-            type
-        }
-    }
-}
-
 extension DynamicLinkEditor.Image {
-    public func _parseTypeConformanceList() -> [_SwiftRuntime.TypeConformanceList] {
-        var result = [TypeMetadata: [_SwiftRuntime.TypeConformance]]()
+    public func _parseSwiftProtocolConformancesPerType1() -> [_SwiftRuntime.ProtocolConformanceListForType] {
+        var result = [TypeMetadata: [_SwiftRuntime.ProtocolConformanceListForType.Conformance]]()
         
         var sectionSize: UInt = 0
         let rawHeaderPointer = UnsafeRawPointer(self.header)
         
-        #if !os(watchOS)
+#if !os(watchOS)
         let sectionStart = UnsafeRawPointer(
             getsectiondata(
                 rawHeaderPointer.assumingMemoryBound(to: _mach_header_type.self),
@@ -44,7 +22,7 @@ extension DynamicLinkEditor.Image {
                 &sectionSize
             )
         )
-        #else
+#else
         let sectionStart = UnsafeRawPointer(
             getsectiondata(
                 rawHeaderPointer.assumingMemoryBound(to: _inferredType()),
@@ -53,7 +31,7 @@ extension DynamicLinkEditor.Image {
                 &sectionSize
             )
         )
-        #endif
+#endif
         
         guard var sectionData = sectionStart?.assumingMemoryBound(to: Int32.self) else {
             return []
@@ -63,15 +41,7 @@ extension DynamicLinkEditor.Image {
             let conformance: UnsafeMutablePointer<SwiftRuntimeProtocolConformanceDescriptor> = UnsafeMutableRawPointer(mutating: sectionData)
                 .advanced(by: Int(sectionData.pointee))
                 .assumingMemoryBound(to: SwiftRuntimeProtocolConformanceDescriptor.self)
-                        
-            guard let contextDescriptor = conformance.pointee.contextDescriptor else {
-                continue
-            }
             
-            guard String(utf8String: contextDescriptor.pointee.mangledName.advanced()) != nil else {
-                continue
-            }
-
             if let conformance = Self._parseConformance(from: conformance) {
                 if let type = conformance.type {
                     result[type, default: []].append(conformance)
@@ -83,8 +53,8 @@ extension DynamicLinkEditor.Image {
         
         return result
             .filter({ !$0.value.isEmpty })
-            .map { (key: TypeMetadata, value: [_SwiftRuntime.TypeConformance]) -> _SwiftRuntime.TypeConformanceList in
-                _SwiftRuntime.TypeConformanceList(
+            .map { (key: TypeMetadata, value: [_SwiftRuntime.ProtocolConformanceListForType.Conformance]) -> _SwiftRuntime.ProtocolConformanceListForType in
+                _SwiftRuntime.ProtocolConformanceListForType(
                     type: key,
                     conformances: IdentifierIndexingArrayOf(value.distinct())
                 )
@@ -93,7 +63,7 @@ extension DynamicLinkEditor.Image {
     
     private static func _parseConformance(
         from conformanceDescriptor: UnsafePointer<SwiftRuntimeProtocolConformanceDescriptor>
-    ) -> _SwiftRuntime.TypeConformance? {
+    ) -> _SwiftRuntime.ProtocolConformanceListForType.Conformance? {
         let flags = conformanceDescriptor.pointee.conformanceFlags
         
         guard let kind = flags.kind else {
@@ -149,7 +119,8 @@ extension DynamicLinkEditor.Image {
             return nil
         }
         
-        return _SwiftRuntime.TypeConformance(
+        return _SwiftRuntime.ProtocolConformanceListForType.Conformance(
+            conformance: nil,
             type: type.map({ TypeMetadata($0) }),
             typeName: typeName,
             protocolName: protocolName
