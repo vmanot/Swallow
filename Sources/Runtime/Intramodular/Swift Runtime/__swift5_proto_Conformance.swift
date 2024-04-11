@@ -19,13 +19,13 @@ struct _swift_ConformanceDescriptor {
     let `protocol`: Int32
     let typeRef: Int32
     let witnessTablePattern: Int32
-    let flags: UInt32
+    let flags: SwiftRuntimeProtocolConformanceDescriptor.ConformanceFlags
 }
 
 @frozen
 @usableFromInline
 struct _swift_ModuleContextDescriptor {
-    let flags: UInt32
+    let flags: SwiftRuntimeContextDescriptorFlags
     let parent: Int32
     let name: Int32
 }
@@ -33,10 +33,13 @@ struct _swift_ModuleContextDescriptor {
 struct _swift_ModuleContext {
     var raw: UnsafeRawPointer
     
+    var contextDescriptor: _swift_ModuleContextDescriptor {
+        self.raw.load(as: _swift_ModuleContextDescriptor.self)
+    }
+    
     var name: String {
-        let typeDescriptor = self.raw.load(as: _swift_ModuleContextDescriptor.self)
         let start = self.raw + MemoryLayout<_swift_ModuleContextDescriptor>.offset(of: \.name)!
-        let name = _swift_RelativeDirectPointer<CChar>(offset: typeDescriptor.name)
+        let name = _swift_RelativeDirectPointer<CChar>(offset: contextDescriptor.name)
         
         return name.address(from: start).withMemoryRebound(to: CChar.self, capacity: 1) { pointer in
             return String(cString: pointer)
@@ -47,7 +50,7 @@ struct _swift_ModuleContext {
 @frozen
 @usableFromInline
 struct _swift_TypeContextDescriptor {
-    let flags: UInt32
+    let flags: SwiftRuntimeContextDescriptorFlags
     let parent: Int32
     let name: Int32
     let accessor: Int32
@@ -75,7 +78,7 @@ extension DynamicLinkEditor.Image {
         for start in stride(from: rawSection, to: rawSection + Int(size), by: MemoryLayout<Int32>.stride) {
             let address = start.load(as: _swift_RelativeDirectPointer<__swift5_proto_Conformance>.self).address(from: start)
             let conformance = __swift5_proto_Conformance(raw: address)
-                        
+            
             result.append(conformance)
         }
         
@@ -88,29 +91,19 @@ extension DynamicLinkEditor.Image {
         var result: [TypeMetadata: IdentifierIndexingArrayOf<_SwiftRuntime.ProtocolConformanceListForType.Conformance>] = [:]
         
         for conformance in conformances {
-            guard let context = conformance.context, !context.flags.isGeneric else {
+            guard let contextDescriptor = conformance.contextDescriptor, !contextDescriptor.flags.isGeneric else {
                 continue
             }
             
-            guard let conformanceKind = conformance.kind, conformanceKind != .indirect else {
+            guard conformance.kind != nil else {
                 continue
             }
             
-            guard let typeMetadata = context.metadata() else {
+            guard let type = contextDescriptor.metadata().map({ TypeMetadata($0) }) ?? conformance.type.map({ TypeMetadata($0) }) else {
                 continue
             }
             
-            _ = typeMetadata
-
-            guard let context = conformance.context else {
-                continue
-            }
-            
-            guard let type = context.metadata().map({ TypeMetadata($0) }) else {
-                continue
-            }
-            
-            let protocolType = conformance.protocol.metadata().map({ TypeMetadata($0) })
+            let protocolType: TypeMetadata? = conformance.protocol.metadata().map({ TypeMetadata($0) })
             
             result[type, default: []].append(
                 .init(
@@ -138,27 +131,66 @@ public struct __swift5_proto_Conformance: Hashable {
     
     var raw: UnsafeRawPointer
     
+    var descriptor: _swift_ConformanceDescriptor {
+        self.raw.load(as: _swift_ConformanceDescriptor.self)
+    }
+    
     var `protocol`: _swift_GenericContext {
         let maybeProtocol = _swift_RelativeIndirectablePointer<_swift_GenericContextDescriptor>(
-            offset: self.raw.load(as: _swift_ConformanceDescriptor.self).protocol
+            offset: descriptor.protocol
         )
+        
         return _swift_GenericContext(raw: maybeProtocol.address(from: self.raw))
     }
     
-    var kind: Kind? {
-        Kind(rawValue: UInt16(self.raw.load(as: _swift_ConformanceDescriptor.self).flags & (0x7 << 3)) >> 3)
+    var type: Any.Type? {
+        guard let contextDescriptor else {
+            return nil
+        }
+        
+        let maybeType = _swift_RelativeIndirectablePointer<_swift_GenericContext>(
+            offset: descriptor.typeRef
+        )
+        
+        guard let kind, kind != .IndirectTypeDescriptor else {
+            return nil
+        }
+
+        let typeDescriptor = maybeType.address(from: raw)
+            .advanced(by: MemoryLayout<_swift_ConformanceDescriptor>.offset(of: \.typeRef)!)
+            .advanced(by: Int(descriptor.typeRef))
+            .load(as: _swift_TypeContextDescriptor.self)
+                
+        let start = self.raw + MemoryLayout<_swift_TypeContextDescriptor>.offset(of: \.accessor)!
+        let accessor = _swift_RelativeDirectPointer<Void>(offset: typeDescriptor.accessor)
+        
+        let accessFunction = unsafeBitCast(accessor.address(from: start), to: (@convention(c) () -> UInt64).self)
+        
+        guard contextDescriptor.flags.isGeneric else {
+            return nil
+        }
+        
+        return unsafeBitCast(accessFunction(), to: Any.Type.self)
     }
     
-    var context: _swift_GenericContext? {
+    var kind: SwiftRuntimeTypeReferenceKind? {
+        descriptor.flags.kind
+    }
+    
+    var contextDescriptor: _swift_GenericContext? {
         let start = self.raw + MemoryLayout<Int32>.size
         let offset = start.load(as: Int32.self)
         let addr = start + Int(offset)
         
         switch kind {
-            case .direct:
+            case .DirectTypeDescriptor:
                 return _swift_GenericContext(raw: addr)
-            case .indirect:
+            case .IndirectTypeDescriptor:
                 return addr.load(as: _swift_GenericContext.self)
+            case .DirectObjCClassName:
+                return nil
+            case .IndirectObjCClass:
+                return nil
             case nil:
                 return nil
         }
@@ -235,7 +267,9 @@ struct _swift_GenericContext: Hashable {
         let access = MetadataAccessor(raw: accessor.address(from: start))
         let fn = unsafeBitCast(access.raw, to: (@convention(thin) (Int) -> MetadataResponse).self)
         
-        return fn(0).type
+        let result: Any.Type = fn(0).type
+        
+        return result
     }
 }
 

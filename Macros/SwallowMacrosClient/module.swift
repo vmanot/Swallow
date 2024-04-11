@@ -32,8 +32,7 @@ public enum module {
                 
                 let onces = _SwiftRuntime._index.fetch(
                     .conformsTo((any _PerformOnceOnAppLaunch).self),
-                    .nonAppleFramework,
-                    .pureSwift
+                    .nonAppleFramework
                 )
                 
                 onces.forEach {

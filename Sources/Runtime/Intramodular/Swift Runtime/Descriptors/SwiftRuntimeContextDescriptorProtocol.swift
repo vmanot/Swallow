@@ -34,6 +34,27 @@ struct SwiftRuntimeContextDescriptorFlags: OptionSet {
         case `class` = 16
         case `struct` = 17
         case `enum` = 18
+        
+        var isNominalType: Bool {
+            switch self {
+                case .module:
+                    return false
+                case .extension:
+                    return false
+                case .anonymous:
+                    return false
+                case .protocol:
+                    return false
+                case .opaqueType:
+                    return false
+                case .class:
+                    return true
+                case .struct:
+                    return true
+                case .enum:
+                    return true
+            }
+        }
     }
     
     static let unique = Self(rawValue: 1 << 6)

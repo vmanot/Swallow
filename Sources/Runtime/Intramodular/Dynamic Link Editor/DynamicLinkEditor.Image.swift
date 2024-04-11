@@ -2,6 +2,7 @@
 // Copyright (c) Vatsal Manot
 //
 
+import Foundation
 import MachO
 import ObjectiveC
 import Swallow
@@ -28,6 +29,14 @@ extension DynamicLinkEditor {
             self.index = index
             self.name = name
             self.header = header
+        }
+        
+        public init?(url: URL) {
+            guard let image = Self.allCases.first(where: { $0.name == url.path }) else {
+                return nil
+            }
+            
+            self = image
         }
         
         public var id: AnyHashable {
@@ -92,16 +101,16 @@ extension DynamicLinkEditor.Image {
     public enum _ImagePathFilter: String, CaseIterable {
         private static var matchesByName: [Hashable2ple<Self, String>: Bool] = [:]
         
-        static var appleFramework: Set<_ImagePathFilter> {
-            [
-                .preboot,
-                .systemFrameworks,
-                .systemPrivateFrameworks,
-                .userLibraries,
-                .xcode
-            ]
-        }
+        static let appleFramework: Set<_ImagePathFilter> = [
+            .coreSimulator,
+            .preboot,
+            .systemFrameworks,
+            .systemPrivateFrameworks,
+            .userLibraries,
+            .xcode
+        ]
         
+        case coreSimulator = "/Library/Developer/CoreSimulator/"
         case preboot = "/private/preboot"
         case systemCoreServices = "/System/Library/CoreServices"
         case systemFrameworks = "/System/Library/Frameworks"
@@ -124,7 +133,9 @@ extension DynamicLinkEditor.Image {
     
     @_transparent
     func _matches(_ filters: Set<_ImagePathFilter>) -> Bool {
-        filters.contains(where: { $0.matches(self) })
+        _memoize(uniquingWith: (self.name, filters)) {
+            filters.contains(where: { $0.matches(self) })
+        }
     }
 }
 

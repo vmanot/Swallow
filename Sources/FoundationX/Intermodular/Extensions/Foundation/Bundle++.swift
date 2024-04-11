@@ -76,7 +76,7 @@ extension Bundle {
 }
 
 extension Bundle {
-    public func getAllResourceURLs(
+    public func _enumerateResourceURLs(
         for fileExtension: String? = nil
     ) -> [URL] {
         guard let enumerator = FileManager.default.enumerator(
@@ -94,7 +94,7 @@ extension Bundle {
             }
             
             if fileURL.hasDirectoryPath {
-                resourceURLs.append(contentsOf: getAllResourceURLs(in: fileURL, fileExtension: fileExtension))
+                resourceURLs.append(contentsOf: _enumerateResourceURLs(in: fileURL, fileExtension: fileExtension))
             } else {
                 resourceURLs.append(fileURL)
             }
@@ -103,7 +103,7 @@ extension Bundle {
         return resourceURLs
     }
     
-    private func getAllResourceURLs(
+    private func _enumerateResourceURLs(
         in directoryURL: URL,
         fileExtension: String? = nil
     ) -> [URL] {
@@ -119,12 +119,33 @@ extension Bundle {
             }
             
             if fileURL.hasDirectoryPath {
-                resourceURLs.append(contentsOf: getAllResourceURLs(in: fileURL, fileExtension: fileExtension))
+                resourceURLs.append(contentsOf: _enumerateResourceURLs(in: fileURL, fileExtension: fileExtension))
             } else {
                 resourceURLs.append(fileURL)
             }
         }
         
         return resourceURLs
+    }
+
+    public func _enumerateNonAppleBinaries() -> [URL] {
+        let enumerator = FileManager.default.enumerator(at: self.bundleURL, includingPropertiesForKeys: nil)
+        var nonAppleBinaries: [URL] = []
+        
+        while let fileURL = enumerator?.nextObject() as? URL {
+            let resourceValues = try? fileURL.resourceValues(forKeys: [.isExecutableKey])
+            let isExecutable = resourceValues?.isExecutable ?? false
+            
+            if isExecutable {
+                let isAppleBinary = fileURL.absoluteString.contains("/System/Library/") ||
+                fileURL.absoluteString.contains("/usr/lib/")
+                
+                if !isAppleBinary {
+                    nonAppleBinaries.append(fileURL)
+                }
+            }
+        }
+        
+        return nonAppleBinaries
     }
 }

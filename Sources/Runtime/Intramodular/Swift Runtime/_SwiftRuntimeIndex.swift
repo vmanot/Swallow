@@ -135,12 +135,32 @@ extension _SwiftRuntimeIndex {
         }()
         
         private lazy var appleFrameworkObjCClasses: Set<TypeMetadata> = {
-            objCClasses.filter { cls in
-                guard let image = ObjCClass(cls.base as! AnyClass).dyldImage else {
-                    return false
+            if #available(macOS 13.0, iOS 16.0, tvOS 16.0, watchOS 9.0, *) {
+                return DynamicLinkEditor.Image.allCases
+                    .filter({ $0._matches(DynamicLinkEditor.Image._ImagePathFilter.appleFramework) })
+                    ._flatMapToSet {
+                        return objc_enumerateClasses(fromImage: .machHeader($0.header)).map({ TypeMetadata($0) })
+                    }
+            } else {
+                return objCClasses.filter { cls in
+                    guard let image = ObjCClass(cls.base as! AnyClass).dyldImage else {
+                        return false
+                    }
+                    
+                    return image._matches(DynamicLinkEditor.Image._ImagePathFilter.appleFramework)
                 }
-                
-                return image._matches(DynamicLinkEditor.Image._ImagePathFilter.appleFramework)
+            }
+        }()
+        
+        private lazy var bundledObjCClasses: Set<TypeMetadata> = {
+            if #available(macOS 13.0, iOS 16.0, tvOS 16.0, watchOS 9.0, *) {
+                return DynamicLinkEditor.Image.allCases
+                    .filter({ !$0._matches(DynamicLinkEditor.Image._ImagePathFilter.appleFramework) })
+                    ._flatMapToSet {
+                        return objc_enumerateClasses(fromImage: .machHeader($0.header)).map({ TypeMetadata($0) })
+                    }
+            } else {
+                return objCClasses
             }
         }()
 
@@ -182,6 +202,10 @@ extension _SwiftRuntimeIndex {
         private lazy var allTypes: Set<TypeMetadata> = {
             objCClasses.union(nonAppleSwiftTypes) // FIXME
         }()
+        
+        init() {
+            self.nonAppleSwiftTypes.formUnion(bundledObjCClasses)
+        }
 
         @_optimize(speed)
         @usableFromInline

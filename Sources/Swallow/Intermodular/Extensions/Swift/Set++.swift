@@ -17,6 +17,19 @@ extension Sequence {
         
         return result
     }
+    
+    @_transparent
+    public func _flatMapToSet<T: Hashable>(
+        _ transform: (Element) throws -> some Collection<T>
+    ) rethrows -> Set<T> {
+        var result = Set<T>(minimumCapacity: underestimatedCount)
+        
+        for element in self {
+            try result.insert(contentsOf: transform(element))
+        }
+        
+        return result
+    }
 }
 
 extension Set {
