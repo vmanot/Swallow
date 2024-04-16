@@ -87,7 +87,24 @@ extension Data {
 }
 
 extension Data {
-    public func toString(encoding: String.Encoding = .utf8) throws -> String {
+    public func toString(
+        encoding: String.Encoding = .utf8
+    ) throws -> String {
         try String(data: self, encoding: encoding).unwrap()
+    }
+
+    public func toStringTrimmingWhitespacesAndNewlines(
+        encoding: String.Encoding = .utf8
+    ) -> String? {
+        String(data: self, encoding: encoding)?.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+}
+
+extension Data {
+    public func decode<D: Decodable>(
+        _ type: D.Type,
+        using jsonDecoder: JSONDecoder = .init()
+    ) throws -> D {
+        try jsonDecoder.decode(type, from: self)
     }
 }

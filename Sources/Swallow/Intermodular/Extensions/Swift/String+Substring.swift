@@ -50,6 +50,15 @@ extension String {
         
         return lines().find({ $0.contains(substring) })
     }
+    
+    public func _linesWithWhitespacesAndNewlinesTrimmed() -> [String] {
+        self
+            .split(separator: "\n")
+            .map { slice in
+                String(slice)
+                    .trimmingCharacters(in: .whitespacesAndNewlines)
+            }
+    }
 }
 
 extension String {

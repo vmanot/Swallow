@@ -5,6 +5,7 @@
 import Swift
 
 public protocol _DynamicTypeCoercible {
+    @inlinable
     func __coerce<T>(toInstanceOfType other: T.Type) throws -> T
 }
 
@@ -22,7 +23,7 @@ extension _DynamicTypeCoercion {
     public func _coerce<T, U>(_ x: T, to _: U.Type) throws -> U {
         fatalError()
     }
-   
+    
     public func _coerce<T>(_ x: Source, to _: T.Type) throws -> T {
         fatalError()
     }
@@ -38,6 +39,12 @@ extension _DynamicTypeCoercion {
 
 extension _DynamicTypeCoercible {
     public func __coerce<T>(toInstanceOfType type: T.Type) throws -> T {
-        try cast(self, to: type)
+        do {
+            return try cast(self, to: type)
+        } catch {
+            runtimeIssue(error)
+            
+            throw error
+        }
     }
 }

@@ -5,6 +5,29 @@
 import Swift
 
 extension Mirror {
+    public struct _ChildDump: CustomStringConvertible {
+        public let label: String?
+        public let value: Any
+        
+        public var description: String {
+            if let label {
+                return "(\(label): \(value)"
+            } else {
+                return "\(value)"
+            }
+        }
+        
+        public init(label: String?, value: Any) {
+            self.label = label
+            self.value = value
+        }
+    }
+    public var _dumpedChildren: [_ChildDump] {
+        children.map({
+            _ChildDump(label: $0.label, value: $0.value)
+        })
+    }
+    
     public init<Subject>(
         _ subject: Subject,
         displayStyle: Mirror.DisplayStyle? = nil,

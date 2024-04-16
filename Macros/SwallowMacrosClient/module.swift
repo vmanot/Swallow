@@ -30,7 +30,7 @@ public enum module {
                     Self.initialized = true
                 }
                 
-                let onces = _SwiftRuntime._index.fetch(
+                let onces = TypeMetadataIndex.shared.fetch(
                     .conformsTo((any _PerformOnceOnAppLaunch).self),
                     .nonAppleFramework
                 )

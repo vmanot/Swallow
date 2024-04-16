@@ -19,16 +19,18 @@ public func _generatePlaceholder<Result>(
     ofType type: Result.Type = Result.self
 ) throws -> Result {
     switch type {
+        case is Void.Type:
+            return () as! Result
         case let type as any _HasPlaceholder.Type:
             return type.init(_opaque_placeholder: ()) as! Result
         case let type as _PlaceholderInitiable.Type:
             return type.init() as! Result
         case let type as PlaceholderProviding.Type:
             return type.placeholder as! Result
+        case let type as ExpressibleByNilLiteral.Type:
+            return type.init(nilLiteral: ()) as! Result
         case let type as Initiable.Type:
             return type.init() as! Result
-        case is Void.Type:
-            return () as! Result
         case let type as any RangeReplaceableCollection.Type:
             return type.placeholder as! Result
         case let type as any AdditiveArithmetic.Type:

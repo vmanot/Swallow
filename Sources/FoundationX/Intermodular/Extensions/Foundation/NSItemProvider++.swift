@@ -110,3 +110,7 @@ extension NSItemProvider {
         }
     }
 }
+
+extension NSItemProvider: @unchecked Sendable {
+    
+}

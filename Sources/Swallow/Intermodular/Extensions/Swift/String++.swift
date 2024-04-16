@@ -290,6 +290,20 @@ extension String {
     public func trimmingWhitespaceAndNewlines() -> String {
         trimmingCharacters(in: .whitespacesAndNewlines)
     }
+    
+    /// This method removes all newlines and whitespaces from the string.
+    ///
+    /// This is **not** the same as trimming.
+    public func _removingAllNewlinesAndWhitespaces() -> String {
+        let string = (self as NSString)
+        
+        return string.replacingOccurrences(
+            of: "\\s+",
+            with: "",
+            options: NSString.CompareOptions.regularExpression,
+            range: NSRange(location: 0, length: string.length)
+        ) as String
+    }
 }
 
 extension String {

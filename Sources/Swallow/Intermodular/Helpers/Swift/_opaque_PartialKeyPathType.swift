@@ -20,12 +20,35 @@ public protocol _opaque_PartialKeyPathType: AnyKeyPath {
 
 public protocol _PartialKeyPathType: _opaque_PartialKeyPathType {
     associatedtype Root
+    
+    @_spi(Private)
+    func _toPartialKeyPath() -> PartialKeyPath<Root>
 }
 
 public protocol _opaque_KeyPathType: _opaque_PartialKeyPathType {
     static var _opaque_ValueType: Any.Type { get }
     
     func _opaque_applyKeyPath(on instance: Any) throws -> Any
+}
+
+public protocol _KeyPathType: _opaque_KeyPathType {
+    associatedtype Root
+    associatedtype Value
+    
+    @_spi(Private)
+    func _toKeyPath() -> KeyPath<Root, Value>
+
+    func _opaque_appending(path: PartialKeyPath<Value>) -> AnyKeyPath
+}
+
+extension _KeyPathType {
+    public func _opaque_appending(path: PartialKeyPath<Value>) -> AnyKeyPath {
+        (path as! (any _KeyPathType))._unsafe_opaque_appended(to: _toKeyPath())
+    }
+
+    private func _unsafe_opaque_appended<T, U>(to other: KeyPath<T, U>) -> AnyKeyPath {
+        return (other as! KeyPath<T, Root>).appending(path: _toKeyPath())
+    }
 }
 
 // MARK: - Implemented Conformances
@@ -52,14 +75,24 @@ extension PartialKeyPath: _PartialKeyPathType {
         Root.self
     }
     
+    @_spi(Private)
+    public func _toPartialKeyPath() -> PartialKeyPath<Root> {
+        self
+    }
+
     public func _opaque_applyPartialKeyPath(on instance: Any) throws -> Any {
         try cast(self, to: _opaque_KeyPathType.self)._opaque_applyKeyPath(on: instance)
     }
 }
 
-extension KeyPath: _opaque_KeyPathType {
+extension KeyPath: _KeyPathType {
     public static var _opaque_ValueType: Any.Type {
         Value.self
+    }
+    
+    @_spi(Private)
+    public func _toKeyPath() -> KeyPath<Root, Value> {
+        self
     }
     
     public func _opaque_applyKeyPath(on instance: Any) throws -> Any {

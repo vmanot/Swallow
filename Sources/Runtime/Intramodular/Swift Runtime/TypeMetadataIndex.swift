@@ -7,7 +7,15 @@ import Foundation
 import MachO
 @_spi(Internal) import Swallow
 
-public final class _SwiftRuntimeIndex {
+public final class TypeMetadataIndex {
+    public private(set) static var shared: TypeMetadataIndex = {
+        let result = TypeMetadataIndex()
+        
+        result.preheat()
+        
+        return result
+    }()
+
     @frozen
     @usableFromInline
     enum StateFlag {
@@ -48,7 +56,7 @@ public final class _SwiftRuntimeIndex {
     }
 }
 
-extension _SwiftRuntimeIndex {
+extension TypeMetadataIndex {
     @_optimize(speed)
     public func fetch(
         _ predicates: QueryPredicate...
@@ -127,7 +135,7 @@ extension _SwiftRuntimeIndex {
     }
 }
 
-extension _SwiftRuntimeIndex {
+extension TypeMetadataIndex {
     @usableFromInline
     final class QueryIndices {
         private lazy var objCClasses: Set<TypeMetadata> = {
@@ -239,6 +247,27 @@ extension _SwiftRuntimeIndex {
     }
 }
 
+// MARK: - Supplementary
+
+extension TypeMetadata {
+    public static func _queryAll(
+        _ predicates: TypeMetadataIndex.QueryPredicate...
+    ) throws -> Array<Any.Type> {
+        TypeMetadataIndex.shared.fetch(predicates)
+    }
+    
+    public static func _queryAll<T>(
+        _ predicates: TypeMetadataIndex.QueryPredicate...,
+        returning: Array<T>.Type = Array<T>.self
+    ) throws -> Array<T> {
+        return try TypeMetadataIndex.shared
+            .fetch(predicates)
+            .map({ try cast($0) })
+    }
+}
+
+// MARK: - Internal
+
 extension TypeMetadata {
     fileprivate var _isIndexWorthy: Bool {
         let typeName = _typeName(base)
@@ -258,11 +287,11 @@ extension TypeMetadata {
         else {
             return false
         }
-    
+        
         guard !typeName.hasPrefix("POSIX") else {
             return false
         }
-
+        
         guard !typeName.hasPrefix("SwiftUIIntrospect") else {
             return false
         }
@@ -274,11 +303,11 @@ extension TypeMetadata {
         guard !typeName.hasPrefix("_XMLCoder") else {
             return false
         }
-
+        
         guard !typeName.hasSuffix(".CodingKeys") else {
             return false
         }
-
+        
         return true
     }
 }

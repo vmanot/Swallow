@@ -26,7 +26,10 @@ public struct Popen {
     ///   - cmd: Command to execute
     ///   - errors: Switch between returning String on sucess or failure.
     /// - Returns: Output of command or errors on failure if errors is true.
-    static public func system(_ cmd: String, errors: Bool = false) -> String? {
+    static public func system(
+        _ cmd: String,
+        errors: Bool = false
+    ) -> String? {
         let cmd = cmd + (errors ? " 2>&1" : "")
         guard let outfp = popen(cmd, "r") else {
             return "popen(\"\(cmd)\") failed."
@@ -50,7 +53,9 @@ extension UnsafeMutablePointer:
         return readLine(strippingNewline: false)
     }
 
-    public func readLine(strippingNewline: Bool = true) -> String? {
+    public func readLine(
+        strippingNewline: Bool = true
+    ) -> String? {
         var bufferSize = 10_000, offset = 0
         var buffer = [CChar](repeating: 0, count: bufferSize)
 
@@ -73,13 +78,22 @@ extension UnsafeMutablePointer:
         return offset > 0 ? String(cString: buffer) : nil
     }
 
-    public func readAll(close: Bool = false) -> String {
-        defer { if close { _ = pclose(self) } }
+    public func readAll(
+        close: Bool = false
+    ) -> String {
+        defer {
+            if close {
+                _ = pclose(self)
+            }
+        }
+        
         return reduce("", +)
     }
 
     @discardableResult
-    public func print(_ line: String) -> Int32 {
+    public func print(
+        _ line: String
+    ) -> Int32 {
         return fputs(line, self)
     }
 }

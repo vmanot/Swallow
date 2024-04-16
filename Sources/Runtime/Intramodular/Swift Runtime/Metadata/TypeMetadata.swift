@@ -47,12 +47,16 @@ extension TypeMetadata: MetatypeRepresentable {
 }
 
 extension TypeMetadata: Named {
+    public var hasUnderscoredName: Bool {
+        _unqualifiedName.hasPrefix("_")
+    }
+    
     public var _qualifiedName: String {
         _typeName(base, qualified: true)
     }
 
     public var _unqualifiedName: String {
-        _typeName(base, qualified: true)
+        _typeName(base, qualified: false)
     }
     
     @available(macOS 11.0, iOS 14.0, watchOS 7.0, tvOS 14.0, *) 

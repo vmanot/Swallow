@@ -4,7 +4,7 @@
 
 import Swift
 
-public protocol _UnwrappableTypeEraser {
+public protocol _UnwrappableTypeEraser<_UnwrappedBaseType> {
     associatedtype _UnwrappedBaseType
     
     init(_erasing: _UnwrappedBaseType)

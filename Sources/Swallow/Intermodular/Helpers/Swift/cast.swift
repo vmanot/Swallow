@@ -65,21 +65,16 @@ public func cast<T, U>(
 }
 
 @inlinable
-public func cast<T, U>(
+public func _forceCast<T, U>(
     _ value: T,
     to type: U.Type = U.self,
-    default: U,
     file: StaticString = #file,
     fileID: StaticString = #fileID,
     function: StaticString = #function,
     line: UInt = #line,
     column: UInt = #column
-) -> U {
-    guard let result = _runtimeCast(value, to: type) else {
-        return `default`
-    }
-    
-    return result
+) throws -> U {
+    return try! cast(value, to: type)
 }
 
 // MARK: - Auxiliary

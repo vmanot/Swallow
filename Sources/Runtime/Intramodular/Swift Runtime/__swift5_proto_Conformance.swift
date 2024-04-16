@@ -7,122 +7,6 @@ import Foundation
 import Swallow
 
 @frozen
-@usableFromInline
-struct _swift_GenericContextDescriptor {
-    let flags: UInt32
-    let parent: Int32
-}
-
-@frozen
-@usableFromInline
-struct _swift_ConformanceDescriptor {
-    let `protocol`: Int32
-    let typeRef: Int32
-    let witnessTablePattern: Int32
-    let flags: SwiftRuntimeProtocolConformanceDescriptor.ConformanceFlags
-}
-
-@frozen
-@usableFromInline
-struct _swift_ModuleContextDescriptor {
-    let flags: SwiftRuntimeContextDescriptorFlags
-    let parent: Int32
-    let name: Int32
-}
-
-struct _swift_ModuleContext {
-    var raw: UnsafeRawPointer
-    
-    var contextDescriptor: _swift_ModuleContextDescriptor {
-        self.raw.load(as: _swift_ModuleContextDescriptor.self)
-    }
-    
-    var name: String {
-        let start = self.raw + MemoryLayout<_swift_ModuleContextDescriptor>.offset(of: \.name)!
-        let name = _swift_RelativeDirectPointer<CChar>(offset: contextDescriptor.name)
-        
-        return name.address(from: start).withMemoryRebound(to: CChar.self, capacity: 1) { pointer in
-            return String(cString: pointer)
-        }
-    }
-}
-
-@frozen
-@usableFromInline
-struct _swift_TypeContextDescriptor {
-    let flags: SwiftRuntimeContextDescriptorFlags
-    let parent: Int32
-    let name: Int32
-    let accessor: Int32
-}
-
-extension DynamicLinkEditor.Image {
-    func _parseSwiftProtocolConformances() -> [__swift5_proto_Conformance] {
-        guard let header = UnsafeRawPointer(self.header) else {
-            return []
-        }
-        
-        var size: UInt = 0
-        let section = header.withMemoryRebound(to: mach_header_64.self, capacity: 1) { pointer in
-            getsectiondata(pointer, "__TEXT", "__swift5_proto", &size)
-        }
-        
-        guard let section = section else {
-            return []
-        }
-        
-        let rawSection = UnsafeRawPointer(section)
-        
-        var result: [__swift5_proto_Conformance] = []
-        
-        for start in stride(from: rawSection, to: rawSection + Int(size), by: MemoryLayout<Int32>.stride) {
-            let address = start.load(as: _swift_RelativeDirectPointer<__swift5_proto_Conformance>.self).address(from: start)
-            let conformance = __swift5_proto_Conformance(raw: address)
-            
-            result.append(conformance)
-        }
-        
-        return result
-    }
-    
-    public func _parseSwiftProtocolConformancesPerType2() -> [_SwiftRuntime.ProtocolConformanceListForType] {
-        let conformances = _parseSwiftProtocolConformances()
-        
-        var result: [TypeMetadata: IdentifierIndexingArrayOf<_SwiftRuntime.ProtocolConformanceListForType.Conformance>] = [:]
-        
-        for conformance in conformances {
-            guard let contextDescriptor = conformance.contextDescriptor, !contextDescriptor.flags.isGeneric else {
-                continue
-            }
-            
-            guard conformance.kind != nil else {
-                continue
-            }
-            
-            guard let type = contextDescriptor.metadata().map({ TypeMetadata($0) }) ?? conformance.type.map({ TypeMetadata($0) }) else {
-                continue
-            }
-            
-            let protocolType: TypeMetadata? = conformance.protocol.metadata().map({ TypeMetadata($0) })
-            
-            result[type, default: []].append(
-                .init(
-                    conformance: conformance,
-                    type: type,
-                    typeName: nil,
-                    protocolType: protocolType,
-                    protocolName: nil
-                )
-            )
-        }
-        
-        return result.map { key, value in
-            _SwiftRuntime.ProtocolConformanceListForType(type: key, conformances: value)
-        }
-    }
-}
-
-@frozen
 public struct __swift5_proto_Conformance: Hashable {
     enum Kind: UInt16 {
         case direct = 0x0
@@ -155,12 +39,12 @@ public struct __swift5_proto_Conformance: Hashable {
         guard let kind, kind != .IndirectTypeDescriptor else {
             return nil
         }
-
+        
         let typeDescriptor = maybeType.address(from: raw)
             .advanced(by: MemoryLayout<_swift_ConformanceDescriptor>.offset(of: \.typeRef)!)
             .advanced(by: Int(descriptor.typeRef))
             .load(as: _swift_TypeContextDescriptor.self)
-                
+        
         let start = self.raw + MemoryLayout<_swift_TypeContextDescriptor>.offset(of: \.accessor)!
         let accessor = _swift_RelativeDirectPointer<Void>(offset: typeDescriptor.accessor)
         
@@ -227,6 +111,15 @@ struct _swift_GenericContext: Hashable {
         case `enum` = 0x13
     }
     
+    struct MetadataAccessor {
+        var raw: UnsafeRawPointer
+    }
+    
+    struct MetadataResponse {
+        let type: Any.Type
+        let state: Int
+    }
+    
     var raw: UnsafeRawPointer
     
     var parent: _swift_GenericContext? {
@@ -273,13 +166,98 @@ struct _swift_GenericContext: Hashable {
     }
 }
 
-extension _swift_GenericContext {
-    struct MetadataAccessor {
-        var raw: UnsafeRawPointer
+@frozen
+@usableFromInline
+struct _swift_GenericContextDescriptor {
+    let flags: UInt32
+    let parent: Int32
+}
+
+@frozen
+@usableFromInline
+struct _swift_ConformanceDescriptor {
+    let `protocol`: Int32
+    let typeRef: Int32
+    let witnessTablePattern: Int32
+    let flags: SwiftRuntimeProtocolConformanceDescriptor.ConformanceFlags
+}
+
+@frozen
+@usableFromInline
+struct _swift_ModuleContextDescriptor {
+    let flags: SwiftRuntimeContextDescriptorFlags
+    let parent: Int32
+    let name: Int32
+}
+
+struct _swift_ModuleContext {
+    var raw: UnsafeRawPointer
+    
+    var contextDescriptor: _swift_ModuleContextDescriptor {
+        self.raw.load(as: _swift_ModuleContextDescriptor.self)
     }
     
-    struct MetadataResponse {
-        let type: Any.Type
-        let state: Int
+    var name: String {
+        let start = self.raw + MemoryLayout<_swift_ModuleContextDescriptor>.offset(of: \.name)!
+        let name = _swift_RelativeDirectPointer<CChar>(offset: contextDescriptor.name)
+        
+        return name.address(from: start).withMemoryRebound(to: CChar.self, capacity: 1) { pointer in
+            return String(cString: pointer)
+        }
+    }
+}
+
+@frozen
+@usableFromInline
+struct _swift_TypeContextDescriptor {
+    let flags: SwiftRuntimeContextDescriptorFlags
+    let parent: Int32
+    let name: Int32
+    let accessor: Int32
+}
+
+public struct _swift_TypeConformanceList: Identifiable {
+    @frozen
+    public struct Conformance: Hashable, Identifiable {
+        @usableFromInline
+        var conformance: __swift5_proto_Conformance?
+        
+        public var type: TypeMetadata?
+        public let typeName: String?
+        public let protocolType: TypeMetadata?
+        public let protocolName: String?
+        
+        public var id: AnyHashable {
+            if let conformance {
+                return conformance.hashValue
+            } else {
+                return hashValue
+            }
+        }
+        
+        init(
+            conformance: __swift5_proto_Conformance?,
+            type: TypeMetadata? = nil,
+            typeName: String?,
+            protocolType: TypeMetadata? = nil,
+            protocolName: String?
+        ) {
+            self.conformance = conformance
+            self.type = type
+            self.typeName = typeName
+            self.protocolType = protocolType
+            self.protocolName = protocolName
+        }
+    }
+    
+    public let type: TypeMetadata?
+    public var conformances: IdentifierIndexingArrayOf<Conformance>
+    
+    public var isEmpty: Bool {
+        conformances.isEmpty
+    }
+    
+    public var id: AnyHashable {
+        type
     }
 }

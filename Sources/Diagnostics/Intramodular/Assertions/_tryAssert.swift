@@ -20,7 +20,6 @@ extension Task where Failure == Error {
     }
 }
 
-@inline(__always)
 @_transparent
 public func assertNotNil<T>(_ x: T?) {
     guard x != nil else {
@@ -30,7 +29,6 @@ public func assertNotNil<T>(_ x: T?) {
     }
 }
 
-@inline(__always)
 @_transparent
 public func _tryAssert(
     _ condition: Bool,
@@ -55,7 +53,25 @@ public func _tryAssert(
     }
 }
 
-@inline(__always)
+@_transparent
+@discardableResult
+public func _tryAssert<T, U>(
+    _ x: T,
+    is type: U.Type,
+    _ message: String? = nil,
+    file: StaticString = #file,
+    function: StaticString = #function,
+    line: UInt = #line
+) throws -> Bool {
+    do {
+        _ = try cast(x, to: type)
+        
+        return true
+    } catch {
+        return false
+    }
+}
+
 @_transparent
 public func _tryAssert(
     _ message: String? = nil,

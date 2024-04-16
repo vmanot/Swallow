@@ -2,27 +2,45 @@
 // Copyright (c) Vatsal Manot
 //
 
-import Foundation
 import MachO
+import Foundation
 import Swallow
 
 extension DynamicLinkEditor.Image {
-    public func _parseSwiftProtocolConformancesPerType1() -> [_SwiftRuntime.ProtocolConformanceListForType] {
-        var result = [TypeMetadata: [_SwiftRuntime.ProtocolConformanceListForType.Conformance]]()
+    func _parseSwiftProtocolConformances() -> [__swift5_proto_Conformance] {
+        guard let header = UnsafeRawPointer(self.header) else {
+            return []
+        }
+        
+        var size: UInt = 0
+        let section = header.withMemoryRebound(to: mach_header_64.self, capacity: 1) { pointer in
+            getsectiondata(pointer, "__TEXT", "__swift5_proto", &size)
+        }
+        
+        guard let section = section else {
+            return []
+        }
+        
+        let rawSection = UnsafeRawPointer(section)
+        
+        var result: [__swift5_proto_Conformance] = []
+        
+        for start in stride(from: rawSection, to: rawSection + Int(size), by: MemoryLayout<Int32>.stride) {
+            let address = start.load(as: _swift_RelativeDirectPointer<__swift5_proto_Conformance>.self).address(from: start)
+            let conformance = __swift5_proto_Conformance(raw: address)
+            
+            result.append(conformance)
+        }
+        
+        return result
+    }
+    
+    public func _parseSwiftProtocolConformancesPerType1() -> [_swift_TypeConformanceList] {
+        var result = [TypeMetadata: _swift_TypeConformanceList]()
         
         var sectionSize: UInt = 0
         let rawHeaderPointer = UnsafeRawPointer(self.header)
         
-#if !os(watchOS)
-        let sectionStart = UnsafeRawPointer(
-            getsectiondata(
-                rawHeaderPointer.assumingMemoryBound(to: _mach_header_type.self),
-                "__TEXT",
-                "__swift5_proto",
-                &sectionSize
-            )
-        )
-#else
         let sectionStart = UnsafeRawPointer(
             getsectiondata(
                 rawHeaderPointer.assumingMemoryBound(to: _inferredType()),
@@ -31,7 +49,6 @@ extension DynamicLinkEditor.Image {
                 &sectionSize
             )
         )
-#endif
         
         guard var sectionData = sectionStart?.assumingMemoryBound(to: Int32.self) else {
             return []
@@ -44,7 +61,7 @@ extension DynamicLinkEditor.Image {
             
             if let conformance = Self._parseConformance(from: conformance) {
                 if let type = conformance.type {
-                    result[type, default: []].append(conformance)
+                    result[type, default: .init(type: type, conformances: .init())].conformances.append(conformance)
                 }
             }
             
@@ -53,17 +70,51 @@ extension DynamicLinkEditor.Image {
         
         return result
             .filter({ !$0.value.isEmpty })
-            .map { (key: TypeMetadata, value: [_SwiftRuntime.ProtocolConformanceListForType.Conformance]) -> _SwiftRuntime.ProtocolConformanceListForType in
-                _SwiftRuntime.ProtocolConformanceListForType(
-                    type: key,
-                    conformances: IdentifierIndexingArrayOf(value.distinct())
-                )
+            .map { (key: TypeMetadata, value: _swift_TypeConformanceList) in
+                value
             }
+    }
+    
+    
+    public func _parseSwiftProtocolConformancesPerType2() -> [_swift_TypeConformanceList] {
+        let conformances = _parseSwiftProtocolConformances()
+        
+        var result: [TypeMetadata: IdentifierIndexingArrayOf<_swift_TypeConformanceList.Conformance>] = [:]
+        
+        for conformance in conformances {
+            guard let contextDescriptor = conformance.contextDescriptor, !contextDescriptor.flags.isGeneric else {
+                continue
+            }
+            
+            guard conformance.kind != nil else {
+                continue
+            }
+            
+            guard let type = contextDescriptor.metadata().map({ TypeMetadata($0) }) ?? conformance.type.map({ TypeMetadata($0) }) else {
+                continue
+            }
+            
+            let protocolType: TypeMetadata? = conformance.protocol.metadata().map({ TypeMetadata($0) })
+            
+            result[type, default: []].append(
+                _swift_TypeConformanceList.Conformance(
+                    conformance: conformance,
+                    type: type,
+                    typeName: nil,
+                    protocolType: protocolType,
+                    protocolName: nil
+                )
+            )
+        }
+        
+        return result.map { key, value in
+            _swift_TypeConformanceList(type: key, conformances: value)
+        }
     }
     
     private static func _parseConformance(
         from conformanceDescriptor: UnsafePointer<SwiftRuntimeProtocolConformanceDescriptor>
-    ) -> _SwiftRuntime.ProtocolConformanceListForType.Conformance? {
+    ) -> _swift_TypeConformanceList.Conformance? {
         let flags = conformanceDescriptor.pointee.conformanceFlags
         
         guard let kind = flags.kind else {
@@ -119,7 +170,7 @@ extension DynamicLinkEditor.Image {
             return nil
         }
         
-        return _SwiftRuntime.ProtocolConformanceListForType.Conformance(
+        return _swift_TypeConformanceList.Conformance(
             conformance: nil,
             type: type.map({ TypeMetadata($0) }),
             typeName: typeName,
@@ -174,6 +225,8 @@ extension DynamicLinkEditor.Image {
         }
     }
 }
+
+// MARK: - Internal
 
 extension String {
     fileprivate var hasProblematicCharacters: Bool {
