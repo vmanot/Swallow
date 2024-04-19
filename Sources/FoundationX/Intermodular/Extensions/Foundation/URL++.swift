@@ -216,6 +216,29 @@ extension URL {
         
         return appendingPathComponent(pathComponent, isDirectory: true)
     }
+    
+    public func path(
+        relativeTo baseURL: URL
+    ) throws -> RelativePath {
+        guard baseURL.scheme != nil, baseURL.host != nil else {
+            throw URLError(.badURL)
+        }
+        
+        guard self.scheme != nil, self.host != nil else {
+            throw URLError(.badURL)
+        }
+        
+        guard self.absoluteString.hasPrefix(baseURL.absoluteString) else {
+            throw URLError(.badURL)
+        }
+        
+        let relativeString = self.absoluteString.replacingOccurrences(of: baseURL.absoluteString, with: "")
+        let trimmedString = relativeString.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
+        
+        let components = trimmedString.components(separatedBy: "/")
+        
+        return RelativePath(components: components.map({ URL.PathComponent(rawValue: $0) }))
+    }
 }
 
 extension URL {

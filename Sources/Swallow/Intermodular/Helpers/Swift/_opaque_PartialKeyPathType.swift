@@ -31,7 +31,7 @@ public protocol _opaque_KeyPathType: _opaque_PartialKeyPathType {
     func _opaque_applyKeyPath(on instance: Any) throws -> Any
 }
 
-public protocol _KeyPathType: _opaque_KeyPathType {
+public protocol _KeyPathType: _opaque_KeyPathType, _opaque_PartialKeyPathType, _PartialKeyPathType {
     associatedtype Root
     associatedtype Value
     

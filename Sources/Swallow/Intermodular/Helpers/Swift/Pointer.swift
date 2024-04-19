@@ -137,9 +137,28 @@ public func withMemoryRebound<T, U, ReturnType>(
     to _: U.Type,
     _ body: ((inout U) -> ReturnType)
 ) -> ReturnType {
-    withUnsafeMutablePointer(to: &x) { ptr in
+    assert(MemoryLayout<T>.size == MemoryLayout<U>.size)
+    
+    return withUnsafeMutablePointer(to: &x) { ptr in
         ptr.withMemoryRebound(to: U.self, capacity: 1) { ptr in
             body(&ptr.pointee)
+        }
+    }
+}
+
+@_transparent
+public func withMemoryRebound<T0, T1, U0, U1, ReturnType>(
+    _ x: inout T0,
+    _ y: T1,
+    to _: U0.Type,
+    _: U1.Type,
+    _ body: ((inout U0, U1) -> ReturnType)
+) -> ReturnType {
+    assert(MemoryLayout<(T0, T1)>.size == MemoryLayout<(U0, U1)>.size)
+
+    return withUnsafeMutablePointer(to: &x) { ptr in
+        ptr.withMemoryRebound(to: U0.self, capacity: 1) { ptr in
+            body(&ptr.pointee, unsafeBitCast(y, to: U1.self))
         }
     }
 }
