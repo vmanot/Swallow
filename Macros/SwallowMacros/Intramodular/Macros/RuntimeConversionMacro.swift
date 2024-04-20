@@ -19,24 +19,12 @@ public struct RuntimeConversionMacro: PeerMacro {
             throw CustomError()
         }
         
-        let name = context.makeUniqueName("_RuntimeConversion")
-        
-        let newParameterList = declaration.signature.parameterClause.parameters
-        
-        let callArguments: [String] = newParameterList.map { param in
-            let argName = param.secondName ?? param.firstName
-            
-            let paramName = param.firstName
-            if paramName.text != "_" {
-                return "\(paramName.text): \(argName.text)"
-            }
-            
-            return "\(argName.text)"
-        }
-        
+        let name: TokenSyntax = context.makeUniqueName("_RuntimeConversion")
+        let callArgumentList: [String] = declaration.signature.parameterClause.parameters._toCallArgumentList()
+                
         let newBody: ExprSyntax =
         """
-        \(raw: declaration.name)(\(raw: callArguments.joined(separator: ", ")))
+        \(raw: declaration.name)(\(raw: callArgumentList.joined(separator: ", ")))
         """
         
         declaration.attributes.removeAll(AttributeSyntax.self) {
@@ -55,7 +43,7 @@ public struct RuntimeConversionMacro: PeerMacro {
         
         let result = DeclSyntax(
         """
-        class \(name): _NonGenericRuntimeConversionProtocol {
+        public class \(name): _NonGenericRuntimeConversionProtocol {
             \(declaration)
         }
         """
@@ -65,3 +53,18 @@ public struct RuntimeConversionMacro: PeerMacro {
     }
 }
 
+extension FunctionParameterListSyntax {
+    fileprivate func _toCallArgumentList() -> [String] {
+        self.map { param in
+            let argName = param.secondName ?? param.firstName
+            
+            let paramName = param.firstName
+            
+            if paramName.text != "_" {
+                return "\(paramName.text): \(argName.text)"
+            }
+            
+            return "\(argName.text)"
+        }
+    }
+}

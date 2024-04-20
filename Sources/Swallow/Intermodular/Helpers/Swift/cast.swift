@@ -244,11 +244,53 @@ extension _TypeCastTo2: @unchecked Sendable where T: Sendable, U: Sendable {
     
 }
 
-public protocol _ArrayProtocol: Initiable {
+public protocol _ProtocolizableType {
+    
+}
+
+extension _ProtocolizableType {
+    public static func _ProtocolizableType_withInstance<T>(
+        _ body: (Self.Type) throws -> T
+    ) rethrows -> T {
+        try body(self)
+    }
+
+    public func _ProtocolizableType_withInstance<T>(
+        _ body: (Self) throws -> T
+    ) rethrows -> T {
+        try body(self)
+    }
+}
+
+public protocol _ArrayProtocol<Element>: _ProtocolizableType, Initiable, RandomAccessCollection {
     static var _opaque_ArrayProtocol_ElementType: Any.Type { get }
     
-    func _opaque_castElementType(to _: Any.Type) throws -> _ArrayProtocol
+    func _opaque_castElementType(to _: Any.Type) throws -> any _ArrayProtocol
     func _castElementType<T>(to _: T.Type) throws -> [T]
+    
+    static func _ProtocolizableType_withInstance<T>(
+        _ body: (Array<Element>.Type) throws -> T
+    ) rethrows -> T
+
+    func _ProtocolizableType_withInstance<T>(
+        _ body: (Array<Element>) throws -> T
+    ) rethrows -> T 
+}
+
+public protocol _IdentifierIndexingArrayOf_Protocol<Element>: _ProtocolizableType, Initiable, RandomAccessCollection where Element: Identifiable, Element.ID == Self.ID {
+    associatedtype ID
+    
+    static func _ProtocolizableType_withInstance<T>(
+        _ body: (IdentifierIndexingArrayOf<Element>.Type) throws -> T
+    ) rethrows -> T
+
+    func _ProtocolizableType_withInstance<T>(
+        _ body: (IdentifierIndexingArrayOf<Element>) throws -> T
+    ) rethrows -> T
+}
+
+extension IdentifierIndexingArray: _ProtocolizableType {
+    
 }
 
 extension Array: _ArrayProtocol {
@@ -258,8 +300,8 @@ extension Array: _ArrayProtocol {
     
     public func _opaque_castElementType(
         to type: Any.Type
-    ) throws -> _ArrayProtocol {
-        func castElementType<T>(to elementType: T.Type) throws -> _ArrayProtocol {
+    ) throws -> any _ArrayProtocol {
+        func castElementType<T>(to elementType: T.Type) throws -> any _ArrayProtocol {
             try map({ try cast($0, to: elementType) })
         }
         
@@ -271,8 +313,12 @@ extension Array: _ArrayProtocol {
     }
 }
 
-public func _makeArrayType(withElementType element: Any.Type) -> _ArrayProtocol.Type {
-    func makeArrayType<T>(from type: T.Type) -> _ArrayProtocol.Type {
+extension IdentifierIndexingArray: _IdentifierIndexingArrayOf_Protocol where Element: Identifiable, Element.ID == ID {
+    
+}
+
+public func _makeArrayType(withElementType element: Any.Type) -> any _ArrayProtocol.Type {
+    func makeArrayType<T>(from type: T.Type) -> any _ArrayProtocol.Type {
         Array<T>.self
     }
     
