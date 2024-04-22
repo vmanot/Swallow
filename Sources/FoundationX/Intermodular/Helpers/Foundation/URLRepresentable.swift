@@ -13,12 +13,26 @@ public protocol URLConvertible: _URLConvertible {
     var url: URL { get }
 }
 
-public protocol URLRepresentable: URLConvertible {
+public protocol _FailableInitiableFromURL {
     init?(url: URL)
 }
 
 public protocol _ThrowingInitiableFromURL {
     init(url: URL) throws
+}
+
+public protocol URLRepresentable: _FailableInitiableFromURL, URLConvertible {
+    var url: URL { get }
+
+    init?(url: URL)
+}
+
+extension _FailableInitiableFromURL {
+    public init?(filePath: String) {
+        let url = URL(fileURLWithPath: filePath)
+        
+        self.init(url: url)
+    }
 }
 
 extension _ThrowingInitiableFromURL {

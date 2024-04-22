@@ -164,6 +164,10 @@ extension URL {
             self.init(rawValue: value)
         }
         
+        public init(_ value: String) {
+            self.init(rawValue: value)
+        }
+        
         public static func file(_ string: String) -> Self {
             Self(rawValue: string, isDirectory: false)
         }
@@ -331,6 +335,10 @@ extension URL {
 extension URL {
     public var isWebURL: Bool {
         return scheme == "http" || scheme == "https"
+    }
+    
+    public var _filePath: String {
+        resolvingSymlinksInPath().path
     }
     
     public var _fileNameWithoutExtension: String {

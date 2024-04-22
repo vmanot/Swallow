@@ -39,7 +39,7 @@ extension Pointer {
     public func pointee(at stride: Stride) -> Pointee {
         advanced(by: stride).pointee
     }
-    
+        
     public subscript(offset: Stride) -> Pointee {
         @inlinable get {
             return pointee(at: offset)

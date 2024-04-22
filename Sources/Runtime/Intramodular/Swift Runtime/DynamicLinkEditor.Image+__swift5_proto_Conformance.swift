@@ -14,7 +14,7 @@ extension DynamicLinkEditor.Image {
         
         var size: UInt = 0
         let section = header.withMemoryRebound(to: mach_header_64.self, capacity: 1) { pointer in
-            getsectiondata(pointer, "__TEXT", "__swift5_proto", &size)
+            getsectiondata(unsafeBitCast(pointer), "__TEXT", "__swift5_proto", &size)
         }
         
         guard let section = section else {
@@ -74,7 +74,6 @@ extension DynamicLinkEditor.Image {
                 value
             }
     }
-    
     
     public func _parseSwiftProtocolConformancesPerType2() -> [_swift_TypeConformanceList] {
         let conformances = _parseSwiftProtocolConformances()

@@ -466,7 +466,7 @@ extension FileManager {
         guard let contents = try? contentsOfDirectory(at: location.url) else {
             return false
         }
-                
+        
         let filteredContents = contents.filter { item in
             !_practicallyIgnoredFilenames.contains(item.lastPathComponent) && !item.lastPathComponent.hasPrefix("._")
         }
@@ -528,12 +528,16 @@ extension FileManager {
             .contentsOfDirectory(at: directory)
             .first(where: { UTType(filenameExtension: $0._fileExtension) == fileExtension })
     }
-
+    
     public func firstAndOnly(
         _ fileExtension: UTType,
         in directory: URL
     ) throws -> URL? {
-        try self
+        guard FileManager.default.fileExists(at: directory) else {
+            return nil
+        }
+        
+        return try self
             .contentsOfDirectory(at: directory)
             .firstAndOnly(where: { UTType(filenameExtension: $0._fileExtension) == fileExtension })
     }

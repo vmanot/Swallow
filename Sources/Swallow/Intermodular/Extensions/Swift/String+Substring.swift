@@ -71,9 +71,18 @@ extension String {
         hasPrefix(prefix) ? dropFirst(prefix.count) : .init(self)
     }
     
+    public func dropPresentPrefix<String: StringProtocol>(_ prefix: String) -> Substring? {
+        hasPrefix(prefix) ? dropFirst(prefix.count) : nil
+    }
+    
     @_disfavoredOverload
     public func dropPrefixIfPresent<String: StringProtocol>(_ prefix: String) -> Self {
         Self(dropPrefixIfPresent(prefix) as Substring)
+    }
+    
+    @_disfavoredOverload
+    public func dropPresentPrefix<String: StringProtocol>(_ prefix: String) -> Self? {
+        (dropPresentPrefix(prefix) as Substring?).map({ Self($0) })
     }
     
     public func addingPrefixIfMissing(_ prefix: String) -> String {

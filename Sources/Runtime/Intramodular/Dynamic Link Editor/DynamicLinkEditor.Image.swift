@@ -2,7 +2,7 @@
 // Copyright (c) Vatsal Manot
 //
 
-import Foundation
+import FoundationX
 import MachO
 import ObjectiveC
 import Swallow
@@ -15,20 +15,29 @@ public typealias _mach_header_type = mach_header_64
 
 extension DynamicLinkEditor {
     @frozen
-    public struct Image: Hashable, Identifiable, @unchecked Sendable {
+    public struct Image: Hashable, Identifiable, @unchecked Sendable, _FailableInitiableFromURL {
+        public static var _allAddedCases = IdentifierIndexingArrayOf<Self>()
+        
         public let index: UInt32
         public let name: String
         public let header: UnsafePointer<mach_header>
+        public let slide: Int
+        
+        public var id: AnyHashable {
+            Hashable2ple((index, name))
+        }
         
         @_transparent
         public init(
             index: UInt32,
-            name: String,
+            slide: Int? = nil,
+            name: String? = nil,
             header: UnsafePointer<mach_header>
         ) {
             self.index = index
-            self.name = name
+            self.name = name ?? String(cString: _dyld_get_image_name(index))
             self.header = header
+            self.slide = slide ?? _dyld_get_image_vmaddr_slide(index)
         }
         
         public init?(url: URL) {
@@ -37,10 +46,6 @@ extension DynamicLinkEditor {
             }
             
             self = image
-        }
-        
-        public var id: AnyHashable {
-            name
         }
     }
 }

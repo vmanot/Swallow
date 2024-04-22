@@ -44,6 +44,7 @@ let package = Package(
         .target(
             name: "_SwallowMacrosRuntime",
             dependencies: [
+                "_RuntimeC",
                 "Diagnostics",
                 "Swallow",
             ],
@@ -147,6 +148,7 @@ let package = Package(
         .target(
             name: "SwallowMacrosClient",
             dependencies: [
+                "_RuntimeC",
                 "_SwallowMacrosRuntime",
                 "SwallowMacros",
                 "Runtime",
@@ -194,6 +196,7 @@ let package = Package(
         .testTarget(
             name: "SwallowTests",
             dependencies: [
+                "_RuntimeC",
                 "Runtime",
                 "Swallow",
                 "SwallowMacros",

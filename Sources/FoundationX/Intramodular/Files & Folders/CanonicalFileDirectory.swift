@@ -20,10 +20,16 @@ public struct CanonicalFileDirectory: Hashable, Sendable {
         case ubiquityContainer(String)
         case appResources
         case appDocuments
+        
+        case unspecified
     }
     
     var _name: _DirectoryName
     var _unsandboxed: Bool? = nil
+    
+    public static var unspecified: Self {
+        Self(_name: .unspecified)
+    }
 }
 
 extension CanonicalFileDirectory {
@@ -112,6 +118,8 @@ extension CanonicalFileDirectory {
             case .appDocuments: do {
                 return try fileManager.url(for: .documentDirectory, in: .userDomainMask)
             }
+            case .unspecified:
+                throw Never.Reason.illegal
         }
     }
 }

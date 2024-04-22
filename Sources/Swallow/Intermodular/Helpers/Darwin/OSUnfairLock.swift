@@ -81,3 +81,39 @@ extension OSUnfairLock {
         return result
     }
 }
+
+@propertyWrapper
+public class _OSUnfairLocked<Value> {
+    private var value: Value
+    private let lock: OSUnfairLock
+    
+    public init(wrappedValue: Value) {
+        self.value = wrappedValue
+        self.lock = OSUnfairLock()
+    }
+    
+    public var wrappedValue: Value {
+        get {
+            lock.withCriticalScope {
+                value
+            }
+        }
+        set {
+            lock.withCriticalScope {
+                value = newValue
+            }
+        }
+    }
+    
+    public var projectedValue: _OSUnfairLocked<Value> {
+        self
+    }
+    
+    public func withCriticalScope<Result>(
+        _ action: (inout Value) throws -> Result
+    ) rethrows -> Result {
+        try lock.withCriticalScope {
+            try action(&value)
+        }
+    }
+}

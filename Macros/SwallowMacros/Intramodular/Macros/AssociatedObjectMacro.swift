@@ -538,7 +538,9 @@ extension AssociatedObjectMacro.AssociatedObjectMacroDiagnostic: DiagnosticMessa
         }
     }
     
-    public var severity: DiagnosticSeverity { .error }
+    public var severity: DiagnosticSeverity {
+        .error
+    }
     
     public var diagnosticID: MessageID {
         MessageID(domain: "Swift", id: "AssociatedObject.\(self)")

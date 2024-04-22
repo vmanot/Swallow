@@ -5,6 +5,20 @@
 import Foundation
 import Swallow
 
+public final class _RuntimeConverter {
+    public static let shared = _RuntimeConversion()
+    
+    
+    /*func foo() {
+        let descriptorUpdatingTypes: [any _GenericRuntimeConversionProtocol.Type] = try TypeMetadata._queryAll(
+            .conformsTo((any StaticViewTypeDescriptorUpdating).self),
+            .nonAppleFramework,
+            .pureSwift
+        )
+        
+    }*/
+}
+
 @objc open class _RuntimeConversion: NSObject {
     open class var type: Any.Type {
         assertionFailure()
@@ -21,8 +35,21 @@ public protocol _NonGenericRuntimeConversionProtocol: _RuntimeConversion {
 }
 
 public protocol _GenericRuntimeConversionProtocol {
-    static func __converts<T, U>(source: T.Type, to destination: U.Type) -> Bool
+    static func __converts<T, U>(source: T.Type, to destination: U.Type) -> Bool?
+    static func __converts<T, U>(source: T, to destination: U.Type) -> Bool?
     static func __convert<T, U>(source: T, to destination: U.Type) throws -> U
+}
+
+extension _GenericRuntimeConversionProtocol {
+    public static func __converts<T, U>(source: T, to destination: U.Type) -> Bool? {
+        if let result = __converts(source: type(of: source), to: destination) {
+            if !result {
+                return false
+            }
+        }
+        
+        return nil
+    }
 }
 
 public protocol _PerformOnceOnAppLaunch: Initiable {
@@ -41,15 +68,18 @@ extension _GenericRuntimeConversions {
         public static func __converts<T, U>(
             source: T.Type,
             to destination: U.Type
-        ) -> Bool {
+        ) -> Bool? {
             if source is any _IdentifierIndexingArrayOf_Protocol.Type && destination is any _ArrayProtocol.Type {
                 return true
             }
             
-            return false
+            return nil
         }
         
-        public static func __convert<T, U>(source: T, to destination: U.Type) throws -> U {
+        public static func __convert<T, U>(
+            source: T,
+            to destination: U.Type
+        ) throws -> U {
             let source: any _IdentifierIndexingArrayOf_Protocol = try _forceCast(source)
             let destination: any _ArrayProtocol.Type = try _forceCast(destination)
             
