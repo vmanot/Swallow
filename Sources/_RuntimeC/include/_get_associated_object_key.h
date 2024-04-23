@@ -2,6 +2,9 @@
 // Copyright (c) Vatsal Manot
 //
 
-#import <stdint.h>
+#include <TargetConditionals.h>
 
-extern void *_get_associated_object_key(void);
+__attribute__((swiftcall))
+extern void *_get_associated_object_key(void) {
+    return __builtin_return_address(0);
+}

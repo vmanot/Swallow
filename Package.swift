@@ -35,6 +35,12 @@ let package = Package(
             ]
         ),
         .library(
+            name: "SwallowMacrosClient",
+            targets: [
+                "SwallowMacrosClient"
+            ]
+        ),
+        .library(
             name: "MacroBuilder",
             targets: [
                 "MacroBuilder"
@@ -112,14 +118,7 @@ let package = Package(
             swiftSettings: []
         ),
         .target(
-            name: "_RuntimeC",
-            cxxSettings: [
-                .headerSearchPath("."),
-                .headerSearchPath("../"),
-            ],
-            linkerSettings: [
-                .linkedLibrary("objc")
-            ]
+            name: "_RuntimeC"
         ),
         .target(
             name: "_RuntimeKeyPath",

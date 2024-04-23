@@ -7,9 +7,8 @@ import _RuntimeC
 import Swift
 
 public final class _objc_associated_object_key_generator {
-    @inline(never)
     public static func _generate_associated_object_key() -> UnsafeRawPointer {
-        return UnsafeRawPointer(_get_associated_object_key()!)
+        return UnsafeRawPointer(_RuntimeC._get_associated_object_key()!)
     }
 }
 
