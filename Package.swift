@@ -13,6 +13,12 @@ let package = Package(
     ],
     products: [
         .library(
+            name: "_RuntimeC",
+            targets: [
+                "_RuntimeC"
+            ]
+        ),
+        .library(
             name: "Swallow",
             targets: [
                 "SE0270_RangeSet",
@@ -25,7 +31,6 @@ let package = Package(
                 "LoremIpsum",
                 "POSIX",
                 "_RuntimeKeyPath",
-                "_RuntimeC",
                 "Runtime",
             ]
         ),
@@ -107,7 +112,14 @@ let package = Package(
             swiftSettings: []
         ),
         .target(
-            name: "_RuntimeC"
+            name: "_RuntimeC",
+            cxxSettings: [
+                .headerSearchPath("."),
+                .headerSearchPath("../"),
+            ],
+            linkerSettings: [
+                .linkedLibrary("objc")
+            ]
         ),
         .target(
             name: "_RuntimeKeyPath",

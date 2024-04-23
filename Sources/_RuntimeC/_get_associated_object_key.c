@@ -1,3 +1,4 @@
+#import <objc/objc.h>
 #import <stdint.h>
 
 void *_get_associated_object_key(void) {

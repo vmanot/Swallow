@@ -2,15 +2,13 @@
 // Copyright (c) Vatsal Manot
 //
 
-#import <Foundation/Foundation.h>
-
-@interface _SwallowMacrosClient_module: NSObject
-@end
+#import "_SwallowMacrosRuntime_module_init.h"
 
 @implementation NSObject(_SwallowMacrosClient_module_init)
 
 + (void)load {
     static _SwallowMacrosClient_module *singleton;
+    
     singleton = [[NSClassFromString(@"_SwallowMacrosClient_module") alloc] init];
 }
 
