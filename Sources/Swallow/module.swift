@@ -2,13 +2,15 @@
 // Copyright (c) Vatsal Manot
 //
 
+import ObjectiveC
 import _RuntimeC
 import Swift
 
-@_weakLinked
-@inline(never)
-public func _associated_object_key() -> UnsafeRawPointer {
-    return UnsafeRawPointer(_get_associated_object_key()!)
+public final class _objc_associated_object_key_generator {
+    @inline(never)
+    public static func _generate_associated_object_key() -> UnsafeRawPointer {
+        return UnsafeRawPointer(_get_associated_object_key()!)
+    }
 }
 
 public enum _module {

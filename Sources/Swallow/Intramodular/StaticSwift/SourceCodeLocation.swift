@@ -9,7 +9,9 @@ public enum SourceCodeLocation: Codable, Hashable, SourceCodeLocationInitiable, 
     case regular(file: String, line: UInt)
     case exact(Preprocessor.Point)
     case unavailable
-    
+}
+
+extension SourceCodeLocation {
     public var file: String? {
         switch self {
             case .regular(let file, _):
@@ -51,6 +53,19 @@ public enum SourceCodeLocation: Codable, Hashable, SourceCodeLocationInitiable, 
                 return point.column
             case .unavailable:
                 return nil
+        }
+    }
+}
+
+extension SourceCodeLocation {
+    public func drop(_ field: Preprocessor.Point.CodingKeys) -> Self {
+        switch self {
+            case .regular:
+                fatalError()
+            case .exact(let point):
+                return .exact(point.drop(field))
+            case .unavailable:
+                return self
         }
     }
 }

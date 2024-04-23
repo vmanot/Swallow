@@ -50,7 +50,7 @@ extension AssociatedObjectMacro: PeerMacro {
         }
         
         let keyAccessor = """
-        _associated_object_key()
+        _objc_associated_object_key_generator._generate_associated_object_key()
         """
         
         let keyDecl = VariableDeclSyntax(
@@ -94,7 +94,7 @@ extension AssociatedObjectMacro: PeerMacro {
             // nested peer macro will not expand
             // https://github.com/apple/swift/issues/69073
             let keyAccessor = """
-            _associated_object_key()
+            _objc_associated_object_key_generator._generate_associated_object_key()
             """
             let flagKeyDecl = VariableDeclSyntax(
                 attributes: [
