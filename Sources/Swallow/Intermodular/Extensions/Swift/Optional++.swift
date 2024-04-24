@@ -253,6 +253,16 @@ extension Optional {
 }
 #endif
 
+extension Optional {
+    public var _selfAssumingNonNil: Self {
+        if self == nil {
+            assertionFailure()
+        }
+        
+        return self
+    }
+}
+
 extension Optional where Wrapped: Collection {
     public var isNilOrEmpty: Bool {
         map({ $0.isEmpty }) ?? true

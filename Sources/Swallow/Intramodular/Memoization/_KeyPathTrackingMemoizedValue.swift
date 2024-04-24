@@ -6,13 +6,19 @@ import Combine
 import Swift
 
 /// A memoized value that refreshes based on a tracked value.
-public final class _KeyPathTrackingMemoizedValue<EnclosingSelf, TrackedValue, Value> {
-    private let trackedKeyPath: KeyPath<EnclosingSelf, TrackedValue>
-    private let computeValue: (EnclosingSelf) -> Value
-    private let makeSubscription: ((_KeyPathTrackingMemoizedValue, TrackedValue) -> AnyCancellable)?
+public final class _KeyPathTrackingMemoizedValue<EnclosingSelf: AnyObject, TrackedValue, Value> {
+    @usableFromInline
+    let trackedKeyPath: KeyPath<EnclosingSelf, TrackedValue>
+    @usableFromInline
+    let computeValue: (EnclosingSelf) -> Value
+    
+    @usableFromInline
+    let makeSubscription: ((_KeyPathTrackingMemoizedValue, TrackedValue) -> AnyCancellable)?
 
-    private var trackedValueSubscription: AnyCancellable?
-    private var computedValue: Value?
+    @usableFromInline
+    var trackedValueSubscription: AnyCancellable?
+    @usableFromInline
+    var computedValue: Value?
     
     public init(
         tracking keyPath: KeyPath<EnclosingSelf, TrackedValue>,
@@ -27,14 +33,12 @@ public final class _KeyPathTrackingMemoizedValue<EnclosingSelf, TrackedValue, Va
         }
     }
     
+    @inlinable
+    @inline(__always)
     public func computeValue(
         enclosingInstance: EnclosingSelf
     ) -> Value {
-        if trackedValueSubscription == nil, let makeSubscription {
-            let trackedValue = enclosingInstance[keyPath: trackedKeyPath]
-            
-            self.trackedValueSubscription = makeSubscription(self, trackedValue)
-        }
+        willComputeValue(enclosingInstance: enclosingInstance)
         
         if let computedValue {
             return computedValue
@@ -47,7 +51,17 @@ public final class _KeyPathTrackingMemoizedValue<EnclosingSelf, TrackedValue, Va
         }
     }
     
-    private func invalidate() {
+    @usableFromInline
+    func willComputeValue(enclosingInstance: EnclosingSelf) {
+        if trackedValueSubscription == nil, let makeSubscription {
+            let trackedValue = enclosingInstance[keyPath: trackedKeyPath]
+            
+            self.trackedValueSubscription = makeSubscription(self, trackedValue)
+        }
+    }
+    
+    @usableFromInline
+    func invalidate() {
         computedValue = nil
     }
 }
