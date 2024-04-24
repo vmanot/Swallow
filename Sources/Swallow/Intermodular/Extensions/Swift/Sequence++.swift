@@ -340,6 +340,21 @@ extension Sequence {
             (try key(element), try value(element))
         })
     }
+    
+    @_transparent
+    @inlinable
+    public func _compactMapToDictionary<Key: Hashable, Value>(
+        key: (Element) throws -> Key,
+        value makeValue: (Element) throws -> Value?
+    ) rethrows -> Dictionary<Key, Value> {
+        try Dictionary(uniqueKeysWithValues: self.lazy.compactMap { (element: Element) -> (Key, Value)? in
+            if let value: Value = try makeValue(element) {
+                return (try key(element), value)
+            } else {
+                return nil
+            }
+        })
+    }
 
     @_transparent
     @inlinable

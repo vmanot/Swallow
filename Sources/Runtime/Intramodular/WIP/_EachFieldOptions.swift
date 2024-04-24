@@ -84,7 +84,7 @@ public func _forEachField(
 public func _forEachFieldWithKeyPath<Root>(
     of type: Root.Type,
     options: _EachFieldOptions = [],
-    body: (UnsafePointer<CChar>, PartialKeyPath<Root>) -> Bool
+    body: (String, PartialKeyPath<Root>) -> Bool
 ) -> Bool {
     // Class types not supported because the metadata does not have
     // enough information to construct computed properties.
@@ -102,6 +102,12 @@ public func _forEachFieldWithKeyPath<Root>(
         var field = _SwiftRuntimeTypeFieldReflectionMetadata()
         let childType = swift_reflectionMirror_recursiveChildMetadata(type, index: i, fieldMetadata: &field)
         
+        guard field.name != nil else {
+            assertionFailure()
+            
+            continue
+        }
+
         defer {
             field.dealloc?(field.name)
         }
@@ -158,7 +164,9 @@ public func _forEachFieldWithKeyPath<Root>(
             )
         }
         
-        if !body(field.name!, partialKeyPath) {
+        let fieldName: String = String(cString: field.name!)
+        
+        if !body(fieldName, partialKeyPath) {
             return false
         }
     }

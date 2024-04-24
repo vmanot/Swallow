@@ -5,31 +5,7 @@
 import Darwin
 import Swallow
 
-extension TypeMetadata {
-    public var _allKeyPathsInDeclarationOrder: [Int: (String, AnyKeyPath)] {
-        _openExistential(base, do: _swift_getAllKeyPaths)
-    }
-    
-    public var _allKeyPathsByName: [String: AnyKeyPath] {
-        var result = [String: AnyKeyPath]()
-        
-        for (_, pair) in _allKeyPathsInDeclarationOrder {
-            result[pair.0] = pair.1
-        }
-        
-        return result
-    }
-    
-    public var _allWritableKeyPathsByName: [String: AnyKeyPath] {
-        _allKeyPathsByName.filter { _, val in
-            String(describing: val).contains("WritableKeyPath")
-        }
-    }
-}
-///
-/// Gets all the keypaths of a type
-///
-private func _swift_getAllKeyPaths<T>(
+func _swift_getAllKeyPaths<T>(
     ofType _type: T.Type
 ) -> [Int: (String, PartialKeyPath<T>)] {
     var membersToKeyPaths = [Int: (String, PartialKeyPath<T>)]()

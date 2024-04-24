@@ -2,6 +2,7 @@
 // Copyright (c) Vatsal Manot
 //
 
+import Combine
 import Swift
  
 /// A memoized value.
@@ -28,6 +29,13 @@ public final class _MemoizedValue<EnclosingSelf, Value>: PropertyWrapper {
     ) where EnclosingSelf: Hashable {
         self.computeBaseHash = { $0.hashValue }
         self.computeValue = computeValue
+    }
+        
+    public init<T>(
+        tracking keyPath: KeyPath<EnclosingSelf, T>,
+        computeValue: @escaping (EnclosingSelf) -> Value
+    ) {
+        fatalError()
     }
     
     public init<T: Hashable>(
@@ -82,4 +90,8 @@ extension _MemoizedValue: Hashable {
 
 extension Hashable {
     public typealias _Memoized<Value> = Swallow._MemoizedValue<Self, Value>
+}
+
+extension ObservableObject {
+    public typealias _MemoizedValueWithSelfParametrized<Value> = _MemoizedValue<Self, Value>
 }

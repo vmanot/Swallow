@@ -38,9 +38,18 @@ extension AccessLevelSyntax {
         get {
             return modifiers.lazy.compactMap({ AccessLevelModifier(rawValue: $0.name.text) }).first ?? .internal
         } set {
-            let new = DeclModifierSyntax(name: .keyword(newValue.keyword), trailingTrivia: .space)
-            var newModifiers = modifiers.filter { AccessLevelModifier(rawValue: $0.name.text) == nil }
+            let new = DeclModifierSyntax(
+                leadingTrivia: .space,
+                name: .keyword(newValue.keyword),
+                trailingTrivia: .space
+            )
+            
+            var newModifiers = modifiers.filter {
+                AccessLevelModifier(rawValue: $0.name.text) == nil
+            }
+            
             newModifiers.append(new)
+            
             modifiers = newModifiers
         }
     }

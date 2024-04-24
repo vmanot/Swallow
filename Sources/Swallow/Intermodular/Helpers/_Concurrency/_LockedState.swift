@@ -4,10 +4,31 @@
 
 import Darwin
 
+@propertyWrapper
 @frozen
 public struct _LockedState<State> {
     @usableFromInline
     let _buffer: ManagedBuffer<State, _Lock.Primitive>
+    
+    public var wrappedValue: State {
+        get {
+            withLock {
+                $0
+            }
+        } nonmutating set {
+            withLock {
+                $0 = newValue
+            }
+        } 
+    }
+    
+    public var projectedValue: Self {
+        _read {
+            yield self
+        } _modify {
+            yield &self
+        }
+    }
     
     @_transparent
     public init(initialState: State) {
@@ -17,6 +38,11 @@ public struct _LockedState<State> {
             }
             return initialState
         })
+    }
+    
+    @_transparent
+    public init(wrappedValue: State) {
+        self.init(initialState: wrappedValue)
     }
     
     @_transparent
@@ -51,6 +77,42 @@ public struct _LockedState<State> {
                 _Lock.unlock(lock)
                 
                 return result
+            }
+        }
+    }
+    
+    @_transparent
+    public func memoizing<T>(
+        _ keyPath: WritableKeyPath<State, T?>,
+        _ body: (State) -> T
+    ) -> T {
+        withLock { (state: inout State) in
+            if let value = state[keyPath: keyPath] {
+                return value
+            } else {
+                let value = body(state)
+                
+                state[keyPath: keyPath] = value
+                
+                return value
+            }
+        }
+    }
+    
+    @_transparent
+    public func memoizing<T>(
+        _ keyPath: WritableKeyPath<State, T?>,
+        _ body: () -> T
+    ) -> T {
+        withLock { (state: inout State) in
+            if let value = state[keyPath: keyPath] {
+                return value
+            } else {
+                let value = body()
+                
+                state[keyPath: keyPath] = value
+                
+                return value
             }
         }
     }
