@@ -99,13 +99,18 @@ extension _FileOrDirectorySecurityScopedAccessManager {
         isDirectory: Bool
     ) throws -> URL {
         let openPanelDelegate = _NSOpenSavePanelDelegate(url: url)
-        let openPanel = configureOpenPanel(for: url, isDirectory: isDirectory)
+        let openPanel: NSOpenPanel = configureOpenPanel(for: url, isDirectory: isDirectory)
         
         openPanel.delegate = openPanelDelegate
         
         if ProcessInfo.processInfo._isRunningWithinXCTest {
             openPanel.becomeKey()
             openPanel.orderFront(nil)
+            
+            DispatchQueue.main.async {
+                openPanel.becomeKey()
+                openPanel.orderFront(nil)
+            }
         }
         
         let response = openPanel.runModal()
@@ -307,7 +312,9 @@ extension FileManager {
             runtimeIssue(error)
         }
         
-        url = try _FileOrDirectorySecurityScopedAccessManager.requestAccess(to: url)
+        url = try await MainActor.run {
+            try _FileOrDirectorySecurityScopedAccessManager.requestAccess(to: url)
+        }
         
         return try await url._accessingSecurityScopedResource {
             try await operation(url)

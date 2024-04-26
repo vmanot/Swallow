@@ -330,6 +330,7 @@ extension Sequence {
         })
     }
     
+    @_documentation(visibility: internal)
     @_transparent
     @inlinable
     public func _mapToDictionary<Key: Hashable, Value>(
@@ -341,6 +342,7 @@ extension Sequence {
         })
     }
     
+    @_documentation(visibility: internal)
     @_transparent
     @inlinable
     public func _compactMapToDictionary<Key: Hashable, Value>(
@@ -356,6 +358,7 @@ extension Sequence {
         })
     }
 
+    @_documentation(visibility: internal)
     @_transparent
     @inlinable
     public func _mapToDictionary<Key: Hashable, Value>(
@@ -367,6 +370,7 @@ extension Sequence {
         })
     }
     
+    @_documentation(visibility: internal)
     public func _orderedMapToUniqueKeys<Key: Hashable>(
         _ key: (Element) throws -> Key
     ) rethrows -> OrderedDictionary<Key, Element> {
@@ -375,6 +379,7 @@ extension Sequence {
         })
     }
     
+    @_documentation(visibility: internal)
     public func _orderedMapToUniqueKeysWithValues<Key: Hashable, Value>(
         _ transform: (Element) throws -> (Key, Value)
     ) rethrows -> OrderedDictionary<Key, Value> {
@@ -383,6 +388,7 @@ extension Sequence {
         })
     }
     
+    @_documentation(visibility: internal)
     public func _unsafeCompactMapToOrderedDictionary<Key: Hashable>(
         _ key: (Element) throws -> Key?
     ) rethrows -> OrderedDictionary<Key, Element> {
@@ -395,6 +401,7 @@ extension Sequence {
         })
     }
     
+    @_documentation(visibility: internal)
     @_transparent
     @inlinable
     public func multiplicativelyKeyed<Key: Hashable>(

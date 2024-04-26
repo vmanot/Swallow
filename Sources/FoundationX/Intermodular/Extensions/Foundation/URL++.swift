@@ -181,6 +181,10 @@ extension URL {
     public struct RelativePath: Codable, Hashable, Sendable {
         public let components: [URL.PathComponent]
         
+        public var path: String {
+            components.map(\.rawValue).joined(separator: "/")
+        }
+        
         public init(components: [URL.PathComponent]) {
             self.components = components
         }
@@ -466,7 +470,15 @@ extension URL {
         }
         
         guard isFileURL else {
-            return nil
+            guard !pathExtension.isEmpty else {
+                return "application/octet-stream"
+            }
+            
+            guard let mimeType = UTType(filenameExtension: pathExtension.lowercased())?.preferredMIMEType else {
+                return "application/octet-stream"
+            }
+            
+            return mimeType
         }
         
         do {
@@ -483,5 +495,64 @@ extension URL {
         }
         
         return nil
+    }
+
+    public func _isValidFileURLCheckingIfExistsIfNecessary() -> Bool {
+        if self.absoluteString.hasPrefix("file://") {
+            return true
+        } else if self.absoluteString.hasPrefix("/") {
+            guard FileManager.default.fileExists(at: self) else {
+                return false
+            }
+            
+            return true
+        } else {
+            return false
+        }
+    }
+    
+    public func _asynchronouslyDownloadContentsOfFile() async throws -> Data {
+        if self._isValidFileURLCheckingIfExistsIfNecessary() {
+            if #available(iOS 15.0, macOS 12.0, *) {
+                do {
+                    return try Data(contentsOf: self)
+                } catch {
+                    throw error
+                }
+            } else {
+                return try Data(contentsOf: self)
+            }
+        } else {
+            if #available(iOS 15.0, macOS 12.0, *) {
+                let (data, _) = try await URLSession.shared.data(from: self)
+                
+                return data
+            } else {
+                let data: Data = try await withCheckedThrowingContinuation { continuation in
+                    let dataTask:  URLSessionDataTask = URLSession.shared.dataTask(with: self) {
+                        data,
+                        _,
+                        error in
+                        if let error = error {
+                            continuation.resume(throwing: error)
+                        } else if let data = data {
+                            continuation.resume(returning: data)
+                        } else {
+                            continuation.resume(
+                                throwing: NSError(
+                                    domain: "URLDownloadError",
+                                    code: 0,
+                                    userInfo: [NSLocalizedDescriptionKey: "Unknown error occurred"]
+                                )
+                            )
+                        }
+                    }
+                    
+                    dataTask.resume()
+                }
+                
+                return data
+            }
+        }
     }
 }
