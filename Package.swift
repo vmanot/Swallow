@@ -13,14 +13,10 @@ let package = Package(
     ],
     products: [
         .library(
-            name: "_RuntimeC",
-            targets: [
-                "_RuntimeC"
-            ]
-        ),
-        .library(
             name: "Swallow",
             targets: [
+                "_PythonString",
+                "_RuntimeC",
                 "SE0270_RangeSet",
                 "Swallow",
                 "SwallowMacrosClient",
@@ -52,6 +48,11 @@ let package = Package(
         .package(url: "https://github.com/apple/swift-syntax.git", from: "510.0.0"),
     ],
     targets: [
+        .target(
+            name: "_PythonString",
+            dependencies: [],
+            swiftSettings: []
+        ),
         .target(
             name: "_SwallowMacrosRuntime",
             dependencies: [
