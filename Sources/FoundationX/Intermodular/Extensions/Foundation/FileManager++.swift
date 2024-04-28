@@ -24,7 +24,6 @@ extension FileManager {
     }
     
     /// Returns a Boolean value that indicates whether a file or directory exists at a specified path.
-    @available(macOS 11.0, iOS 14.0, watchOS 7.0, tvOS 14.0, *)
     public func fileOrDirectoryExists(
         at location: some URLRepresentable
     ) -> Bool {
