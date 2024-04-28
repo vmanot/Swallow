@@ -165,7 +165,9 @@ extension URL {
     }
     
     func _bookmarkDataWithSecurityScopedAccess() throws -> Data {
-        return try _fromURLToFileURL().bookmarkData(
+        let fileURL: URL = _fromURLToFileURL()
+            
+        return try fileURL.bookmarkData(
             options: .withSecurityScope,
             includingResourceValuesForKeys: nil,
             relativeTo: nil

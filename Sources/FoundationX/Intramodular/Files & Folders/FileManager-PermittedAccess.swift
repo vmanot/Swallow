@@ -44,9 +44,7 @@ extension FileManager {
                 }
         }
     }
-}
 
-extension FileManager {
     @MainActor
     private func _withUserGrantedAccess<T>(
         toFile url: URL,
