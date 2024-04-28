@@ -6,9 +6,7 @@ import Swallow
 
 extension TypeMetadata {
     @frozen
-    public struct Existential: SwiftRuntimeTypeMetadataWrapper {
-        typealias SwiftRuntimeTypeMetadata = SwiftRuntimeExistentialMetadata
-        
+    public struct Existential {
         public let base: Any.Type
         
         public init?(_ base: Any.Type) {
@@ -28,6 +26,15 @@ extension TypeMetadata {
         }
     }
 }
+
+// MARK: - Conformances
+
+@_spi(Internal)
+extension TypeMetadata.Existential: SwiftRuntimeTypeMetadataWrapper {
+    public typealias SwiftRuntimeTypeMetadata = SwiftRuntimeExistentialMetadata
+}
+
+// MARK: - Internal
 
 /*extension TypeMetadata.Existential {
     public var protocols: [SwiftRuntimeProtocolConformanceDescriptor] {

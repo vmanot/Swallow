@@ -4,7 +4,8 @@
 
 import Swift
 
-struct SwiftRuntimeGenericMetadataLayout: SwiftRuntimeTypeMetadataLayout {
-    var valueWitnessTable: UnsafePointer<SwiftRuntimeValueWitnessTable>
-    var kind: Int
+@_spi(Internal)
+public struct SwiftRuntimeGenericMetadataLayout: SwiftRuntimeTypeMetadataLayout {
+    public var valueWitnessTable: UnsafePointer<SwiftRuntimeValueWitnessTable>
+    public var kind: Int
 }

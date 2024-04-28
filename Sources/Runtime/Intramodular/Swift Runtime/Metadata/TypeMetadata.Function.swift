@@ -6,9 +6,7 @@ import Swallow
 
 extension TypeMetadata {
     @frozen
-    public struct Function: SwiftRuntimeTypeMetadataWrapper {
-        typealias SwiftRuntimeTypeMetadata = SwiftRuntimeFunctionMetadata
-        
+    public struct Function {
         public let base: Any.Type
         
         public init?(_ base: Any.Type) {
@@ -61,4 +59,11 @@ extension TypeMetadata.Function {
             bits & 0x4000000 != 0
         }
     }
+}
+
+// MARK: - Conformances
+
+@_spi(Internal)
+extension TypeMetadata.Function: SwiftRuntimeTypeMetadataWrapper {
+    public typealias SwiftRuntimeTypeMetadata = SwiftRuntimeFunctionMetadata
 }

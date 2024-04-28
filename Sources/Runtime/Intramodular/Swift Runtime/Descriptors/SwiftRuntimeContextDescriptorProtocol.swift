@@ -4,8 +4,8 @@
 
 import Swallow
 
-@usableFromInline
-protocol SwiftRuntimeContextDescriptorProtocol {
+@_spi(Internal)
+public protocol SwiftRuntimeContextDescriptorProtocol {
     associatedtype FieldOffsetVectorOffsetType: FixedWidthInteger
     
     typealias Flags = SwiftRuntimeContextDescriptorFlags
@@ -19,13 +19,12 @@ protocol SwiftRuntimeContextDescriptorProtocol {
 }
 
 // https://github.com/apple/swift/blob/f13167d9d162e69d1aac6ce022b19f6a80c62aba/include/swift/ABI/MetadataValues.h#L1237-L1312
+@_spi(Internal)
 @frozen
-@usableFromInline
-struct SwiftRuntimeContextDescriptorFlags: OptionSet {
+public struct SwiftRuntimeContextDescriptorFlags: OptionSet {
     // https://github.com/apple/swift/blob/f13167d9d162e69d1aac6ce022b19f6a80c62aba/include/swift/ABI/MetadataValues.h#L1203-L1234
     @frozen
-    @usableFromInline
-    enum Kind: Int {
+    public enum Kind: Int {
         case module = 0
         case `extension` = 1
         case anonymous = 2
@@ -57,14 +56,12 @@ struct SwiftRuntimeContextDescriptorFlags: OptionSet {
         }
     }
     
-    static let unique = Self(rawValue: 1 << 6)
-    static let generic = Self(rawValue: 1 << 7)
+    public static let unique = Self(rawValue: 1 << 6)
+    public static let generic = Self(rawValue: 1 << 7)
     
-    @usableFromInline
-    var rawValue: UInt32
+    public var rawValue: UInt32
 
-    @usableFromInline
-    init(rawValue: UInt32) {
+    public init(rawValue: UInt32) {
         self.rawValue = rawValue
     }
 

@@ -2,6 +2,7 @@
 // Copyright (c) Vatsal Manot
 //
 
+@_spi(Internal) import _SwallowSwiftOverlay
 import Swift
 
 // A heterogeneous dictionary with strong types in Swift, https://oleb.net/2022/heterogeneous-dictionary/

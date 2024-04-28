@@ -14,6 +14,10 @@ public typealias _mach_header_type = mach_header_64
 #endif
 
 extension DynamicLinkEditor {
+    public static var _totalImageCount: UInt32 {
+        return _dyld_image_count()
+    }
+
     @frozen
     public struct Image: Hashable, Identifiable, @unchecked Sendable, _FailableInitiableFromURL {
         public static var _allAddedCases = IdentifierIndexingArrayOf<Self>()
@@ -23,8 +27,12 @@ extension DynamicLinkEditor {
         public let header: UnsafePointer<mach_header>
         public let slide: Int
         
-        public var id: AnyHashable {
-            Hashable2ple((index, name))
+        public struct ID: Hashable, Sendable {
+            let rawValue: String
+        }
+        
+        public var id: ID {
+            .init(rawValue: name)
         }
         
         @_transparent
@@ -32,12 +40,21 @@ extension DynamicLinkEditor {
             index: UInt32,
             slide: Int? = nil,
             name: String? = nil,
-            header: UnsafePointer<mach_header>
+            header: UnsafePointer<mach_header>?
         ) {
             self.index = index
             self.name = name ?? String(cString: _dyld_get_image_name(index))
-            self.header = header
+            self.header = header ?? _dyld_get_image_header(index)
             self.slide = slide ?? _dyld_get_image_vmaddr_slide(index)
+            
+            Self._allAddedCases.update(self)
+        }
+        
+        @_transparent
+        public init<T: BinaryInteger>(
+            index: T
+        ) {
+            self.init(index: numericCast(index), slide: nil, name: nil, header: nil)
         }
         
         public init?(url: URL) {

@@ -2,4 +2,5 @@
 // Copyright (c) Vatsal Manot
 //
 
-import Swift
+@_exported import _RuntimeC
+@_exported import Swallow

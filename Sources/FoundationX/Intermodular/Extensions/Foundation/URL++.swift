@@ -2,6 +2,7 @@
 // Copyright (c) Vatsal Manot
 //
 
+import Diagnostics
 import Foundation
 import Swallow
 import System
@@ -260,34 +261,76 @@ extension URL {
     public func _accessingSecurityScopedResource<T>(
         _ operation: () throws -> T
     ) throws -> T {
-        let isAccessing = self.startAccessingSecurityScopedResource()
-        
-        guard isAccessing else {
-            throw _SecurityScopedResourceAccessError.failedToAccessSecurityScopedResource(for: self)
+        do {
+            let isAccessing = self.startAccessingSecurityScopedResource()
+            
+            guard isAccessing else {
+                throw _SecurityScopedResourceAccessError.failedToAccessSecurityScopedResource(for: self)
+            }
+            
+            let result = try operation()
+            
+            self.stopAccessingSecurityScopedResource()
+            
+            return result
+        } catch {
+            if let accessibleAncestor = FileManager.default.nearestAccessibleSecurityScopedAncestor(for: url) {
+                let isAccessing = accessibleAncestor.startAccessingSecurityScopedResource()
+                
+                guard isAccessing else {
+                    throw _SecurityScopedResourceAccessError.failedToAccessSecurityScopedResource(for: self)
+                }
+                
+                let result = Result(catching: {
+                    try operation()
+                })
+                
+                accessibleAncestor.stopAccessingSecurityScopedResource()
+                
+                return try result.get()
+            }
+            
+            throw error
         }
-        
-        let result = try operation()
-        
-        self.stopAccessingSecurityScopedResource()
-        
-        return result
     }
     
     @_transparent
     public func _accessingSecurityScopedResource<T>(
         _ operation: () async throws -> T
     ) async throws -> T {
-        let isAccessing = self.startAccessingSecurityScopedResource()
-        
-        guard isAccessing else {
-            throw _SecurityScopedResourceAccessError.failedToAccessSecurityScopedResource(for: self)
+        do {
+            let isAccessing = self.startAccessingSecurityScopedResource()
+            
+            guard isAccessing else {
+                throw _SecurityScopedResourceAccessError.failedToAccessSecurityScopedResource(for: self)
+            }
+            
+            let result = await Result(catching: {
+                try await operation()
+            })
+            
+            self.stopAccessingSecurityScopedResource()
+            
+            return try result.get()
+        } catch {
+            if let accessibleAncestor = FileManager.default.nearestAccessibleSecurityScopedAncestor(for: url) {
+                let isAccessing = accessibleAncestor.startAccessingSecurityScopedResource()
+                
+                guard isAccessing else {
+                    throw _SecurityScopedResourceAccessError.failedToAccessSecurityScopedResource(for: self)
+                }
+
+                let result = await Result(catching: {
+                    try await operation()
+                })
+
+                accessibleAncestor.stopAccessingSecurityScopedResource()
+                
+                return try result.get()
+            }
+            
+            throw error
         }
-        
-        let result = try await operation()
-        
-        self.stopAccessingSecurityScopedResource()
-        
-        return result
     }
 }
 
@@ -377,10 +420,12 @@ extension URL {
         if FileManager.default.isDirectory(at: self) {
             return true
         }
+                
+        if self.path.last == "/" || self.absoluteString.last == "/" {
+            return true
+        }
         
-        // Attempt to determine if the URL points to a directory by its path.
-        let path = self.path
-        var isDirectory = (path.last == "/")
+        var isDirectory: Bool = false
         
         // Use file system to check if path exists and is a directory when possible.
         if self.scheme == "file" {

@@ -60,8 +60,8 @@ public func swift_reflectionMirror_recursiveChildOffset(
 public func swift_getMetadataKind(_: Any.Type) -> UInt
 
 @_silgen_name("swift_demangle")
-@usableFromInline
-func _stdlib_demangleImpl(
+@_spi(Internal)
+public func _stdlib_demangleImpl(
     _ mangledName: UnsafePointer<CChar>?,
     mangledNameLength: Int,
     outputBuffer: UnsafeMutablePointer<UInt8>?,
@@ -69,7 +69,6 @@ func _stdlib_demangleImpl(
     flags: UInt32
 ) -> UnsafeMutablePointer<CChar>?
 
-@_transparent
 public func _stdlib_demangleName(
     _ mangled: String
 ) -> String {

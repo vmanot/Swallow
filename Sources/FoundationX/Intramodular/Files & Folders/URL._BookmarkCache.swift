@@ -6,11 +6,11 @@ import Foundation
 @_spi(Internal) import Swallow
 
 extension URL {
-    public final class _BookmarksCache: @unchecked Sendable {
+    public final class _BookmarkCache: @unchecked Sendable {
         private static let defaults = UserDefaults(suiteName: Swallow._module.bundleIdentifier)!
         private static let lock = OSUnfairLock()
         
-        @UserDefault("_BookmarksCache.items") static var items: [Bookmark] = []
+        @UserDefault("_BookmarkCache.items") static var items: [Bookmark] = []
         
         struct Bookmark: Codable {
             let urlPath: String
@@ -52,6 +52,12 @@ extension URL {
         }
         
         public static func cachedURL(
+            for url: any URLRepresentable
+        ) throws -> URL? {
+            try cachedURL(for: url.url)
+        }
+        
+        public static func cachedURL(
             for url: URL
         ) throws -> URL? {
             try lock.withCriticalScope {
@@ -75,12 +81,12 @@ extension URL {
                         return nil
                     }
                 } catch {
-                    throw URL._BookmarksCache._Error.failedToSaveBookmarkData(error)
+                    throw URL._BookmarkCache._Error.failedToSaveBookmarkData(error)
                 }
             }
         }
         
-        private static func removeAll() {
+        public static func removeAll() {
             lock.withCriticalScope {
                 items = []
             }
@@ -170,7 +176,7 @@ extension URL {
 
 // MARK: - Error Handling
 
-extension URL._BookmarksCache {
+extension URL._BookmarkCache {
     public enum _Error: Error {
         case failedToSaveBookmarkData(Error)
         case unxpectedlyStale(URL)

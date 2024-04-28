@@ -4,7 +4,7 @@
 
 import Foundation
 import System
-import Swift
+import Swallow
 import UniformTypeIdentifiers
 
 extension FileManager {
@@ -21,6 +21,14 @@ extension FileManager {
         at path: FilePath
     ) -> Bool {
         fileExists(at: URL(_filePath: path)!)
+    }
+    
+    /// Returns a Boolean value that indicates whether a file or directory exists at a specified path.
+    @available(macOS 11.0, iOS 14.0, watchOS 7.0, tvOS 14.0, *)
+    public func fileOrDirectoryExists(
+        at location: some URLRepresentable
+    ) -> Bool {
+        fileExists(at: location.url)
     }
     
     public func regularFileExists(
@@ -143,33 +151,13 @@ extension FileManager {
             return isReadableAndWritable(atOrAncestorOf: parentURL)
         }
     }
-    
-    public func nearestAccessibleSecurityScopedAncestor<T: URLRepresentable>(
-        for location: T
-    ) -> URL? {
-        let url = location.url._fromFileURLToURL()
         
-        if let result = try? URL._BookmarksCache.cachedURL(for: location.url._fromFileURLToURL()) {
-            return result
-        } else if let result = try? URL._BookmarksCache.bookmark(location.url) {
-            return result
-        } else {
-            let parentURL = url.resolvingSymlinksInPath().deletingLastPathComponent()
-            
-            guard parentURL != url, !parentURL._isRootPath, !parentURL.path.isEmpty else {
-                return nil
-            }
-            
-            return nearestAccessibleSecurityScopedAncestor(for: parentURL)
-        }
-    }
-    
     public func isSecurityScopedAccessible<T: URLRepresentable>(
         at location: T
     ) -> Bool {
         let url = location.url._fromFileURLToURL()
         
-        if ((try? URL._BookmarksCache.cachedURL(for: location.url._fromFileURLToURL())) as URL?) != nil {
+        if ((try? URL._BookmarkCache.cachedURL(for: location.url._fromFileURLToURL())) as URL?) != nil {
             return true
         }
         
@@ -185,7 +173,62 @@ extension FileManager {
             return isSecurityScopedAccessible(at: parentURL)
         }
     }
-    
+}
+
+extension FileManager {
+    public func nearestAncestor(
+        for location: URL,
+        where predicate: (URL) -> Bool
+    ) -> (ancestor: URL, path: URL.RelativePath)? {
+        var currentURL = location
+        var pathComponents: [String] = []
+        
+        while currentURL.path != "/" {
+            if predicate(currentURL) {
+                let relativePath = URL.RelativePath(components: pathComponents.map({ URL.PathComponent(rawValue: $0) }))
+                
+                return (ancestor: currentURL, path: relativePath)
+            }
+            
+            let currentLastPathComponent = currentURL.lastPathComponent
+            
+            currentURL = currentURL.deletingLastPathComponent()
+            
+            pathComponents.insert(currentLastPathComponent, at: 0)
+        }
+        
+        return nil
+    }
+
+    public func nearestAccessibleSecurityScopedAncestor<T: URLRepresentable>(
+        for location: T
+    ) -> URL? {
+        let url = location.url._fromFileURLToURL()
+        
+        if let result = try? URL._BookmarkCache.cachedURL(for: location.url._fromFileURLToURL()) {
+            return result
+        } else if let result = try? URL._BookmarkCache.bookmark(location.url), FileManager.default.fileOrDirectoryExists(at: result) {
+            return result
+        } else {
+            let parentURL = url.resolvingSymlinksInPath().deletingLastPathComponent()
+            
+            guard parentURL != url, !parentURL._isRootPath, !parentURL.path.isEmpty else {
+                return nil
+            }
+            
+            guard let result: URL = nearestAccessibleSecurityScopedAncestor(for: parentURL) else {
+                if FileManager.default.fileExists(at: parentURL) {
+                    return parentURL
+                } else {
+                    runtimeIssue("Failed to find nearest accessible security scoped ancestor for \(location)")
+                    
+                    return nil
+                }
+            }
+            
+            return result
+        }
+    }
 }
 
 extension FileManager {
@@ -352,7 +395,29 @@ extension FileManager {
     public func contents(
         of url: URL
     ) throws -> Data {
-        try contents(atPath: url.path).unwrap()
+        do {
+            return try contents(atPath: url.path).unwrap()
+        } catch {
+            if FileManager.default.fileExists(at: url) {
+                let result = try url._accessingSecurityScopedResource {
+                    try contents(atPath: url.path).unwrap()
+                }
+                
+                return result
+            }
+            
+            throw error
+        }
+    }
+    
+    public func contents(
+        ofSecurityScopedResource url: URL
+    ) throws -> Data {
+        let result = try url._accessingSecurityScopedResource {
+            try contents(atPath: url.path).unwrap()
+        }
+        
+        return result
     }
     
     public func contentsIfFileExists(

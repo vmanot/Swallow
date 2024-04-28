@@ -4,9 +4,10 @@
 
 import Swift
 
-struct SwiftRuntimeEnumMetadataLayout: SwiftRuntimeContextualTypeMetadataLayout {
-    var valueWitnessTable: UnsafePointer<SwiftRuntimeValueWitnessTable>
-    var kind: Int
-    var contextDescriptor: UnsafeMutablePointer<SwiftRuntimeStructMetadataLayout.ContextDescriptor>
-    var parent: Int
+@_spi(Internal)
+public struct SwiftRuntimeEnumMetadataLayout: SwiftRuntimeContextualTypeMetadataLayout {
+    public var valueWitnessTable: UnsafePointer<SwiftRuntimeValueWitnessTable>
+    public var kind: Int
+    public var contextDescriptor: UnsafeMutablePointer<SwiftRuntimeStructMetadataLayout.ContextDescriptor>
+    public var parent: Int
 }

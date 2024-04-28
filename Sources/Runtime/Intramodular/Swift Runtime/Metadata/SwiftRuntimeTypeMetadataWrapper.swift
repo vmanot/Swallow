@@ -4,14 +4,15 @@
 
 import Swallow
 
-protocol SwiftRuntimeTypeMetadataWrapper: _TypeMetadataType {
+@_spi(Internal)
+public protocol SwiftRuntimeTypeMetadataWrapper: _TypeMetadataType {
     associatedtype SwiftRuntimeTypeMetadata: _SwiftRuntimeTypeMetadataType
     
-    var metadata: SwiftRuntimeTypeMetadata { get }
+    var _metadata: SwiftRuntimeTypeMetadata { get }
 }
 
 extension SwiftRuntimeTypeMetadataWrapper {
-    var metadata: SwiftRuntimeTypeMetadata {
+    public var _metadata: SwiftRuntimeTypeMetadata {
         SwiftRuntimeTypeMetadata.init(base: base)
     }
 }

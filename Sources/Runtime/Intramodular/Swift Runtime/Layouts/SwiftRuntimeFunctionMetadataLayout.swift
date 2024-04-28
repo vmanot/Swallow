@@ -4,13 +4,10 @@
 
 import Swift
 
-struct SwiftRuntimeFunctionMetadataLayout: SwiftRuntimeTypeMetadataLayout {
-    var valueWitnessTable: UnsafePointer<SwiftRuntimeValueWitnessTable>
-    var kind: Int
-    var flags: TypeMetadata.Function.Flags
-    var argumentVector: SwiftRuntimeUnsafeRelativeVector<Any.Type>
-}
-
-extension SwiftRuntimeFunctionMetadataLayout {
-    
+@_spi(Internal)
+public struct SwiftRuntimeFunctionMetadataLayout: SwiftRuntimeTypeMetadataLayout {
+    public var valueWitnessTable: UnsafePointer<SwiftRuntimeValueWitnessTable>
+    public var kind: Int
+    public var flags: TypeMetadata.Function.Flags
+    public var argumentVector: SwiftRuntimeUnsafeRelativeVector<Any.Type>
 }

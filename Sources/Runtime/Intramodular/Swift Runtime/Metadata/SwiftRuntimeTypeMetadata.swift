@@ -5,8 +5,8 @@
 import ObjectiveC
 import Swallow
 
-@usableFromInline
-protocol _SwiftRuntimeTypeMetadataType {
+@_spi(Internal)
+public protocol _SwiftRuntimeTypeMetadataType {
     associatedtype MetadataLayout: SwiftRuntimeTypeMetadataLayout
     
     var basePointer: UnsafeRawPointer { get }
@@ -17,36 +17,31 @@ protocol _SwiftRuntimeTypeMetadataType {
     init(base: Any.Type)
 }
 
+@_spi(Internal)
 @frozen
-@usableFromInline
-struct SwiftRuntimeTypeMetadata<MetadataLayout: SwiftRuntimeTypeMetadataLayout>: _SwiftRuntimeTypeMetadataType {
-    let base: Any.Type
+public struct SwiftRuntimeTypeMetadata<MetadataLayout: SwiftRuntimeTypeMetadataLayout>: _SwiftRuntimeTypeMetadataType {
+    public let base: Any.Type
     
-    @usableFromInline
-    init(base: Any.Type) {
+    public init(base: Any.Type) {
         self.base = base
     }
     
-    @usableFromInline
-    var basePointer: UnsafeRawPointer {
+    public var basePointer: UnsafeRawPointer {
         unsafeBitCast(base, to: UnsafeRawPointer.self)
     }
     
-    @usableFromInline
-    var metadata: UnsafePointer<MetadataLayout> {
+    public var metadata: UnsafePointer<MetadataLayout> {
         unsafeBitCast(base, to: UnsafeRawPointer.self)
             .advanced(by: -MemoryLayout<UnsafeRawPointer>.size)
             .rawRepresentation
             .assumingMemoryBound(to: MetadataLayout.self)
     }
     
-    @usableFromInline
-    var kind: SwiftRuntimeTypeKind {
+    public var kind: SwiftRuntimeTypeKind {
         SwiftRuntimeTypeKind(rawValue: metadata.pointee.kind)
     }
     
-    @usableFromInline
-    var valueWitnessTable: UnsafePointer<SwiftRuntimeValueWitnessTable> {
+    public var valueWitnessTable: UnsafePointer<SwiftRuntimeValueWitnessTable> {
         metadata.pointee.valueWitnessTable
     }
 }
@@ -124,14 +119,22 @@ extension SwiftRuntimeTypeMetadata where MetadataLayout == SwiftRuntimeTupleMeta
 
 // MARK: - Supplementary
 
-typealias SwiftRuntimeGenericMetadata = SwiftRuntimeTypeMetadata<SwiftRuntimeGenericMetadataLayout>
-typealias SwiftRuntimeClassMetadata = SwiftRuntimeTypeMetadata<SwiftRuntimeClassMetadataLayout>
-typealias SwiftRuntimeEnumMetadata = SwiftRuntimeTypeMetadata<SwiftRuntimeEnumMetadataLayout>
-typealias SwiftRuntimeExistentialMetadata = SwiftRuntimeTypeMetadata<SwiftRuntimeExistentialMetadataLayout>
-typealias SwiftRuntimeFunctionMetadata = SwiftRuntimeTypeMetadata<SwiftRuntimeFunctionMetadataLayout>
+@_spi(Internal)
+public typealias SwiftRuntimeGenericMetadata = SwiftRuntimeTypeMetadata<SwiftRuntimeGenericMetadataLayout>
+@_spi(Internal)
+public typealias SwiftRuntimeClassMetadata = SwiftRuntimeTypeMetadata<SwiftRuntimeClassMetadataLayout>
+@_spi(Internal)
+public typealias SwiftRuntimeEnumMetadata = SwiftRuntimeTypeMetadata<SwiftRuntimeEnumMetadataLayout>
+@_spi(Internal)
+public typealias SwiftRuntimeExistentialMetadata = SwiftRuntimeTypeMetadata<SwiftRuntimeExistentialMetadataLayout>
+@_spi(Internal)
+public typealias SwiftRuntimeFunctionMetadata = SwiftRuntimeTypeMetadata<SwiftRuntimeFunctionMetadataLayout>
+@_spi(Internal)
 // typealias SwiftRuntimeProtocolMetadata = SwiftRuntimeTypeMetadata<SwiftRuntimeProtocolMetadataLayout>
-typealias SwiftRuntimeStructMetadata = SwiftRuntimeTypeMetadata<SwiftRuntimeStructMetadataLayout>
-typealias SwiftRuntimeTupleMetadata = SwiftRuntimeTypeMetadata<SwiftRuntimeTupleMetadataLayout>
+@_spi(Internal)
+public typealias SwiftRuntimeStructMetadata = SwiftRuntimeTypeMetadata<SwiftRuntimeStructMetadataLayout>
+@_spi(Internal)
+public typealias SwiftRuntimeTupleMetadata = SwiftRuntimeTypeMetadata<SwiftRuntimeTupleMetadataLayout>
 
 // MARK: - Auxiliary
 

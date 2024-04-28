@@ -5,9 +5,7 @@
 import Swallow
 
 extension TypeMetadata {
-    public struct Tuple: SwiftRuntimeTypeMetadataWrapper {
-        typealias SwiftRuntimeTypeMetadata = SwiftRuntimeTupleMetadata
-        
+    public struct Tuple {
         public let base: Any.Type
         
         public init?(_ base: Any.Type) {
@@ -17,17 +15,26 @@ extension TypeMetadata {
             
             self.base = base
         }
-        
-        public var fields: [NominalTypeMetadata.Field] {
-            zip(metadata.labels(), metadata.elementLayouts()).map { name, layout in
-                NominalTypeMetadata.Field(
-                    name: name,
-                    type: .init(layout.type),
-                    offset: layout.offset
-                )
-            }
+    }
+}
+
+extension TypeMetadata.Tuple {
+    public var fields: [NominalTypeMetadata.Field] {
+        zip(_metadata.labels(), _metadata.elementLayouts()).map { name, layout in
+            NominalTypeMetadata.Field(
+                name: name,
+                type: .init(layout.type),
+                offset: layout.offset
+            )
         }
     }
+}
+
+// MARK: - Conformances
+
+@_spi(Internal)
+extension TypeMetadata.Tuple: SwiftRuntimeTypeMetadataWrapper {
+    public typealias SwiftRuntimeTypeMetadata = SwiftRuntimeTupleMetadata
 }
 
 // MARK: - Helpers

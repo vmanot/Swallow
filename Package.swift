@@ -117,6 +117,7 @@ let package = Package(
         .target(
             name: "FoundationX",
             dependencies: [
+                "Diagnostics",
                 "Swallow"
             ],
             swiftSettings: []

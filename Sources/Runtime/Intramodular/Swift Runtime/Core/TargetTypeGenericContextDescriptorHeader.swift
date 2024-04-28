@@ -4,17 +4,17 @@
 
 import Swift
 
+@_spi(Internal)
 @frozen
-@usableFromInline
-struct TargetTypeGenericContextDescriptorHeader {
+public struct TargetTypeGenericContextDescriptorHeader {
     var instantiationCache: Int32
     var defaultInstantiationPattern: Int32
     var base: TargetGenericContextDescriptorHeader
 }
 
+@_spi(Internal)
 @frozen
-@usableFromInline
-struct TargetGenericContextDescriptorHeader {
+public struct TargetGenericContextDescriptorHeader {
     var numberOfParams: UInt16
     var numberOfRequirements: UInt16
     var numberOfKeyArguments: UInt16

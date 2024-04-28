@@ -5,9 +5,7 @@
 import Swallow
 
 extension TypeMetadata {
-    public struct Enumeration: SwiftRuntimeTypeMetadataWrapper, _NominalTypeMetadataType {
-        typealias SwiftRuntimeTypeMetadata = SwiftRuntimeEnumMetadata
-        
+    public struct Enumeration: _NominalTypeMetadataType {
         public let base: Any.Type
         
         public init?(_ base: Any.Type) {
@@ -17,13 +15,22 @@ extension TypeMetadata {
             
             self.base = base
         }
-        
-        public var mangledName: String {
-            metadata.mangledName()
-        }
-        
-        public var fields: [NominalTypeMetadata.Field] {
-            metadata.fields
-        }
     }
+}
+
+extension TypeMetadata.Enumeration {
+    public var mangledName: String {
+        _metadata.mangledName()
+    }
+    
+    public var fields: [NominalTypeMetadata.Field] {
+        _metadata.fields
+    }
+}
+
+// MARK: - Conformances
+
+@_spi(Internal)
+extension TypeMetadata.Enumeration: SwiftRuntimeTypeMetadataWrapper {
+    public typealias SwiftRuntimeTypeMetadata = SwiftRuntimeEnumMetadata
 }

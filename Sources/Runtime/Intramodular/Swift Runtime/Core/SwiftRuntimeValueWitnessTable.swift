@@ -4,6 +4,7 @@
 
 import Swallow
 
+@_spi(Internal)
 @frozen
 public struct SwiftRuntimeValueWitnessTable {
     var a: Int

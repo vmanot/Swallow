@@ -182,12 +182,12 @@ struct _swift_ConformanceDescriptor {
     let flags: SwiftRuntimeProtocolConformanceDescriptor.ConformanceFlags
 }
 
+@_spi(Internal)
 @frozen
-@usableFromInline
-struct _swift_ModuleContextDescriptor {
-    let flags: SwiftRuntimeContextDescriptorFlags
-    let parent: Int32
-    let name: Int32
+public struct _swift_ModuleContextDescriptor {
+    public let flags: SwiftRuntimeContextDescriptorFlags
+    public let parent: Int32
+    public let name: Int32
 }
 
 struct _swift_ModuleContext {
@@ -207,13 +207,13 @@ struct _swift_ModuleContext {
     }
 }
 
+@_spi(Internal)
 @frozen
-@usableFromInline
-struct _swift_TypeContextDescriptor {
-    let flags: SwiftRuntimeContextDescriptorFlags
-    let parent: Int32
-    let name: Int32
-    let accessor: Int32
+public struct _swift_TypeContextDescriptor {
+    public let flags: SwiftRuntimeContextDescriptorFlags
+    public let parent: Int32
+    public let name: Int32
+    public let accessor: Int32
 }
 
 public struct _swift_TypeConformanceList: Identifiable {

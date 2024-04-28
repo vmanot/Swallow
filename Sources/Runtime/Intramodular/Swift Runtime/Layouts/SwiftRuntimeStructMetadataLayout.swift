@@ -4,10 +4,11 @@
 
 import Swift
 
-struct SwiftRuntimeStructMetadataLayout: SwiftRuntimeContextualTypeMetadataLayout {
-    typealias ContextDescriptor = SwiftRuntimeStructContextDescriptor
+@_spi(Internal)
+public struct SwiftRuntimeStructMetadataLayout: SwiftRuntimeContextualTypeMetadataLayout {
+    public typealias ContextDescriptor = SwiftRuntimeStructContextDescriptor
     
-    var valueWitnessTable: UnsafePointer<SwiftRuntimeValueWitnessTable>
-    var kind: Int
-    var contextDescriptor: UnsafeMutablePointer<ContextDescriptor>
+    public var valueWitnessTable: UnsafePointer<SwiftRuntimeValueWitnessTable>
+    public var kind: Int
+    public var contextDescriptor: UnsafeMutablePointer<ContextDescriptor>
 }

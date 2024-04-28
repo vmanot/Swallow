@@ -4,15 +4,16 @@
 
 import Swift
 
-struct SwiftRuntimeTupleMetadataLayout: SwiftRuntimeTypeMetadataLayout {
-    struct ElementLayout {
-        var type: Any.Type
-        var offset: Int
+@_spi(Internal)
+public struct SwiftRuntimeTupleMetadataLayout: SwiftRuntimeTypeMetadataLayout {
+    public struct ElementLayout {
+        public var type: Any.Type
+        public var offset: Int
     }
     
-    var valueWitnessTable: UnsafePointer<SwiftRuntimeValueWitnessTable>
-    var kind: Int
-    var numberOfElements: Int
-    var labelsString: UnsafeMutablePointer<CChar>
-    var elementVector: SwiftRuntimeUnsafeRelativeVector<ElementLayout>
+    public var valueWitnessTable: UnsafePointer<SwiftRuntimeValueWitnessTable>
+    public var kind: Int
+    public var numberOfElements: Int
+    public var labelsString: UnsafeMutablePointer<CChar>
+    public var elementVector: SwiftRuntimeUnsafeRelativeVector<ElementLayout>
 }

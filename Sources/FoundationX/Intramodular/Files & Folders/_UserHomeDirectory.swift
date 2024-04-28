@@ -20,7 +20,7 @@ public enum _UserHomeDirectory: String, CaseIterable {
         get throws {
             let url = try URL._userHomeDirectory.appendingPathComponent(self.rawValue)
             
-            return try URL._BookmarksCache.cachedURL(for: url) ?? url
+            return try URL._BookmarkCache.cachedURL(for: url) ?? url
         }
     }
     
@@ -44,7 +44,7 @@ public enum _UserHomeDirectory: String, CaseIterable {
     
     @MainActor
     public func requestAccess() async throws -> URL {
-        try _FileOrDirectorySecurityScopedAccessManager.requestAccess(to: self)
+        try URL._FileOrDirectorySecurityScopedAccessManager.requestAccess(to: self)
     }
 }
 
@@ -53,14 +53,5 @@ extension _UserHomeDirectory {
         case unreadablePath
         case invalidHomeDirectory
         case invalidURL
-    }
-}
-
-public enum _FileOrDirectorySecurityScopedAccessManager {
-    @MainActor
-    public static func requestAccess(
-        to directory: _UserHomeDirectory
-    ) throws -> URL {
-        try self.requestAccess(to: directory.url)
     }
 }
