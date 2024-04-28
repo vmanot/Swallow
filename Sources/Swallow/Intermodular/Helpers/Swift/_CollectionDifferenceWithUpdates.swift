@@ -2,6 +2,7 @@
 // Copyright (c) Vatsal Manot
 //
 
+import _SwallowSwiftOverlay
 import Swift
 
 public struct _CollectionDifferenceWithUpdates<ChangeElement> {

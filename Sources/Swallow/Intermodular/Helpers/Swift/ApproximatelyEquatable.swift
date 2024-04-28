@@ -20,3 +20,15 @@ extension ApproximatelyEquatable {
         return self ~= other
     }
 }
+
+// MARK: - Supplementary
+
+extension BidirectionalCollection {
+    public func hasApproximateSuffix<Suffix: BidirectionalCollection<Element>>(
+        _ suffix: Suffix
+    ) -> Bool where Element: ApproximatelyEquatable {
+        return hasSuffix(suffix.lazy.map { element in
+            { element ~= $0 }
+        })
+    }
+}

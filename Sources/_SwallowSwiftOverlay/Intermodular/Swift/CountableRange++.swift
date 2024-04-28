@@ -10,14 +10,16 @@ extension CountableRange {
             return []
         }
 
-        var result = Array<CountableRange<Index>>(capacity: numericCast(count * count.successor() / 2))
+        var result = Array<CountableRange<Index>>()
+        
+        result.reserveCapacity(numericCast(count * count.advanced(by: 1) / 2))
         
         for element in self {
             var bound = element
             
             while bound != upperBound {
                 bound = bound.advanced(by: 1)
-                result += element..<bound
+                result.append(element..<bound)
             }
         }
         

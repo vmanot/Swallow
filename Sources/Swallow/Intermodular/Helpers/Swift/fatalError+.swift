@@ -2,6 +2,7 @@
 // Copyright (c) Vatsal Manot
 //
 
+import _SwallowSwiftOverlay
 import Swift
 
 /// Unconditionally throws an error and stops execution.

@@ -25,7 +25,9 @@ extension Sequence {
         var result = Set<T>(minimumCapacity: underestimatedCount)
         
         for element in self {
-            try result.insert(contentsOf: transform(element))
+            for element in try transform(element) {
+                result.insert(element)
+            }
         }
         
         return result
@@ -58,7 +60,7 @@ extension Set {
         !intersection(other).isEmpty
     }
     
-    static func _intersection(
+    public static func _intersection(
         _ sets: some Collection<Set<Element>>
     ) -> Set<Element> {
         guard !sets.isEmpty else {

@@ -17,6 +17,7 @@ let package = Package(
             targets: [
                 "_PythonString",
                 "_RuntimeC",
+                "_SwallowSwiftOverlay",
                 "SE0270_RangeSet",
                 "Swallow",
                 "SwallowMacrosClient",
@@ -64,6 +65,14 @@ let package = Package(
             swiftSettings: []
         ),
         .target(
+            name: "_SwallowSwiftOverlay",
+            dependencies: [
+                .product(name: "Collections", package: "swift-collections"),
+            ],
+            path: "Sources/_SwallowSwiftOverlay",
+            swiftSettings: []
+        ),
+        .target(
             name: "LoremIpsum",
             swiftSettings: []
         ),
@@ -76,6 +85,7 @@ let package = Package(
             dependencies: [
                 .product(name: "Collections", package: "swift-collections"),
                 "_RuntimeC",
+                "_SwallowSwiftOverlay",
             ],
             swiftSettings: []
         ),

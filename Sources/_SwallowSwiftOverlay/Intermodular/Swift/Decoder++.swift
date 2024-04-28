@@ -40,7 +40,7 @@ extension Decoder {
     }
     
     public func decodeKeyedNil() throws -> Bool {
-        let container = try self.container(keyedBy: AnyStringKey.self)
+        let container = try self.container(keyedBy: _AnyStringKey.self)
         
         return container.allKeys.isEmpty
     }
@@ -76,4 +76,21 @@ extension Decoder {
 
 private enum DecodeNilError: Error {
     case failedToDecodeNil
+}
+
+/// Allows any arbitrary `String` to be used as a coding key.
+fileprivate struct _AnyStringKey: Codable, CodingKey, Hashable {
+    public var stringValue: String
+    
+    public var intValue: Int? {
+        nil
+    }
+    
+    public init(stringValue: String) {
+        self.stringValue = stringValue
+    }
+    
+    public init?(intValue: Int) {
+        return nil
+    }
 }

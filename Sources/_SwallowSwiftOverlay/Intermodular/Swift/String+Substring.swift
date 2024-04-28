@@ -44,13 +44,7 @@ extension String {
         
         return result
     }
-    
-    public func line(containingSubstring substring: Substring) -> Substring? {
-        TODO.whole(.optimize)
         
-        return lines().find({ $0.contains(substring) })
-    }
-    
     public func _linesWithWhitespacesAndNewlinesTrimmed() -> [String] {
         self
             .split(separator: "\n")

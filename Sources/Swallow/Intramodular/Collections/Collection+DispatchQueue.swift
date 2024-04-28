@@ -2,6 +2,7 @@
 // Copyright (c) Vatsal Manot
 //
 
+import _SwallowSwiftOverlay
 import Dispatch
 import Swift
 

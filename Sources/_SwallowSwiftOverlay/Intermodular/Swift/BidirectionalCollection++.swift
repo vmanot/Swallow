@@ -16,12 +16,20 @@ extension BidirectionalCollection {
     
     @inlinable
     public func index(ifPresentBefore index: Index) -> Index? {
-        return index != startIndex &&-> self.index(before: index)
+        guard index != startIndex else {
+            return nil
+        }
+        
+        return self.index(before: index)
     }
     
     @inlinable
     public func index(ifPresentAfter index: Index) -> Index? {
-        return index != lastIndex &&-> self.index(after: index)
+        guard index != lastIndex else {
+            return nil
+        }
+        
+        return self.index(after: index)
     }
 }
 
@@ -103,14 +111,6 @@ extension BidirectionalCollection {
     ) -> Bool where Element: Equatable {
         return hasSuffix(suffix.lazy.map { element in
             { element == $0 }
-        })
-    }
-    
-    public func hasApproximateSuffix<Suffix: BidirectionalCollection<Element>>(
-        _ suffix: Suffix
-    ) -> Bool where Element: ApproximatelyEquatable {
-        return hasSuffix(suffix.lazy.map { element in
-            { element ~= $0 }
         })
     }
 }

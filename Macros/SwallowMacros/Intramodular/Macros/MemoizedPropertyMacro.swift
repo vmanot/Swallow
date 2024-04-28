@@ -46,15 +46,11 @@ public struct MemoizedPropertyMacro: PeerMacro {
         
         let arguments = try node.arguments.unwrap()
         
-        /// Assumes usage like @MemoizedProperty(\Self.someProperty, value: { `self` in self.<something> })
-        let argumentsDescription: String = arguments.trimmedDescription
-                
-        
         guard let variableName: String = declaration.variableName else {
             throw AnyDiagnosticMessage(stringLiteral: "A variable name is required.")
         }
         
-        guard let type = declaration.type else {
+        guard declaration.type != nil else {
             throw AnyDiagnosticMessage(stringLiteral: "A variable type is required.")
         }
         

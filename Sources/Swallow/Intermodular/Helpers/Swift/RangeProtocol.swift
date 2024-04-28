@@ -2,14 +2,15 @@
 // Copyright (c) Vatsal Manot
 //
 
+import _SwallowSwiftOverlay
 import Swift
 
 public protocol RangeProtocol: Equatable {
     associatedtype Bound: Comparable
-
+    
     var lowerBound: Bound { get }
     var upperBound: Bound { get }
-
+    
     /// Returns a Boolean value indicating whether a range is fully contained within `self`.
     func contains(_ other: Range<Bound>) -> Bool
     /// Returns a Boolean value indicating whether a range is fully contained within `self`.
@@ -17,11 +18,11 @@ public protocol RangeProtocol: Equatable {
 }
 
 public protocol ExclusiveRangeProtocol: RangeProtocol {
-
+    
 }
 
 public protocol ClosedRangeProtocol: RangeProtocol {
-
+    
 }
 
 public protocol BoundInitiableRangeProtocol: RangeProtocol {
@@ -41,8 +42,8 @@ extension BoundInitiableRangeProtocol {
 extension ExclusiveRangeProtocol {
     public func contains(_ other: Self) -> Bool {
         return true
-            && (other.lowerBound >= lowerBound) && (other.lowerBound <= upperBound)
-            && (other.upperBound <= upperBound) && (other.upperBound >= lowerBound)
+        && (other.lowerBound >= lowerBound) && (other.lowerBound <= upperBound)
+        && (other.upperBound <= upperBound) && (other.upperBound >= lowerBound)
     }
 }
 
@@ -58,13 +59,13 @@ extension RangeProtocol  {
     public init(_ bound: Bound) where Self: BoundInitiableRangeProtocol & ExclusiveRangeProtocol, Bound: Strideable {
         self.init(bounds: (lower: bound, upper: bound.successor()))
     }
-
+    
     public func overlaps(
         with other: Self
     ) -> Bool where Self: ExclusiveRangeProtocol {
         return false
-            || (other.lowerBound >= lowerBound) && (other.lowerBound <= upperBound)
-            || (other.upperBound <= upperBound) && (other.upperBound >= lowerBound)
+        || (other.lowerBound >= lowerBound) && (other.lowerBound <= upperBound)
+        || (other.upperBound <= upperBound) && (other.upperBound >= lowerBound)
     }
     
     public func clamped(
