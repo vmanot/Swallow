@@ -35,7 +35,6 @@ extension URL._FileOrDirectorySecurityScopedAccessManager {
         to url: URL
     ) throws -> URL {
         let fileManager = FileManager.default
-        let fileExists = FileManager.default.fileExists(at: url)
         let isDirectory = FileManager.default.isDirectory(at: url)
         
         if fileManager.fileExists(at: url) {

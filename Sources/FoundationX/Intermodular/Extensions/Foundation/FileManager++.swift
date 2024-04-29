@@ -524,6 +524,9 @@ extension FileManager {
         ]
     }
     
+    /// Whether a directory is practically considered to be empty on Apple platforms.
+    ///
+    /// This filters out files like `.DS_Store` while testing for emptiness.
     public func isDirectoryPracticallyEmpty(
         at location: some URLRepresentable
     ) -> Bool {
