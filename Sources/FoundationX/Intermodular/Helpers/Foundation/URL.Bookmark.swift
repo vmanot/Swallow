@@ -9,8 +9,8 @@ import Swallow
 extension URL {
     /// A type representing URL bookmark data.
     public struct Bookmark: Hashable, Sendable {
-        public let data: Data
-        public let creationOptions: URL.BookmarkCreationOptions
+        public private(set) var data: Data
+        public private(set) var creationOptions: URL.BookmarkCreationOptions
         
         private init(
             data: Data,
@@ -18,6 +18,19 @@ extension URL {
         ) {
             self.data = data
             self.creationOptions = creationOptions
+        }
+        
+        public init(data: Data) throws {
+            var stale: Bool = false
+            
+            _ = try URL(resolvingBookmarkData: data, bookmarkDataIsStale: &stale)
+            
+            if stale {
+                throw URL.Bookmark.Error.bookmarkIsStale
+            }
+            
+            self.data = data
+            self.creationOptions = []
         }
         
         public init(
@@ -46,10 +59,26 @@ extension URL.Bookmark: Codable {
     }
     
     public init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
+        do {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            
+            self.data = try container.decode(Data.self, forKey: .data)
+            self.creationOptions = .init(rawValue: try container.decode(URL.BookmarkCreationOptions.RawValue.self, forKey: .creationOptions))
+        } catch {
+            if let url = try? URL(from: decoder) {
+                self = try Self(for: url)
+                
+                return
+            }
+            
+            throw error
+        }
         
-        self.data = try container.decode(Data.self, forKey: .data)
-        self.creationOptions = .init(rawValue: try container.decode(URL.BookmarkCreationOptions.RawValue.self, forKey: .creationOptions))
+        if let (_, isStale) = try? resolve() {
+            if isStale {
+                try? renew()
+            }
+        }
     }
     
     public func encode(to encoder: Encoder) throws {
@@ -61,6 +90,10 @@ extension URL.Bookmark: Codable {
 }
 
 extension URL.Bookmark {
+    public func toURL() throws -> URL {
+        try resolve().url
+    }
+    
     /// Returns a URL by resolving the bookmark.
     public func resolve() throws -> (url: URL, wasStale: Bool) {
         var isStale = false
@@ -138,6 +171,7 @@ extension URL {
 
 extension URL.Bookmark {
     public enum Error: Swift.Error {
+        case bookmarkIsStale
         case couldNotAccessWithSecureScope(URL)
     }
 }

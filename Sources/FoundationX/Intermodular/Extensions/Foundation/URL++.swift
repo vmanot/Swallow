@@ -128,6 +128,7 @@ extension URL {
                 case invalidHomeDirectory
             }
             
+            
             guard let pw = getpwuid(getuid()), let home = pw.pointee.pw_dir else {
                 throw _Error.invalidHomeDirectory
             }
@@ -148,106 +149,6 @@ extension URL {
         get {
             return FileManager.default.temporaryDirectory
         }
-    }
-}
-
-extension URL {
-    /// A file path component suitable for a base URL to append.
-    public struct PathComponent: ExpressibleByStringLiteral, Codable, Hashable, Sendable {
-        public let rawValue: String
-        public let isDirectory: Bool?
-        
-        public init(rawValue: String, isDirectory: Bool? = nil) {
-            self.rawValue = rawValue
-            self.isDirectory = isDirectory
-        }
-        
-        public init(stringLiteral value: String) {
-            self.init(rawValue: value)
-        }
-        
-        public init(_ value: String) {
-            self.init(rawValue: value)
-        }
-        
-        public static func file(_ string: String) -> Self {
-            Self(rawValue: string, isDirectory: false)
-        }
-        
-        public static func directory(_ string: String) -> Self {
-            Self(rawValue: string, isDirectory: true)
-        }
-    }
-    
-    public struct RelativePath: Codable, Hashable, Sendable {
-        public let components: [URL.PathComponent]
-        
-        public var path: String {
-            components.map(\.rawValue).joined(separator: "/")
-        }
-        
-        public init(components: [URL.PathComponent]) {
-            self.components = components
-        }
-    }
-    
-    public mutating func append(_ component: PathComponent) {
-        appendPathComponent(component.rawValue)
-    }
-    
-    @_disfavoredOverload
-    public mutating func append(_ component: String) {
-        append(PathComponent(rawValue: component))
-    }
-    
-    public func appending(_ component: PathComponent) -> Self {
-        appendingPathComponent(component.rawValue)
-    }
-    
-    @_disfavoredOverload
-    public func appending(_ component: String) -> Self {
-        appending(PathComponent(rawValue: component))
-    }
-    
-    public func appending(_ path: RelativePath) -> Self {
-        path.components.reduce(into: self, { $0.append($1) })
-    }
-
-    public static func + (lhs: Self, rhs: PathComponent) -> Self {
-        lhs.appending(rhs)
-    }
-    
-    public func appendingDirectoryPathComponent(
-        _ pathComponent: String?
-    ) -> URL {
-        guard let pathComponent else {
-            return self
-        }
-        
-        return appendingPathComponent(pathComponent, isDirectory: true)
-    }
-    
-    public func path(
-        relativeTo baseURL: URL
-    ) throws -> RelativePath {
-        guard baseURL.scheme != nil, baseURL.host != nil else {
-            throw URLError(.badURL)
-        }
-        
-        guard self.scheme != nil, self.host != nil else {
-            throw URLError(.badURL)
-        }
-        
-        guard self.absoluteString.hasPrefix(baseURL.absoluteString) else {
-            throw URLError(.badURL)
-        }
-        
-        let relativeString = self.absoluteString.replacingOccurrences(of: baseURL.absoluteString, with: "")
-        let trimmedString = relativeString.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
-        
-        let components = trimmedString.components(separatedBy: "/")
-        
-        return RelativePath(components: components.map({ URL.PathComponent(rawValue: $0) }))
     }
 }
 

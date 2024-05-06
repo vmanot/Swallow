@@ -87,7 +87,9 @@ let package = Package(
                 "_RuntimeC",
                 "_SwallowSwiftOverlay",
             ],
-            swiftSettings: []
+            swiftSettings: [
+                .enableExperimentalFeature("AccessLevelOnImport")
+            ]
         ),
         .target(
             name: "Compute",
@@ -152,7 +154,9 @@ let package = Package(
                 "FoundationX",
                 "Swallow"
             ],
-            swiftSettings: []
+            swiftSettings: [
+                .enableExperimentalFeature("AccessLevelOnImport")
+            ]
         ),
         .macro(
             name: "SwallowMacros",

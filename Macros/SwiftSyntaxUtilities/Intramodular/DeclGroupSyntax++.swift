@@ -104,6 +104,16 @@ extension DeclGroupSyntax {
         
         return false
     }
+     
+    public var hasInit: Bool {
+        for member in memberBlock.members {
+            if member.decl.is(InitializerDeclSyntax.self) {
+                return true
+            }
+        }
+        
+        return false
+    }
     
     public func hasMemberInit(equivalentTo other: InitializerDeclSyntax) -> Bool {
         for member in memberBlock.members {

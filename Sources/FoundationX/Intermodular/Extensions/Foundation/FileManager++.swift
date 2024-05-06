@@ -175,30 +175,6 @@ extension FileManager {
 }
 
 extension FileManager {
-    public func nearestAncestor(
-        for location: URL,
-        where predicate: (URL) -> Bool
-    ) -> (ancestor: URL, path: URL.RelativePath)? {
-        var currentURL = location
-        var pathComponents: [String] = []
-        
-        while currentURL.path != "/" {
-            if predicate(currentURL) {
-                let relativePath = URL.RelativePath(components: pathComponents.map({ URL.PathComponent(rawValue: $0) }))
-                
-                return (ancestor: currentURL, path: relativePath)
-            }
-            
-            let currentLastPathComponent = currentURL.lastPathComponent
-            
-            currentURL = currentURL.deletingLastPathComponent()
-            
-            pathComponents.insert(currentLastPathComponent, at: 0)
-        }
-        
-        return nil
-    }
-
     public func nearestAccessibleSecurityScopedAncestor<T: URLRepresentable>(
         for location: T
     ) -> URL? {

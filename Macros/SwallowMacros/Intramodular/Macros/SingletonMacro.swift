@@ -22,7 +22,11 @@ public struct SingletonMacro: MemberMacro {
         
         var override = ""
         
-        if let inheritedTypes = (declaration as? ClassDeclSyntax)?.inheritanceClause?.inheritedTypes,
+        guard let declaration = (declaration as? ClassDeclSyntax) else {
+            return []
+        }
+        
+        if let inheritedTypes = declaration.inheritanceClause?.inheritedTypes,
            inheritedTypes.contains(where: { inherited in inherited.type.trimmedDescription == "NSObject" }) {
             override = "override "
         }
@@ -60,10 +64,15 @@ public struct SingletonMacro: MemberMacro {
             initializer: sharedInitializer
         )
         
-        return [
-            DeclSyntax(initializer),
+        var result: [DeclSyntax] = [
             DeclSyntax(shared)
         ]
+        
+        if !declaration.hasInit {
+            result.insert(DeclSyntax(initializer), at: 0)
+        }
+        
+        return result
     }
 }
 
