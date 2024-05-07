@@ -463,3 +463,32 @@ extension URL {
         }
     }
 }
+
+extension URL {
+    public func isAncestor(of url: URL) -> Bool {
+        // Check if both URLs have the same scheme and host
+        guard scheme == url.scheme && host == url.host else {
+            runtimeIssue("Invalid comparison.")
+            
+            return false
+        }
+        
+        // Get the path components of both URLs
+        let selfComponents = pathComponents
+        let urlComponents = url.pathComponents
+        
+        // Check if the current URL's path is a prefix of the given URL's path
+        if selfComponents.count > urlComponents.count {
+            return false
+        }
+        
+        // Compare each path component
+        for (index, component) in selfComponents.enumerated() {
+            if component != urlComponents[index] {
+                return false
+            }
+        }
+        
+        return true
+    }
+}

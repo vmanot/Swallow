@@ -56,8 +56,12 @@ public protocol _PolymorphicDecodingProxyType: Decodable {
     var value: Value { get }
 }
 
-struct _PolymorphicDecodingProxy<T: Decodable>: _PolymorphicDecodingProxyType {
+struct _PolymorphicDecodingProxy<T: Decodable>: CustomStringConvertible, _PolymorphicDecodingProxyType {
     var value: T
+    
+    public var description: String {
+        "(polymorphic proxy) \(value)"
+    }
     
     init(from decoder: Decoder) throws {
         guard !(T.self is any _PolymorphicDecodingProxyType.Type) else {

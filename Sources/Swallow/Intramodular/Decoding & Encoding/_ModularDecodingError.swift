@@ -85,3 +85,19 @@ extension _ModularDecodingError {
         }
     }
 }
+
+extension _ModularDecodingError.Context: CustomStringConvertible {
+    public var description: String {
+        var result: String = ""
+        
+        if let type {
+            result += "context for \(type): "
+        } else {
+            result += "context: "
+        }
+        
+        result += "coding path: \(self.codingPath) "
+        
+        return result.trimmingWhitespace()
+    }
+}
