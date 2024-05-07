@@ -128,7 +128,6 @@ extension URL {
                 case invalidHomeDirectory
             }
             
-            
             guard let pw = getpwuid(getuid()), let home = pw.pointee.pw_dir else {
                 throw _Error.invalidHomeDirectory
             }

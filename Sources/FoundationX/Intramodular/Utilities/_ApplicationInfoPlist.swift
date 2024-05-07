@@ -6,6 +6,10 @@ import Foundation
 import Swallow
 
 public struct _ApplicationInfoPlist {
+    
+}
+
+extension _ApplicationInfoPlist {
     public struct UTI: Encodable {
         public enum CodingKeys: String, CodingKey {
             case identifier = "UTTypeIdentifier"
@@ -82,6 +86,63 @@ public struct _ApplicationInfoPlist {
             var tagSpecification = container.nestedContainer(keyedBy: AnyCodingKey.self, forKey: .tagSpecification)
             try tagSpecification.encode(extensions, forKey: AnyCodingKey(stringValue: "public.filename-extension"))
             try tagSpecification.encode(mimeTypes, forKey: AnyCodingKey(stringValue: "public.mime-type"))
+        }
+    }
+}
+
+extension _ApplicationInfoPlist {
+    public struct CFBundleDocumentTypes: Encodable {
+        public var documentTypes: [DocumentType]
+        
+        public func encode(to encoder: Encoder) throws {
+            var container = encoder.container(keyedBy: CodingKeys.self)
+            try container.encode(documentTypes, forKey: .documentTypes)
+        }
+        
+        public enum CodingKeys: String, CodingKey {
+            case documentTypes = "CFBundleDocumentTypes"
+        }
+        
+        public struct DocumentType: Encodable, Hashable {
+            public enum HandlerRank: String, Encodable, Hashable {
+                case owner = "Owner"
+                case alternate = "Alternate"
+                case none = "None"
+            }
+            
+            var contentTypes: [String]
+            var extensions: [String]
+            var role: String
+            var handlerRank: HandlerRank
+            var isPackage: Bool
+            var iconFiles: [String]?
+            
+            enum CodingKeys: String, CodingKey {
+                case contentTypes = "LSItemContentTypes"
+                case extensions = "CFBundleTypeExtensions"
+                case role = "CFBundleTypeRole"
+                case handlerRank = "LSHandlerRank"
+                case isPackage = "LSTypeIsPackage"
+                case iconFiles = "CFBundleTypeIconFiles"
+            }
+        }
+    }
+}
+
+extension Array where Element == _ApplicationInfoPlist.UTI {
+    /// Generates a list of DocumentType entries from a list of UTIs, assuming the role of 'Editor' and a default handler rank.
+    public func generateDocumentTypes(
+        handlerRank: _ApplicationInfoPlist.CFBundleDocumentTypes.DocumentType.HandlerRank = .owner
+    ) -> [_ApplicationInfoPlist.CFBundleDocumentTypes.DocumentType] {
+        return self.map { uti in
+            _ApplicationInfoPlist.CFBundleDocumentTypes.DocumentType(
+                contentTypes: [uti.identifier],
+                extensions: uti.extensions,
+                role: "Editor",
+                handlerRank: .owner,
+                isPackage: uti.conformsTo.contains("com.apple.package"),
+                iconFiles: uti.iconFiles?.map { $0.absoluteString }
+            )
         }
     }
 }

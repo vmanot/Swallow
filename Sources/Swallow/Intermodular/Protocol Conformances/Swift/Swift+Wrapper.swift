@@ -260,6 +260,10 @@ public struct Weak<Value>: PropertyWrapper {
     public init() {
         self.init(wrappedValue: nil)
     }
+    
+    public static func === (lhs: Self, rhs: Value) -> Bool where Value: AnyObject {
+        lhs.wrappedValue === rhs
+    }
 }
 
 @frozen
