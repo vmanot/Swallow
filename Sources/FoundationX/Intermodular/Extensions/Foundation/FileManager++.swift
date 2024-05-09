@@ -563,6 +563,19 @@ import UniformTypeIdentifiers
 
 @available(macOS 11.0, iOS 14.0, watchOS 7.0, tvOS 14.0, *)
 extension FileManager {
+    public func firstAndOnly(
+        where predicate: (URL) -> Bool,
+        in directory: URL
+    ) throws -> URL? {
+        guard FileManager.default.fileExists(at: directory) else {
+            return nil
+        }
+        
+        return try self
+            .contentsOfDirectory(at: directory)
+            .firstAndOnly(where: predicate)
+    }
+
     public func first(
         _ fileExtension: UTType,
         in directory: URL
