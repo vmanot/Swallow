@@ -13,14 +13,15 @@ public struct _LockedStateMap<Key: Hashable, Value> {
     }
     
     public subscript(
-        _ key: Key
-    ) -> _LockedState<Value> where Value: Initiable {
+        _ key: Key,
+        default defaultValue: @autoclosure () -> Value
+    ) -> _LockedState<Value> {
         get {
             $state.withLock { state in
                 if let value = state[key] {
                     return value
                 } else {
-                    let value = _LockedState<Value>(initialState: .init())
+                    let value = _LockedState<Value>(initialState: defaultValue())
                     
                     state[key] = value
                     
@@ -28,6 +29,12 @@ public struct _LockedStateMap<Key: Hashable, Value> {
                 }
             }
         }
+    }
+    
+    public subscript(
+        _ key: Key
+    ) -> _LockedState<Value> where Value: Initiable {
+        self[key, default: .init()]
     }
 }
 

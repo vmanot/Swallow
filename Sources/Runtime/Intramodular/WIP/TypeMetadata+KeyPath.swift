@@ -6,7 +6,7 @@ import Swallow
 
 extension TypeMetadata {
     public var _shallow_allKeyPathsByName: [String: AnyKeyPath] {
-        _cache.memoizing(\._shallow_allKeyPathsByName) {
+        _metadataCache.memoizing(\._shallow_allKeyPathsByName) {
             func result<T>(_ type: T.Type) -> [String: AnyKeyPath] {
                 PartialKeyPath<T>._unsafe_allKeyPathsByName()
             }

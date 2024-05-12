@@ -16,6 +16,43 @@ public protocol DictionaryProtocol<DictionaryKey, DictionaryValue> {
     subscript(_: DictionaryKey) -> DictionaryValue? { get }
 }
 
+public protocol _CircularKeyPathReferenceKeyedDictionary {
+    subscript<Value>(_key keyPath: KeyPath<Self, Value>) -> Value? { get set }
+}
+
+extension _CircularKeyPathReferenceKeyedDictionary {
+    public mutating func initializing<Value>(
+        _ keyPath: KeyPath<Self, Value>,
+        operation: () -> Value
+    ) -> Value {
+        if let value = self[_key: keyPath] {
+            return value
+        } else {
+            let value: Value = operation()
+            
+            self[_key: keyPath] = value
+            
+            return value
+        }
+    }
+    
+    public func initializing<Value>(
+        _ keyPath: KeyPath<Self, Value>,
+        operation: () -> Value
+    ) -> Value where Self: AnyObject {
+        if let value = self[_key: keyPath] {
+            return value
+        } else {
+            let value: Value = operation()
+            
+            var _self = self
+            _self[_key: keyPath] = value
+            
+            return value
+        }
+    }
+}
+
 public protocol MutableDictionaryProtocol: DictionaryProtocol {
     mutating func setValue(_: DictionaryValue, forKey _: DictionaryKey)
     
@@ -134,7 +171,7 @@ extension MutableDictionaryProtocol {
             self[key] = newValue
         }
     }
-
+    
     public subscript(
         key: DictionaryKey,
         _defaultInPlaceWith defaultValue: @Sendable () async -> DictionaryValue

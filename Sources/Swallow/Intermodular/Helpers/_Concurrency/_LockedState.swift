@@ -4,6 +4,7 @@
 
 import Darwin
 
+@dynamicMemberLookup
 @propertyWrapper
 @frozen
 public struct _LockedState<State> {
@@ -43,6 +44,12 @@ public struct _LockedState<State> {
     @_transparent
     public init(wrappedValue: State) {
         self.init(initialState: wrappedValue)
+    }
+    
+    public subscript<T>(dynamicMember keyPath: KeyPath<State, T>) -> T {
+        withLock {
+            $0[keyPath: keyPath]
+        }
     }
     
     @_transparent

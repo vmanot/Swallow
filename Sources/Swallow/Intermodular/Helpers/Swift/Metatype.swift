@@ -7,9 +7,14 @@ import Swift
 /// A `Hashable` representation of a metatype.
 ///
 /// More useful than `ObjectIdentifier` as it exposes access to the underlying value.
+@propertyWrapper
 public struct Metatype<T>: @unchecked Sendable {
     public let value: T
         
+    public var wrappedValue: T{
+        value
+    }
+    
     public init(_ value: T) {
         #if DEBUG
         guard let _ = value as? Any.Type else {
@@ -22,6 +27,10 @@ public struct Metatype<T>: @unchecked Sendable {
         #endif
 
         self.value = value
+    }
+    
+    public init(wrappedValue: T) {
+        self.init(wrappedValue)
     }
 }
 
