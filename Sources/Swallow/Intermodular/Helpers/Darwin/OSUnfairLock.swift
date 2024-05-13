@@ -82,8 +82,9 @@ extension OSUnfairLock {
     }
 }
 
+@dynamicMemberLookup
 @propertyWrapper
-public class _OSUnfairLocked<Value> {
+public class _OSUnfairLocked<Value>: @unchecked Sendable {
     private var value: Value
     private let lock: OSUnfairLock
     
@@ -114,6 +115,28 @@ public class _OSUnfairLocked<Value> {
     ) rethrows -> Result {
         try lock.withCriticalScope {
             try action(&value)
+        }
+    }
+    
+    public subscript<Subject>(
+        dynamicMember keyPath: KeyPath<Value, Subject>
+    ) -> Subject {
+        lock.withCriticalScope {
+            value[keyPath: keyPath]
+        }
+    }
+    
+    public subscript<Subject>(
+        dynamicMember keyPath: WritableKeyPath<Value, Subject>
+    ) -> Subject {
+        get {
+            lock.withCriticalScope {
+                value[keyPath: keyPath]
+            }
+        } set {
+            lock.withCriticalScope {
+                value[keyPath: keyPath] = newValue
+            }
         }
     }
 }

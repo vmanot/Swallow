@@ -286,6 +286,25 @@ extension IdentifierIndexingArray: MutableCollection, MutableSequence, RandomAcc
         }
     }
     
+    public subscript(
+        id identifier: ID,
+        defaultInPlace defaultValue: @autoclosure () -> Element
+    ) -> Element {
+        mutating get {
+            if let result = self[id: identifier] {
+                return result
+            } else {
+                let result = defaultValue()
+                
+                self[id: identifier] = result
+                
+                return result
+            }
+        } set {
+            self[id: identifier] = newValue
+        }
+    }
+    
     @_disfavoredOverload
     public subscript(id identifier: any Hashable) -> Element? where ID == AnyHashable {
         get {
