@@ -89,7 +89,7 @@ extension MutableCollection where Indices: Collection {
 
 // MARK: - Auxiliary
 
-public protocol AnyBidirectionalCollectionType<Element>: Collection where Index == AnyBidirectionalCollection<Element>.Index {
+public protocol AnyBidirectionalCollectionType<Element>: BidirectionalCollection where Index == AnyBidirectionalCollection<Element>.Index {
     init<C: BidirectionalCollection>(_ collection: C) where C.Element == Element
     init(_ collection: AnyBidirectionalCollection<Element>)
     

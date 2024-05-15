@@ -195,6 +195,36 @@ extension String {
         return String(self[..<range.upperBound])
     }
     
+    public func dropFirstComponent(
+        separatedBy separator: String
+    ) -> String {
+        let components = self.components(separatedBy: separator)
+        
+        guard components.count > 1 else {
+            return self
+        }
+        
+        return components.dropFirst().joined(separator: separator)
+    }
+    
+    public func dropFirstComponent(
+        separatedBy character: Character
+    ) -> String {
+        dropFirstComponent(separatedBy: String(character))
+    }
+
+    public func dropLastComponent(
+        separatedBy separator: String
+    ) -> String {
+        let components = self.components(separatedBy: separator)
+        
+        guard components.count > 1 else {
+            return self
+        }
+        
+        return components.dropLast().joined(separator: separator)
+    }
+
     @_disfavoredOverload
     public func trim(prefix: String, suffix: String) -> Substring {
         if hasPrefix(prefix) && hasSuffix(suffix) {

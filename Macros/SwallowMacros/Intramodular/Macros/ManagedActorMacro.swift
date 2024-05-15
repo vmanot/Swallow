@@ -27,7 +27,29 @@ extension ManagedActorMacro: ExtensionMacro {
         conformingTo protocols: [TypeSyntax],
         in context: some MacroExpansionContext
     ) throws -> [ExtensionDeclSyntax] {
-        let declarationName: TokenSyntax = declaration._namedDecl!.name
+        guard let declaration: ClassDeclSyntax = declaration._namedDecl?.as(ClassDeclSyntax.self) else {
+            return []
+        }
+        
+        let declarationName: String = declaration.name.trimmedDescription
+                
+        var _managedActorInitializationOptionsExpr: String = "[]"
+        
+        if let arguments = node.labeledArguments, !arguments.isEmpty {
+            _managedActorInitializationOptionsExpr = "["
+            
+            for argument in arguments.map({ $0.expression.trimmedDescription }) {
+                if argument == ".serializedExecution" {
+                    _managedActorInitializationOptionsExpr.append(argument + ", ")
+                } else {
+                    throw AnyDiagnosticMessage(message: "Unrecognized argument: \(argument)")
+                }
+            }
+            
+            _managedActorInitializationOptionsExpr = _managedActorInitializationOptionsExpr
+                .dropSuffixIfPresent(", ")
+                .appending("]")
+        }
         
         let result = ExtensionDeclSyntax(
             extendedType: type,
@@ -39,19 +61,27 @@ extension ManagedActorMacro: ExtensionMacro {
                 })
             ),
             memberBlock: MemberBlockSyntax {
-                    """
-                    public typealias _ManagedActorMethodListType = _ManagedActorMethodList_\(raw: declarationName)
-                    public typealias _ManagedActorSelfType = \(declaration._namedDecl!.name)
-                    
-                    public subscript<T: _ManagedActorMethodProtocol>(
-                        dynamicMember keyPath: KeyPath<_ManagedActorMethodListType, T>
-                    ) -> T {
-                        _ManagedActorMethodListType()[keyPath: keyPath]
-                    }
-                    """
+                """
+                public typealias _ManagedActorMethodListType = _ManagedActorMethodList_\(raw: declarationName)
+                public typealias _ManagedActorSelfType = \(raw: declarationName)
+                
+                public static var _managedActorInitializationOptions: Set<_ManagedActorInitializationOption> {
+                    \(raw: _managedActorInitializationOptionsExpr)
+                }
+                
+                public subscript<T: _ManagedActorMethodProtocol>(
+                    dynamicMember keyPath: KeyPath<_ManagedActorMethodListType, T>
+                ) -> T {
+                    let result = _ManagedActorMethodListType()[keyPath: keyPath]
+                
+                    result._caller = self
+                
+                    return result
+                }
+                """
             }
         )
-                        
+        
         return [result]
     }
 }
@@ -81,25 +111,46 @@ extension ManagedActorMacro: MemberAttributeMacro {
     }
 }
 
+extension ManagedActorMacro: MemberMacro {
+    public static func expansion(
+        of node: AttributeSyntax,
+        providingMembersOf declaration: some DeclGroupSyntax,
+        in context: some MacroExpansionContext
+    ) throws -> [DeclSyntax] {
+        guard let declaration: ClassDeclSyntax = declaration.as(ClassDeclSyntax.self) else {
+            return []
+        }
+        
+        _ = declaration
+        
+        let result: DeclSyntax =
+        """
+        public lazy var _managedActorScratchpad = _ManagedActorScratchpad(_owner: self)
+        """
+        
+        return [result]
+    }
+}
+
 extension ManagedActorMacro: PeerMacro {
     public static func expansion(
         of node: SwiftSyntax.AttributeSyntax,
         providingPeersOf declaration: some DeclSyntaxProtocol,
         in context: some MacroExpansionContext
     ) throws -> [SwiftSyntax.DeclSyntax] {
-        guard let declaration: NamedDeclSyntax = declaration.asProtocol(NamedDeclSyntax.self) else {
+        guard let declaration: ClassDeclSyntax = declaration.as(ClassDeclSyntax.self) else {
             return []
         }
         
-        let classDecl = (declaration as! ClassDeclSyntax)
+        let className: String = declaration.name.trimmedDescription
+        let functions = declaration.memberBlock.members.compactMap({ $0.decl.as(FunctionDeclSyntax.self) })
         
-        let functions = classDecl.memberBlock.members.compactMap({ $0.decl.as(FunctionDeclSyntax.self) })
         /*let syntax = classDecl.expand(
-            macros: [
-                "ManagedActor": ManagedActorMacro.self,
-            ],
-            in: context
-        )*/
+         macros: [
+         "ManagedActor": ManagedActorMacro.self,
+         ],
+         in: context
+         )*/
         
         let memberList: MemberBlockItemListSyntax = MemberBlockItemListSyntax(
             functions
@@ -108,7 +159,7 @@ extension ManagedActorMacro: PeerMacro {
                     MemberBlockItemSyntax(
                         decl: DeclSyntax(
                             """
-                            public let \(raw: function.name.trimmedDescription) = \(raw: classDecl.name.trimmedDescription)._ManagedActorMethod_\(raw: function.name.trimmedDescription)()
+                            public let \(raw: function.name.trimmedDescription) = \(raw: className)._ManagedActorMethod_\(raw: function.name.trimmedDescription)()
                             """
                         )
                     )
@@ -126,12 +177,12 @@ extension ManagedActorMacro: PeerMacro {
         }
         """
         
-//        public var descrrrrrription: String {
-//            \(raw: "\"")\(raw: "\"")\(raw: "\"")
-//            \(raw: functions)
-//            \(raw: "\"")\(raw: "\"")\(raw: "\"")
-//        }
-
+        //        public var descrrrrrription: String {
+        //            \(raw: "\"")\(raw: "\"")\(raw: "\"")
+        //            \(raw: functions)
+        //            \(raw: "\"")\(raw: "\"")\(raw: "\"")
+        //        }
+        
         return [result]
     }
 }

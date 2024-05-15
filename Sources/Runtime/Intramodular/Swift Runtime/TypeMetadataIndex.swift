@@ -236,9 +236,7 @@ extension TypeMetadataIndex {
                 return nonUnderscoredTypes.intersection(objCClasses).subtracting(appleFrameworkObjCClasses)
             } else if predicates == [.pureSwift, .nonAppleFramework] {
                 return nonAppleSwiftTypes
-            } else if predicates == [.pureSwift] {
-                runtimeIssue(Never.Reason.unimplemented)
-                
+            } else if predicates == [.pureSwift] {                
                 return nonAppleSwiftTypes
             }
             

@@ -18,7 +18,7 @@ public struct ManagedActorMethodMacro: PeerMacro {
         declaration.accessLevel = .public
         
         let callAsFunctionDecl = try declaration
-            .makeDuplicate(named: "callAsFunction", caller: "caller")
+            .makeDuplicate(named: "callAsFunction", caller: "self.caller")
             .mappingBody { body in
                 """
                 \(declaration.makeCallExpressionEffectSpecifiersPrefix) caller._performInnerBodyOfMethod(\\.\(raw: declaration.name.trimmedDescription)) {
@@ -29,13 +29,11 @@ public struct ManagedActorMethodMacro: PeerMacro {
         
         let result = DeclSyntax(
             """
-            public struct _ManagedActorMethod_\(raw: declaration.name): _ManagedActorMethodProtocol {
-                var caller: _ManagedActorSelfType {
-                    fatalError()
-                }
-            
-                public init() {
-            
+            public final class _ManagedActorMethod_\(raw: declaration.name): _AnyManagedActorMethod, _ManagedActorMethodProtocol {
+                public typealias OwnerType = _ManagedActorSelfType
+                        
+                public override init() {
+                    super.init()
                 }
             
                 \(callAsFunctionDecl)
