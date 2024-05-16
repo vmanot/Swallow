@@ -12,6 +12,12 @@ extension URL {
         public private(set) var data: Data
         public private(set) var creationOptions: URL.BookmarkCreationOptions
         
+        public var path: String {
+            get throws {
+                try self.toURL()._filePath
+            }
+        }
+
         private init(
             data: Data,
             creationOptions: URL.BookmarkCreationOptions
@@ -19,7 +25,7 @@ extension URL {
             self.data = data
             self.creationOptions = creationOptions
         }
-        
+                
         public init(data: Data) throws {
             var stale: Bool = false
             

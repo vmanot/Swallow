@@ -80,11 +80,26 @@ struct _PolymorphicDecodingProxy<T: Decodable>: CustomStringConvertible, _Polymo
             if let type = T.self as? any PolymorphicDecodable.Type {
                 self.value = try cast(try type._PolymorphicProxyDecodableType().init(from: decoder).value, to: T.self)
             } else {
-                self.value = try T.init(from: decoder._polymorphic())
+                do {
+                    self.value = try T.init(from: decoder._polymorphic())
+                } catch {
+                    if let value = try? _UnsafeSerializationContainer(from: decoder._polymorphic()).data {
+                        self.value = value
+                    } else {
+                        throw error
+                    }
+                }
             }
         } catch {
             throw error
         }
+    }
+    
+    /// See `CorePersistence._UnsafelySerialized`.
+    private struct _UnsafeSerializationContainer: Decodable {
+        let typeRepresentation: AnyCodable?
+        let declaredTypeRepresentation: AnyCodable?
+        let data: T
     }
 }
 
