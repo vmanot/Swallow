@@ -80,7 +80,26 @@ fileprivate struct _PolymorphicProxyDecodable<T: PolymorphicDecodable>: _Polymor
     var value: T
     
     init(from decoder: Decoder) throws {
-        let discriminator = try T.decodeTypeDiscriminator(from: decoder)
+        let discriminator: T.DecodingTypeDiscriminator
+        
+        do {
+            discriminator = try T.decodeTypeDiscriminator(from: decoder)
+        } catch {
+            if let type = T.DecodingTypeDiscriminator.self as? any TypeDiscriminator.Type, let _undiscriminatedType = type._undiscriminatedType, T.self != _undiscriminatedType {
+                do {
+                    let decoder = (decoder as? _PolymorphicDecoderType)?.base ?? decoder
+                    
+                    self.value = try T(from: decoder)
+                    
+                    return
+                } catch {
+                    throw error
+                }
+            }
+            
+            throw error
+        }
+        
         let subtype = try T.resolveSubtype(for: discriminator)
         
         do {

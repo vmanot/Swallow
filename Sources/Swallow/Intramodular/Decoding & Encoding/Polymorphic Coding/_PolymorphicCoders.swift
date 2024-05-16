@@ -6,9 +6,13 @@
 import Foundation
 import Swift
 
+protocol _PolymorphicDecoderType {
+    var base: Decoder { get }
+}
+
 /// A custom decoder.
-public struct _PolymorphicDecoder: Decoder {
-    private var base: Decoder
+public struct _PolymorphicDecoder: _PolymorphicDecoderType, Decoder {
+    var base: Decoder
     
     public var codingPath: [CodingKey] {
         base.codingPath
