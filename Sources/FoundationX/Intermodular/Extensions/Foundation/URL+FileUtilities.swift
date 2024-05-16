@@ -104,7 +104,19 @@ extension URL {
 
 extension URL {
     public var _filePath: String {
-        resolvingSymlinksInPath().path
+        let url = resolvingSymlinksInPath()
+        
+        if let absolutePath = try? url
+            .resourceValues(forKeys: [.canonicalPathKey])
+            .canonicalPath {
+            return absolutePath
+        } else {
+            return path
+        }
+    }
+    
+    public var _isCanonicallyHiddenFile: Bool {
+        _fileNameWithoutExtension.hasPrefix(".")
     }
     
     public var _fileNameWithoutExtension: String {

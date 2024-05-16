@@ -1,4 +1,4 @@
-//
+/*//
 //  Difference.swift
 //  Difference
 //
@@ -458,3 +458,4 @@ public func dumpDiff<T>(
         skipPrintingOnDiffCount: skipPrintingOnDiffCount
     ).forEach { print($0) }
 }
+*/

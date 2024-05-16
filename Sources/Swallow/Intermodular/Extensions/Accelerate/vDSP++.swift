@@ -76,20 +76,24 @@ extension vDSP {
     public static func normalize(
         _ data: [[Double]]
     ) -> [[Double]] {
-        let rowCount = data.count
-        let columnCount = data[0].count
+        let rowCount: Int = data.count
+        let columnCount: Int = data[0].count
         
-        var flattenedData = data.flatMap { $0 }
+        var flattenedData: [Double] = data.flatMap { (element) -> [Double] in
+            element
+        }
         
         for j in 0..<columnCount {
             let startIndex = j
             let stride = columnCount
             
-            var mean = 0.0
-            var stdDev = 0.0
+            var mean: Double = 0.0
+            var stdDev: Double = 0.0
             
             vDSP_normalizeD(
-                flattenedData.withUnsafeBufferPointer { $0.baseAddress! + startIndex },
+                flattenedData.withUnsafeBufferPointer {
+                    $0.baseAddress! + startIndex
+                },
                 stride,
                 &flattenedData[startIndex],
                 stride,
@@ -99,8 +103,8 @@ extension vDSP {
             )
         }
         
-        return stride(from: 0, to: flattenedData.count, by: columnCount).map {
-            Array(flattenedData[$0..<$0 + columnCount])
+        return stride(from: 0, to: flattenedData.count, by: columnCount).map { (index: Int) in
+            Array<Double>(flattenedData[index..<(index + columnCount)])
         }
     }
 
@@ -211,19 +215,24 @@ extension vDSP {
         public let eigenvectors: [[Double]]
     }
     
+    public static func eigenDecomposition2(
+        of matrix: [Double]
+    ) throws -> EigenDecomposition {
+     fatalError()
+    }
     public static func eigenDecomposition(
         of matrix: [Double]
     ) throws -> EigenDecomposition {
         let order = Int(sqrt(Double(matrix.count)))
         
         var N = __CLPK_integer(order)
-        var A = matrix
+        var A: [Double] = matrix
         var realEigenvalues = [Double](repeating: 0.0, count: order)
         var imaginaryEigenvalues = [Double](repeating: 0.0, count: order)
         var leftEigenvectors = [Double](repeating: 0.0, count: order * order)
         var rightEigenvectors = [Double](repeating: 0.0, count: order * order)
-        var workspaceQuery = 0.0
-        var workspaceSize = __CLPK_integer(-1)
+        var workspaceQuery: Double = 0.0
+        var workspaceSize: __CLPK_integer = __CLPK_integer(-1)
         var error = __CLPK_integer(0)
         
         let jobvl = UnsafeMutablePointer<CChar>(mutating: ("N" as NSString).utf8String)
@@ -247,7 +256,8 @@ extension vDSP {
             throw EigenDecompositionError.computationFailed(resultCode: error)
         }
         
-        let eigenvectors = stride(from: 0, to: rightEigenvectors.count, by: order).map { Array(rightEigenvectors[$0..<$0 + order]) }
+        let eigenvectors: Array<Array<Double>> = stride(from: 0, to: rightEigenvectors.count, by: order).map { Array<Double>(rightEigenvectors[$0..<$0 + order])
+        }
         
         return EigenDecomposition(
             eigenvalues: realEigenvalues,
@@ -274,11 +284,20 @@ extension vDSP {
                 throw EigenDecompositionError.invalidMatrixLayout
             }
             
-            var transposedMatrix = [Double](repeating: 0.0, count: rows * columns)
+            var transposedMatrix: [Double] = [Double](repeating: 0.0, count: rows * columns)
             
-            for i in 0..<rows {
-                for j in 0..<columns {
-                    transposedMatrix[j * rows + i] = matrix[i * columns + j]
+            for i: Int in 0..<rows {
+                for j: Int in 0..<columns {
+                    let rowOffset: Int = i * columns
+                    let columnOffset: Int = j
+                    let sourceIndex: Int = rowOffset + columnOffset
+                    
+                    let transposedRowOffset: Int = j * rows
+                    let transposedColumnOffset: Int = i
+                    let destinationIndex: Int = transposedRowOffset + transposedColumnOffset
+                    
+                    let value: Double = matrix[sourceIndex]
+                    transposedMatrix[destinationIndex] = value
                 }
             }
             
@@ -310,21 +329,36 @@ extension vDSP {
         var work: [Double] = [Double](repeating: 0.0, count: Int(lwork))
         var info: __CLPK_integer = 0
         
-        _ = withUnsafeMutablePointer(to: &jobvl) { jobvlPtr in
-            withUnsafeMutablePointer(to: &jobvr) { jobvrPtr in
-                withUnsafeMutablePointer(to: &n) { nPtr in
-                    withUnsafeMutablePointer(to: &lda) { ldaPtr in
-                        withUnsafeMutablePointer(to: &ldvl) { ldvlPtr in
-                            withUnsafeMutablePointer(to: &ldvr) { ldvrPtr in
+        _ = withUnsafeMutablePointer(to: &jobvl) { (jobvlPtr: UnsafeMutablePointer<Int8>) in
+            withUnsafeMutablePointer(to: &jobvr) { (jobvrPtr: UnsafeMutablePointer<Int8>) in
+                withUnsafeMutablePointer(to: &n) { (nPtr: UnsafeMutablePointer<__CLPK_integer>) in
+                    withUnsafeMutablePointer(to: &lda) { (ldaPtr: UnsafeMutablePointer<__CLPK_integer>) in
+                        withUnsafeMutablePointer(to: &ldvl) { (ldvlPtr: UnsafeMutablePointer<__CLPK_integer>) in
+                            withUnsafeMutablePointer(to: &ldvr) { (ldvrPtr: UnsafeMutablePointer<__CLPK_integer>) in
                                 withUnsafeMutablePointer(to: &lwork) { lworkPtr in
                                     withUnsafeMutablePointer(to: &info) { infoPtr in
                                         matrix.withUnsafeMutableBufferPointer { matrixBuffer in
-                                            wr.withUnsafeMutableBufferPointer { wrBuffer in
-                                                wi.withUnsafeMutableBufferPointer { wiBuffer in
-                                                    vl.withUnsafeMutableBufferPointer { vlBuffer in
-                                                        vr.withUnsafeMutableBufferPointer { vrBuffer in
-                                                            work.withUnsafeMutableBufferPointer { workBuffer in
-                                                                return dgeev_(jobvlPtr, jobvrPtr, nPtr, matrixBuffer.baseAddress, ldaPtr, wrBuffer.baseAddress, wiBuffer.baseAddress, vlBuffer.baseAddress, ldvlPtr, vrBuffer.baseAddress, ldvrPtr, workBuffer.baseAddress, lworkPtr, infoPtr)
+                                            wr.withUnsafeMutableBufferPointer { (wrBuffer: UnsafeMutableBufferPointer<Double>) in
+                                                wi.withUnsafeMutableBufferPointer { (wiBuffer: UnsafeMutableBufferPointer<Double>) in
+                                                    vl.withUnsafeMutableBufferPointer { (vlBuffer: UnsafeMutableBufferPointer<Double>) in
+                                                        vr.withUnsafeMutableBufferPointer { (vrBuffer: UnsafeMutableBufferPointer<Double>) in
+                                                            work.withUnsafeMutableBufferPointer { (workBuffer:  UnsafeMutableBufferPointer<Double>) in
+                                                                return dgeev_(
+                                                                    jobvlPtr,
+                                                                    jobvrPtr,
+                                                                    nPtr,
+                                                                    matrixBuffer.baseAddress,
+                                                                    ldaPtr,
+                                                                    wrBuffer.baseAddress,
+                                                                    wiBuffer.baseAddress,
+                                                                    vlBuffer.baseAddress,
+                                                                    ldvlPtr,
+                                                                    vrBuffer.baseAddress,
+                                                                    ldvrPtr,
+                                                                    workBuffer.baseAddress,
+                                                                    lworkPtr,
+                                                                    infoPtr
+                                                                )
                                                             }
                                                         }
                                                     }
@@ -345,7 +379,7 @@ extension vDSP {
         }
         
         // Check for complex eigenvalues
-        for i in 0..<Int(n) {
+        for i in (0..<Int(n)) {
             if wi[i] != 0.0 {
                 throw EigenDecompositionError.complexEigenvaluesDetected
             }

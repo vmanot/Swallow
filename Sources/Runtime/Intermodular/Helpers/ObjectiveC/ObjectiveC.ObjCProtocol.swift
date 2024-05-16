@@ -172,24 +172,31 @@ extension ObjCProtocol {
 // MARK: - Helpers
 
 extension ObjCClass {
-    public func inheritedMethodDescription(for selector: ObjCSelector) throws -> ObjCMethodDescription {
+    public func inheritedMethodDescription(
+        for selector: ObjCSelector
+    ) throws -> ObjCMethodDescription {
+        // Check if the current class responds to the selector
         guard !responds(to: selector) else {
             return try! method(for: selector).getDescription()
         }
         
-        let allInstanceMethods = protocols
+        // Gather all instance methods from the protocols
+        let allInstanceMethods: LazySequence<FlattenSequence<LazyMapSequence<LazySequence<AnyRandomAccessCollection<ObjCProtocol>>.Elements, AnyRandomAccessCollection<ObjCMethodDescription>>>> = protocols
             .lazy
             .flatMap { $0.allInstanceMethods }
         
-        let allAdoptedInstanceMethods = protocols
+        // Gather all adopted instance methods from the adopted protocols
+        let allAdoptedInstanceMethods: LazySequence<FlattenSequence<LazyMapSequence<LazySequence<FlattenSequence<LazyMapSequence<LazySequence<AnyRandomAccessCollection<ObjCProtocol>>.Elements, AnyRandomAccessCollection<ObjCProtocol>>>>.Elements, AnyRandomAccessCollection<ObjCMethodDescription>>>> = protocols
             .lazy
             .flatMap { $0.adoptedProtocols }
             .flatMap({ $0.allInstanceMethods })
         
-        let result: LazySequence<FlattenSequence<LazyMapSequence<LazySequence<AnyRandomAccessCollection<ObjCProtocol>>.Elements, AnyRandomAccessCollection<ObjCMethodDescription>>>>.Element? = nil
-        ?? allInstanceMethods.find({ $0.selector == selector })
-        ?? allAdoptedInstanceMethods.find({ $0.selector == selector })
+        // Find the method description matching the selector in the gathered methods
+        let result: ObjCMethodDescription? = nil
+        ?? allInstanceMethods.first(where: { $0.selector == selector })
+        ?? allAdoptedInstanceMethods.first(where: { $0.selector == selector })
         
+        // Unwrap and return the found method description, or throw an error if not found
         return try result.unwrap()
     }
 }

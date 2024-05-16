@@ -41,8 +41,13 @@ public struct _DJB2PersistentHasher {
 
 extension String {
     fileprivate var _djb2_persistentHash: Int {
-        self.utf8.reduce(into: 5381) {
-            $0 = ($0 << 5) &+ $0 &+ Int($1)
+        self.utf8.reduce(into: 5381) { (result: inout Int, element) -> Void in
+            var newResult: Int = (result << 5)
+            
+            newResult &+= result
+            newResult &+= Int(element)
+            
+            result = newResult
         }
     }
 }

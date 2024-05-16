@@ -69,9 +69,9 @@ extension GraphPatternBuilder {
             from node: Node
         ) -> [GraphMatch<Node>] {
             let sourceMatches = subpattern.match(from: node)
-            
-            return sourceMatches.flatMap { (sourceMatch: GraphMatch<Node>) in
-                sourceMatch.last!.outgoingEdges.map { edge in
+             
+            return sourceMatches.flatMap { (sourceMatch: GraphMatch<Node>) -> [GraphMatch] in
+                sourceMatch.last!.outgoingEdges.map { (edge: Node.Edge) in
                     GraphMatch(
                         nodes: sourceMatch.nodes + [edge.destination],
                         edges: sourceMatch.edges + [edge]
@@ -99,10 +99,10 @@ extension GraphPatternBuilder {
             let destinationMatches: [GraphMatch<Node>] = subpattern.match(from: node)
             
             return destinationMatches.flatMap { (destinationMatch: GraphMatch<Node>) in
-                destinationMatch.first!.incomingEdges.map { edge in
+                destinationMatch.first!.incomingEdges.map { (edge: Node.Edge) -> GraphMatch in
                     GraphMatch(
-                        nodes: [edge.source] + destinationMatch.nodes,
-                        edges: [edge] + destinationMatch.edges
+                        nodes: Array(element: edge.source).appending(contentsOf: destinationMatch.nodes),
+                        edges: Array(element: edge).appending(contentsOf: destinationMatch.edges)
                     )
                 }
             }

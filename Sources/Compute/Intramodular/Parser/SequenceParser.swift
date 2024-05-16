@@ -31,7 +31,9 @@ public struct SequenceParser<S: NonDestroyingCollection> where S.SubSequence: Ha
 }
 
 extension SequenceParser {
-    public func input(_ sequence: S) -> RecursiveArray<S.SubSequence> {
+    public func input(
+        _ sequence: S
+    ) -> RecursiveArray<S.SubSequence> {
         var stack: [RecursiveArray<S.SubSequence>] = [[]]
         
         for subSequence in tokenizer.input(sequence) {

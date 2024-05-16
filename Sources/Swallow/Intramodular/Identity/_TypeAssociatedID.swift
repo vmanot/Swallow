@@ -13,6 +13,14 @@ public struct _TypeAssociatedID<Parent, RawValue: Hashable>: Hashable, RawRepres
     public init(rawValue: RawValue) {
         self.rawValue = rawValue
     }
+    
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(rawValue)
+    }
+    
+    public static func == (lhs: Self, rhs: Self) -> Bool {
+        lhs.rawValue == rhs.rawValue
+    }
 }
 
 // MARK: - Conformances

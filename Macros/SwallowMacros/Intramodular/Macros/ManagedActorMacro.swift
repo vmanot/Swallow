@@ -155,14 +155,15 @@ extension ManagedActorMacro: PeerMacro {
         let memberList: MemberBlockItemListSyntax = MemberBlockItemListSyntax(
             functions
                 .distinct(by: { $0.name.trimmedDescription })
-                .compactMap { (function: FunctionDeclSyntax) in
-                    MemberBlockItemSyntax(
-                        decl: DeclSyntax(
-                            """
-                            public let \(raw: function.name.trimmedDescription) = \(raw: className)._ManagedActorMethod_\(raw: function.name.trimmedDescription)()
-                            """
-                        )
-                    )
+                .compactMap { (function: FunctionDeclSyntax) -> MemberBlockItemSyntax in
+                    let name: String = function.name.trimmedDescription
+                    let formattedName: String = function._formattedManagedActorMethodName
+                    
+                    return MemberBlockItemSyntax {
+                        """
+                        public let \(raw: formattedName) = \(raw: className)._ManagedActorMethod_\(raw: name)()
+                        """
+                    }
                 }
         )
         

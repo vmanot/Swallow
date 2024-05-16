@@ -132,7 +132,11 @@ let package = Package(
             swiftSettings: []
         ),
         .target(
-            name: "_RuntimeC"
+            name: "_RuntimeC",
+            publicHeadersPath: "include",
+            cSettings: [
+                .headerSearchPath("include")
+            ]
         ),
         .target(
             name: "_RuntimeKeyPath",

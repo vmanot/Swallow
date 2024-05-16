@@ -88,11 +88,12 @@ extension URL {
 
 extension URL {
     public func isAncestor(of url: URL) -> Bool {
-        // Check if both URLs have the same scheme and host
-        guard scheme == url.scheme && host == url.host else {
-            runtimeIssue("Invalid comparison.")
-            
-            return false
+        if let scheme {
+            guard scheme == url.scheme && host == url.host else {
+                runtimeIssue("Invalid comparison.")
+                
+                return false
+            }
         }
         
         // Get the path components of both URLs

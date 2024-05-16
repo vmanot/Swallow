@@ -5,12 +5,30 @@
 #if os(macOS)
 
 import Foundation
-import Swift
+import Swallow
 
 public struct _CurrentXcodeProject {
     @usableFromInline
     static let fileManager = FileManager.default
     
+    public static func buildLogsPath() -> URL? {
+        let environment = ProcessInfo.processInfo.environment
+        
+        if let derivedDataPath = environment["__XCODE_BUILT_PRODUCTS_DIR_PATHS"] {
+            let logsDirectory = URL(fileURLWithPath: derivedDataPath)
+                .appendingPathComponent("../../../Logs/Build")
+                .resolvingSymlinksInPath()
+            
+            return logsDirectory
+        }
+        
+        if _isDebugAssertConfiguration() {
+            runtimeIssue("Failed to get build logs path.")
+        }
+        
+        return nil
+    }
+
     public static func findXcodeProjAndInfoPlistUsingDebugHints(
         initialPath: String
     ) -> (xcodeProj: URL?, infoPlist: URL?) {

@@ -214,7 +214,7 @@ extension Collection {
         
         return subsequences
     }
-
+    
     @inlinable
     public func splitIncludingSeparators<Separator>(
         maxSplits: Int = .max,
@@ -222,7 +222,7 @@ extension Collection {
         separator: (Element) throws -> Separator?
     ) rethrows -> [Either<SubSequence, Separator>] {
         precondition(maxSplits >= 0, "maxSplits can not be negative")
-
+        
         var result: [Either<SubSequence, Separator>] = []
         var subsequenceStart = startIndex
         var splitCount = 0
@@ -248,7 +248,18 @@ extension Collection {
             result.append(.left(self[subsequenceStart..<endIndex]))
         }
         
-        assert(result.map({ $0.reduce(left: \.count, right: { _ in 1 }) }).reduce(0, +) == self.count)
+        assert({ () -> Bool in
+            let expectedCount: Int = result
+                .map({
+                    $0.reduce(
+                        left: \SubSequence.count,
+                        right: { _ -> Int in 1 }
+                    )
+                })
+                .reduce(0, +)
+            
+            return expectedCount == self.count
+        }())
         
         return result
     }
@@ -301,7 +312,7 @@ extension Collection {
             self[index(atDistance: $0)..<index(atDistance: Swift.min($0 + chunkSize, self.count))]
         }
     }
-
+    
     public func allSubrangesChunked<C: Collection>(
         by ranges: C
     ) -> [Range<Index>] where C.Element == Range<Index> {
