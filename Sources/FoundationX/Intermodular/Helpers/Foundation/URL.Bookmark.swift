@@ -17,15 +17,15 @@ extension URL {
                 try self.toURL()._filePath
             }
         }
-
+        
         private init(
             data: Data,
             creationOptions: URL.BookmarkCreationOptions
-        ) {
+        ) throws {
             self.data = data
             self.creationOptions = creationOptions
         }
-                
+        
         public init(data: Data) throws {
             var stale: Bool = false
             
@@ -68,8 +68,29 @@ extension URL.Bookmark: Codable {
         do {
             let container = try decoder.container(keyedBy: CodingKeys.self)
             
-            self.data = try container.decode(Data.self, forKey: .data)
-            self.creationOptions = .init(rawValue: try container.decode(URL.BookmarkCreationOptions.RawValue.self, forKey: .creationOptions))
+            let data: Data
+            var wasDataBase64Encoded: Bool = false
+            
+            do {
+                data = try container.decode(Data.self, forKey: .data)
+            } catch {
+                data = try Data(base64Encoded: try container.decode(String.self, forKey: .data)).unwrap()
+                
+                wasDataBase64Encoded = true
+            }
+            
+            let creationOptions = URL.BookmarkCreationOptions(
+                rawValue: try container.decode(
+                    URL.BookmarkCreationOptions.RawValue.self,
+                    forKey: .creationOptions
+                )
+            )
+            
+            try self.init(data: data, creationOptions: creationOptions)
+            
+            if wasDataBase64Encoded {
+                _ = try resolve()
+            }
         } catch {
             if let url = try? URL(from: decoder) {
                 self = try Self(for: url)
@@ -119,7 +140,7 @@ extension URL.Bookmark {
         
         let newBookmarkData: Data
         
-        #if os(macOS)
+#if os(macOS)
         if creationOptions.contains(.withSecurityScope) {
             guard url.startAccessingSecurityScopedResource() else {
                 throw Error.couldNotAccessWithSecureScope(url)
@@ -139,15 +160,18 @@ extension URL.Bookmark {
                 relativeTo: nil
             )
         }
-        #else
+#else
         newBookmarkData = try url.bookmarkData(
             options: creationOptions,
             includingResourceValuesForKeys: nil,
             relativeTo: nil
         )
-        #endif
+#endif
         
-        self = .init(data: newBookmarkData, creationOptions: creationOptions)
+        self = try URL.Bookmark(
+            data: newBookmarkData,
+            creationOptions: creationOptions
+        )
     }
 }
 
