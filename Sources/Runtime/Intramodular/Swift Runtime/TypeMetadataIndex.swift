@@ -117,16 +117,26 @@ extension TypeMetadataIndex {
         
         var result: Set<TypeMetadata> = []
         
+        func validateSkip(_ type: TypeMetadata) {
+
+        }
+        
+        assert(!types.isEmpty)
+        
         if protocolType.kind == .existential, let protocolExistentialMetatype: Any.Type = _swift_getExistentialMetatypeMetadata(protocolType.base) {
             for type in types {
                 if type._conforms(toExistentialMetatype: protocolExistentialMetatype) {
                     result.insert(type)
+                } else {
+                    validateSkip(type)
                 }
             }
         } else {
             for type in types {
                 if type.conforms(to: protocolType) {
                     result.insert(type)
+                } else {
+                    validateSkip(type)
                 }
             }
         }

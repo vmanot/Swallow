@@ -52,6 +52,7 @@ extension _GenericRuntimeConversionProtocol {
     }
 }
 
+@_alwaysEmitConformanceMetadata
 public protocol _PerformOnceOnAppLaunch: Initiable {
     init()
     

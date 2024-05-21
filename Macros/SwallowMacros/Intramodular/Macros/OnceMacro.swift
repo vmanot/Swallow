@@ -2,8 +2,6 @@
 // Copyright (c) Vatsal Manot
 //
 
-import Foundation
-import SwiftDiagnostics
 import SwiftSyntax
 import SwiftSyntaxBuilder
 import SwiftSyntaxMacros
@@ -14,7 +12,7 @@ public struct OnceMacro: DeclarationMacro {
         of node: some FreestandingMacroExpansionSyntax,
         in context: some MacroExpansionContext
     ) throws -> [DeclSyntax] {
-        let name = context.makeUniqueName("Once")
+        let name = context.makeUniqueName("_PerformOnceOnAppLaunch")
         
         let result = DeclSyntax(
             """
@@ -24,7 +22,7 @@ public struct OnceMacro: DeclarationMacro {
                 
                 }
             
-                public func perform() -> _SyncOrAsyncValue<Void> {
+                public dynamic func perform() -> _SyncOrAsyncValue<Void> {
                     _SyncOrAsyncValue(evaluating: \(node.trailingClosure))
                 }
             }

@@ -28,6 +28,9 @@ public struct module: CompilerPlugin {
         RuntimeDiscoverableMacro.self,
         _StaticProtocolMember.self,
         SingletonMacro.self,
+        TryMacro.self,
+        TryWithVoidReturnMacro.self,
+        TryAwaitMacro.self,
         _InternalTestMacro.self
     ]
     

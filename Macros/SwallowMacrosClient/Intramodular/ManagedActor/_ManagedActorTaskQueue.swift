@@ -3,7 +3,7 @@
 //
 
 import Combine
-import FoundationX
+import Foundation
 import Swallow
 
 public final class _ManagedActorTaskQueue: Sendable {

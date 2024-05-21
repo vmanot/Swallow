@@ -7,6 +7,11 @@ import Swift
 infix operator ??=: AssignmentPrecedence
 infix operator =??: AssignmentPrecedence
 
+@_transparent
+public func _flattenOptional<T>(_ x: T??) -> T? {
+    x ?? nil
+}
+
 extension Optional {
     @inlinable
     public func map(into wrapped: inout Wrapped) {

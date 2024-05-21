@@ -58,7 +58,6 @@ let package = Package(
             name: "_SwallowMacrosRuntime",
             dependencies: [
                 "_RuntimeC",
-                "Diagnostics",
                 "Swallow",
             ],
             path: "Macros/_SwallowMacrosRuntime",
@@ -112,7 +111,8 @@ let package = Package(
         .target(
             name: "Diagnostics",
             dependencies: [
-                "Swallow"
+                "Swallow",
+                "SwallowMacrosClient",
             ],
             swiftSettings: []
         ),
@@ -120,14 +120,14 @@ let package = Package(
             name: "FoundationX",
             dependencies: [
                 "Diagnostics",
-                "Swallow"
+                "Swallow",
             ],
             swiftSettings: []
         ),
         .target(
             name: "POSIX",
             dependencies: [
-                "Swallow"
+                "Swallow",
             ],
             swiftSettings: []
         ),
@@ -142,8 +142,6 @@ let package = Package(
             name: "_RuntimeKeyPath",
             dependencies: [
                 "_SwallowMacrosRuntime",
-                "Compute",
-                "FoundationX",
                 "Swallow"
             ],
             swiftSettings: [.unsafeFlags(["-parse-stdlib"])]
@@ -179,10 +177,8 @@ let package = Package(
         .target(
             name: "SwallowMacrosClient",
             dependencies: [
-                "_RuntimeC",
                 "_SwallowMacrosRuntime",
                 "SwallowMacros",
-                "Runtime",
                 "Swallow"
             ],
             path: "Macros/SwallowMacrosClient",
