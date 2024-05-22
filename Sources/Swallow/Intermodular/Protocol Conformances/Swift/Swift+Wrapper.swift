@@ -52,6 +52,14 @@ open class ReferenceBox<T>: MutablePropertyWrapper, Wrapper {
     public convenience init(wrappedValue: T) {
         self.init(wrappedValue)
     }
+    
+    public required convenience init(nilLiteral: ()) where T: ExpressibleByNilLiteral {
+        self.init(T(nilLiteral: ()))
+    }
+}
+
+extension ReferenceBox: ExpressibleByNilLiteral where T: ExpressibleByNilLiteral {
+    
 }
 
 @propertyWrapper
