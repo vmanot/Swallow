@@ -96,15 +96,15 @@ extension SwiftRuntimeTypeMetadata where MetadataLayout: SwiftRuntimeContextualT
                 .element(at: index)
             
             let fieldName: String = record.pointee.fieldName()
+            let contextDescriptor = metadata.pointee.contextDescriptor
+            let fieldType = record.pointee.type(
+                genericContext: contextDescriptor,
+                genericArguments: genericVector
+            )
 
             return NominalTypeMetadata.Field(
                 name: fieldName,
-                type: TypeMetadata(
-                    record.pointee.type(
-                        genericContext: metadata.pointee.contextDescriptor,
-                        genericArguments: genericVector
-                    )
-                ),
+                type: TypeMetadata(fieldType),
                 offset: offsets[index]
             )
         }

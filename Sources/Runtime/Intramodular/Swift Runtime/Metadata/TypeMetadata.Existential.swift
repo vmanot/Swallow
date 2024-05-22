@@ -18,7 +18,7 @@ extension TypeMetadata {
         }
         
         public var mangledName: String {
-                        if #available(macOS 11.0, iOS 14.0, watchOS 7.0, tvOS 14.0, *) {
+            if #available(macOS 11.0, iOS 14.0, watchOS 7.0, tvOS 14.0, *) {
                 TypeMetadata(base).mangledName!
             } else {
                 fatalError()
@@ -37,28 +37,28 @@ extension TypeMetadata.Existential: SwiftRuntimeTypeMetadataWrapper {
 // MARK: - Internal
 
 /*extension TypeMetadata.Existential {
-    public var protocols: [SwiftRuntimeProtocolConformanceDescriptor] {
-        Array(unsafeUninitializedCapacity: numProtocols) {
-            var start = trailing
-            
-            if flags.hasSuperclassConstraint {
-                start = start.offset(of: 1)
-            }
-            
-            for i in 0 ..< numProtocols {
-                let proto = start.load(
-                    fromByteOffset: i * MemoryLayout<ProtocolDescriptor>.size,
-                    as: ProtocolDescriptor.self
-                )
-                
-                $0[i] = proto
-            }
-            
-            $1 = numProtocols
-        }
-    }
-}
-*/
+ public var protocols: [SwiftRuntimeProtocolConformanceDescriptor] {
+ Array(unsafeUninitializedCapacity: numProtocols) {
+ var start = trailing
+ 
+ if flags.hasSuperclassConstraint {
+ start = start.offset(of: 1)
+ }
+ 
+ for i in 0 ..< numProtocols {
+ let proto = start.load(
+ fromByteOffset: i * MemoryLayout<ProtocolDescriptor>.size,
+ as: ProtocolDescriptor.self
+ )
+ 
+ $0[i] = proto
+ }
+ 
+ $1 = numProtocols
+ }
+ }
+ }
+ */
 extension TypeMetadata {
     @_optimize(speed)
     @_transparent

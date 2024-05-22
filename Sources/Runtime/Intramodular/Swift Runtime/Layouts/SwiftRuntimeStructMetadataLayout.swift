@@ -11,4 +11,8 @@ public struct SwiftRuntimeStructMetadataLayout: SwiftRuntimeContextualTypeMetada
     public var valueWitnessTable: UnsafePointer<SwiftRuntimeValueWitnessTable>
     public var kind: Int
     public var contextDescriptor: UnsafeMutablePointer<ContextDescriptor>
+    
+    public var genericArgumentOffset: Int {
+        2
+    }
 }

@@ -7,15 +7,29 @@ import Swallow
 @_spi(Internal)
 public protocol SwiftRuntimeContextDescriptorProtocol {
     associatedtype FieldOffsetVectorOffsetType: FixedWidthInteger
-    
-    typealias Flags = SwiftRuntimeContextDescriptorFlags
-    
-    var flags: Flags { get set }
+        
+    var base: _swift_TypeContextDescriptor { get set }
+    var flags: SwiftRuntimeContextDescriptorFlags { get }
     var mangledName: SwiftRuntimeUnsafeRelativePointer<Int32, CChar> { get set }
     var fieldDescriptor: SwiftRuntimeUnsafeRelativePointer<Int32, SwiftRuntimeFieldDescriptor> { get set }
-    var numberOfFields: Int32 { get set }
+    var numberOfFields: Int32 { get }
     var fieldOffsetVectorOffset: SwiftRuntimeUnsafeRelativeVectorPointer<Int32, FieldOffsetVectorOffsetType> { get set }
-    var genericContextHeader: TargetTypeGenericContextDescriptorHeader { get set }
+    var genericContextHeader: TargetTypeGenericContextDescriptorHeader { get }
+}
+
+extension SwiftRuntimeContextDescriptorProtocol {
+    public var flags: SwiftRuntimeContextDescriptorFlags {
+        base.flags
+    }
+    
+    @_transparent
+    public var mangledName: SwiftRuntimeUnsafeRelativePointer<Int32, CChar> {
+        get {
+            base.mangledName
+        } _modify {
+            yield &base.mangledName
+        }
+    }
 }
 
 // https://github.com/apple/swift/blob/f13167d9d162e69d1aac6ce022b19f6a80c62aba/include/swift/ABI/MetadataValues.h#L1237-L1312
@@ -76,12 +90,34 @@ public struct SwiftRuntimeContextDescriptorFlags: OptionSet {
     }
     
     @usableFromInline
-    var kindSpecificFlags: UInt16 {
+    var _kindSpecificFlags: UInt16 {
         UInt16((rawValue >> 0x10) & 0xFFFF)
     }
     
     @usableFromInline
     var isGeneric: Bool {
         UInt8(rawValue & 0x80) != 0
+    }
+}
+
+extension SwiftRuntimeContextDescriptorFlags {
+    @usableFromInline
+    struct KindSpecificFlags {
+        var rawValue: UInt64
+        
+        @usableFromInline
+        var classAreImmediateMembersNegative: Bool {
+            rawValue & 0x1000 != 0
+        }
+        
+        @usableFromInline
+        var classHasResilientSuperclass: Bool {
+            rawValue & 0x2000 != 0
+        }
+    }
+    
+    @usableFromInline
+    var kindSpecificFlags: KindSpecificFlags {
+        KindSpecificFlags(rawValue: UInt64(self._kindSpecificFlags))
     }
 }

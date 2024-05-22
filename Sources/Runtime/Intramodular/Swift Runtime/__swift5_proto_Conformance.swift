@@ -45,8 +45,8 @@ public struct __swift5_proto_Conformance: Hashable {
             .advanced(by: Int(descriptor.typeRef))
             .load(as: _swift_TypeContextDescriptor.self)
         
-        let start = self.raw + MemoryLayout<_swift_TypeContextDescriptor>.offset(of: \.accessor)!
-        let accessor = _swift_RelativeDirectPointer<Void>(offset: typeDescriptor.accessor)
+        let start = self.raw + MemoryLayout<_swift_TypeContextDescriptor>.offset(of: \.fieldTypesAccessor)!
+        let accessor = _swift_RelativeDirectPointer<Void>(offset: typeDescriptor.fieldTypesAccessor.offset)
         
         let accessFunction = unsafeBitCast(accessor.address(from: start), to: (@convention(c) () -> UInt64).self)
         
@@ -155,8 +155,8 @@ struct _swift_GenericContext: Hashable {
         }
         
         let typeDescriptor = self.raw.load(as: _swift_TypeContextDescriptor.self)
-        let start = self.raw + MemoryLayout<_swift_TypeContextDescriptor>.offset(of: \.accessor)!
-        let accessor = _swift_RelativeDirectPointer<Void>(offset: typeDescriptor.accessor)
+        let start = self.raw + MemoryLayout<_swift_TypeContextDescriptor>.offset(of: \.fieldTypesAccessor.offset)!
+        let accessor = _swift_RelativeDirectPointer<Void>(offset: typeDescriptor.fieldTypesAccessor.offset)
         let access = MetadataAccessor(raw: accessor.address(from: start))
         let fn = unsafeBitCast(access.raw, to: (@convention(thin) (Int) -> MetadataResponse).self)
         
@@ -210,10 +210,10 @@ struct _swift_ModuleContext {
 @_spi(Internal)
 @frozen
 public struct _swift_TypeContextDescriptor {
-    public let flags: SwiftRuntimeContextDescriptorFlags
-    public let parent: Int32
-    public let name: Int32
-    public let accessor: Int32
+    public var flags: SwiftRuntimeContextDescriptorFlags
+    public var parent: Int32
+    public var mangledName: SwiftRuntimeUnsafeRelativePointer<Int32, CChar>
+    public var fieldTypesAccessor: SwiftRuntimeUnsafeRelativePointer<Int32, Int>
 }
 
 public struct _swift_TypeConformanceList: Identifiable {

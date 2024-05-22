@@ -60,16 +60,16 @@ extension SwiftRuntimeFieldDescriptor {
             String(cString: _mangledTypeName.advanced())
         }
         
-        @_transparent
         public mutating func type(
             genericContext: UnsafeRawPointer?,
             genericArguments: UnsafeRawPointer?
         ) -> Any.Type {
             let typeName = _mangledTypeName.advanced()
+            let length = getSymbolicMangledNameLength(typeName)
             
             let metadataPtr = _swift_getTypeByMangledNameInContext(
                 typeName,
-                getSymbolicMangledNameLength(typeName),
+                length,
                 genericContext: genericContext,
                 genericArguments: genericArguments
             )

@@ -10,4 +10,8 @@ public struct SwiftRuntimeEnumMetadataLayout: SwiftRuntimeContextualTypeMetadata
     public var kind: Int
     public var contextDescriptor: UnsafeMutablePointer<SwiftRuntimeStructMetadataLayout.ContextDescriptor>
     public var parent: Int
+    
+    public var genericArgumentOffset: Int {
+        2
+    }
 }

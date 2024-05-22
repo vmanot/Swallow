@@ -40,4 +40,8 @@ public struct SwiftRuntimeClassMetadataLayout: SwiftRuntimeContextualTypeMetadat
     public var kind: Int {
         isaPointer
     }
+    
+    public var genericArgumentOffset: Int {
+        contextDescriptor.pointee.genericArgumentOffset
+    }
 }
