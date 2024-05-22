@@ -29,7 +29,6 @@ public struct module: CompilerPlugin {
         _StaticProtocolMember.self,
         SingletonMacro.self,
         TryMacro.self,
-        TryWithVoidReturnMacro.self,
         TryAwaitMacro.self,
         _InternalTestMacro.self
     ]

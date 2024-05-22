@@ -26,25 +26,6 @@ public struct TryMacro: ExpressionMacro {
     }
 }
 
-public struct TryWithVoidReturnMacro: ExpressionMacro {
-    public static func expansion(
-        of node: some SwiftSyntax.FreestandingMacroExpansionSyntax,
-        in context: some SwiftSyntaxMacros.MacroExpansionContext
-    ) throws -> SwiftSyntax.ExprSyntax {
-        let result = ExprSyntax(
-            """
-            _expectNoThrow({
-                let result: Void = try \(node.trailingClosure!)()
-                
-                return _flattenOptional(result)
-            })
-            """
-        )
-        
-        return result
-    }
-}
-
 public struct TryAwaitMacro: ExpressionMacro {
     public static func expansion(
         of node: some SwiftSyntax.FreestandingMacroExpansionSyntax,
@@ -53,7 +34,9 @@ public struct TryAwaitMacro: ExpressionMacro {
         let result = ExprSyntax(
             """
             await _expectNoThrow({
-               try await \(node.trailingClosure!)()
+                let result: Optional = try await \(node.trailingClosure!)()
+                
+                return _flattenOptional(result)
             })
             """
         )
