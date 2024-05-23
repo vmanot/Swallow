@@ -11,7 +11,7 @@ public final class _RuntimeConverter {
     
     /*func foo() {
         let descriptorUpdatingTypes: [any _GenericRuntimeConversionProtocol.Type] = try TypeMetadata._queryAll(
-            .conformsTo((any StaticViewTypeDescriptorUpdating).self),
+            .conformsTo((any _StaticViewTypeDescriptorUpdating).self),
             .nonAppleFramework,
             .pureSwift
         )

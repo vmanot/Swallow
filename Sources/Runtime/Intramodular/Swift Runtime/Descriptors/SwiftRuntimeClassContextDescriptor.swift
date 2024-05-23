@@ -17,7 +17,7 @@ public struct SwiftRuntimeClassContextDescriptor: SwiftRuntimeContextDescriptorP
     public var fieldOffsetVectorOffset: SwiftRuntimeUnsafeRelativeVectorPointer<Int32, Int>
     public var genericContextHeader: TargetTypeGenericContextDescriptorHeader
     
-    var genericArgumentOffset: Int {
+    public var genericArgumentOffset: Int {
         if flags.kindSpecificFlags .classHasResilientSuperclass{
             fatalError("unimplemented")
         } else if flags.kindSpecificFlags.classAreImmediateMembersNegative {
