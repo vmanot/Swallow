@@ -54,7 +54,10 @@ extension AnyObjCCodable: ObjCCodable {
         return ObjCTypeEncoding(metadata: type)!
     }
 
-    public init(decodingObjCValueFromRawBuffer buffer: UnsafeMutableRawPointer?, encoding: ObjCTypeEncoding) {
+    public init(
+        decodingObjCValueFromRawBuffer buffer: UnsafeMutableRawPointer?,
+        encoding: ObjCTypeEncoding
+    ) {
         let type = encoding.toTypeMetadata()
 
         if let buffer = buffer {

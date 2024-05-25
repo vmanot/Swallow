@@ -202,7 +202,7 @@ extension ObjCTypeCoder {
     
     public static func decode(
         _ encoding: RecursiveArray<String>
-    ) -> Any.Type {
+    ) throws -> Any.Type {
         let encoding = indent(encoding)
         
         if let unitValue = encoding.leftValue {
@@ -225,14 +225,16 @@ extension ObjCTypeCoder {
             }
             
             else {
-                return rule.process(encoding.map({ decode(.init($0)) }))
+                return rule.process(try encoding.map({ try decode(.init($0)) }))
             }
         }
         
-        return Never.materialize(reason: .impossible)
+        throw Never.Reason.unexpected
     }
     
-    public static func decode(parsing encoding: ObjCTypeEncoding) -> Any.Type? {
+    public static func decode(
+        parsing encoding: ObjCTypeEncoding
+    ) -> Any.Type? {
         var parser = SequenceParser<String>()
         
         parser.insert(prefix: "{", suffix: "}")
@@ -242,7 +244,7 @@ extension ObjCTypeCoder {
         
         parser.stripPrefixesAndSuffixes = false
         
-        return decode(parser.input(encoding.losingNominalPrecision.value).recursiveMap({ String($0) }))
+        return try? decode(parser.input(encoding.losingNominalPrecision.value).recursiveMap({ String($0) }))
     }
     
     public static func decode(_ encoding: ObjCTypeEncoding) -> Any.Type {
@@ -253,7 +255,9 @@ extension ObjCTypeCoder {
         } else if let result = decode(parsing: encoding) {
             return result
         } else {
-            return TypeMetadata(tupleWithTypes: Array<Any.Type>(repeating: Byte.self, count: encoding.sizeInBytes)).base
+            return TypeMetadata(
+                tupleWithTypes: Array<Any.Type>(repeating: Byte.self, count: encoding.sizeInBytes)
+            ).base
         }
     }
 }

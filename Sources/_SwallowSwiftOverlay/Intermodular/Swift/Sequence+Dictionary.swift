@@ -124,6 +124,17 @@ extension Sequence {
     @_documentation(visibility: internal)
     @_transparent
     @inlinable
+    public func _mapToDictionaryWithUniqueKey<Key: Hashable>(
+        _ key: (Element) throws -> Key
+    ) rethrows -> Dictionary<Key, Element> {
+        try Dictionary(uniqueKeysWithValues: self.lazy.map { (element: Element) in
+            (try key(element), element)
+        })
+    }
+    
+    @_documentation(visibility: internal)
+    @_transparent
+    @inlinable
     public func _compactMapToDictionary<Key: Hashable, Value>(
         key: (Element) throws -> Key,
         value makeValue: (Element) throws -> Value?

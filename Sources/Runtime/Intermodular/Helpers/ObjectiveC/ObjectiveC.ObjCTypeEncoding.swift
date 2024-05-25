@@ -7,7 +7,7 @@ import FoundationX
 import ObjectiveC
 import Swallow
 
-public struct ObjCTypeEncoding: Hashable, Wrapper {
+public struct ObjCTypeEncoding: Hashable, Wrapper, Sendable {
     public typealias Value = String
     
     public let value: String
@@ -97,7 +97,9 @@ extension ObjCTypeEncoding {
 }
 
 extension ObjCTypeEncoding {
-    public init(returnTypeFrom nsMethodSignature: NSMethodSignatureProtocol) {
+    public init(
+        returnTypeFrom nsMethodSignature: NSMethodSignatureProtocol
+    ) {
         self.init(String(cString: nsMethodSignature.methodReturnType))
     }
 }

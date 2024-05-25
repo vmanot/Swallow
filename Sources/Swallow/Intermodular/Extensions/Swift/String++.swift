@@ -99,6 +99,18 @@ extension String {
 }
 
 extension String {
+    public var firstCharacterCapitalized: String {
+        prefix(1).capitalized + dropFirst()
+    }
+    
+    public func hasPrefix(_ prefix: String, caseInsensitive: Bool) -> Bool {
+        if caseInsensitive {
+            return range(of: prefix, options: [.anchored, .caseInsensitive]) != nil
+        } else {
+            return hasPrefix(prefix)
+        }
+    }
+
     public func numberOfOccurences(of character: Character) -> Int {
         lazy.filter({ $0 == character }).count
     }
