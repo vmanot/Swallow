@@ -71,17 +71,33 @@ public struct HashableMacro: ExtensionMacro, MemberMacro {
     }
     
     // Helper function to get the base modifiers (e.g., public, internal)
-    private static func getBaseModifiers(from declaration: DeclGroupSyntax) -> DeclModifierListSyntax {
-        return declaration.modifiers.filter({ modifier in
-            switch (modifier.name.tokenKind) {
-                case .keyword(.public), .keyword(.internal), .keyword(.fileprivate):
-                    return true
-                case .keyword(.private):
-                    return false
-                default:
-                    return false
-            }
-        })
+    private static func getBaseModifiers(
+        from declaration: DeclGroupSyntax
+    ) -> DeclModifierListSyntax {
+        return DeclModifierListSyntax(
+            declaration.modifiers
+                .filter { (modifier: DeclModifierListSyntax.Element) in
+                    switch (modifier.name.tokenKind) {
+                        case .keyword(.open), .keyword(.public), .keyword(.internal), .keyword(.fileprivate):
+                            return true
+                        case .keyword(.private):
+                            return false
+                        default:
+                            return false
+                    }
+                }
+                .map({ (modifier: DeclModifierListSyntax.Element) -> DeclModifierListSyntax.Element in
+                    var modifier = modifier
+                    
+                    if modifier.name.tokenKind == .keyword(.open) {
+                        modifier.name.tokenKind = .keyword(.public)
+                        
+                        return modifier
+                    } else {
+                        return modifier
+                    }
+                })
+        )
     }
     
     // Helper function to get the property names that will be used in Hashable methods

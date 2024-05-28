@@ -5,10 +5,30 @@
 import Foundation
 import Swift
 
-public enum CodingPathElement: Hashable, Sendable {
+public enum CodingPathElement: Codable, Hashable, Sendable {
     case key(AnyCodingKey)
-    case `super`
-    case keyedSuper(AnyCodingKey)
+    case `super`(key: AnyCodingKey?)
+    
+    public var description: String {
+        switch self {
+            case .key(let key):
+                return key.description
+            case .super(let key):
+                return key.map({ ".super(\"\($0.description)\")" }) ?? ".super"
+        }
+    }
+}
+
+public struct CodingPath: Codable, CustomStringConvertible, Hashable, Sendable {
+    private var base: [CodingPathElement]
+
+    public var description: String {
+        base.map({ $0.description }).joined(separator: " -> ")
+    }
+
+    public init(_ path: [CodingKey]) {
+        self.base = path.map({ CodingPathElement.key(AnyCodingKey(erasing: $0)) })
+    }
 }
 
 // MARK: - Extensions
@@ -18,10 +38,10 @@ extension CodingPathElement {
         switch self {
             case .key(let value):
                 return .init(erasing: value)
-            case .super:
+            case .super(_):
+                runtimeIssue(.unimplemented)
+                
                 return .init(stringValue: "super")
-            case .keyedSuper(let value):
-                return .init(erasing: value)
         }
     }
 }

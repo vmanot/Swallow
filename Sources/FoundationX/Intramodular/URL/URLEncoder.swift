@@ -74,7 +74,13 @@ public final class URLQueryEncoder {
     
     /// Encodes value for the given key.
     @discardableResult
-    public func encode<T: Encodable>(_ value: T, forKey key: String, explode: Bool? = nil, delimiter: String? = nil, isDeepObject: Bool? = nil) -> Self {
+    public func encode<T: Encodable>(
+        _ value: T,
+        forKey key: String,
+        explode: Bool? = nil,
+        delimiter: String? = nil,
+        isDeepObject: Bool? = nil
+    ) -> Self {
         // Temporary override the settings to the duration of the call
         _explode = explode ?? self.explode
         _delimiter = delimiter ?? self.delimiter
@@ -90,7 +96,9 @@ public final class URLQueryEncoder {
         return self
     }
     
-    public static func encode<T: Encodable>(_ body: T) -> URLQueryEncoder {
+    public static func encode<T: Encodable>(
+        _ body: T
+    ) -> URLQueryEncoder {
         let encoder = URLQueryEncoder()
         encoder.encode(body, forKey: "value")
         return encoder

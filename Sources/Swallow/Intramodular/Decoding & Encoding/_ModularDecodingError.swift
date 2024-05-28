@@ -9,7 +9,7 @@ public enum _ModularDecodingError: Error {
     case unsafeSerializationUnsupported(Any.Type, value: Any?)
     case typeMismatch(Any.Type, Context, AnyCodable?)
     case valueNotFound(Any.Type, Context, AnyCodable?)
-    case keyNotFound(CodingKey, Context, AnyCodable?)
+    case keyNotFound(AnyCodingKey, Context, AnyCodable?)
     case dataCorrupted(Context, AnyCodable?)
     
     case unknown(Swift.DecodingError)
@@ -38,7 +38,7 @@ public enum _ModularDecodingError: Error {
             case .valueNotFound(let type, _):
                 self = .valueNotFound(type, context, value)
             case .keyNotFound(let codingKey, _):
-                self = .keyNotFound(codingKey, context, value)
+                self = .keyNotFound(AnyCodingKey(erasing: codingKey), context, value)
             case .dataCorrupted(_):
                 self = .dataCorrupted(context, value)
             @unknown default:
@@ -68,7 +68,7 @@ public enum _ModularDecodingError: Error {
 extension _ModularDecodingError {
     public struct Context: Sendable {
         public let type: Decodable.Type? // FIXME?
-        public let codingPath: [CodingKey]
+        public let codingPath: CodingPath
         public let debugDescription: String
         public let underlyingError: (any Error)?
         
@@ -79,7 +79,7 @@ extension _ModularDecodingError {
             underlyingError: (any Error)?
         ) {
             self.type = type
-            self.codingPath = codingPath
+            self.codingPath = CodingPath(codingPath)
             self.debugDescription = debugDescription
             self.underlyingError = underlyingError
         }
@@ -96,7 +96,7 @@ extension _ModularDecodingError.Context: CustomStringConvertible {
             result += "context: "
         }
         
-        result += "coding path: \(self.codingPath) "
+        result += "(coding path: [\(self.codingPath)])"
         
         return result.trimmingWhitespace()
     }
