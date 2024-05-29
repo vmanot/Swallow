@@ -187,7 +187,6 @@ let package = Package(
         .target(
             name: "MacroBuilder",
             dependencies: [
-                "MacroBuilderCore",
                 "Swallow",
                 "SwiftSyntaxUtilities",
                 .product(name: "SwiftSyntax", package: "swift-syntax"),
@@ -198,14 +197,6 @@ let package = Package(
                 .product(name: "SwiftCompilerPlugin", package: "swift-syntax"),
             ],
             path: "Macros/MacroBuilder"
-        ),
-        .target(
-            name: "MacroBuilderCore",
-            dependencies: [
-                "SwallowMacros",
-                "Swallow",
-            ],
-            path: "Macros/MacroBuilderCore"
         ),
         .target(
             name: "SwiftSyntaxUtilities",
