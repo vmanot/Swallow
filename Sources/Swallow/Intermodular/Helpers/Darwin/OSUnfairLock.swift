@@ -93,6 +93,10 @@ public class _OSUnfairLocked<Value>: @unchecked Sendable {
         self.lock = OSUnfairLock()
     }
     
+    public required convenience init(nilLiteral: ()) where Value: ExpressibleByNilLiteral {
+        self.init(wrappedValue: .init(nilLiteral: ()))
+    }
+    
     public var wrappedValue: Value {
         get {
             lock.withCriticalScope {
@@ -139,4 +143,8 @@ public class _OSUnfairLocked<Value>: @unchecked Sendable {
             }
         }
     }
+}
+
+extension _OSUnfairLocked: ExpressibleByNilLiteral where Value: ExpressibleByNilLiteral {
+    
 }
