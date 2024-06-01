@@ -42,6 +42,7 @@ public struct _NamespaceOf<SwiftType>: _StaticType {
         
     }
     
+    @available(*, deprecated)
     public static var inferred: Self.Type {
         self
     }
