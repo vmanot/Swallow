@@ -5,7 +5,7 @@
 import Swallow
 
 public protocol _ClassifiableError {
-    associatedtype Classification: ElementGrouping where Classification.Element: ErrorClassificationProtocol
+    associatedtype Classification: _ElementGrouping where Classification.Element: ErrorClassificationProtocol
     
     var errorClassification: Classification { get }
 }

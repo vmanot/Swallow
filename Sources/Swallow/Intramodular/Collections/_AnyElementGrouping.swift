@@ -4,13 +4,13 @@
 
 import Swift
 
-public protocol ElementGrouping<Element> {
+public protocol _ElementGrouping<Element> {
     associatedtype Element
     
-    func _eraseToAnyElementGrouping() -> AnyElementGrouping<Element>
+    func _eraseTo_AnyElementGrouping() -> _AnyElementGrouping<Element>
 }
 
-public enum AnyElementGrouping<Element> {
+public enum _AnyElementGrouping<Element> {
     case single(Element)
     case set(any SetProtocol<Element>)
     case sequence(any Sequence<Element>)
@@ -19,7 +19,7 @@ public enum AnyElementGrouping<Element> {
 
 // MARK: - Initializers
 
-extension AnyElementGrouping {
+extension _AnyElementGrouping {
     public static func ranked(
         primary: Element
     ) -> Self {
@@ -44,7 +44,7 @@ extension AnyElementGrouping {
 
 // MARK: - Conformances
 
-extension AnyElementGrouping: Sequence  {
+extension _AnyElementGrouping: Sequence  {
     public func makeIterator() -> AnyIterator<Element> {
         switch self {
             case .single(let element):
@@ -61,14 +61,14 @@ extension AnyElementGrouping: Sequence  {
 
 // MARK: - Implemented Conformances
 
-extension Array: ElementGrouping {
-    public func _eraseToAnyElementGrouping() -> AnyElementGrouping<Element> {
+extension Array: _ElementGrouping {
+    public func _eraseTo_AnyElementGrouping() -> _AnyElementGrouping<Element> {
         .sequence(self)
     }
 }
 
-extension Set: ElementGrouping {
-    public func _eraseToAnyElementGrouping() -> AnyElementGrouping<Element> {
+extension Set: _ElementGrouping {
+    public func _eraseTo_AnyElementGrouping() -> _AnyElementGrouping<Element> {
         .set(self)
     }
 }
