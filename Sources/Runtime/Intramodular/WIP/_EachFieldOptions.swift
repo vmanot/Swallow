@@ -49,12 +49,12 @@ public func _forEachField(
         return false
     }
     
-    let childCount = swift_reflectionMirror_recursiveCount(type)
+    let childCount = _swift_reflectionMirror_recursiveCount(type)
     for i in 0..<childCount {
-        let offset = swift_reflectionMirror_recursiveChildOffset(type, index: i)
+        let offset = _swift_reflectionMirror_recursiveChildOffset(type, index: i)
         
         var field = _SwiftRuntimeTypeFieldReflectionMetadata()
-        let childType = swift_reflectionMirror_recursiveChildMetadata(type, index: i, fieldMetadata: &field)
+        let childType = _swift_reflectionMirror_recursiveChildMetadata(type, index: i, fieldMetadata: &field)
         defer { field.dealloc?(field.name) }
         let kind = TypeMetadata.Kind(childType)
         
@@ -95,12 +95,12 @@ public func _forEachFieldWithKeyPath<Root>(
     let ignoreUnknown = options.contains(.ignoreUnknown)
     let ignoreFunctions = options.contains(.ignoreFunctions)
 
-    let childCount = swift_reflectionMirror_recursiveCount(type)
+    let childCount = _swift_reflectionMirror_recursiveCount(type)
     for i in 0..<childCount {
-        let offset = swift_reflectionMirror_recursiveChildOffset(type, index: i)
+        let offset = _swift_reflectionMirror_recursiveChildOffset(type, index: i)
         
         var field = _SwiftRuntimeTypeFieldReflectionMetadata()
-        let childType = swift_reflectionMirror_recursiveChildMetadata(type, index: i, fieldMetadata: &field)
+        let childType = _swift_reflectionMirror_recursiveChildMetadata(type, index: i, fieldMetadata: &field)
         
         guard field.name != nil else {
             assertionFailure()

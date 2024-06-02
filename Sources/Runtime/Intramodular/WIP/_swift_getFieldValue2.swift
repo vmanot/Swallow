@@ -49,7 +49,7 @@ public struct _SwiftRuntimeTypeMetadataInterface {
         case unknown = 0xffff
         
         static func kind(of type: Any.Type) -> Self {
-            let kind = swift_getMetadataKind(type)
+            let kind = _swift_getMetadataKind(type)
             return Self(rawValue: kind) ?? .unknown
         }
     }
@@ -94,15 +94,15 @@ public struct _SwiftRuntimeTypeMetadataInterface {
             return []
         }
         
-        let count = swift_reflectionMirror_recursiveCount(type)
+        let count = _swift_reflectionMirror_recursiveCount(type)
         var fieldMetadata = _SwiftRuntimeTypeFieldReflectionMetadata()
         return (0..<count).compactMap {
-            let propertyType = swift_reflectionMirror_recursiveChildMetadata(type, index: $0, fieldMetadata: &fieldMetadata)
+            let propertyType = _swift_reflectionMirror_recursiveChildMetadata(type, index: $0, fieldMetadata: &fieldMetadata)
             defer {
                 fieldMetadata.dealloc?(fieldMetadata.name)
             }
             
-            let offset = swift_reflectionMirror_recursiveChildOffset(type, index: $0)
+            let offset = _swift_reflectionMirror_recursiveChildOffset(type, index: $0)
             
             return Property(
                 name: String(cString: fieldMetadata.name!),

@@ -13,13 +13,13 @@ extension CasePath {
     /// - Returns: A case path.
     public init(_ embed: @escaping (Value) -> Root) {
         func open<Wrapped>(_: Wrapped.Type) -> (Root) -> Value? {
-            optionalPromotedExtractHelp(unsafeBitCast(embed, to: ((Value) -> Wrapped?).self))
+            _EnumReflection.optionalPromotedExtractHelp(unsafeBitCast(embed, to: ((Value) -> Wrapped?).self))
             as! (Root) -> Value?
         }
         let extract =
         ((_Witness<Root>.self as? _AnyOptional.Type)?.wrappedType)
             .map { _openExistential($0, do: open) }
-        ?? extractHelp(embed)
+        ?? _EnumReflection.extractHelp(embed)
         
         self.init(
             embed: embed,
@@ -37,12 +37,12 @@ extension CasePath where Value == Void {
     /// - Returns: A void case path.
     public init(_ root: Root) {
         func open<Wrapped>(_: Wrapped.Type) -> (Root) -> Void? {
-            optionalPromotedExtractVoidHelp(unsafeBitCast(root, to: Wrapped?.self)) as! (Root) -> Void?
+            _EnumReflection.optionalPromotedExtractVoidHelp(unsafeBitCast(root, to: Wrapped?.self)) as! (Root) -> Void?
         }
         let extract =
         ((_Witness<Root>.self as? _AnyOptional.Type)?.wrappedType)
             .map { _openExistential($0, do: open) }
-        ?? extractVoidHelp(root)
+        ?? _EnumReflection.extractVoidHelp(root)
         self.init(embed: { root }, extract: extract)
     }
 }
@@ -57,110 +57,114 @@ extension CasePath where Root == Value {
     }
 }
 
-// MARK: - Extraction helpers
-
-func extractHelp<Root, Value>(_ embed: @escaping (Value) -> Root) -> (Root) -> Value? {
-    guard
-        let metadata = EnumMetadata(Root.self),
-        metadata.typeDescriptor.fieldDescriptor != nil
-    else {
-        assertionFailure("embed parameter must be a valid enum case initializer")
-        return { _ in nil }
-    }
-    
-    var cachedTag: UInt32?
-    var cachedStrategy: (isIndirect: Bool, associatedValueType: Any.Type)?
-    
-    return { root in
-        let rootTag = metadata.tag(of: root)
+public enum _EnumReflection {
+    static func extractHelp<Root, Value>(
+        _ embed: @escaping (Value) -> Root
+    ) -> (Root) -> Value? {
+        guard
+            let metadata = EnumMetadata(Root.self),
+            metadata.typeDescriptor.fieldDescriptor != nil
+        else {
+            assertionFailure("embed parameter must be a valid enum case initializer")
+            return { _ in nil }
+        }
         
-        if let cachedTag = cachedTag, let (isIndirect, associatedValueType) = cachedStrategy {
-            guard rootTag == cachedTag else {
-                return nil
+        var cachedTag: UInt32?
+        var cachedStrategy: (isIndirect: Bool, associatedValueType: Any.Type)?
+        
+        return { root in
+            let rootTag = metadata.tag(of: root)
+            
+            if let cachedTag = cachedTag, let (isIndirect, associatedValueType) = cachedStrategy {
+                guard rootTag == cachedTag else {
+                    return nil
+                }
+                
+                return EnumMetadata
+                    ._project(root, isIndirect: isIndirect, associatedValueType: associatedValueType)?
+                    .value as? Value
             }
             
-            return EnumMetadata
-                ._project(root, isIndirect: isIndirect, associatedValueType: associatedValueType)?
-                .value as? Value
+            guard
+                let (value, isIndirect, type) = EnumMetadata._project(root),
+                let value = value as? Value
+            else { return nil }
+            
+            let embedTag = metadata.tag(of: embed(value))
+            cachedTag = embedTag
+            if embedTag == rootTag {
+                cachedStrategy = (isIndirect, type)
+                return value
+            } else {
+                return nil
+            }
         }
-        
+    }
+    
+    static func optionalPromotedExtractHelp<Root, Value>(
+        _ embed: @escaping (Value) -> Root?
+    ) -> (Root?) -> Value? {
+        guard Root.self != Value.self else { return { $0 as! Value? } }
         guard
-            let (value, isIndirect, type) = EnumMetadata._project(root),
-            let value = value as? Value
-        else { return nil }
-        
-        let embedTag = metadata.tag(of: embed(value))
-        cachedTag = embedTag
-        if embedTag == rootTag {
-            cachedStrategy = (isIndirect, type)
-            return value
-        } else {
-            return nil
-        }
-    }
-}
-
-func optionalPromotedExtractHelp<Root, Value>(
-    _ embed: @escaping (Value) -> Root?
-) -> (Root?) -> Value? {
-    guard Root.self != Value.self else { return { $0 as! Value? } }
-    guard
-        let metadata = EnumMetadata(Root.self),
-        metadata.typeDescriptor.fieldDescriptor != nil
-    else {
-        assertionFailure("embed parameter must be a valid enum case initializer")
-        return { _ in nil }
-    }
-    
-    var cachedTag: UInt32?
-    
-    return { optionalRoot in
-        guard let root = optionalRoot else { return nil }
-        
-        let rootTag = metadata.tag(of: root)
-        
-        if let cachedTag = cachedTag {
-            guard rootTag == cachedTag else { return nil }
+            let metadata = EnumMetadata(Root.self),
+            metadata.typeDescriptor.fieldDescriptor != nil
+        else {
+            assertionFailure("embed parameter must be a valid enum case initializer")
+            return { _ in nil }
         }
         
-        guard let value = EnumMetadata.project(root) as? Value
-        else { return nil }
+        var cachedTag: UInt32?
         
-        guard let embedded = embed(value) else { return nil }
-        let embedTag = metadata.tag(of: embedded)
-        cachedTag = embedTag
-        return embedTag == rootTag ? value : nil
-    }
-}
-
-func extractVoidHelp<Root>(_ root: Root) -> (Root) -> Void? {
-    guard
-        let metadata = EnumMetadata(Root.self),
-        metadata.typeDescriptor.fieldDescriptor != nil
-    else {
-        assertionFailure("value must be a valid enum case")
-        return { _ in nil }
-    }
-    
-    let cachedTag = metadata.tag(of: root)
-    return { root in metadata.tag(of: root) == cachedTag ? () : nil }
-}
-
-func optionalPromotedExtractVoidHelp<Root>(_ root: Root?) -> (Root?) -> Void? {
-    guard
-        let root = root,
-        let metadata = EnumMetadata(Root.self),
-        metadata.typeDescriptor.fieldDescriptor != nil
-    else {
-        assertionFailure("value must be a valid enum case")
-        return { _ in nil }
+        return { optionalRoot in
+            guard let root = optionalRoot else { return nil }
+            
+            let rootTag = metadata.tag(of: root)
+            
+            if let cachedTag = cachedTag {
+                guard rootTag == cachedTag else { return nil }
+            }
+            
+            guard let value = EnumMetadata.project(root) as? Value
+            else { return nil }
+            
+            guard let embedded = embed(value) else { return nil }
+            let embedTag = metadata.tag(of: embedded)
+            cachedTag = embedTag
+            return embedTag == rootTag ? value : nil
+        }
     }
     
-    let cachedTag = metadata.tag(of: root)
-    return { root in root.flatMap(metadata.tag(of:)) == cachedTag ? () : nil }
+    static func extractVoidHelp<Root>(
+        _ root: Root
+    ) -> (Root) -> Void? {
+        guard
+            let metadata = EnumMetadata(Root.self),
+            metadata.typeDescriptor.fieldDescriptor != nil
+        else {
+            assertionFailure("value must be a valid enum case")
+            return { _ in nil }
+        }
+        
+        let cachedTag = metadata.tag(of: root)
+        return { root in metadata.tag(of: root) == cachedTag ? () : nil }
+    }
+    
+    static func optionalPromotedExtractVoidHelp<Root>(
+        _ root: Root?
+    ) -> (Root?) -> Void? {
+        guard
+            let root = root,
+            let metadata = EnumMetadata(Root.self),
+            metadata.typeDescriptor.fieldDescriptor != nil
+        else {
+            assertionFailure("value must be a valid enum case")
+            return { _ in nil }
+        }
+        
+        let cachedTag = metadata.tag(of: root)
+        return { root in root.flatMap(metadata.tag(of:)) == cachedTag ? () : nil }
+    }
 }
-
-// MARK: - Runtime reflection
 
 private protocol Metadata {
     var ptr: UnsafeRawPointer { get }
@@ -224,8 +228,9 @@ extension EnumMetadata {
     @_spi(Reflection) public func associatedValueType(forTag tag: UInt32) -> Any.Type {
         guard
             let typeName = self.typeDescriptor.fieldDescriptor?.field(atIndex: tag).typeName,
-            let type = swift_getTypeByMangledNameInContext(
-                typeName.ptr, typeName.length,
+            let type = _swift_getTypeByMangledNameInContext(
+                unsafeBitCast(typeName.ptr),
+                .init(typeName.length),
                 genericContext: self.typeDescriptor.ptr,
                 genericArguments: self.genericArguments?.ptr
             )
@@ -240,15 +245,6 @@ extension EnumMetadata {
         self.typeDescriptor.fieldDescriptor?.field(atIndex: tag).name
     }
 }
-
-@_silgen_name("swift_getTypeByMangledNameInContext")
-private func swift_getTypeByMangledNameInContext(
-    _ name: UnsafePointer<UInt8>,
-    _ nameLength: UInt,
-    genericContext: UnsafeRawPointer?,
-    genericArguments: UnsafeRawPointer?
-)
--> Any.Type?
 
 extension EnumMetadata {
     func destructivelyProjectPayload(of value: UnsafeMutableRawPointer) {

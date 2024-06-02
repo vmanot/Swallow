@@ -14,7 +14,7 @@ public enum RuntimeDiscoverableTypes {
             ObjCClass._RuntimeTypeDiscovery_allCases.flatMap {
                 var result: [Any.Type] = [$0.type]
                 
-                if let type = $0.type as? any _TypeIterableStaticNamespaceType.Type {
+                if let type = $0.type as? any _StaticSwift.TypeIterableNamespace.Type {
                     result.append(contentsOf: type._allNamespaceTypes.map({ $0 as! Any.Type }))
                 }
                 

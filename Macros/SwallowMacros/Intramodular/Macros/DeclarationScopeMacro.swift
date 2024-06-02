@@ -7,12 +7,12 @@ import SwiftSyntax
 import SwiftSyntaxMacros
 import SwiftSyntaxUtilities
 
-public struct ScopeDeclarationMacro: DeclarationMacro {
+public struct DeclarationScopeMacro: DeclarationMacro {
     public static func expansion(
         of node: some FreestandingMacroExpansionSyntax,
         in context: some MacroExpansionContext
     ) throws -> [DeclSyntax] {
-        let name = context.makeUniqueName("_ScopedDeclaration")
+        let name = context.makeUniqueName("_DeclarationScopedType")
         
         guard let scope = node.arguments.first else {
             throw AnyDiagnosticMessage(message: "#scope requires a specified declaration scope")
@@ -27,17 +27,17 @@ public struct ScopeDeclarationMacro: DeclarationMacro {
             try statements.map { item -> CodeBlockItemSyntax in
                 try item.map(\.item) {
                     try $0.modifyingDeclarationIfPresent {
-                        $0 = try addScopedDeclarationConformance(to: $0, parentScope: name)
+                        $0 = try addDeclarationScopedTypeConformance(to: $0, parentScope: name)
                     }
                 }
             }
         )
-
+        
         let result = DeclSyntax(
             """
-            public enum \(name): Swallow.module.ScopedDeclaration {
+            public enum \(name): _StaticSwift.DeclarationScopedType {
                 public static let declarationScope = {
-                    \(scope)
+                    _StaticSwift._declarationScope(\(scope))
                 }()
             
                 \(modifiedStatements)
@@ -48,7 +48,7 @@ public struct ScopeDeclarationMacro: DeclarationMacro {
         return [result]
     }
     
-    private static func addScopedDeclarationConformance<T: DeclSyntaxProtocol>(
+    private static func addDeclarationScopedTypeConformance<T: DeclSyntaxProtocol>(
         to decl: T,
         parentScope: TokenSyntax
     ) throws -> T {
@@ -57,39 +57,13 @@ public struct ScopeDeclarationMacro: DeclarationMacro {
         }
         
         let conformance: DeclSyntax = """
-        static var declarationScope: some Swallow.module.DeclarationScopeType {
-            \(parentScope).declarateionScope
-        }
+        public static let declarationScope = {
+            _StaticSwift._declarationScope(\(parentScope).declarationScope)
+        }()
         """
-                
+        
         decl.memberBlock = try decl.memberBlock.adding(member: conformance)
         
         return try T(decl).unwrap()
     }
 }
-
-public protocol ScopedDeclaration {
-    static var declarationScope: Any { get }
-}
-
-/*// MARK: - Example Usage
-
-#scope(SomeScope()) {
-    struct Foo {
-        
-    }
-}
-
-// it's expanded into
-
-public enum someuniquename: Swallow.module.ScopedDeclaration {
-    static var declarationScope: some Swallow.module.DeclarationScopeType {
-        SomeScope()
-    }
-
-    struct Foo {
-        static var declarationScope: some Swallow.module.DeclarationScopeType {
-            someuniquename.declarationScope
-        }
-    }
-}*/

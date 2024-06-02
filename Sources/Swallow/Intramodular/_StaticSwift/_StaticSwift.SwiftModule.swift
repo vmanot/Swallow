@@ -6,9 +6,9 @@ import Swift
 
 extension _StaticSwift {
     /// A namespace that statically represents Swift modules.
-    public enum SwiftModule: _StaticNamespaceType {
+    public enum SwiftModule: _StaticSwift.Namespace {
         /// A namespace that statically represents Swift module names.
-        public enum Name: _StaticNamespaceType {
+        public enum Name: _StaticSwift.Namespace {
             
         }
     }

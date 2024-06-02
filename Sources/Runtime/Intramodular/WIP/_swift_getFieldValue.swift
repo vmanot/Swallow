@@ -180,10 +180,10 @@ package func _swift_getField_slow<Value>(
     _ type: Value.Type,
     _ instanceType: Any.Type
 ) throws -> _SwiftRuntimeFieldByOffset {
-    let count = swift_reflectionMirror_recursiveCount(instanceType)
+    let count = _swift_reflectionMirror_recursiveCount(instanceType)
     for i in 0..<count {
         var field = _SwiftRuntimeTypeFieldReflectionMetadata()
-        let fieldType = swift_reflectionMirror_recursiveChildMetadata(instanceType, index: i, fieldMetadata: &field)
+        let fieldType = _swift_reflectionMirror_recursiveChildMetadata(instanceType, index: i, fieldMetadata: &field)
         
         defer {
             field.dealloc?(field.name)
@@ -207,7 +207,7 @@ package func _swift_getField_slow<Value>(
             }
         }
         
-        let offset = swift_reflectionMirror_recursiveChildOffset(instanceType, index: i)
+        let offset = _swift_reflectionMirror_recursiveChildOffset(instanceType, index: i)
         return _SwiftRuntimeFieldByOffset(type: fieldType, offset: offset)
     }
     

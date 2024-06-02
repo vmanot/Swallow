@@ -25,7 +25,7 @@ extension TypeMetadata {
         case unknown = 0xffff
 
         init(_ type: Any.Type) {
-            let v = swift_getMetadataKind(type)
+            let v = _swift_getMetadataKind(type)
             if let result = Self(rawValue: v) {
                 self = result
             } else {

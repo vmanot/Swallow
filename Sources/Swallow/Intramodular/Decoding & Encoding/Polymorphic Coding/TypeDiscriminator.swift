@@ -5,7 +5,7 @@
 import Swift
 
 public protocol TypeDiscriminator: Hashable {
-    associatedtype _DiscriminatedSwiftType: _StaticSwiftType = _OpaqueExistentialSwiftType
+    associatedtype _DiscriminatedSwiftType: _StaticSwift.TypeExpression = _StaticSwift.OpaqueExistentialTypeExpression
     
     static var _undiscriminatedType: Any.Type? { get }
     
