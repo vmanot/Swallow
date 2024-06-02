@@ -6,7 +6,7 @@ import Swift
 import SwiftDiagnostics
 import SwiftSyntax
 
-public enum CustomError: Error {
+public enum CustomMacroExpansionError: Error {
     case message(AnyDiagnosticMessage)
             
     public init(file: String = #fileID) {
@@ -16,7 +16,7 @@ public enum CustomError: Error {
 
 // MARK: - Initializers
 
-extension CustomError {
+extension CustomMacroExpansionError {
     public static func diagnostic(
         node: Syntax,
         position: AbsolutePosition? = nil,
@@ -34,7 +34,7 @@ extension CustomError {
 
 // MARK: - Conformances
 
-extension CustomError: CustomStringConvertible {
+extension CustomMacroExpansionError: CustomStringConvertible {
     public var description: String {
         switch self {
             case .message(let message):

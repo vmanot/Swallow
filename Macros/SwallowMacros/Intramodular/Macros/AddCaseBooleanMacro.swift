@@ -21,7 +21,7 @@ public struct AddCaseBooleanMacro: MemberMacro {
             .memberBlock.members
             .compactMap({ $0.decl.as(EnumCaseDeclSyntax.self)?.elements })
         else {
-            throw CustomError.message(
+            throw CustomMacroExpansionError.message(
                 "@AddCaseBoolean only works on enum that have associated value case"
             )
         }

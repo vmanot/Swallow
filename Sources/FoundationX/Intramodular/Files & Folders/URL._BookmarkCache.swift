@@ -7,7 +7,7 @@ import Foundation
 
 extension URL {
     public final class _BookmarkCache: @unchecked Sendable {
-        private static let defaults = UserDefaults(suiteName: Swallow._module.bundleIdentifier)!
+        private static let defaults = UserDefaults(suiteName: Swallow.module.bundleIdentifier)!
         private static let lock = OSUnfairLock()
         
         @UserDefault("_BookmarkCache.items") static var items: [Bookmark] = []

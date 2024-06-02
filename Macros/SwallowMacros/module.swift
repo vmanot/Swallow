@@ -26,6 +26,7 @@ public struct module: CompilerPlugin {
         OptionSetMacro.self,
         RuntimeConversionMacro.self,
         RuntimeDiscoverableMacro.self,
+        ScopeDeclarationMacro.self,
         _StaticProtocolMember.self,
         SingletonMacro.self,
         TryMacro.self,

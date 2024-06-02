@@ -15,7 +15,7 @@ public struct SingletonMacro: MemberMacro {
         in context: Context
     ) throws -> [DeclSyntax] {
         guard [SwiftSyntax.SyntaxKind.classDecl, .structDecl].contains(declaration.kind) else {
-            throw CustomError.message("Can only be applied to a struct or class")
+            throw CustomMacroExpansionError.message("Can only be applied to a struct or class")
         }
         
         let identifier = (declaration as? StructDeclSyntax)?.name ?? (declaration as? ClassDeclSyntax)?.name ?? ""

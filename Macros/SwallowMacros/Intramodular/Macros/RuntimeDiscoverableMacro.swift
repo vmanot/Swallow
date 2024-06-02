@@ -64,7 +64,7 @@ public struct RuntimeDiscoverableMacro: PeerMacro {
             
             return [syntax]
         } else {
-            throw CustomError.message("Failed to use @RuntimeDiscoverable.")
+            throw CustomMacroExpansionError.message("Failed to use @RuntimeDiscoverable.")
         }
     }
 }
