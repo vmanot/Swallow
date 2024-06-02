@@ -36,7 +36,7 @@ public struct DeclarationScopeMacro: DeclarationMacro {
         let result = DeclSyntax(
             """
             public enum \(name): _StaticSwift.DeclarationScopedType {
-                public static let declarationScope = {
+                public static let _StaticSwift_declarationScope = {
                     _StaticSwift._declarationScope(\(scope))
                 }()
             
@@ -57,8 +57,8 @@ public struct DeclarationScopeMacro: DeclarationMacro {
         }
         
         let conformance: DeclSyntax = """
-        public static let declarationScope = {
-            _StaticSwift._declarationScope(\(parentScope).declarationScope)
+        public static let _StaticSwift_declarationScope = {
+            _StaticSwift._declarationScope(\(parentScope)._StaticSwift_declarationScope)
         }()
         """
         

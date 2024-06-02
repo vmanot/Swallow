@@ -22,7 +22,7 @@ public protocol _StaticMemberListProviding {
 }
 
 extension _StaticMemberListProviding {
-    static subscript<T>(
+    public static subscript<T>(
         dynamicMember keyPath: KeyPath<_StaticMemberListType, T>
     ) -> T {
         get {

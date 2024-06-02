@@ -26,14 +26,10 @@ extension _StaticSwift {
 }
 
 extension _StaticSwift {
-    
-}
-
-extension _StaticSwift {
     public protocol DeclarationScopedType<ScopeType> {
         associatedtype ScopeType: _StaticSwift.DeclarationScopeType
         
-        static var declarationScope: ScopeType { get }
+        static var _StaticSwift_declarationScope: ScopeType { get }
     }
     
     /// A declaration scope that is nested within another declaration scope.
