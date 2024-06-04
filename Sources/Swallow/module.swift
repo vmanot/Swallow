@@ -16,27 +16,3 @@ public enum module: _StaticSwift.module {
         
     }
 }
-
-precedencegroup CompositionPrecedence {
-    associativity: left
-    higherThan: AdditionPrecedence
-}
-
-precedencegroup ReverseCompositionPrecedence {
-    associativity: right
-    higherThan: AdditionPrecedence
-}
-
-precedencegroup LeftAssociativityFunctionArrowPrecedence {
-    associativity: left
-    higherThan: FunctionArrowPrecedence
-}
-
-infix operator --> : LeftAssociativityFunctionArrowPrecedence
-
-precedencegroup LeftAssociativityConjunctionPrecedence {
-    associativity: left
-    higherThan: LogicalConjunctionPrecedence
-}
-
-infix operator <--> : LeftAssociativityConjunctionPrecedence

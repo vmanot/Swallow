@@ -12,12 +12,12 @@ public struct OnceMacro: DeclarationMacro {
         of node: some FreestandingMacroExpansionSyntax,
         in context: some MacroExpansionContext
     ) throws -> [DeclSyntax] {
-        let name = context.makeUniqueName("_PerformOnceOnAppLaunch")
+        let name = context.makeUniqueName("_PerformOnceOnAppLaunchClosure")
         
         let result = DeclSyntax(
             """
             @frozen
-            public struct \(name): _PerformOnceOnAppLaunch {
+            public struct \(name): _PerformOnceOnAppLaunchClosure {
                 public init() {
                 
                 }

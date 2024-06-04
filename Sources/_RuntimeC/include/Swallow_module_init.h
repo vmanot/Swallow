@@ -5,5 +5,5 @@
 #import <Foundation/Foundation.h>
 #import <objc/objc.h>
 
-@interface _SwallowMacrosClient_module: NSObject
+@interface _SwallowMacros_module: NSObject
 @end

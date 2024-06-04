@@ -3,7 +3,7 @@
 //
 
 import Foundation
-import Swallow
+import Swift
 
 extension _RuntimeFunctionDiscovery {
     public enum FunctionAttribute: Hashable {

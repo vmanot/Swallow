@@ -33,8 +33,12 @@ extension CollectionOfOne: MutableWrapper {
     }
 }
 
+open class AnyReferenceBox {
+    
+}
+
 @propertyWrapper
-open class ReferenceBox<T>: MutablePropertyWrapper, Wrapper {
+open class ReferenceBox<T>: AnyReferenceBox, MutablePropertyWrapper, Wrapper {
     public var value: T
     
     public var wrappedValue: T {
@@ -44,17 +48,17 @@ open class ReferenceBox<T>: MutablePropertyWrapper, Wrapper {
             value = newValue
         }
     }
-    
+        
     public required init(_ value: T) {
         self.value = value
     }
     
-    public convenience init(wrappedValue: T) {
-        self.init(wrappedValue)
+    public required init(wrappedValue: T) {
+        self.value = wrappedValue
     }
     
-    public required convenience init(nilLiteral: ()) where T: ExpressibleByNilLiteral {
-        self.init(T(nilLiteral: ()))
+    public required init(nilLiteral: ()) where T: ExpressibleByNilLiteral {
+        self.value = .init(nilLiteral: ())
     }
 }
 

@@ -38,7 +38,9 @@ extension _DynamicTypeCoercion {
 }
 
 extension _DynamicTypeCoercible {
-    public func __coerce<T>(toInstanceOfType type: T.Type) throws -> T {
+    public func __coerce<T>(
+        toInstanceOfType type: T.Type
+    ) throws -> T {
         do {
             return try cast(self, to: type)
         } catch {

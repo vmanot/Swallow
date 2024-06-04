@@ -2,7 +2,7 @@
 // Copyright (c) Vatsal Manot
 //
 
-import Swallow
+import Swift
 
 public struct _RuntimeDiscoveredFunction: Hashable, Identifiable {
     @_HashableExistential

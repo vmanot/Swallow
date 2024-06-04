@@ -4,7 +4,7 @@
 
 import Foundation
 @_spi(Internal) import Swallow
-import _SwallowMacrosRuntime
+import Swallow
 
 public enum module {
     public static func initialize() {

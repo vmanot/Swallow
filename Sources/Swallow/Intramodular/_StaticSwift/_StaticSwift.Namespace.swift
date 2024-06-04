@@ -18,6 +18,25 @@ extension _StaticSwift {
     }
 }
 
+public struct _NamespaceOf<SwiftType>: _StaticType {
+    public init() {
+        
+    }
+    
+    @available(*, deprecated)
+    public static var inferred: Self.Type {
+        self
+    }
+}
+
+public struct _AllCasesOf<SwiftType>: _StaticType {
+    public init() {
+        
+    }
+}
+
+// MARK: - Auxiliary
+
 extension _StaticSwift.TypeIterableNamespace {
     @_spi(Internal)
     public static var _opaque_allNamespaceTypes: [Any.Type] {

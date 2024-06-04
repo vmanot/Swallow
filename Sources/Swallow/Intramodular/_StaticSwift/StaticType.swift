@@ -23,37 +23,6 @@ public protocol _StaticDomainSpecifying {
     associatedtype _DomainType
 }
 
-public protocol _StaticValue: _StaticType {
-    associatedtype Value
-    
-    static var value: Value { get }
-}
-
-public protocol _StaticBoolean: _StaticValue where Value == Bool {
-    
-}
-
-public protocol _StaticInteger: _StaticValue where Value == Int {
-    
-}
-
-public struct _NamespaceOf<SwiftType>: _StaticType {
-    public init() {
-        
-    }
-    
-    @available(*, deprecated)
-    public static var inferred: Self.Type {
-        self
-    }
-}
-
-public struct _AllCasesOf<SwiftType>: _StaticType {
-    public init() {
-        
-    }
-}
-
 // MARK: - Default Implementation
 
 extension _StaticInstance {

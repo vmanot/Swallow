@@ -2,7 +2,7 @@
 // Copyright (c) Vatsal Manot
 //
 
-@_exported import _SwallowMacrosRuntime
+@_exported import Swallow
 @_exported import Swallow
 
 @attached(member, names: arbitrary)

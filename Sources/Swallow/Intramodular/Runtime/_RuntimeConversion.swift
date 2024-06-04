@@ -3,7 +3,7 @@
 //
 
 import Foundation
-import Swallow
+import Swift
 
 public final class _RuntimeConverter {
     public static let shared = _RuntimeConversion()
@@ -50,14 +50,6 @@ extension _GenericRuntimeConversionProtocol {
         
         return nil
     }
-}
-
-@_alwaysEmitConformanceMetadata
-public protocol _PerformOnceOnAppLaunch: Initiable {
-    init()
-    
-    @discardableResult
-    func perform() -> _SyncOrAsyncValue<Void>
 }
 
 public enum _GenericRuntimeConversions {

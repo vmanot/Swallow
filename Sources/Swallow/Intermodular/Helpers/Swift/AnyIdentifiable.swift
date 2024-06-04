@@ -46,3 +46,7 @@ public struct _ObjectIdentifierIdentified<Object>: Hashable {
         lhs.id.hashValue == rhs.id.hashValue
     }
 }
+
+extension _ObjectIdentifierIdentified: Sendable where Object: Sendable {
+    
+}

@@ -55,15 +55,6 @@ let package = Package(
             swiftSettings: []
         ),
         .target(
-            name: "_SwallowMacrosRuntime",
-            dependencies: [
-                "_RuntimeC",
-                "Swallow",
-            ],
-            path: "Macros/_SwallowMacrosRuntime",
-            swiftSettings: []
-        ),
-        .target(
             name: "_SwallowSwiftOverlay",
             dependencies: [
                 .product(name: "Collections", package: "swift-collections"),
@@ -141,7 +132,6 @@ let package = Package(
         .target(
             name: "_RuntimeKeyPath",
             dependencies: [
-                "_SwallowMacrosRuntime",
                 "Swallow"
             ],
             swiftSettings: [.unsafeFlags(["-parse-stdlib"])]
@@ -151,7 +141,6 @@ let package = Package(
             dependencies: [
                 "_RuntimeC",
                 "_RuntimeKeyPath",
-                "_SwallowMacrosRuntime",
                 "Compute",
                 "FoundationX",
                 "Swallow"
@@ -177,7 +166,6 @@ let package = Package(
         .target(
             name: "SwallowMacrosClient",
             dependencies: [
-                "_SwallowMacrosRuntime",
                 "SwallowMacros",
                 "Swallow"
             ],
