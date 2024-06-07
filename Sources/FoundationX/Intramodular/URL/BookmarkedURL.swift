@@ -43,6 +43,31 @@ public struct BookmarkedURL: Identifiable, URLRepresentable {
     }
 }
 
+// MARK: - Extensions
+
+extension BookmarkedURL {
+    public var hasChildren: Bool {
+        do {
+            return try !FileManager.default
+                .suburls(at: url)
+                .map(BookmarkedURL.init(_unsafe:))
+                .filter({ FileManager.default.fileExists(at: $0.path) })
+                .isEmpty
+        } catch {
+            return false
+        }
+    }
+    
+    public var isEmpty: Bool {
+        let result = try? FileManager.default
+            .suburls(at: url)
+            .map(BookmarkedURL.init(_unsafe:))
+            .filter({ FileManager.default.fileExists(at: $0.path) })
+        
+        return result?.isEmpty ?? false
+    }
+}
+
 // MARK: - Conformances
 
 @available(macOS 11.0, iOS 14.0, watchOS 7.0, tvOS 14.0, *)

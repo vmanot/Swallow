@@ -9,7 +9,7 @@ import Swallow
 ///
 /// Written to improve API ergonomics.
 public struct CanonicalFileDirectory: Hashable, Sendable {
-    public enum _DirectoryName: Hashable, Sendable {
+    public enum DirectoryName: Hashable, Sendable {
         case desktop
         case downloads
         case documents
@@ -24,7 +24,7 @@ public struct CanonicalFileDirectory: Hashable, Sendable {
         case unspecified
     }
     
-    var _name: _DirectoryName
+    var _name: DirectoryName
     var _unsandboxed: Bool? = nil
     
     public static var unspecified: Self {
