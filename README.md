@@ -78,7 +78,7 @@ let sortedObjects = objects.sorted { left, right in
 }
 ```
 
-### @Singleton
+### `@Singleton`
 
 The `@Singleton` property wrapper simplifies the creation of a Singleton class in Swift by automatically managing the shared instance of the class. This wrapper ensures that only one instance of the class is created and shared throughout the application.
 
