@@ -13,3 +13,66 @@ Swallow is composed of the following modules:
 Along with the miscellaneous modules:
 - `_LoremIpsum`
 - `SE0270_RangeSet`
+
+## `IdentifierIndexingArray`
+
+`IdentifierIndexingArray` offers a more robust and efficient way to manage collections of elements where unique identifiers play a crucial role. It simplifies many common tasks and operations, providing both performance benefits and improved code maintainability.
+
+To create an `Identifiable` object to include in the array, simply add `Identifiable` comformance with a unique `id` element to the object. 
+```swift
+public struct MyIdentifiableObject: Identifiable {
+    public typealias ID = _TypeAssociatedID<Self, UUID>
+
+    // a randomely generated UUID
+    public var id: ID = .random()
+    public var someText: String
+    
+    init(someText: String) {
+        self.someText = someText
+    }
+}
+```
+
+`Identifiable` objects can now be stored in the `IdentifierIndexingArray` of specified objects:
+```swift
+var objects: IdentifierIndexingArrayOf<MyIdentifiableObject>
+```
+The full objects struct would look something like this
+```swift
+public struct MyObjects {
+    let myObject1 = MyIdentifiableObject(someText: "1. Hello World!")
+    let myObject2 = MyIdentifiableObject(someText: "2. Hello Earth!")
+    let myObject3 = MyIdentifiableObject(someText: "3. Hello Planet!")
+    
+    var objects: IdentifierIndexingArrayOf<MyIdentifiableObject>
+    
+    init() {
+        objects = [myObject1, myObject2, myObject3]
+    }
+}
+```
+Working with the the `IdentifierIndexingArray` of objects is simple and efficient: 
+
+```swift
+// get direct access to elements by their unique identifiers without having to find an element by iterating through an array
+let myObjectByID = objects.contains(elementIdentifiedBy: myObject1.id)
+        
+// efficient insertion and deletion of elements by their identifier without the need to search through the entire collection.
+let myObject4 = MyIdentifiableObject(someText: "4. Hello Life!")
+objects.insert(myObject4)
+objects.remove(myObject3)
+
+// Ensures that each identifier is unique within the collection, automatically handling duplicates if necessary.
+objects.insert(myObject1) // the object will remain as is
+
+// Provides custom subscripts and methods for accessing elements before or after a given element, simplifying navigation and manipulation.
+let firstObject = objects[0]
+let afterFirstObject = objects.element(after: myObject1)
+let beforeLastObject = objects.element(before: myObject4)
+
+// Facilitates easy mapping and sorting of elements while preserving the identifier indexing.
+let sortedObjects = objects.sorted { left, right in
+    left.someText.count < right.someText.count
+}
+```
+
