@@ -34,11 +34,14 @@ final class _PassthroughLogger: LoggerProtocol, @unchecked Sendable {
         }
     }()
     
-    init(source: Source) {
+    init(
+        source: Source,
+        configuration: PassthroughLogger.Configuration = .init()
+    ) {
         self.parent = nil
         self.source = source
         self.scope = .root
-        self.configuration = .init()
+        self.configuration = configuration
     }
     
     init(parent: _PassthroughLogger, scope: AnyLogScope) {
@@ -70,7 +73,7 @@ final class _PassthroughLogger: LoggerProtocol, @unchecked Sendable {
             message: message()
         )
         
-        if configuration.dumpToConsole || PassthroughLogger.Configuration.global.dumpToConsole {
+        if (configuration._dumpToConsole ?? (PassthroughLogger.Configuration.global._dumpToConsole ?? true)) {
             if #available(macOS 11.0, iOS 14.0, watchOS 7.0, tvOS 14.0, *) {
                 if let _platformLogger = _platformLogger as? OSLogger {
                     _platformLogger._log(level: level, message().description)

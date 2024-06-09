@@ -22,10 +22,18 @@ public final class PassthroughLogger: @unchecked Sendable, LoggerProtocol, Obser
         base.source
     }
     
-    public convenience init(source: Source) {
+    public convenience init(
+        source: Source
+    ) {
         self.init(base: .init(source: source))
     }
     
+    public convenience init(
+        print: Bool
+    ) {
+        self.init(base: .init(source: .location(.unavailable), configuration: .init(_dumpToConsole: print)))
+    }
+
     public convenience init(
         file: StaticString = #file,
         function: StaticString = #function,
@@ -103,11 +111,11 @@ extension PassthroughLogger: TextOutputStream {
 // MARK: - Extensions
 
 extension PassthroughLogger {
-    public var dumpToConsole: Bool {
+    public var _dumpToConsole: Bool? {
         get {
-            base.configuration.dumpToConsole
+            base.configuration._dumpToConsole
         } set {
-            base.configuration.dumpToConsole = newValue
+            base.configuration._dumpToConsole = newValue
         }
     }
 }
@@ -227,10 +235,12 @@ extension PassthroughLogger {
     public struct Configuration {
         @TaskLocal static var global = Self()
         
-        public var dumpToConsole: Bool
+        public var _dumpToConsole: Bool?
         
-        public init(dumpToConsole: Bool = _isDebugAssertConfiguration) {
-            self.dumpToConsole = dumpToConsole
+        public init(
+            _dumpToConsole: Bool? = nil
+        ) {
+            self._dumpToConsole = _dumpToConsole
         }
     }
 }

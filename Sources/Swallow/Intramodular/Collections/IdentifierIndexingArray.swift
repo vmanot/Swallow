@@ -255,7 +255,9 @@ extension IdentifierIndexingArray: MutableCollection, MutableSequence, RandomAcc
         self = Self(_self, id: self.id)
     }
     
-    public subscript(id identifier: ID) -> Element? {
+    public subscript(
+        id identifier: ID
+    ) -> Element? {
         get {
             base[identifier]
         } set {
@@ -272,6 +274,22 @@ extension IdentifierIndexingArray: MutableCollection, MutableSequence, RandomAcc
                     // do nothing
                 }
             }
+        }
+    }
+    
+    public subscript(
+        _optionalID identifier: ID?
+    ) -> Element? {
+        get {
+            identifier.flatMap({ self[id: $0] })
+        } set {
+            guard let identifier = identifier else {
+                assertionFailure()
+                
+                return
+            }
+            
+            self[id: identifier] = newValue
         }
     }
     
