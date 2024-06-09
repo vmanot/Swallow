@@ -76,3 +76,15 @@ let sortedObjects = objects.sorted { left, right in
 }
 ```
 
+## @Singleton
+The `@Singleton` property wrapper simplifies the creation of a Singleton class in Swift by automatically managing the shared instance of the class. This wrapper ensures that only one instance of the class is created and shared throughout the application.
+
+```swift
+@Singleton
+public final class DataStore: ObservableObject {
+    public var id = UUID()
+}
+
+// The shared instance is automatically created and accessed using `DataStore.shared`
+let idString = DataStore.shared.id.uuidString
+```
