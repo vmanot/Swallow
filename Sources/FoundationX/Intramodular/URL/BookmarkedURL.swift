@@ -45,6 +45,7 @@ public struct BookmarkedURL: Identifiable, URLRepresentable {
 
 // MARK: - Extensions
 
+@available(macOS 11.0, iOS 14.0, watchOS 7.0, tvOS 14.0, *)
 extension BookmarkedURL {
     public var hasChildren: Bool {
         do {
