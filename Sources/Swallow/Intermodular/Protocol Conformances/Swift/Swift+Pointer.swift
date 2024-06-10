@@ -17,10 +17,6 @@ extension AutoreleasingUnsafeMutablePointer: Pointer {
 extension OpaquePointer: ConstantPointer {
     public typealias Pointee = Void
     
-    public var pointee: Pointee {
-        unsafePointerRepresentation.pointee
-    }
-    
     public var opaquePointerRepresentation: OpaquePointer {
         self
     }
@@ -38,10 +34,6 @@ extension UnsafeMutablePointer: MutablePointer {
     public var opaquePointerRepresentation: OpaquePointer {
         OpaquePointer(self)
     }
-    
-    public func pointee(at stride: Stride) -> Pointee {
-        self[stride]
-    }
 }
 
 extension UnsafePointer: ConstantPointer {
@@ -50,11 +42,7 @@ extension UnsafePointer: ConstantPointer {
     }
 }
 
-extension UnsafeRawPointer: ConstantRawPointer {
-    public var pointee: Pointee {
-        unsafePointerRepresentation.pointee
-    }
-    
+extension UnsafeRawPointer: ConstantRawPointer {    
     public var opaquePointerRepresentation: OpaquePointer {
         OpaquePointer(self)
     }
@@ -64,15 +52,7 @@ extension UnsafeMutableRawPointer: MutableRawPointer {
     public var opaquePointerRepresentation: OpaquePointer {
         OpaquePointer(self)
     }
-    
-    public subscript(offset: Int) -> Pointee {
-        get {
-            assumingMemoryBound(to: Pointee.self)[offset]
-        } nonmutating set {
-            assumingMemoryBound(to: Pointee.self)[offset] = newValue
-        }
-    }
-        
+            
     public static func allocate(capacity: Stride) -> UnsafeMutableRawPointer {
         allocate(byteCount: capacity, alignment: MemoryLayout<Pointee>.alignment)
     }

@@ -119,7 +119,7 @@ extension NumberConvertible {
     }
 }
 
-extension NumberConvertible where Self: Comparable & Number {
+extension NumberConvertible where Self: Comparable & Number & ExpressibleByIntegerLiteral {
     @inlinable
     public func toBool() -> Bool {
         return self > 0

@@ -211,5 +211,6 @@ let package = Package(
             ],
             path: "Tests/Swallow"
         ),
-    ]
+    ],
+    swiftLanguageVersions: [.v5]
 )

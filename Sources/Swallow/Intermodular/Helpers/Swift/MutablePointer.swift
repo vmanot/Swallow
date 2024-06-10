@@ -7,15 +7,11 @@ import Swift
 import SwiftShims
 
 public protocol MutablePointer: Pointer {
-    var pointee: Pointee { get nonmutating set }
-    
     init(mutating _: UnsafePointer<Pointee>)
     init?(mutating _: UnsafePointer<Pointee>?)
     
     static func allocate(capacity: Stride) -> Self
-    
-    subscript(offset: Stride) -> Pointee { get nonmutating set }
-    
+        
     func assumingMemoryBound<T>(to _: T.Type) -> UnsafeMutablePointer<T>
     
     func update(repeating _: Pointee, count: Int)
@@ -36,9 +32,7 @@ extension MutablePointer {
     public var pointee: Pointee {
         get {
             return unsafeMutablePointerRepresentation.pointee
-        }
-        
-        nonmutating set {
+        } nonmutating set {
             unsafeMutablePointerRepresentation.pointee = newValue
         }
     }
@@ -114,14 +108,6 @@ extension MutablePointer where Stride == Int {
     }
 }
 
-// MARK: - Extensions
-
-extension MutablePointer {
-    public func set(pointee: Pointee) {
-        self[0] = pointee
-    }
-}
-
 extension MutablePointer {
     public func update<P: Pointer>(from pointer: P, count: Stride) where P.Pointee == Pointee, P.Stride == Stride {
         update(from: pointer.unsafePointerRepresentation, count: count)
@@ -149,7 +135,11 @@ extension MutablePointer where Stride == Int {
         update(from: bufferPointer.baseAddress!, count: bufferPointer.count)
     }
     
-    public func update<C: Collection>(from source: C) where C.Element == Pointee, C.Index == Stride {
+    public func update<C: Collection>(
+        from source: C
+    ) where C.Element == Pointee, C.Index == Stride {
+        let `self` = unsafeMutablePointerRepresentation
+        
         for index in source.indices {
             self[index] = source[index]
         }
@@ -167,11 +157,15 @@ extension MutablePointer {
         return self
     }
     
-    public func initialize<P: Pointer>(from pointer: P, count: Stride) where P.Pointee == Pointee, P.Stride == Stride {
+    public func initialize<P: Pointer>(
+        from pointer: P,
+        count: Stride
+    ) where P.Pointee == Pointee, P.Stride == Stride {
+        let pointer = unsafeMutablePointerRepresentation
         var initializedCount: Stride = 0
         
         while initializedCount != count {
-            advanced(by: initializedCount).initialize(to: pointer[initializedCount])
+            advanced(by: initializedCount).initialize(to: pointer[Int(initializedCount)])
             
             initializedCount += 1
         }
@@ -257,17 +251,25 @@ extension MutablePointer where Stride: BinaryInteger {
         update(from: .init(pointer), count: numericCast(count))
     }
     
-    public func initialize<N: BinaryInteger>(repeating pointee: Pointee, count: N) {
+    public func initialize<N: BinaryInteger>(
+        repeating pointee: Pointee,
+        count: N
+    ) {
         initialize(repeating: pointee, count: numericCast(count))
     }
     
-    public func initializing<N: BinaryInteger>(to pointee: Pointee, count: N) -> Self {
+    public func initializing<N: BinaryInteger>(
+        to pointee: Pointee,
+        count: N
+    ) -> Self {
         initialize(repeating: pointee, count: count)
         
         return self
     }
     
-    public func deinitialize<N: BinaryInteger>(capacity: N) -> UnsafeMutableRawPointer {
+    public func deinitialize<N: BinaryInteger>(
+        capacity: N
+    ) -> UnsafeMutableRawPointer {
         deinitialize(count: numericCast(capacity))
     }
 }

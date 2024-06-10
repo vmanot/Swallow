@@ -54,10 +54,6 @@ public struct AnyError: CustomStringConvertible, CustomDebugStringConvertible, E
     }
 }
 
-extension Array: Error where Element: Error {
-    
-}
-
 public struct CustomStringError: Codable, CustomStringConvertible, Error, ExpressibleByStringLiteral, Hashable, Sendable {
     public let description: String
     

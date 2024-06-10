@@ -36,8 +36,8 @@ extension Either: Decodable where LeftValue: Decodable, RightValue: Decodable {
         } catch(let firstError) {
             do {
                 self = try .right(.init(from: decoder))
-            } catch(let secondError) {
-                throw [firstError, secondError]
+            } catch {
+                throw firstError
             }
         }
     }

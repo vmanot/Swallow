@@ -28,7 +28,7 @@ extension Signed {
     }
 }
 
-extension Signed where Self: Number {
+extension Signed where Self: ExpressibleByIntegerLiteral & Number {
     @inlinable
     public var isNegative: Bool {
         return self < 0

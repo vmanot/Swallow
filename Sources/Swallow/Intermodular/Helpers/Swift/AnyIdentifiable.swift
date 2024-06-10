@@ -19,7 +19,7 @@ public struct AnyIdentifiable<ID>: Identifiable {
     public let base: any Identifiable<ID>
     
     public var id: AnyHashable {
-        base.id.erasedAsAnyHashable
+        base._Identifiable_opaque_id
     }
     
     public init(erasing base: any Identifiable<ID>) {
@@ -29,7 +29,7 @@ public struct AnyIdentifiable<ID>: Identifiable {
 
 public struct _ObjectIdentifierIdentified<Object>: Hashable {
     public let base: Object
-
+    
     public var id: ObjectIdentifier {
         ObjectIdentifier(try! cast(base, to: AnyObject.self))
     }

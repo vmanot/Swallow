@@ -75,15 +75,3 @@ extension UnsafePointer: NativeWordSized {
 extension UnsafeRawPointer: NativeWordSized {
     
 }
-
-extension UTF8: Trivial {
-    
-}
-
-extension UTF16: Trivial {
-    
-}
-
-extension UTF32: Trivial {
-    
-}

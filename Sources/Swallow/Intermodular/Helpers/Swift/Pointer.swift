@@ -10,19 +10,15 @@ public protocol OpaquePointerInitiable {
     init?(_: OpaquePointer?)
 }
 
-public protocol Pointer: Hashable, OpaquePointerInitiable, Strideable {
+public protocol Pointer: Hashable, OpaquePointerInitiable, Strideable where Stride: BinaryInteger {
     associatedtype Pointee
-    
-    var pointee: Pointee { get }
-    
+        
     var opaquePointerRepresentation: OpaquePointer { get }
     var unsafePointerRepresentation: UnsafePointer<Pointee> { get }
     var unsafeMutablePointerRepresentation: UnsafeMutablePointer<Pointee> { get }
     
     init(_: UnsafeMutablePointer<Pointee>)
     init?(_: UnsafeMutablePointer<Pointee>?)
-    
-    func pointee(at _: Stride) -> Pointee
 }
 
 // MARK: - Implementation
@@ -34,16 +30,6 @@ extension Pointer {
     
     public var unsafeMutablePointerRepresentation: UnsafeMutablePointer<Pointee> {
         UnsafeMutablePointer(opaquePointerRepresentation)
-    }
-    
-    public func pointee(at stride: Stride) -> Pointee {
-        advanced(by: stride).pointee
-    }
-        
-    public subscript(offset: Stride) -> Pointee {
-        @inlinable get {
-            return pointee(at: offset)
-        }
     }
 }
 
