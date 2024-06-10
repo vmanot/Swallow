@@ -61,7 +61,7 @@ let myObjectByID = objects.contains(elementIdentifiedBy: myObject1.id)
         
 // efficient insertion and deletion of elements by their identifier without the need to search through the entire collection.
 let myObject4 = MyIdentifiableObject(someText: "4. Hello Life!")
-objects.insert(myObject4)
+objects.append(myObject4)
 objects.remove(myObject3)
 
 // Ensures that each identifier is unique within the collection, automatically handling duplicates if necessary.
