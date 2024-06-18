@@ -4,6 +4,6 @@
 
 import Swift
 
-public struct _ApplicationInfoPlist {
+public struct _AppInfoPlist {
     
 }

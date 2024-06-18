@@ -5,7 +5,7 @@
 import Foundation
 import Swallow
 
-extension _ApplicationInfoPlist {
+extension _AppInfoPlist {
     public struct CFBundleDocumentTypes: Encodable {
         public var documentTypes: [DocumentType]
                         
@@ -35,7 +35,7 @@ extension _ApplicationInfoPlist {
     }
 }
 
-extension _ApplicationInfoPlist.CFBundleDocumentTypes {
+extension _AppInfoPlist.CFBundleDocumentTypes {
     public enum CodingKeys: String, CodingKey {
         case documentTypes = "CFBundleDocumentTypes"
     }

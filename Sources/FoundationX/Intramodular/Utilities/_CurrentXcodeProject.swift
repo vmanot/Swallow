@@ -29,23 +29,32 @@ public struct _CurrentXcodeProject {
         return nil
     }
     
-    public static func findXcodeProjAndInfoPlistUsingDebugHints(
+    public struct Files {
+        public let xcodeproj: URL?
+        public let infoPlist: URL?
+    }
+    
+    public static func findFiles(
         initialPath: URL
-    ) -> (xcodeProj: URL?, infoPlist: URL?) {
-        let projPath = findItem(ofType: XcodeProject(), around: initialPath)
-        let plistPath = findItem(ofType: InfoPlist(), around: initialPath, selector: { plists in
+    ) throws -> Files {
+        let projPath = try findItem(ofType: XcodeProject(), around: initialPath)
+        let plistPath = try findItem(ofType: InfoPlist(), around: initialPath, selector: { plists in
             // Custom selection logic for multiple Info.plist files (if needed)
             return plists.first  // Placeholder for custom selection logic
         })
         
-        return (projPath, plistPath)
+        guard projPath != nil || plistPath != nil else {
+            throw Never.Reason.unavailable
+        }
+        
+        return Files(xcodeproj: projPath, infoPlist: plistPath)
     }
     
     public static func findItem<T: SearchableItem>(
         ofType type: T,
         around url: URL,
         selector: (([URL]) -> URL?)? = nil
-    ) -> URL? {
+    ) throws -> URL? {
         try FileManager.default.withUserGrantedAccess(to: url) { url -> URL? in
             var url = url
 
@@ -70,14 +79,12 @@ public struct _CurrentXcodeProject {
 extension _CurrentXcodeProject {
     /// Update the UTI declarations in the Info.plist file for the given Xcode project using a list of UTI objects.
     public static func updateUTTypes(
-        _ utis: [_ApplicationInfoPlist.UTI],
+        _ utis: [_AppInfoPlist.UTI],
         file: String = #file
-    ) {
-        guard let file = URL(string: file).unwrap() else {
-            return
-        }
+    ) throws {
+        let file = try URL(string: file).unwrap()
         
-        guard let plistURL = findXcodeProjAndInfoPlistUsingDebugHints(initialPath: file).infoPlist else {
+        guard let plistURL = try findFiles(initialPath: file).infoPlist else {
             fatalError("Error: Info.plist file not found.")
         }
         
@@ -133,7 +140,9 @@ extension _CurrentXcodeProject {
 }
 
 extension _CurrentXcodeProject.SearchableItem {
-    internal func match(url: URL) -> Bool {
+    internal func match(
+        url: URL
+    ) -> Bool {
         return url.pathExtension == fileExtension && (fileName == nil || url.deletingPathExtension().lastPathComponent == fileName)
     }
 }

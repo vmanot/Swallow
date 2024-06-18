@@ -5,7 +5,7 @@
 import Swallow
 import UniformTypeIdentifiers
 
-extension _ApplicationInfoPlist {
+extension _AppInfoPlist {
     public struct UTI {
         public var identifier: String
         public var description: String
@@ -52,7 +52,7 @@ extension _ApplicationInfoPlist {
     }
 }
 
-extension _ApplicationInfoPlist.UTI: Encodable {
+extension _AppInfoPlist.UTI: Encodable {
     public enum CodingKeys: String, CodingKey {
         case identifier = "UTTypeIdentifier"
         case description = "UTTypeDescription"
@@ -88,7 +88,7 @@ extension _ApplicationInfoPlist.UTI: Encodable {
     }
 }
 
-extension _ApplicationInfoPlist.UTI {
+extension _AppInfoPlist.UTI {
     public static func fileType(
         identifierPrefix: String,
         fileExtension: String,
@@ -150,13 +150,13 @@ extension _ApplicationInfoPlist.UTI {
     }
 }
 
-extension Array where Element == _ApplicationInfoPlist.UTI {
+extension Array where Element == _AppInfoPlist.UTI {
     /// Generates a list of DocumentType entries from a list of UTIs, assuming the role of 'Editor' and a default handler rank.
     public func generateDocumentTypes(
-        handlerRank: _ApplicationInfoPlist.CFBundleDocumentTypes.DocumentType.HandlerRank = .owner
-    ) -> [_ApplicationInfoPlist.CFBundleDocumentTypes.DocumentType] {
+        handlerRank: _AppInfoPlist.CFBundleDocumentTypes.DocumentType.HandlerRank = .owner
+    ) -> [_AppInfoPlist.CFBundleDocumentTypes.DocumentType] {
         return self.map { uti in
-            _ApplicationInfoPlist.CFBundleDocumentTypes.DocumentType(
+            _AppInfoPlist.CFBundleDocumentTypes.DocumentType(
                 contentTypes: [uti.identifier],
                 extensions: uti.extensions,
                 role: "Editor",
@@ -170,7 +170,7 @@ extension Array where Element == _ApplicationInfoPlist.UTI {
 
 @available(macOS 11.0, iOS 14.0, watchOS 7.0, tvOS 14.0, *)
 extension UTType {
-    public init(from uti: _ApplicationInfoPlist.UTI) throws {
+    public init(from uti: _AppInfoPlist.UTI) throws {
         self = try Self(uti.identifier).unwrap()
     }
 }
