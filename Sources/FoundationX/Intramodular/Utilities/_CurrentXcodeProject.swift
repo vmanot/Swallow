@@ -28,9 +28,9 @@ public struct _CurrentXcodeProject {
         
         return nil
     }
-
+    
     public static func findXcodeProjAndInfoPlistUsingDebugHints(
-        initialPath: String
+        initialPath: URL
     ) -> (xcodeProj: URL?, infoPlist: URL?) {
         let projPath = findItem(ofType: XcodeProject(), around: initialPath)
         let plistPath = findItem(ofType: InfoPlist(), around: initialPath, selector: { plists in
@@ -43,24 +43,27 @@ public struct _CurrentXcodeProject {
     
     public static func findItem<T: SearchableItem>(
         ofType type: T,
-        around path: String,
+        around url: URL,
         selector: (([URL]) -> URL?)? = nil
     ) -> URL? {
-        var currentPath = URL(fileURLWithPath: path)
-        
-        while currentPath.path != "/" {
-            if let contents = try? fileManager.contentsOfDirectory(at: currentPath, includingPropertiesForKeys: nil),
-               let matches = contents.filter({ type.match(url: $0) }) as [URL]? {
-                if let selector = selector, matches.count > 1 {
-                    return selector(matches)
-                } else if let match = matches.first {
-                    return match
+        try FileManager.default.withUserGrantedAccess(to: url) { url -> URL? in
+            var url = url
+
+            while url.path != "/" {
+                if let contents = try? fileManager.contentsOfDirectory(at: url),
+                   let matches: [URL] = contents.filter({ type.match(url: $0) }) as [URL]? {
+                    if let selector = selector, matches.count > 1 {
+                        return selector(matches)
+                    } else if let match = matches.first {
+                        return match
+                    }
                 }
+                
+                url.deleteLastPathComponent()
             }
-            currentPath.deleteLastPathComponent()
+            
+            return nil
         }
-        
-        return nil
     }
 }
 
@@ -70,6 +73,10 @@ extension _CurrentXcodeProject {
         _ utis: [_ApplicationInfoPlist.UTI],
         file: String = #file
     ) {
+        guard let file = URL(string: file).unwrap() else {
+            return
+        }
+        
         guard let plistURL = findXcodeProjAndInfoPlistUsingDebugHints(initialPath: file).infoPlist else {
             fatalError("Error: Info.plist file not found.")
         }

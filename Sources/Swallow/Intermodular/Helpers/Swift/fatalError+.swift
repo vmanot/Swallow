@@ -19,9 +19,24 @@ public func fatalError(
 infix operator !! : NilCoalescingPrecedence
 
 @_transparent
-public func !!<T>(lhs: T?, rhs: String) -> T {
+public func !!<T>(
+    lhs: T?,
+    rhs: String
+) -> T {
     guard let lhs else {
         fatalError(CustomStringError(description: rhs))
+    }
+    
+    return lhs
+}
+
+@_transparent
+public func !!<T>(
+    lhs: T?,
+    rhs: some Error
+) -> T {
+    guard let lhs else {
+        fatalError(rhs)
     }
     
     return lhs

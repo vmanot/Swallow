@@ -204,6 +204,7 @@ public struct HashableMacro: ExtensionMacro, MemberMacro {
         )
         
         var equalsFunctionModifiers = baseModifiers
+        
         equalsFunctionModifiers.append(
             DeclModifierSyntax(name: .keyword(.static, trailingTrivia: .space))
         )

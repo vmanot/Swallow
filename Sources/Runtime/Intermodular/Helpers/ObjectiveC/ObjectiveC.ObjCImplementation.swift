@@ -13,6 +13,13 @@ public struct ObjCImplementation: Hashable {
     public init(_ value: Value) {
         self.value = value
     }
+    
+    @_transparent
+    public func unsafeBitCast<T>(
+        to type: T.Type
+    ) -> T {
+        Swift.unsafeBitCast(value, to: type)
+    }
 }
 
 extension ObjCImplementation {
