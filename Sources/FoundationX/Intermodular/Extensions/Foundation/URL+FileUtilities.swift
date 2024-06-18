@@ -105,18 +105,51 @@ extension URL {
 extension URL {
     public var _filePath: String {
         let url = resolvingSymlinksInPath()
+        var result: String
         
         if let absolutePath = try? url
             .resourceValues(forKeys: [.canonicalPathKey])
             .canonicalPath {
-            return absolutePath
+            result = absolutePath
         } else {
-            return path
+            result = path
         }
+        
+        while result.starts(with: "//") {
+            result = String(result.dropFirst())
+        }
+        
+        return result
     }
     
     public var _isCanonicallyHiddenFile: Bool {
         _fileNameWithoutExtension.hasPrefix(".")
+    }
+    
+    /// Checks if the URL is a relative path.
+    public var _isRelativeFilePath: Bool {
+        // A URL is considered relative if it does not have a scheme and is not absolute.
+        return self.scheme == nil && !self.absoluteString.hasPrefix("/")
+    }
+    
+    /// Checks if the URL or any part of it is a symbolic link.
+    public var _containsSymbolicLink: Bool {
+        var currentPath = self.standardized
+        
+        while currentPath.path != "/" {
+            do {
+                let resourceValues = try currentPath.resourceValues(forKeys: [.isSymbolicLinkKey])
+                if resourceValues.isSymbolicLink == true {
+                    return true
+                }
+                currentPath.deleteLastPathComponent()
+            } catch {
+                print("Error checking symbolic link: \(error)")
+                break
+            }
+        }
+        
+        return false
     }
     
     public var _fileNameWithoutExtension: String {
@@ -192,19 +225,35 @@ extension URL {
             return self
         }
         
-        return URL(string: resolvingSymlinksInPath().path)!
+        return URL(string: resolvingSymlinksInPath().path)!.standardizedFileURL
     }
     
     public func _fromURLToFileURL() -> URL {
-        if self.isFileURL {
-            return self
+        guard !self.isFileURL else {
+            let result = standardizedFileURL
+            
+            assert(!result.path.hasPrefix("//"))
+            
+            return result
         }
         
         let pathComponents = self.pathComponents
         var fileURL = URL(fileURLWithPath: "/")
         
-        for component in pathComponents {
+        var lastComponent: String?
+        
+        for var component in pathComponents {
+            if component == "/" && lastComponent == "/" {
+                continue
+            }
+            
+            if component == "//" {
+                component = "/"
+            }
+            
             fileURL.appendPathComponent(component)
+            
+            lastComponent = component
         }
         
         return fileURL

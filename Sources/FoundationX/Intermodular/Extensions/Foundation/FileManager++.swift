@@ -185,9 +185,10 @@ extension FileManager {
         } else if let result = try? URL._BookmarkCache.bookmark(location.url), FileManager.default.fileOrDirectoryExists(at: result) {
             return result
         } else {
+            /// FIXME:!!!! This looped infinitely when given a malformed URL created with a #fileID
             let parentURL = url.resolvingSymlinksInPath().deletingLastPathComponent()
             
-            guard parentURL != url, !parentURL._isRootPath, !parentURL.path.isEmpty else {
+            guard !parentURL._isRootPath, parentURL != url, !parentURL._isRootPath, !parentURL.path.isEmpty else {
                 return nil
             }
             

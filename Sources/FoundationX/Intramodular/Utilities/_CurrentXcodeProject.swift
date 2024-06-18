@@ -34,6 +34,7 @@ public struct _CurrentXcodeProject {
         public let infoPlist: URL?
     }
     
+    @MainActor
     public static func findFiles(
         initialPath: URL
     ) throws -> Files {
@@ -78,10 +79,13 @@ public struct _CurrentXcodeProject {
 
 extension _CurrentXcodeProject {
     /// Update the UTI declarations in the Info.plist file for the given Xcode project using a list of UTI objects.
+    @MainActor
     public static func updateUTTypes(
         _ utis: [_AppInfoPlist.UTI],
         file: String = #file
     ) throws {
+        assert(!file.hasPrefix("//"))
+     
         let file = try URL(string: file).unwrap()
         
         guard let plistURL = try findFiles(initialPath: file).infoPlist else {

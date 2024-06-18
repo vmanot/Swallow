@@ -205,7 +205,9 @@ extension URL._FileOrDirectorySecurityScopedAccessManager {
         let isDirectory: Bool?
         
         init(url: URL) {
-            self.currentURL = url.resolvingSymlinksInPath()
+            assert(!url.path.hasPrefix("//"))
+          
+            self.currentURL = url._isRelativeFilePath ? url.resolvingSymlinksInPath() : url
             self.isDirectory = url._isKnownOrIndicatedToBeFileDirectory
             
             super.init()
@@ -222,8 +224,11 @@ extension URL._FileOrDirectorySecurityScopedAccessManager {
             _ sender: Any,
             validate url: URL
         ) throws {
+            let url = url._filePath
+            let currentURL = self.currentURL._filePath
+            
             if isDirectory == true {
-                guard url._standardizedDirectoryPath == currentURL._standardizedDirectoryPath else {
+                guard url == currentURL else {
                     throw NSError.genericApplicationError(
                         description: "Incorrect directory.",
                         recoverySuggestion: "Select the directory “\(currentURL)”."

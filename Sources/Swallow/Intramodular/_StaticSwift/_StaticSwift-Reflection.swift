@@ -17,15 +17,15 @@ extension CustomSourceDeclarationReflectable {
 extension _StaticSwift {
     public struct SourceDeclarationMirror: ExpressibleByNilLiteral {
         public let sourceLocation: SourceCodeLocation?
-                
+        
         public init(
-            fileID: StaticString = #fileID,
+            file: StaticString = #file,
             function: StaticString = #function,
             line: UInt = #line,
             column: UInt? = nil
         ) {
             self.sourceLocation = SourceCodeLocation(
-                fileID: fileID,
+                file: file,
                 function: function,
                 line: line,
                 column: column
