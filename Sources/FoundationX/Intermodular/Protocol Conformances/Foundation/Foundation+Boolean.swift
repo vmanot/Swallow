@@ -5,6 +5,6 @@
 import Foundation
 import Swallow
 
-extension NSNumber: Boolean {
+extension Foundation.NSNumber: Boolean {
     
 }

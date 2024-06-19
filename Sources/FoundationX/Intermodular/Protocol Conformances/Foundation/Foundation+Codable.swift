@@ -5,7 +5,7 @@
 import Foundation
 import Swift
 
-extension Calendar.Component: Codable, RawRepresentable {
+extension Foundation.Calendar.Component: Codable, RawRepresentable {
     public var rawValue: String {
         if let _leapMonthRawValue {
             return _leapMonthRawValue

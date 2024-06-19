@@ -162,7 +162,14 @@ extension URL._FileOrDirectorySecurityScopedAccessManager {
                 guard let selectedURL = openPanel.url else {
                     throw _Error.accessDenied
                 }
-                return selectedURL
+                
+                do {
+                    return try URL._BookmarkCache.bookmark(selectedURL)
+                } catch {
+                    runtimeIssue(error)
+                    
+                    return selectedURL
+                }
             case .abort:
                 throw _Error.accessCancelled
             default:

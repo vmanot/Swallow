@@ -39,7 +39,7 @@ extension NSMutableArray: DestructivelyMutableSequence {
     }
 }
 
-extension NSMutableData: MutableSequence {
+extension Foundation.NSMutableData: MutableSequence {
     public func _forEach<T>(mutating iterator: ((inout Element) throws -> T)) rethrows {
         for (index, _) in enumerated() {
             _ = try iterator(&self[_position: index])
@@ -47,7 +47,7 @@ extension NSMutableData: MutableSequence {
     }
 }
 
-extension NSMutableSet: DestructivelyMutableSequence {
+extension Foundation.NSMutableSet: DestructivelyMutableSequence {
     public func _forEach<T>(mutating iterator: ((inout Element) throws -> T)) rethrows {
         try _forEach(destructivelyMutating: { try iterator(&$0!) })
     }

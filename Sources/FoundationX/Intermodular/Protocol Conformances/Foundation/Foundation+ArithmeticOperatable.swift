@@ -5,7 +5,7 @@
 import Foundation
 import Swallow
 
-extension CharacterSet: AdditionOperatable {
+extension Foundation.CharacterSet: AdditionOperatable {
     public static func + (lhs: CharacterSet, rhs: CharacterSet) -> CharacterSet {
         lhs.union(rhs)
     }
@@ -15,11 +15,11 @@ extension CharacterSet: AdditionOperatable {
     }
 }
 
-extension Data: AdditionOperatable {
+extension Foundation.Data: AdditionOperatable {
     
 }
 
-extension Decimal: ArithmeticOperatable {
+extension Foundation.Decimal: ArithmeticOperatable {
     public static func += (lhs: inout Decimal, rhs: Decimal) {
         lhs = lhs + rhs
     }
@@ -45,7 +45,7 @@ extension Decimal: ArithmeticOperatable {
     }
 }
 
-extension NSCharacterSet {
+extension Foundation.NSCharacterSet {
     public static func + (lhs: NSCharacterSet, rhs: NSCharacterSet) -> NSCharacterSet {
         let set = NSMutableCharacterSet()
         
@@ -60,7 +60,7 @@ extension NSCharacterSet {
     }
 }
 
-extension NSDecimalNumber {
+extension Foundation.NSDecimalNumber {
     public static func + (lhs: NSDecimalNumber, rhs: NSDecimalNumber) -> NSDecimalNumber {
         lhs.adding(rhs)
     }

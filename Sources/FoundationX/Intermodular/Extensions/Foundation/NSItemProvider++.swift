@@ -111,6 +111,6 @@ extension NSItemProvider {
     }
 }
 
-extension NSItemProvider: @unchecked Sendable {
+extension Foundation.NSItemProvider: @unchecked Sendable {
     
 }

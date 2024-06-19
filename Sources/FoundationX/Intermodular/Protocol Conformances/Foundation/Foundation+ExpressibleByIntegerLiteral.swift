@@ -5,19 +5,19 @@
 import Foundation
 import Swallow
 
-extension IndexPath: ExpressibleByIntegerLiteral {
+extension Foundation.IndexPath: ExpressibleByIntegerLiteral {
     public init(integerLiteral value: Int) {
         self.init(index: value)
     }
 }
 
-extension IndexSet: ExpressibleByIntegerLiteral {
+extension Foundation.IndexSet: ExpressibleByIntegerLiteral {
     public init(integerLiteral value: Int) {
         self.init(integer: value)
     }
 }
 
-extension NSRange: ExpressibleByIntegerLiteral {
+extension Foundation.NSRange: ExpressibleByIntegerLiteral {
     public init(integerLiteral value: Int) {
         self.init(value)
     }

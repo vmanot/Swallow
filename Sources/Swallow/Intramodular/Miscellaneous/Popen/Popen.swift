@@ -30,7 +30,10 @@ open class Popen: FILEStream, Sequence, IteratorProtocol {
     ///   - cmd: Command to execute
     ///   - shell: Shell to use for the command.
     /// - Returns: true if command exited without error.
-    open class func shell(cmd: String, shell: String = shellCommand) -> Bool {
+    open class func shell(
+        cmd: String,
+        shell: String = shellCommand
+    ) -> Bool {
         guard let stdin = Popen(cmd: shell, mode: .write) else {
             return false
         }
@@ -44,7 +47,10 @@ open class Popen: FILEStream, Sequence, IteratorProtocol {
     ///   - cmd: Command to execute
     ///   - errors: Switch between returning String on sucess or failure.
     /// - Returns: Output of command or errors on failure if errors is true.
-    open class func system(_ cmd: String, errors: Bool = false) -> String? {
+    open class func system(
+        _ cmd: String,
+        errors: Bool = false
+    ) -> String? {
         let cmd = cmd + (errors ? " 2>&1" : "")
         guard let outfp = Popen(cmd: cmd) else {
             return "popen(\"\(cmd)\") failed."

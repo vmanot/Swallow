@@ -258,6 +258,23 @@ extension Sequence {
         return result
     }
     
+    public func asyncCompactMap<T>(
+        _ transform: @Sendable (Element) async throws -> T?
+    ) async rethrows -> [T] {
+        let initialCapacity = underestimatedCount
+        var result = Array<T>()
+        
+        result.reserveCapacity(initialCapacity)
+        
+        for element in self {
+            if let transformedElement = try await transform(element) {
+                result.append(transformedElement)
+            }
+        }
+        
+        return result
+    }
+    
     /// Returns an array containing the results of mapping the given async closure over
     /// the sequence’s elements.
     ///

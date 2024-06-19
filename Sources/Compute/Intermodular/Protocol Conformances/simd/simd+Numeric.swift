@@ -5,7 +5,7 @@
 import simd
 import Swallow
 
-extension simd_quatd: MutableArithmeticOperatable, Numeric {
+extension simd.simd_quatd: MutableArithmeticOperatable, Numeric {
     public var magnitude: Double {
         return length
     }
@@ -23,7 +23,7 @@ extension simd_quatd: MutableArithmeticOperatable, Numeric {
     }
 }
 
-extension simd_quatf: MutableArithmeticOperatable, Numeric {
+extension simd.simd_quatf: MutableArithmeticOperatable, Numeric {
     public var magnitude: Float {
         return length
     }
