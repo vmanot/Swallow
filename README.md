@@ -91,3 +91,23 @@ public final class DataStore: ObservableObject {
 // The shared instance is automatically created and accessed using `DataStore.shared`
 let idString = DataStore.shared.id.uuidString
 ```
+
+### _printEnclosedInASCIIBox
+Print out an error in an ASCIIBox for easier debugging: 
+
+```swift
+do {
+    let decoder = JSONDecoder()._modular()
+    let user = try decoder.decode(User.self, from: jsonData)
+} catch {
+    _printEnclosedInASCIIBox(String(describing: error))
+}
+```
+
+Error:
+```
++------------------------------------------------------------------------------+
+| keyNotFound("wrongKey", context for User: (coding path: []),                 |
+| Optional(["email": "john@example.com", "id": 1.0, "name": "John Doe"]))      |
++------------------------------------------------------------------------------+
+```
