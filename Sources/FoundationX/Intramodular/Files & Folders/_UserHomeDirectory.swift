@@ -20,7 +20,7 @@ public enum _UserHomeDirectory: String, CaseIterable {
         get throws {
             let url = try URL._userHomeDirectory.appendingPathComponent(self.rawValue)
             
-            return try URL._BookmarkCache.cachedURL(for: url) ?? url
+            return try URL._SavedBookmarks.bookmarkedURL(for: url) ?? url
         }
     }
     

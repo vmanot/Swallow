@@ -23,7 +23,7 @@ extension TypeMetadata {
         case heapGenericLocalVariable = 0x500 // 0 | nonType | runtimePrivate
         case errorObject = 0x501  // 1 | nonType | runtimePrivate
         case unknown = 0xffff
-
+        
         init(_ type: Any.Type) {
             let v = _swift_getMetadataKind(type)
             if let result = Self(rawValue: v) {
@@ -32,7 +32,7 @@ extension TypeMetadata {
                 self = .unknown
             }
         }
-
+        
         public init?(_rawValue rawValue: Int) {
             switch rawValue {
                 case 1:
@@ -190,5 +190,9 @@ extension TypeMetadata {
             default:
                 return self
         }
+    }
+    
+    public var _nominalType: (any _NominalTypeMetadataType)? {
+        try? cast(self.typed)
     }
 }

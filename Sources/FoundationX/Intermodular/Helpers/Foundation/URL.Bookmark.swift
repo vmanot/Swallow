@@ -8,47 +8,72 @@ import Swallow
 
 extension URL {
     /// A type representing URL bookmark data.
-    public struct Bookmark: Hashable, Sendable {
+    public struct Bookmark: Hashable, Identifiable, Sendable {
         public private(set) var data: Data
         public private(set) var creationOptions: URL.BookmarkCreationOptions
+        public let id: ID
+        
+        public struct ID: Hashable, Sendable {
+            private let rawValue: String
+            
+            public init(from url: URL) {
+                self.rawValue = url._actuallyStandardizedFileURL.path
+            }
+        }
         
         public var path: String {
             get throws {
                 try self.toURL()._filePath
             }
         }
-        
+
         private init(
             data: Data,
-            creationOptions: URL.BookmarkCreationOptions
+            creationOptions: URL.BookmarkCreationOptions,
+            id: ID? = nil
         ) throws {
-            self.data = data
-            self.creationOptions = creationOptions
-        }
-        
-        public init(data: Data) throws {
             var stale: Bool = false
             
-            _ = try URL(resolvingBookmarkData: data, bookmarkDataIsStale: &stale)
+            self.data = data
+            self.creationOptions = creationOptions
+            self.id = try id ?? ID(from: URL(resolvingBookmarkData: data, bookmarkDataIsStale: &stale))
+        }
+        
+        public init(data: Data, allowStale: Bool = true) throws {
+            var stale: Bool = false
+            
+            let url = try URL(resolvingBookmarkData: data, bookmarkDataIsStale: &stale)
             
             if stale {
-                throw URL.Bookmark.Error.bookmarkIsStale
+                guard allowStale else {
+                    throw URL.Bookmark.Error.bookmarkIsStale
+                }
             }
             
             self.data = data
             self.creationOptions = []
+            self.id = ID(from: url)
+            
+            if stale {
+                _ = try? renew()
+            }
         }
         
         public init(
             for url: URL,
             creationOptions: URL.BookmarkCreationOptions = []
         ) throws {
-            self.data = try url.bookmarkData(
+            let data = try url.bookmarkData(
                 options: creationOptions,
                 includingResourceValuesForKeys: [],
                 relativeTo: nil
             )
-            self.creationOptions = creationOptions
+
+            try self.init(
+                data: data,
+                creationOptions: creationOptions,
+                id: ID(from: url)
+            )
         }
         
         public func hash(into hasher: inout Hasher) {

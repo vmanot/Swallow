@@ -156,7 +156,7 @@ extension FileManager {
     ) -> Bool {
         let url = location.url._fromFileURLToURL()
         
-        if ((try? URL._BookmarkCache.cachedURL(for: location.url._fromFileURLToURL())) as URL?) != nil {
+        if ((try? URL._SavedBookmarks.bookmarkedURL(for: location.url._fromFileURLToURL())) as URL?) != nil {
             return true
         }
         
@@ -180,9 +180,9 @@ extension FileManager {
     ) -> URL? {
         let url = location.url._fromFileURLToURL()
         
-        if let result = try? URL._BookmarkCache.cachedURL(for: location.url._fromFileURLToURL()) {
+        if let result = try? URL._SavedBookmarks.bookmarkedURL(for: location) {
             return result
-        } else if let result = try? URL._BookmarkCache.bookmark(location.url), FileManager.default.fileOrDirectoryExists(at: result) {
+        } else if let result = try? URL._SavedBookmarks.bookmark(location.url), FileManager.default.fileOrDirectoryExists(at: result) {
             return result
         } else {
             /// FIXME:!!!! This looped infinitely when given a malformed URL created with a #fileID

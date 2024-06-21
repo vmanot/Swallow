@@ -459,6 +459,18 @@ extension IdentifierIndexingArray {
         try elements.forEach({ try upsert($0, uniquingValuesWith: unique) })
     }
     
+    public mutating func upsert<S: Sequence>(
+        contentsOf elements: S
+    ) where Element: MergeOperatable, S.Element == Element {
+        self.upsert(contentsOf: elements, uniquingValuesWith: { $0.mergingInPlace(with: $1) })
+    }
+    
+    public mutating func upsert<S: Sequence>(
+        contentsOf elements: S
+    ) throws where Element: ThrowingMergeOperatable, S.Element == Element {
+        try self.upsert(contentsOf: elements, uniquingValuesWith: { try $0.mergingInPlace(with: $1) })
+    }
+    
     public mutating func remove(
         atOffsets indexSet: IndexSet
     ) {

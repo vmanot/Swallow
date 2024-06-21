@@ -59,10 +59,6 @@ public struct _HashableExistential<Value>: PropertyWrapper {
 }
 
 extension _HashableExistential {
-    fileprivate enum InitializationError: Error {
-        case unsupportedValue(Any)
-    }
-    
     fileprivate init(
         _wrappedValue: WrappedValue
     ) {
@@ -186,6 +182,21 @@ extension _HashableExistential {
         
         init(nilLiteral: ()) {
             self.init()
+        }
+    }
+}
+
+// MARK: - Error Handling
+
+extension _HashableExistential {
+    fileprivate enum InitializationError: CustomStringConvertible, Error {
+        case unsupportedValue(Any)
+        
+        var description: String {
+            switch self {
+                case .unsupportedValue(let value):
+                    "@_HashableExistential does not support this value: \(value)"
+            }
         }
     }
 }

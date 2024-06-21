@@ -42,14 +42,14 @@ extension URL._FileOrDirectorySecurityScopedAccessManager {
                 let url = try promptForAccess(to: url, isDirectory: isDirectory)
                 
                 let bookmarkedURL = try url._accessingSecurityScopedResource {
-                    try URL._BookmarkCache.bookmark(url)
+                    try URL._SavedBookmarks.bookmark(url)
                 }
                 
                 return bookmarkedURL
             }
         }
         
-        if let cachedURL = try? URL._BookmarkCache.cachedURL(for: url) {
+        if let cachedURL = try? URL._SavedBookmarks.bookmarkedURL(for: url) {
             do {
                 if isDirectory {
                     try _testWritingFile(inDirectory: cachedURL)
@@ -80,7 +80,7 @@ extension URL._FileOrDirectorySecurityScopedAccessManager {
                             )
                         }
                         
-                        return try URL._BookmarkCache.bookmark(url)
+                        return try URL._SavedBookmarks.bookmark(url)
                     }
                     
                     return bookmarkedURL
@@ -97,7 +97,7 @@ extension URL._FileOrDirectorySecurityScopedAccessManager {
                                 withIntermediateDirectories: true
                             )
                             
-                            let result = try URL._BookmarkCache.bookmark(reconstructedURL)
+                            let result = try URL._SavedBookmarks.bookmark(reconstructedURL)
                             
                             return result
                         }
@@ -107,7 +107,7 @@ extension URL._FileOrDirectorySecurityScopedAccessManager {
             
             let accessibleURL = try promptForAccess(to: url, isDirectory: isDirectory)
             
-            let result = try URL._BookmarkCache.bookmark(accessibleURL)
+            let result = try URL._SavedBookmarks.bookmark(accessibleURL)
 
             do {
                 try _testWritingFile(inDirectory: url)
@@ -164,7 +164,7 @@ extension URL._FileOrDirectorySecurityScopedAccessManager {
                 }
                 
                 do {
-                    return try URL._BookmarkCache.bookmark(selectedURL)
+                    return try URL._SavedBookmarks.bookmark(selectedURL)
                 } catch {
                     runtimeIssue(error)
                     

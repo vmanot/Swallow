@@ -4,7 +4,7 @@
 
 import Swallow
 
-extension FileManager {    
+extension FileManager {
     @MainActor(unsafe)
     public func withUserGrantedAccess<T>(
         to location: some URLRepresentable,
@@ -12,7 +12,7 @@ extension FileManager {
         perform operation: (URL) throws -> T
     ) throws -> T {
         let url: URL = location.url
-
+        
         switch scope {
             case .automatic:
                 return try _withUserGrantedAccess(to: url, perform: operation)
@@ -44,12 +44,16 @@ extension FileManager {
                 }
         }
     }
-
+    
     @MainActor
     private func _withUserGrantedAccess<T>(
         toFile url: URL,
         perform operation: (URL) throws -> T
     ) throws -> T {
+        if let result = try Self._withCachedSecurityScopedAccessibleResourceURLIfExists(for: url, perform: operation) {
+            return result
+        }
+
         let directoryURL: URL = url._immediateFileDirectory
         let lastPathComponent: String = url.lastPathComponent
         
@@ -65,6 +69,10 @@ extension FileManager {
         toFile url: URL,
         perform operation: (URL) async throws -> T
     ) async throws -> T {
+        if let result = try await Self._withCachedSecurityScopedAccessibleResourceURLIfExists(for: url, perform: operation) {
+            return result
+        }
+
         let directoryURL: URL = url._immediateFileDirectory
         let lastPathComponent: String = url.lastPathComponent
         
@@ -74,28 +82,26 @@ extension FileManager {
             return try await operation(accessibleURL)
         }
     }
-
+    
     @MainActor
     private func _withUserGrantedAccess<T>(
         to location: any URLRepresentable,
         perform operation: (URL) throws -> T
     ) throws -> T {
-        if let url: URL = try? URL._BookmarkCache.cachedURL(for: location) {
+        if let result = try Self._withCachedSecurityScopedAccessibleResourceURLIfExists(for: location, perform: operation) {
+            return result
+        }
+
+        let url = try URL._FileOrDirectorySecurityScopedAccessManager.requestAccess(to: location.url)
+        
+        return try url._accessingSecurityScopedResource { () -> T in
             do {
-                let result = try url._accessingSecurityScopedResource({
-                    return Result(catching: { try operation(url) })
-                })
-                
-                return try result.get()
+                _ = try URL._SavedBookmarks.bookmark(url)
             } catch {
                 runtimeIssue(error)
             }
-        } 
-        
-        let url = try URL._FileOrDirectorySecurityScopedAccessManager.requestAccess(to: location.url)
-        
-        return try url._accessingSecurityScopedResource {
-            try operation(url)
+
+            return try operation(url)
         }
     }
     
@@ -104,24 +110,50 @@ extension FileManager {
         to location: any URLRepresentable,
         perform operation: (URL) async throws -> T
     ) async throws -> T {
-        if let url: URL = try? URL._BookmarkCache.cachedURL(for: location) {
+        if let result = try await Self._withCachedSecurityScopedAccessibleResourceURLIfExists(for: location, perform: operation) {
+            return result
+        }
+        
+        let url: URL = try URL._FileOrDirectorySecurityScopedAccessManager.requestAccess(to: location.url)
+        
+        return try await url._accessingSecurityScopedResource { () -> T in
             do {
-                let result = try await url._accessingSecurityScopedResource({
-                    return await Result(catching: { try await operation(url) })
-                })
-                
-                return try result.get()
+                _ = try URL._SavedBookmarks.bookmark(url)
             } catch {
                 runtimeIssue(error)
             }
+
+            return try await operation(url)
+        }
+    }
+    
+    private static func _withCachedSecurityScopedAccessibleResourceURLIfExists<T>(
+        for location: any URLRepresentable,
+        perform operation: (URL) throws -> T
+    ) throws -> T? {
+        guard let url: URL = try? URL._SavedBookmarks.bookmarkedURL(for: location) else {
+            return nil
         }
         
-        let url: URL = try await MainActor.run {
-            try URL._FileOrDirectorySecurityScopedAccessManager.requestAccess(to: location.url)
+        let result = try url._accessingSecurityScopedResource({
+            return Result(catching: { try operation(url) })
+        })
+        
+        return try result.get()
+    }
+    
+    private static func _withCachedSecurityScopedAccessibleResourceURLIfExists<T>(
+        for location: any URLRepresentable,
+        perform operation: (URL) async throws -> T
+    ) async throws -> T? {
+        guard let url: URL = try? URL._SavedBookmarks.bookmarkedURL(for: location) else {
+            return nil
         }
         
-        return try await url._accessingSecurityScopedResource {
-            try await operation(url)
-        }
+        let result = try await url._accessingSecurityScopedResource({
+            return await Result(catching: { try await operation(url) })
+        })
+        
+        return try result.get()
     }
 }

@@ -6,27 +6,19 @@ import Foundation
 @_spi(Internal) import Swallow
 
 extension URL {
-    public final class _BookmarkCache: @unchecked Sendable {
-        private static let defaults = UserDefaults(suiteName: Swallow.module.bundleIdentifier)!
+    public final class _SavedBookmarks: @unchecked Sendable {
         private static let lock = OSUnfairLock()
         
-        @UserDefault("_BookmarkCache.items") static var items: [Bookmark] = []
-        
-        struct Bookmark: Codable {
-            let urlPath: String
-            var data: Data
-        }
+        @UserDefault(
+            "Foundation.URL._SavedBookmarks.items",
+            store: UserDefaults(suiteName: "com.vmanot.Swallow")!
+        )
+        static var items: IdentifierIndexingArrayOf<URL.Bookmark> = []
         
         public static func bookmark(
             _ url: URL
         ) throws -> URL {
-            var bookmarks = lock.withCriticalScope {
-                self.items
-            }
-            
             do {
-                let url = url.standardized
-                
                 if !FileManager.default.fileExists(at: url) {
                     runtimeIssue("Scoped bookmarks can only be created for existing files or directories. \(url) does not exist.")
                     
@@ -34,56 +26,33 @@ extension URL {
                 }
                 
                 let bookmarkData = try url._bookmarkDataWithSecurityScopedAccess()
+                let bookmark = try URL.Bookmark(data: bookmarkData)
                 
-                if let index = bookmarks.firstIndex(where: { $0.urlPath == url.path }) {
-                    bookmarks[index].data = bookmarkData
-                } else {
-                    bookmarks.append(Bookmark(urlPath: url.path, data: bookmarkData))
+                Task.detached(priority: .utility) {
+                    lock.withCriticalScope {
+                        self.items[id: bookmark.id] = bookmark
+                    }
                 }
                 
-                lock.withCriticalScope {
-                    self.items = bookmarks
-                }
-                
-                return try cachedURL(for: url)!
+                return try bookmark.toURL()
             } catch {
                 throw _Error.failedToSaveBookmarkData(error)
             }
         }
         
+        public static func bookmarkedURL(
+            for url: any URLRepresentable
+        ) throws -> URL? {
+            try lock.withCriticalScope { () -> URL? in
+                try self.items[id: URL.Bookmark.ID(from: url.url)]?.toURL()
+            }
+        }
+        
+        @available(*, deprecated, renamed: "bookmarkedURL")
         public static func cachedURL(
             for url: any URLRepresentable
         ) throws -> URL? {
-            try cachedURL(for: url.url)
-        }
-        
-        public static func cachedURL(
-            for url: URL
-        ) throws -> URL? {
-            try lock.withCriticalScope {
-                let url = url.standardized
-                
-                guard let item = items.first(where: { $0.urlPath == url.path }) else {
-                    return nil
-                }
-                
-                var isStale = false
-                
-                do {
-                    let resolvedURL = try URL(
-                        _resolvingBookmarkDataWithSecurityScopedAccess: item.data,
-                        isStale: &isStale
-                    )
-                    
-                    if !isStale {
-                        return resolvedURL
-                    } else {
-                        return nil
-                    }
-                } catch {
-                    throw URL._BookmarkCache._Error.failedToSaveBookmarkData(error)
-                }
-            }
+            try bookmarkedURL(for: url)
         }
         
         public static func removeAll() {
@@ -166,7 +135,7 @@ extension URL {
     
     func _bookmarkDataWithSecurityScopedAccess() throws -> Data {
         let fileURL: URL = _fromURLToFileURL()
-            
+        
         return try fileURL.bookmarkData(
             options: .withSecurityScope,
             includingResourceValuesForKeys: nil,
@@ -178,7 +147,7 @@ extension URL {
 
 // MARK: - Error Handling
 
-extension URL._BookmarkCache {
+extension URL._SavedBookmarks {
     public enum _Error: Error {
         case failedToSaveBookmarkData(Error)
         case unxpectedlyStale(URL)
