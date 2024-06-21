@@ -6,6 +6,7 @@ import Foundation
 @_spi(Internal) import Swallow
 
 extension URL {
+    @_spi(Internal)
     public final class _SavedBookmarks: @unchecked Sendable {
         private static let lock = OSUnfairLock()
         
@@ -147,6 +148,7 @@ extension URL {
 
 // MARK: - Error Handling
 
+@_spi(Internal)
 extension URL._SavedBookmarks {
     public enum _Error: Error {
         case failedToSaveBookmarkData(Error)
