@@ -599,6 +599,25 @@ extension Binding {
 }
 
 extension ForEach where Content: View {
+    public init(
+        _ data: Data,
+        from binding: Binding<IdentifierIndexingArrayOf<Data.Element>>,
+        @ViewBuilder content: @escaping (Binding<Data.Element>) -> Content
+    ) where Data.Element: Identifiable, ID == Data.Element.ID {
+        self.init(data) { (element: Data.Element) in
+            let binding = Binding<Data.Element>(
+                get: {
+                    element
+                },
+                set: { (newValue: Data.Element) in
+                    binding.wrappedValue.upsert(newValue)
+                }
+            )
+            
+            content(binding)
+        }
+    }
+    
     public init<Element: Identifiable, UnwrappedContent: View>(
         identified data: Binding<IdentifierIndexingArrayOf<Element>>,
         @ViewBuilder content: @escaping (Binding<Element>) -> UnwrappedContent
