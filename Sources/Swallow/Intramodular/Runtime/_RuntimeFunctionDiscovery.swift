@@ -5,19 +5,16 @@
 import Foundation
 import Swift
 
-extension _RuntimeFunctionDiscovery {
-    public enum FunctionAttribute: Hashable {
-        case name(String)
-        case argument(name: String?, type: Metatype<Any.Type>)
-        case returnType(Metatype<Any.Type>)
-        case `throws`
-        case `async`
-        case sourceCodeLocation(SourceCodeLocation)
-        case caller(FunctionCaller)
+@objc(_Swallow_RuntimeTypeDiscovery) open class _RuntimeTypeDiscovery: NSObject {
+    open class var type: Any.Type {
+        assertionFailure()
+        
+        return Never.self
     }
 }
 
-@objc(_Swallow_RuntimeFunctionDiscovery) open class _RuntimeFunctionDiscovery: NSObject {
+@objc(_Swallow_RuntimeFunctionDiscovery)
+open class _RuntimeFunctionDiscovery: NSObject {
     public struct FunctionCaller: HashEquatable {
         public enum FunctionInvocationResult {
             case result(Result<Any, Error>)
@@ -74,10 +71,14 @@ extension _RuntimeFunctionDiscovery {
     }
 }
 
-@objc(_Swallow_RuntimeTypeDiscovery) open class _RuntimeTypeDiscovery: NSObject {
-    open class var type: Any.Type {
-        assertionFailure()
-        
-        return Never.self
+extension _RuntimeFunctionDiscovery {
+    public enum FunctionAttribute: Hashable {
+        case name(String)
+        case argument(name: String?, type: Metatype<Any.Type>)
+        case returnType(Metatype<Any.Type>)
+        case `throws`
+        case `async`
+        case sourceCodeLocation(SourceCodeLocation)
+        case caller(FunctionCaller)
     }
 }

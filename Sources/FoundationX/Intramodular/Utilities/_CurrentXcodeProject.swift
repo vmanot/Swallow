@@ -60,7 +60,8 @@ public struct _CurrentXcodeProject {
             var url = url
 
             while url.path != "/" {
-                if let contents = try? fileManager.contentsOfDirectory(at: url),
+                if let contents: [URL] = try? fileManager.contentsOfDirectory(at: url),
+                   
                    let matches: [URL] = contents.filter({ type.match(url: $0) }) as [URL]? {
                     if let selector = selector, matches.count > 1 {
                         return selector(matches)

@@ -44,9 +44,15 @@ extension URL {
         public static func bookmarkedURL(
             for url: any URLRepresentable
         ) throws -> URL? {
-            try lock.withCriticalScope { () -> URL? in
+            let result: URL? = try lock.withCriticalScope { () -> URL? in
                 try self.items[id: URL.Bookmark.ID(from: url.url)]?.toURL()
             }
+            
+            guard let result else {
+                return nil
+            }
+            
+            return result
         }
         
         @available(*, deprecated, renamed: "bookmarkedURL")

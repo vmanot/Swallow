@@ -11,6 +11,10 @@ extension FileManager {
         scope: URL._FileOrDirectorySecurityScopedAccessManager.PreferredScope = .automatic,
         perform operation: (URL) throws -> T
     ) throws -> T {
+        guard !FileManager.default.isReadableAndWritable(at: location) else {
+            return try operation(location.url)
+        }
+        
         let url: URL = location.url
         
         switch scope {
@@ -31,6 +35,10 @@ extension FileManager {
         scope: URL._FileOrDirectorySecurityScopedAccessManager.PreferredScope = .automatic,
         perform operation: (URL) async throws -> T
     ) async throws -> T {
+        guard !FileManager.default.isReadableAndWritable(at: location) else {
+            return try await operation(location.url)
+        }
+
         let url: URL = location.url
         
         switch scope {
