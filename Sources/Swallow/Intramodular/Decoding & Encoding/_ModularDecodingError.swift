@@ -84,6 +84,23 @@ extension _ModularDecodingError {
             self.underlyingError = underlyingError
         }
     }
+    
+    public var context: _ModularDecodingError.Context? {
+        switch self {
+            case .unsafeSerializationUnsupported:
+                return nil
+            case .typeMismatch(_, let context, _):
+                return context
+            case .valueNotFound(_, let context, _):
+                return context
+            case .keyNotFound(_, let context, _):
+                return context
+            case .dataCorrupted(let context, _):
+                return context
+            case .unknown(_):
+                return nil
+        }
+    }
 }
 
 extension _ModularDecodingError.Context: CustomStringConvertible {

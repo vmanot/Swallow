@@ -9,6 +9,14 @@ public enum CodingPathElement: Codable, Hashable, Sendable {
     case key(AnyCodingKey)
     case `super`(key: AnyCodingKey?)
     
+    public var key: AnyCodingKey? {
+        guard case .key(let result) = self else {
+            return nil
+        }
+        
+        return result
+    }
+    
     public var description: String {
         switch self {
             case .key(let key):
@@ -19,7 +27,7 @@ public enum CodingPathElement: Codable, Hashable, Sendable {
     }
 }
 
-public struct CodingPath: Codable, CustomStringConvertible, Hashable, Sendable {
+public struct CodingPath: Codable, CustomStringConvertible, Hashable, Sendable, Sequence {
     private var base: [CodingPathElement]
 
     public var description: String {
@@ -28,6 +36,10 @@ public struct CodingPath: Codable, CustomStringConvertible, Hashable, Sendable {
 
     public init(_ path: [CodingKey]) {
         self.base = path.map({ CodingPathElement.key(AnyCodingKey(erasing: $0)) })
+    }
+    
+    public func makeIterator() -> Array<CodingPathElement>.Iterator {
+        base.makeIterator()
     }
 }
 
