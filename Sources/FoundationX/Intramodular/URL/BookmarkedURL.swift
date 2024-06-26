@@ -107,7 +107,12 @@ extension BookmarkedURL: Codable {
                 let container = try decoder.container(keyedBy: CodingKeys.self)
                 
                 url = try container.decode(URL.self, forKey: .url)
-                bookmarkData = try container.decodeIfPresent(Data.self, forKey: .bookmarkData)
+                
+                do {
+                    bookmarkData = try container.decodeIfPresent(Data.self, forKey: .bookmarkData)
+                } catch {
+                    bookmarkData = Data(base64Encoded: try container.decodeIfPresent(String.self, forKey: .bookmarkData).unwrap())
+                }
             }
         }
     }
