@@ -14,7 +14,25 @@ public struct AnyTopLevelDecoder<Input>: TopLevelDecoder, Sendable {
         if let decoder = decoder as? AnyTopLevelDecoder {
             self = decoder
         } else {
-            self._decode = { try decoder.decode($0, from: $1) }
+            self._decode = { type, input in
+                do {
+                    return try decoder.decode(type, from: input)
+                } catch let decodingError as Swift.DecodingError {
+                    if case .dataCorrupted = decodingError {
+                        if let decoder = decoder as? JSONDecoder, let input = input as? Data {
+                            if let result = try? decoder.decode(type, from: input, allowFragments: true) {
+                                return result
+                            }
+                        }
+                        
+                        throw decodingError
+                    } else {
+                        throw decodingError
+                    }
+                } catch {
+                    throw error
+                }
+            }
         }
     }
     

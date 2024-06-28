@@ -4,6 +4,7 @@
 
 import Swift
 
+/// A type that simply dumps the `Decoder` it is being decoded from.
 public struct DecoderUnwrapper: Decodable {
     public let value: Decoder
     

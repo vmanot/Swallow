@@ -39,15 +39,19 @@ extension JSONDecoder {
             return try decode(type, from: data)
         } catch {
             if error.isFragmentDecodingError {
-                let jsonObject = try JSONSerialization.jsonObject(with: data, options: .allowFragments)
-                let boxedData = try JSONSerialization.data(withJSONObject: [jsonObject])
-                let decoder = copy()
-                
-                decoder.userInfo[.fragmentBoxedType] = type
-                
-                return try decoder
-                    .decode(FragmentDecodingBox<T>.self, from: boxedData)
-                    .value
+                do {
+                    let jsonObject = try JSONSerialization.jsonObject(with: data, options: .allowFragments)
+                    let boxedData = try JSONSerialization.data(withJSONObject: [jsonObject])
+                    let decoder = copy()
+                    
+                    decoder.userInfo[.fragmentBoxedType] = type
+                    
+                    return try decoder
+                        .decode(FragmentDecodingBox<T>.self, from: boxedData)
+                        .value
+                } catch {
+                    throw error
+                }
             } else {
                 throw error
             }
@@ -112,12 +116,14 @@ fileprivate extension Error {
             return false
         }
         
+        guard let nsError = (context.underlyingError as NSError?) else {
+            return false
+        }
+        
         return fragile {
             true
                 && context.debugDescription == "The given data was not valid JSON."
-                && (context.underlyingError as NSError?)?
-                .debugDescription
-                .contains("option to allow fragments not set") ?? false
+            && (nsError.debugDescription.contains("option to allow fragments not set") || nsError.debugDescription.contains("after top-level value around"))
         }
     }
 }

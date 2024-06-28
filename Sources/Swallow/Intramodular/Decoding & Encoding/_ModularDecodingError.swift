@@ -2,6 +2,7 @@
 // Copyright (c) Vatsal Manot
 //
 
+import Combine
 import Foundation
 import Swift
 
@@ -16,7 +17,7 @@ public enum _ModularDecodingError: Error {
     
     public init(
         from decodingError: Swift.DecodingError,
-        type: (any Decodable.Type)?,
+        type: Any.Type?,
         value: AnyCodable?
     ) {
         guard let _context = decodingError.context else {
@@ -46,12 +47,49 @@ public enum _ModularDecodingError: Error {
         }
     }
     
+    public init(
+       from decodingError: Swift.DecodingError,
+       type: Any.Type?,
+       value: AnyCodable?,
+       path: CodingPath
+    ) throws {
+        guard let context = decodingError.context else {
+            throw decodingError // we need the context otherwise we can't validate the coding path
+        }
+        
+        // Make sure the `Swift.DecodingError` being mapped is actually the one for the current coding path.
+        guard CodingPath(context.codingPath) == path else {
+            throw decodingError
+        }
+        
+        self.init(from: decodingError, type: type, value: value)
+    }
+    
+    public init<D: TopLevelDecoder>(
+       from decodingError: Swift.DecodingError,
+       type: Any.Type?,
+       decoder: D,
+       input: D.Input
+    ) throws {
+        do {
+            let decoder: any Decoder = try decoder.decode(DecoderUnwrapper.self, from: input).value
+            
+            try self.init(
+                from: decodingError,
+                type: type,
+                value: try? AnyCodable(from: decoder),
+                path: CodingPath(decoder.codingPath)
+            )
+        } catch {
+            throw decodingError
+        }
+    }
     public init?(
         _ error: any Error,
         type: Any.Type? = nil,
         data: AnyCodable? = nil
     ) {
-        if let error = error as? Swift.DecodingError, let type = type as? any Decodable.Type {
+        if let error = error as? Swift.DecodingError {
             self.init(
                 from: error,
                 type: type,
@@ -67,13 +105,13 @@ public enum _ModularDecodingError: Error {
 
 extension _ModularDecodingError {
     public struct Context: Sendable {
-        public let type: Decodable.Type? // FIXME?
+        public let type: Any.Type?
         public let codingPath: CodingPath
         public let debugDescription: String
         public let underlyingError: (any Error)?
         
         public init(
-            type: Decodable.Type?,
+            type: Any.Type?,
             codingPath: [CodingKey],
             debugDescription: String,
             underlyingError: (any Error)?
