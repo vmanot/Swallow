@@ -185,6 +185,12 @@ extension _CasePathExtracting {
 }
 
 extension Sequence where Element: _CasePathExtracting {
+    public func contains<Value>(
+        _ casePath: CasePath<Element, Value>
+    ) -> Bool {
+        contains(where: { casePath.extract(from: $0) != nil })
+    }
+
     public func first<Value>(
         _ casePath: CasePath<Element, Value>
     ) -> Value? {
