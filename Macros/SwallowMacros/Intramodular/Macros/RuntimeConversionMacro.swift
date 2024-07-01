@@ -16,7 +16,7 @@ public struct RuntimeConversionMacro: PeerMacro {
         in context: some MacroExpansionContext
     ) throws -> [DeclSyntax] {
         guard var declaration = declaration.as(FunctionDeclSyntax.self) else {
-            throw CustomMacroExpansionError()
+            throw AnyDiagnosticMessage()
         }
         
         let name: TokenSyntax = context.makeUniqueName("_RuntimeConversion")

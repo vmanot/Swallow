@@ -26,7 +26,7 @@ struct GenerateDuplicateMacro: PeerMacro {
         in context: some MacroExpansionContext
     ) throws -> [DeclSyntax] {
         guard var funcDecl = declaration.as(FunctionDeclSyntax.self) else {
-            throw CustomMacroExpansionError.message("@duplicate only works on functions")
+            throw AnyDiagnosticMessage("@duplicate only works on functions")
         }
         
         funcDecl.attributes.removeAll(where: {

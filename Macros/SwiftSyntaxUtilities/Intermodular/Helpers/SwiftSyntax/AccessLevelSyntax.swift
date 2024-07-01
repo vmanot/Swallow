@@ -2,8 +2,11 @@
 // Copyright (c) Vatsal Manot
 //
 
-
 import SwiftSyntax
+
+public protocol AccessLevelSyntax {
+    var modifiers: DeclModifierListSyntax { get set }
+}
 
 public enum AccessLevelModifier: String, Comparable, CaseIterable {
     case `private`
@@ -14,23 +17,28 @@ public enum AccessLevelModifier: String, Comparable, CaseIterable {
     
     public var keyword: Keyword {
         switch self {
-            case .private: return .private
-            case .fileprivate: return .fileprivate
-            case .internal: return .internal
-            case .public: return .public
-            case .open: return .open
+            case .private: 
+                return .private
+            case .fileprivate:
+                return .fileprivate
+            case .internal:
+                return .internal
+            case .public:
+                return .public
+            case .open:
+                return .open
         }
     }
     
-    public static func <(lhs: AccessLevelModifier, rhs: AccessLevelModifier) -> Bool {
+    public static func < (
+        lhs: AccessLevelModifier,
+        rhs: AccessLevelModifier
+    ) -> Bool {
         let lhs = Self.allCases.firstIndex(of: lhs)!
         let rhs = Self.allCases.firstIndex(of: rhs)!
+        
         return lhs < rhs
     }
-}
-
-public protocol AccessLevelSyntax {
-    var modifiers: DeclModifierListSyntax { get set }
 }
 
 extension AccessLevelSyntax {
@@ -55,16 +63,38 @@ extension AccessLevelSyntax {
     }
 }
 
-extension StructDeclSyntax: AccessLevelSyntax { }
-extension ClassDeclSyntax: AccessLevelSyntax { }
-extension EnumDeclSyntax: AccessLevelSyntax { }
-extension ActorDeclSyntax: AccessLevelSyntax { }
-
-extension FunctionDeclSyntax: AccessLevelSyntax { }
-extension VariableDeclSyntax: AccessLevelSyntax { }
+// MARK: - Supplementary
 
 extension DeclGroupSyntax {
     public var declAccessLevel: AccessLevelModifier {
-        get { (self as? AccessLevelSyntax)?.accessLevel ?? .internal }
+        get {
+            (self as? AccessLevelSyntax)?.accessLevel ?? .internal
+        }
     }
+}
+
+// MARK: - Implemented Conformances
+
+extension ActorDeclSyntax: AccessLevelSyntax {
+    
+}
+
+extension ClassDeclSyntax: AccessLevelSyntax {
+    
+}
+
+extension EnumDeclSyntax: AccessLevelSyntax {
+    
+}
+
+extension FunctionDeclSyntax: AccessLevelSyntax {
+    
+}
+
+extension StructDeclSyntax: AccessLevelSyntax {
+    
+}
+
+extension VariableDeclSyntax: AccessLevelSyntax {
+    
 }

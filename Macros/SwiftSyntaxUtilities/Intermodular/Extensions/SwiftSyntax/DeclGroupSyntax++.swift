@@ -19,6 +19,22 @@ private let autoSynthesizingProtocolTypes: Set<String> = [
 ]
 
 extension DeclGroupSyntax {
+    /// The name of the concrete type represented by this `DeclGroupSyntax`.
+    /// This excludes protocols, which return nil.
+    public var concreteTypeName: String? {
+        switch self.kind {
+            case .actorDecl, .classDecl, .enumDecl, .structDecl:
+                return self.asProtocol(NamedDeclSyntax.self)?.name.text
+            case .extensionDecl:
+                return self.as(ExtensionDeclSyntax.self)?.extendedType.trimmedDescription
+            default:
+                // New types of decls are not presumed to be valid.
+                return nil
+        }
+    }
+}
+
+extension DeclGroupSyntax {
     public func collectAutoSynthesizingProtocolConformance() -> [InheritedTypeSyntax] {
         guard let structDecl = self.as(StructDeclSyntax.self) else {
             return []

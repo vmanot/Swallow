@@ -3,6 +3,7 @@
 //
 
 import SwiftDiagnostics
+import Swallow
 
 public struct AnyDiagnosticMessage: DiagnosticMessage, Error, FixItMessage, ExpressibleByStringLiteral {
     public let message: String
@@ -11,7 +12,7 @@ public struct AnyDiagnosticMessage: DiagnosticMessage, Error, FixItMessage, Expr
     public let file: StaticString?
     
     public var diagnosticID: MessageID {
-        .init(domain: module.domain, id: message)
+        .init(domain: "com.vmanot.SwallowMacros", id: message)
     }
     
     public var fixItID: MessageID {
@@ -19,7 +20,7 @@ public struct AnyDiagnosticMessage: DiagnosticMessage, Error, FixItMessage, Expr
     }
     
     public init(
-        message: String,
+        message: String = "An unknown error occurred in \(#fileID).", 
         severity: DiagnosticSeverity = .error,
         file: StaticString? = #fileID
     ) {

@@ -6,6 +6,7 @@ import Swift
 import SwiftSyntax
 import SwiftSyntaxBuilder
 import SwiftSyntaxMacros
+import SwiftSyntaxUtilities
 
 /// https://github.com/ShenghaiWang/SwiftMacros/blob/main/Sources/Macros/Singleton.swift
 public struct SingletonMacro: MemberMacro {
@@ -15,7 +16,7 @@ public struct SingletonMacro: MemberMacro {
         in context: Context
     ) throws -> [DeclSyntax] {
         guard [SwiftSyntax.SyntaxKind.classDecl, .structDecl].contains(declaration.kind) else {
-            throw CustomMacroExpansionError.message("Can only be applied to a struct or class")
+            throw AnyDiagnosticMessage("Can only be applied to a struct or class")
         }
         
         let identifier = (declaration as? StructDeclSyntax)?.name ?? (declaration as? ClassDeclSyntax)?.name ?? ""

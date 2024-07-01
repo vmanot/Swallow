@@ -618,3 +618,31 @@ extension RangeReplaceableCollection {
         return result
     }
 }
+
+extension RangeReplaceableCollection where Self: BidirectionalCollection & MutableCollection {
+    public func reduce<T>(
+        byUnwrapping transform: (Element) -> T?,
+        _ combine: (T, T) -> Element
+    ) -> Self {
+        reduce(into: Self(capacity: underestimatedCount)) { result, element in
+            if let last = result.last, let lhs = transform(last), let rhs = transform(element) {
+                result.mutableLast = combine(lhs, rhs)
+            } else {
+                result.append(element)
+            }
+        }
+    }
+    
+    public func reduce<T>(
+        byUnwrapping casePath: CasePath<Element, T>,
+        _ combine: (T, T) -> T
+    ) -> Self {
+        reduce(into: Self(capacity: underestimatedCount)) { result, element in
+            if let last = result.last, let lhs = casePath.extract(from: last), let rhs = casePath.extract(from: element) {
+                result.mutableLast = casePath.embed(combine(lhs, rhs))
+            } else {
+                result.append(element)
+            }
+        }
+    }
+}

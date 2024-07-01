@@ -7,3 +7,5 @@
 @_exported import SwiftSyntax
 @_exported import SwiftSyntaxBuilder
 @_exported import SwiftSyntaxMacros
+@_exported import SwiftSyntaxUtilities
+

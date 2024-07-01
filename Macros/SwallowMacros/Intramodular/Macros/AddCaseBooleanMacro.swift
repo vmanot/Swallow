@@ -6,6 +6,7 @@ import Swift
 import SwiftSyntax
 import SwiftSyntaxBuilder
 import SwiftSyntaxMacros
+import SwiftSyntaxUtilities
 
 public struct AddCaseBooleanMacro: MemberMacro {
     public static func expansion<
@@ -21,7 +22,7 @@ public struct AddCaseBooleanMacro: MemberMacro {
             .memberBlock.members
             .compactMap({ $0.decl.as(EnumCaseDeclSyntax.self)?.elements })
         else {
-            throw CustomMacroExpansionError.message(
+            throw AnyDiagnosticMessage(
                 "@AddCaseBoolean only works on enum that have associated value case"
             )
         }
