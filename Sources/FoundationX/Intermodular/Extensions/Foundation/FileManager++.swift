@@ -370,7 +370,7 @@ extension FileManager {
     
     public func contents(
         of url: URL
-    ) throws -> Data {
+    ) throws -> Foundation.Data {
         do {
             return try contents(atPath: url.path).unwrap()
         } catch {
@@ -389,11 +389,37 @@ extension FileManager {
     public func contents(
         ofSecurityScopedResource url: URL
     ) throws -> Data {
-        let result = try url._accessingSecurityScopedResource {
-            try contents(atPath: url.path).unwrap()
+        let contents: Data?
+        
+        do {
+            contents = try url._accessingSecurityScopedResource {
+                self.contents(atPath: url.path)
+            }
+        } catch let error as URL._SecurityScopedResourceAccessError {
+            guard case .failedToAccessSecurityScopedResource = error else {
+                throw error
+            }
+
+            do {
+                let bookmarkedURL = try URL._SavedBookmarks.bookmark(url)
+                
+                do {
+                    contents = try bookmarkedURL._accessingSecurityScopedResource {
+                        try self.contents(of: bookmarkedURL)
+                    }
+                } catch {
+                    contents = self.contents(atPath: url.path)
+                    
+                    runtimeIssue("Bookmark creation failed, but read succeeded.")
+                }
+            } catch {
+                contents = self.contents(atPath: url.path)
+                
+                runtimeIssue("Recovered but encountered unknown error: \(error)")
+            }
         }
         
-        return result
+        return try contents.unwrap()
     }
     
     public func contentsIfFileExists(

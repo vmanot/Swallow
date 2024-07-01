@@ -28,12 +28,12 @@ public struct RuntimeDiscoverableMacroPrototype: MacroProtoype {
         if let declaration = declaration.as(ProtocolDeclSyntax.self) {
             let syntax = DeclSyntax(
                 """
-                @objc class \(raw: declaration.name.text)_RuntimeTypeDiscovery: _RuntimeTypeDiscovery {
-                    override open class var type: Any.Type {
+                @objc public class \(raw: declaration.name.text)_RuntimeTypeDiscovery: Swallow._RuntimeTypeDiscovery {
+                    override public class var type: Any.Type {
                         (any \(raw: declaration.name.text)).self
                     }
                 
-                    override init() {
+                    override public init() {
                     
                     }
                 }
@@ -46,12 +46,12 @@ public struct RuntimeDiscoverableMacroPrototype: MacroProtoype {
             
             let syntax = DeclSyntax(
                 """
-                @objc class \(raw: name)_RuntimeTypeDiscovery: _RuntimeTypeDiscovery {
-                    override open class var type: Any.Type {
+                @objc public class \(raw: name)_RuntimeTypeDiscovery: Swallow._RuntimeTypeDiscovery {
+                    override public class var type: Any.Type {
                         \(raw: name).self
                     }
                 
-                    override init() {
+                    override public init() {
                     
                     }
                 }
@@ -62,12 +62,12 @@ public struct RuntimeDiscoverableMacroPrototype: MacroProtoype {
         } else if let declaration = declaration.as(ExtensionDeclSyntax.self)?.trimmed, let name: String = declaration.concreteTypeName {
             let syntax = DeclSyntax(
                 """
-                @objc class \(raw: name)_RuntimeTypeDiscovery: _RuntimeTypeDiscovery {
-                    override open class var type: Any.Type {
+                @objc public class \(raw: name)_RuntimeTypeDiscovery: Swallow._RuntimeTypeDiscovery {
+                    override public class var type: Any.Type {
                         \(raw: name).self
                     }
                 
-                    override init() {
+                    override public init() {
                     
                     }
                 }

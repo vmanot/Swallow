@@ -10,7 +10,6 @@ extension URL {
         case failedToAccessSecurityScopedResource(for: URL)
     }
     
-    @_transparent
     public func _accessingSecurityScopedResource<T>(
         _ operation: () throws -> T
     ) throws -> T {
@@ -47,7 +46,6 @@ extension URL {
         }
     }
     
-    @_transparent
     public func _accessingSecurityScopedResource<T>(
         _ operation: () async throws -> T
     ) async throws -> T {
