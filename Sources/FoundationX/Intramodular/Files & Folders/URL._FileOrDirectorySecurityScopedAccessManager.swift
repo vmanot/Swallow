@@ -125,14 +125,28 @@ extension URL._FileOrDirectorySecurityScopedAccessManager {
         guard _isDebugAssertConfiguration else {
             return
         }
+                
+        guard FileManager.default.isReadableAndWritable(at: url) else {
+            runtimeIssue("Failed to write test file within \(url)")
+            
+            return
+        }
+
+        let testFileURL: URL = url.appendingPathComponent(".temp_test_file")._fromURLToFileURL()
         
         _ = url.startAccessingSecurityScopedResource()
         
-        let testFilePath = url.appendingPathComponent(".temp_test_file")
-        try "test".write(to: testFilePath, atomically: true, encoding: .utf8)
-        try FileManager.default.removeItem(at: testFilePath)
-        
-        url.stopAccessingSecurityScopedResource()
+        do {
+            try "test".write(to: testFileURL, atomically: true, encoding: .utf8)
+         
+            try FileManager.default.removeItem(at: testFileURL)
+            
+            url.stopAccessingSecurityScopedResource()
+        } catch {
+            url.stopAccessingSecurityScopedResource()
+            
+            throw error
+        }
     }
     
     @MainActor

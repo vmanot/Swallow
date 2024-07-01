@@ -49,45 +49,48 @@ extension URL {
 }
 
 extension URL {
-    fileprivate enum _CanonicalFileDirectoryPath: String, CaseIterable {
+    enum _CanonicalFileDirectoryPathNameOptions: String, CaseIterable, URLConvertible {
         case home = "~"
         case desktop = "~/Desktop"
         case documents = "~/Documents"
         case downloads = "~/Downloads"
         case applications = "/Applications"
         case library = "~/Library"
+        
+        var url: URL {
+            URL(fileURLWithPath: rawValue)
+        }
     }
     
-    fileprivate static func path(
-        _ directoryPath: _CanonicalFileDirectoryPath,
-        sandboxed: Bool = true
+    static var _allUnsandboxedCanonicalFileDirectoryPaths: Set<String> {
+        Set(_CanonicalFileDirectoryPathNameOptions.allCases.map(\.url).map(\._unsandboxedURL).map(\.path))
+    }
+    
+    static func _sandboxedCanonicalDirectory(
+        _ directoryPath: _CanonicalFileDirectoryPathNameOptions
     ) -> URL {
-        if sandboxed {
-            switch directoryPath {
-                case .home:
-                    return FileManager.default.homeDirectoryForCurrentUser
-                case .desktop:
-                    return FileManager.default.urls(for: .desktopDirectory, in: .userDomainMask).first!
-                case .documents:
-                    return FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
-                case .downloads:
-                    return FileManager.default.urls(for: .downloadsDirectory, in: .userDomainMask).first!
-                case .applications:
-                    return FileManager.default.urls(for: .applicationDirectory, in: .localDomainMask).first!
-                case .library:
-                    return FileManager.default.urls(for: .libraryDirectory, in: .userDomainMask).first!
-            }
-        } else {
-            let path: String = NSString(string: directoryPath.rawValue).expandingTildeInPath as String
-            
-            if path.hasPrefix(String(NSHomeDirectory().dropSuffixIfPresent("/"))) {
-                if let result = URL(fileURLWithPath: path).estimatedUnsandboxedURL {
-                    return result
-                }
-            }
-            
-            return URL(fileURLWithPath: path)
+        switch directoryPath {
+            case .home:
+                return FileManager.default.homeDirectoryForCurrentUser
+            case .desktop:
+                return FileManager.default.urls(for: .desktopDirectory, in: .userDomainMask).first!
+            case .documents:
+                return FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+            case .downloads:
+                return FileManager.default.urls(for: .downloadsDirectory, in: .userDomainMask).first!
+            case .applications:
+                return FileManager.default.urls(for: .applicationDirectory, in: .localDomainMask).first!
+            case .library:
+                return FileManager.default.urls(for: .libraryDirectory, in: .userDomainMask).first!
         }
+    }
+    
+    public var _isCanonicalDirectoryURL: Bool {
+        if path == URL(fileURLWithPath: NSHomeDirectory())._unsandboxedURL.path {
+            return true
+        }
+        
+        return URL._allUnsandboxedCanonicalFileDirectoryPaths.contains(self.path)
     }
 }
 

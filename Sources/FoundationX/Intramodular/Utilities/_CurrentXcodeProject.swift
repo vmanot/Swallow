@@ -29,55 +29,77 @@ public struct _CurrentXcodeProject {
         return nil
     }
     
-    public struct Files {
+    public struct RelevantFileList {
         public let xcodeproj: URL?
         public let infoPlist: URL?
     }
     
     @MainActor
-    public static func findFiles(
-        initialPath: URL
-    ) throws -> Files {
-        let projPath: URL? = try find(itemOfType: XcodeProject(), around: initialPath)
-        let plistPath: URL? = try find(itemOfType: InfoPlist(), around: initialPath, selector: { plists in
-            // Custom selection logic for multiple Info.plist files (if needed)
-            return plists.first  // Placeholder for custom selection logic
+    public static func relevantFileList(
+        from initialPath: URL
+    ) -> RelevantFileList {
+        let xcodeprojURL: URL? = try? find(itemOfType: XcodeProject(), around: initialPath)
+        let infoPlistURL: URL? = try? find(itemOfType: InfoPlist(), around: initialPath, selector: { plists in
+            return plists.first
         })
         
-        guard projPath != nil || plistPath != nil else {
-            throw Never.Reason.unavailable
-        }
-        
-        return Files(xcodeproj: projPath, infoPlist: plistPath)
+        return RelevantFileList(
+            xcodeproj: xcodeprojURL,
+            infoPlist: infoPlistURL
+        )
     }
     
     public static func find<T: SearchableItem>(
         itemOfType type: T,
-        around url: URL,
+        around initialURL: URL,
         selector: (([URL]) -> URL?)? = nil
     ) throws -> URL? {
-        guard !url.path.hasPrefix(URL._developerXcodeDerivedData.path) else {
+        guard !initialURL.path.hasPrefix(URL._developerXcodeDerivedData.path) else {
             return nil
         }
-        
-        return try FileManager.default.withUserGrantedAccess(to: url) { url -> URL? in
-            var url = url
-
-            while url.path != "/" {
-                if let contents: [URL] = try? fileManager.contentsOfDirectory(at: url),
-                   
-                   let matches: [URL] = contents.filter({ type.match(url: $0) }) as [URL]? {
-                    if let selector = selector, matches.count > 1 {
-                        return selector(matches)
-                    } else if let match = matches.first {
-                        return match
+                
+        return try FileManager.default.withUserGrantedAccess(to: initialURL) { (url: URL) -> URL? in
+            var currentURL: URL = url
+            
+            var result: Set<URL> = []
+            
+            while currentURL.path != "/" && !url.path.isEmpty {
+                do {
+                    let contents: [URL]? = try FileManager.default.withUserGrantedAccess(to: currentURL) { url -> [URL]? in
+                        guard FileManager.default.isDirectory(at: url) else {
+                            return nil
+                        }
+                        
+                        return try fileManager.contentsOfDirectory(at: url)
                     }
+                    
+                    if let contents: [URL] = contents {
+                        let matches: [URL] = contents.filter({ type.match(url: $0) })
+                        
+                        if !matches.isEmpty {
+                            result.insert(contentsOf: matches)
+                            
+                            break
+                        }
+                    }
+                } catch {
+                    runtimeIssue(error)
                 }
                 
-                url.deleteLastPathComponent()
+                let currentURLBeforeDeleting = currentURL
+                
+                currentURL.deleteLastPathComponent()
+                
+                guard currentURL != currentURLBeforeDeleting && !currentURL._isCanonicalDirectoryURL else {
+                    break
+                }
             }
             
-            return nil
+            if !result.isEmpty {
+                return selector?(Array(result)) ?? result.first
+            } else {
+                return nil
+            }
         }
     }
 }
@@ -90,10 +112,10 @@ extension _CurrentXcodeProject {
         file: String = #file
     ) throws {
         assert(!file.hasPrefix("//"))
-     
+        
         let file = try URL(string: file).unwrap()
         
-        guard let plistURL = try findFiles(initialPath: file).infoPlist else {
+        guard let plistURL: URL = try relevantFileList(from: file).infoPlist else {
             fatalError("Error: Info.plist file not found.")
         }
         
