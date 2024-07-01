@@ -65,6 +65,7 @@ extension String {
         hasPrefix(prefix) ? dropFirst(prefix.count) : .init(self)
     }
     
+    @_disfavoredOverload
     public func dropPresentPrefix<String: StringProtocol>(_ prefix: String) -> Substring? {
         hasPrefix(prefix) ? dropFirst(prefix.count) : nil
     }

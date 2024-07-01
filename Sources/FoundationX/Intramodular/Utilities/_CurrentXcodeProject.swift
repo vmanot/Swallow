@@ -38,8 +38,8 @@ public struct _CurrentXcodeProject {
     public static func findFiles(
         initialPath: URL
     ) throws -> Files {
-        let projPath = try findItem(ofType: XcodeProject(), around: initialPath)
-        let plistPath = try findItem(ofType: InfoPlist(), around: initialPath, selector: { plists in
+        let projPath: URL? = try find(itemOfType: XcodeProject(), around: initialPath)
+        let plistPath: URL? = try find(itemOfType: InfoPlist(), around: initialPath, selector: { plists in
             // Custom selection logic for multiple Info.plist files (if needed)
             return plists.first  // Placeholder for custom selection logic
         })
@@ -51,12 +51,16 @@ public struct _CurrentXcodeProject {
         return Files(xcodeproj: projPath, infoPlist: plistPath)
     }
     
-    public static func findItem<T: SearchableItem>(
-        ofType type: T,
+    public static func find<T: SearchableItem>(
+        itemOfType type: T,
         around url: URL,
         selector: (([URL]) -> URL?)? = nil
     ) throws -> URL? {
-        try FileManager.default.withUserGrantedAccess(to: url) { url -> URL? in
+        guard !url.path.hasPrefix(URL._developerXcodeDerivedData.path) else {
+            return nil
+        }
+        
+        return try FileManager.default.withUserGrantedAccess(to: url) { url -> URL? in
             var url = url
 
             while url.path != "/" {
