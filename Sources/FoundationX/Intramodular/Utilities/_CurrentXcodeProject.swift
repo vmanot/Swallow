@@ -115,7 +115,7 @@ extension _CurrentXcodeProject {
         
         let file = try URL(string: file).unwrap()
         
-        guard let plistURL: URL = try relevantFileList(from: file).infoPlist else {
+        guard let plistURL: URL = relevantFileList(from: file).infoPlist else {
             fatalError("Error: Info.plist file not found.")
         }
         
