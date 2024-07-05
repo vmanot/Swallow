@@ -94,9 +94,9 @@ extension vDSP {
                 flattenedData.withUnsafeBufferPointer {
                     $0.baseAddress! + startIndex
                 },
-                stride,
+                .init(stride),
                 &flattenedData[startIndex],
-                stride,
+                .init(stride),
                 &mean,
                 &stdDev,
                 vDSP_Length(rowCount)
@@ -244,7 +244,7 @@ extension vDSP {
         dgeev_(jobvl, jobvr, &N, &A, &lda, &realEigenvalues, &imaginaryEigenvalues, &leftEigenvectors, &ldvl, &rightEigenvectors, &ldvr, &workspaceQuery, &workspaceSize, &error)
         
         if error != 0 {
-            throw EigenDecompositionError.computationFailed(resultCode: error)
+            throw EigenDecompositionError.computationFailed(resultCode: .init(error))
         }
         
         workspaceSize = __CLPK_integer(workspaceQuery)
@@ -253,7 +253,7 @@ extension vDSP {
         dgeev_(jobvl, jobvr, &N, &A, &lda, &realEigenvalues, &imaginaryEigenvalues, &leftEigenvectors, &ldvl, &rightEigenvectors, &ldvr, &workspace, &workspaceSize, &error)
         
         if error != 0 {
-            throw EigenDecompositionError.computationFailed(resultCode: error)
+            throw EigenDecompositionError.computationFailed(resultCode: .init(error))
         }
         
         let eigenvectors: Array<Array<Double>> = stride(from: 0, to: rightEigenvectors.count, by: order).map { Array<Double>(rightEigenvectors[$0..<$0 + order])

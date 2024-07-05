@@ -28,6 +28,20 @@ public enum Fortify {
         return try _Fortify.protect(block: block)
     }
     
+    /// Execute the passed-in block assured in the knowledge
+    /// any Swift exception will be converted into a throw.
+    /// - Parameter block: block to protect execution of
+    /// - Throws: Error protocol object often NSError
+    /// - Returns: value if block returns value
+    @_transparent
+    public static func protect<T>(
+        block: () async throws -> T
+    ) async throws -> T {
+        runtimeIssue(.unimplemented)
+        
+        return try await block()
+    }
+    
     /// Escape from current execution context, rewind the stack
     /// and throw error from the last time protect was called.
     /// - Parameters:
@@ -138,6 +152,7 @@ internal class _Fortify: ThreadLocal {
         block: () throws -> T
     ) throws -> T {
         let local = threadLocal
+        
         _ = installHandlersOnce
         
         empty_buf.withUnsafeBytes {

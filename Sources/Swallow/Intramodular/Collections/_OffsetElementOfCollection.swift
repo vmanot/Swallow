@@ -17,3 +17,25 @@ public struct _OffsetElementOfCollection<Element>: Identifiable {
         self.element = element
     }
 }
+
+public struct _ElementOffsetInParentCollection: Hashable {
+    /// The offset of the element.
+    public let offset: Int
+    /// The bounds of the parent collection of the element.
+    public let bounds: Range<Int>
+    
+    public var isLastElement: Bool {
+        let lastOffset = bounds.upperBound - 1
+        
+        guard lastOffset >= 0 else {
+            return false
+        }
+        
+        return offset == lastOffset
+    }
+
+    public init(offset: Int, in bounds: Range<Int>) {
+        self.offset = offset
+        self.bounds = bounds
+    }
+}

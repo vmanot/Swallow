@@ -68,20 +68,20 @@ extension URL {
     
     static func _sandboxedCanonicalDirectory(
         _ directoryPath: _CanonicalFileDirectoryPathNameOptions
-    ) -> URL {
+    ) -> URL! {
         switch directoryPath {
             case .home:
-                return FileManager.default.homeDirectoryForCurrentUser
+                return URL(fileURLWithPath: NSHomeDirectory())
             case .desktop:
-                return FileManager.default.urls(for: .desktopDirectory, in: .userDomainMask).first!
+                return FileManager.default.urls(for: .desktopDirectory, in: .userDomainMask).first
             case .documents:
-                return FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+                return FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
             case .downloads:
-                return FileManager.default.urls(for: .downloadsDirectory, in: .userDomainMask).first!
+                return FileManager.default.urls(for: .downloadsDirectory, in: .userDomainMask).first
             case .applications:
-                return FileManager.default.urls(for: .applicationDirectory, in: .localDomainMask).first!
+                return FileManager.default.urls(for: .applicationDirectory, in: .localDomainMask).first
             case .library:
-                return FileManager.default.urls(for: .libraryDirectory, in: .userDomainMask).first!
+                return FileManager.default.urls(for: .libraryDirectory, in: .userDomainMask).first
         }
     }
     
