@@ -57,6 +57,25 @@ public struct Base64DataURL: Hashable, Sendable, URLConvertible {
         self.data = data
         self.mimeType = mimeType
     }
+    
+    public init(image data: Data) throws {
+        try self.init(
+            data: data,
+            mimeType: _MediaAssetFileType(data).unwrap().mimeType
+        )
+    }
+    
+    public init(imageURL url: URL) async throws {
+        if url.isWebURL {
+            let (data, response) = try await URLSession.shared.data(from: url)
+            
+            try response.validateHTTPURLResponse()
+            
+            try self.init(image: data)
+        } else {
+            try self.init(url: url)
+        }
+    }
 }
 
 // MARK: - Conformances
