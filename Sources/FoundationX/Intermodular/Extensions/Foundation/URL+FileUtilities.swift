@@ -160,8 +160,12 @@ extension URL {
         lastPathComponent
     }
     
-    public var _fileExtension: String {
-        pathExtension
+    public var _fileExtension: String? {
+        guard !pathExtension.isEmpty else {
+            return nil
+        }
+        
+        return pathExtension
     }
     
     public var _actuallyStandardizedFileURL: URL {

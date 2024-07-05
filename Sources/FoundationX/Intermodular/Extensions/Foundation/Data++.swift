@@ -20,7 +20,7 @@ extension Data {
         let bundle = bundle ?? Bundle.main
         
         let fileNameWithoutExtension: String = URL(fileURLWithPath: "./\(name)")._fileNameWithoutExtension
-        let inferredFileExtension: String = URL(fileURLWithPath: "./\(name)")._fileExtension
+        let inferredFileExtension: String? = URL(fileURLWithPath: "./\(name)")._fileExtension
         
         let url =  nil
             ?? bundle.url(forResource: name, withExtension: fileExtension)

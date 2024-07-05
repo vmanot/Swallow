@@ -10,8 +10,12 @@ import UniformTypeIdentifiers
 
 extension URL {
     @available(macOS 11.0, iOS 14.0, watchOS 7.0, tvOS 14.0, *)
-    public var _preferredMIMEType: String? {
-        if !_fileExtension.isEmpty, FileManager.default.fileExists(at: self) {
+    public func _detectPreferredMIMEType() -> String? {
+        guard let _fileExtension else {
+            return "application/octet-stream"
+        }
+        
+        if FileManager.default.fileExists(at: self) {
             if let fileType = _MediaAssetFileType.allCases.first(where: { $0.fileExtension == _fileExtension }) {
                 do {
                     _ = fileType
@@ -25,19 +29,13 @@ extension URL {
             }
         }
         
-        if let pathExtension = self.pathExtension.isEmpty ? nil : self.pathExtension {
-            if let uti = UTType(filenameExtension: pathExtension) {
-                if let mimeType = uti.preferredMIMEType {
-                    return mimeType
-                }
+        if let uti = UTType(filenameExtension: pathExtension) {
+            if let mimeType = uti.preferredMIMEType {
+                return mimeType
             }
         }
-        
+
         guard isFileURL else {
-            guard !pathExtension.isEmpty else {
-                return "application/octet-stream"
-            }
-            
             guard let mimeType = UTType(filenameExtension: pathExtension.lowercased())?.preferredMIMEType else {
                 return "application/octet-stream"
             }

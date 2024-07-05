@@ -609,7 +609,7 @@ extension FileManager {
     ) throws -> URL? {
         try self
             .contentsOfDirectory(at: directory)
-            .first(where: { UTType(filenameExtension: $0._fileExtension) == fileExtension })
+            .first(where: { $0._fileExtension.map({ UTType(filenameExtension: $0) }) == fileExtension })
     }
     
     public func firstAndOnly(
@@ -622,7 +622,7 @@ extension FileManager {
         
         return try self
             .contentsOfDirectory(at: directory)
-            .firstAndOnly(where: { UTType(filenameExtension: $0._fileExtension) == fileExtension })
+            .first(where: { $0._fileExtension.map({ UTType(filenameExtension: $0) }) == fileExtension })
     }
     
     public func items<T: _ThrowingInitiableFromURL>(
