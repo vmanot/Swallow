@@ -19,9 +19,9 @@ extension URL {
             if let fileType = _MediaAssetFileType.allCases.first(where: { $0.fileExtension == _fileExtension }) {
                 do {
                     _ = fileType
-                     
-                    if let fileTypeFromData = try _MediaAssetFileType(Data(contentsOf: self)), UTType(fileTypeFromData.rawValue) != nil {
-                        return fileTypeFromData.rawValue
+                    
+                    if let fileTypeFromData = try _MediaAssetFileType(Data(contentsOf: self)) {
+                        return fileTypeFromData.mimeType
                     }
                 } catch {
                     // ignore the error
@@ -34,7 +34,7 @@ extension URL {
                 return mimeType
             }
         }
-
+        
         guard isFileURL else {
             guard let mimeType = UTType(filenameExtension: pathExtension.lowercased())?.preferredMIMEType else {
                 return "application/octet-stream"

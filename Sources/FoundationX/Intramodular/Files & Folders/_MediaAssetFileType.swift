@@ -3,35 +3,112 @@
 //
 
 import Foundation
-import Swift
+import Swallow
 import UniformTypeIdentifiers
 
 /// A uniform type identifier (UTI).
-struct _MediaAssetFileType: ExpressibleByStringLiteral, Hashable, Sendable {
-    let rawValue: String
-    let fileExtension: String?
+public struct _MediaAssetFileType: Hashable, Sendable {
+    public let uti: String
+    public let mimeType: String
+    public let fileExtension: String?
     
-    init(rawValue: String) {
-        self.rawValue = rawValue
+    @available(macOS 11.0, iOS 14.0, watchOS 7.0, tvOS 14.0, *)
+    public var utType: UTType {
+        UTType(uti)!
+    }
+    
+    package init(uti: String, mimeType: String) {
+        self.uti = uti
+        self.mimeType = mimeType
         
         if #available(macOS 11.0, iOS 14.0, watchOS 7.0, tvOS 14.0, *) {
-            self.fileExtension = UTType(rawValue)?.preferredFilenameExtension
+            self.fileExtension = UTType(uti)?.preferredFilenameExtension
         } else {
+            assertionFailure()
+            
             self.fileExtension = nil
         }
     }
     
-    init(stringLiteral value: String) {
-        self.init(rawValue: value)
+    public init?(rawValue: String) {
+        assert(!rawValue.isEmpty)
+        
+        if rawValue.contains("/") {
+            guard let type = Self.fromMIMEType(rawValue) else {
+                return nil
+            }
+            
+            self = type
+        } else {
+            self = Self.fromUTI(rawValue)
+        }
+    }
+    
+    private static func fromMIMEType(_ mimeType: String) -> Self? {
+        switch mimeType {
+            case "image/png":
+                return .png
+            case "image/jpeg":
+                return .jpeg
+            case "image/gif":
+                return .gif
+            case "image/heic":
+                return .heic
+            case "image/webp":
+                return .webp
+            case "video/mp4":
+                return .mp4
+            case "video/x-m4v":
+                return .m4v
+            case "video/quicktime":
+                return .mov
+            default:
+                return nil
+        }
+    }
+    
+    private static func fromUTI(_ uti: String) -> Self {
+        switch uti {
+            case "public.data":
+                return .generic
+            case "public.png":
+                return .png
+            case "public.jpeg":
+                return .jpeg
+            case "com.compuserve.gif":
+                return .gif
+            case "public.heic":
+                return .heic
+            case "public.webp":
+                return .webp
+            case "public.mpeg4":
+                return .mp4
+            case "public.m4v":
+                return .m4v
+            case "public.mov":
+                return .mov
+            default:
+                if #available(macOS 11.0, iOS 14.0, watchOS 7.0, tvOS 14.0, *) {
+                    if let utType = UTType(uti) {
+                        return Self(uti: uti, mimeType: utType.preferredMIMEType ?? "application/octet-stream")
+                    }
+                }
+                return Self(uti: uti, mimeType: "application/octet-stream")
+        }
     }
 }
 
 extension _MediaAssetFileType {
+    public static var generic: Self {
+        Self(uti: "public.data", mimeType: "application/octet-stream")
+    }
+    
     /// Determines a type of the image based on the given data.
-    init?(_ data: Data) {
+    public init?(_ data: Data) {
         guard let type = _MediaAssetFileType.make(data) else {
             return nil
         }
+        
         self = type
     }
     
@@ -40,6 +117,7 @@ extension _MediaAssetFileType {
             guard data.count >= numbers.count else {
                 return false
             }
+            
             return zip(numbers.indices, numbers).allSatisfy { index, number in
                 guard let number = number else { return true }
                 guard (index + offset) < data.count else { return false }
@@ -79,28 +157,22 @@ extension _MediaAssetFileType {
 // MARK: - Conformances
 
 extension _MediaAssetFileType: CaseIterable {
-    static let png: Self = "public.png"
-    static let jpeg: Self = "public.jpeg"
-    static let gif: Self = "com.compuserve.gif"
-    /// HEIF (High Efficiency Image Format) by Apple.
-    static let heic: Self = "public.heic"
+    public static let png = Self(uti: "public.png", mimeType: "image/png")
+    public static let jpeg = Self(uti: "public.jpeg", mimeType: "image/jpeg")
+    public static let gif = Self(uti: "com.compuserve.gif", mimeType: "image/gif")
+    public static let heic = Self(uti: "public.heic", mimeType: "image/heic")
+    public static let webp = Self(uti: "public.webp", mimeType: "image/webp")
+    public static let mp4 = Self(uti: "public.mpeg4", mimeType: "video/mp4")
+    public static let m4v = Self(uti: "public.m4v", mimeType: "video/x-m4v")
+    public static let mov = Self(uti: "public.mov", mimeType: "video/quicktime")
     
-    /// WebP
-    ///
-    /// Native decoding support only available on the following platforms: macOS 11,
-    /// iOS 14, watchOS 7, tvOS 14.
-    static let webp: Self = "public.webp"
-    
-    static let mp4: Self = "public.mpeg4"
-    
-    /// The M4V file format is a video container format developed by Apple and
-    /// is very similar to the MP4 format. The primary difference is that M4V
-    /// files may optionally be protected by DRM copy protection.
-    static let m4v: Self = "public.m4v"
-    
-    static let mov: Self = "public.mov"
-    
-    static var allCases: [Self] {
+    public static var allCases: [Self] {
         [.png, .jpeg, .gif, .heic, .webp, .mp4, .m4v, .mov]
+    }
+}
+
+extension _MediaAssetFileType: ExpressibleByStringLiteral {
+    public init(stringLiteral value: String) {
+        self.init(rawValue: value)!
     }
 }

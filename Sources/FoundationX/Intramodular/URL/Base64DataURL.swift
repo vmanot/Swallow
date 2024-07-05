@@ -2,10 +2,11 @@
 // Copyright (c) Vatsal Manot
 //
 
+import Diagnostics
 import Foundation
 import Swallow
 
-public struct Base64DataURL {
+public struct Base64DataURL: Hashable, Sendable, URLConvertible {
     public let data: Data
     public let mimeType: String
     
@@ -50,11 +51,15 @@ public struct Base64DataURL {
         self.data = decodedData
     }
     
-    public init?(data: Data, mimeType: String) {
+    public init(data: Data, mimeType: String) throws {
+        try _tryAssert(!data.isEmpty)
+        
         self.data = data
         self.mimeType = mimeType
     }
 }
+
+// MARK: - Conformances
 
 extension Base64DataURL: Codable {
     enum CodingKeys: String, CodingKey {
