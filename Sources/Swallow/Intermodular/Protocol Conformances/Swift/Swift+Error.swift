@@ -27,6 +27,14 @@ public struct AnyError: CustomStringConvertible, CustomDebugStringConvertible, E
         self.base = (error as? AnyError)?.base ?? error
     }
     
+    public init?(erasing error: (any Swift.Error)?) {
+        guard let error else {
+            return nil
+        }
+        
+        self.init(erasing: error)
+    }
+    
     init(_ base: Error) {
         self.init(erasing: base)
     }
