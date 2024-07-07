@@ -24,29 +24,7 @@ extension URL {
             forSecurityApplicationGroupIdentifier: identifier
         ).unwrap()
     }
-    
-    /// The real home directory of the user.
-    @_spi(Internal)
-    public static var _userHomeDirectory: URL {
-        @_disfavoredOverload
-        get throws {
-            enum _Error: Swift.Error {
-                case invalidHomeDirectory
-            }
-            
-            guard let pw = getpwuid(getuid()), let home = pw.pointee.pw_dir else {
-                throw _Error.invalidHomeDirectory
-            }
-            
-            let path = FileManager.default.string(
-                withFileSystemRepresentation: home,
-                length: Int(strlen(home))
-            )
-            
-            return URL(fileURLWithPath: path)
-        }
-    }
-    
+        
     /// Returns the URL for the temporary directory of the current user.
     @_disfavoredOverload
     public static var temporaryDirectory: URL {

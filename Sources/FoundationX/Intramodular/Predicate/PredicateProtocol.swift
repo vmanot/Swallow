@@ -62,7 +62,7 @@ extension PredicateX {
         _ predicate: @escaping (Input) throws -> Bool
     ) -> Self {
         let variable = PredicateExpressionsX.Variable<Input>()
-
+        
         return Self(
             expression: PredicateExpressionsX._ArbitraryClosure(root: variable, predicate: predicate),
             variable: variable
@@ -77,7 +77,7 @@ extension PredicateX {
         let expression = PredicateExpressionsX._ConjunctionOfMany(
             expressions: predicates.map({ PredicateExpressionsX._ArbitraryClosure(root: variable, predicate: $0) })
         )
-    
+        
         return Self(
             expression: expression,
             variable: variable

@@ -22,7 +22,7 @@ extension URL {
 extension URL._FileOrDirectorySecurityScopedAccessManager {
     @MainActor
     public static func requestAccess(
-        to directory: _UserHomeDirectory
+        to directory: _UserHomeDirectoryName
     ) throws -> URL {
         try self.requestAccess(to: directory.url)
     }
@@ -213,7 +213,7 @@ extension URL._FileOrDirectorySecurityScopedAccessManager {
         isDirectory: Bool
     ) -> String {
         if isDirectory {
-            let directoryName = _UserHomeDirectory(from: url)?.rawValue ?? "selected"
+            let directoryName = _UserHomeDirectoryName(from: url)?.rawValue ?? "selected"
             return "Your app needs access to the \(directoryName) folder. Please select to grant access."
         } else {
             let fileName = url.lastPathComponent

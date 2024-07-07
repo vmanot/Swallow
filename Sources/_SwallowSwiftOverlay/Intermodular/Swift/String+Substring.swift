@@ -20,39 +20,6 @@ extension String {
     ) -> [Substring] {
         split(whereSeparator: { $0 == separator })
     }
-    
-    public var numberOfLines: Int {
-        var result = 0
-        
-        enumerateLines { (_, _) in
-            result += 1
-        }
-        
-        return result
-    }
-    
-    public func lines(omittingEmpty: Bool = false) -> [Substring] {
-        split(omittingEmptySubsequences: false, whereSeparator: { $0 == Character.newline })
-    }
-    
-    public func enumeratedLines() -> [String] {
-        var result: [String] = []
-        
-        enumerateLines(invoking: { line, _ in
-            result.append(line)
-        })
-        
-        return result
-    }
-        
-    public func _linesWithWhitespacesAndNewlinesTrimmed() -> [String] {
-        self
-            .split(separator: "\n")
-            .map { slice in
-                String(slice)
-                    .trimmingCharacters(in: .whitespacesAndNewlines)
-            }
-    }
 }
 
 extension String {

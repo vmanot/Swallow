@@ -27,50 +27,21 @@ public struct CanonicalFileDirectory: Hashable, Sendable {
     var _name: DirectoryName
     var _unsandboxed: Bool? = nil
     
+    init(_name: DirectoryName, _unsandboxed: Bool? = nil) {
+        self._name = _name
+        self._unsandboxed = _unsandboxed
+    }
+    
     public static var unspecified: Self {
         Self(_name: .unspecified)
     }
-}
-
-extension CanonicalFileDirectory {
-    public static var desktop: Self {
-        Self(_name: .desktop)
+    
+    public static func sandboxed(_ name: DirectoryName) -> Self {
+        self.init(_name: name, _unsandboxed: false)
     }
     
-    public static var downloads: Self {
-        Self(_name: .downloads)
-    }
-    
-    public static var documents: Self {
-        Self(_name: .documents)
-    }
-    
-    public static var applicationSupportFiles: Self {
-        Self(_name: .applicationSupportFiles)
-    }
-    
-    public static func iCloudDriveDocuments(containerID: String) -> Self {
-        Self(_name: .iCloudDriveDocuments(containerID: containerID))
-    }
-    
-    public static func securityApplicationGroup(_ id: String) -> Self {
-        Self(_name: .securityApplicationGroup(id))
-    }
-    
-    public static func ubiquityContainer(_ id: String) -> Self {
-        Self(_name: .ubiquityContainer(id))
-    }
-    
-    public static var appResources: Self {
-        Self(_name: .appResources)
-    }
-
-    public static var appDocuments: Self {
-        Self(_name: .appDocuments)
-    }
-    
-    public static var userDocuments: Self {
-        Self(_name: .appDocuments) // FIXME: How does this differ from `appDocuments`?
+    public static func unsandboxed(_ name: DirectoryName) -> Self {
+        self.init(_name: name, _unsandboxed: true)
     }
 }
 
@@ -80,11 +51,11 @@ extension CanonicalFileDirectory {
         
         switch _name {
             case .desktop:
-                return try _UserHomeDirectory.desktop.url
+                return _UserHomeDirectoryName.desktop.url
             case .downloads:
-                return try _UserHomeDirectory.downloads.url
+                return _UserHomeDirectoryName.downloads.url
             case .documents:
-                return try _UserHomeDirectory.documents.url
+                return _UserHomeDirectoryName.documents.url
             case .applicationSupportFiles: do {
                 return try fileManager
                     .url(
