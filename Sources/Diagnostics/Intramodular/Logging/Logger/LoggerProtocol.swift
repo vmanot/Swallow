@@ -2,7 +2,7 @@
 // Copyright (c) Vatsal Manot
 //
 
-import Swift
+import Swallow
 
 /// A type that can log messages.
 public protocol LoggerProtocol: Sendable {
@@ -63,40 +63,50 @@ extension LoggerProtocol {
     
     @_disfavoredOverload
     @_transparent
+    @discardableResult
     public func error(
         _ error:  @autoclosure () -> String,
         metadata: [String: Any]? = nil,
         file: String = #file,
         function: String = #function,
         line: UInt = #line
-    ) {
+    ) -> any Swift.Error {
+        let errorString: String = error()
+        
         self.log(
             level: .error,
-            error(),
+            errorString,
             metadata: metadata,
             file: file,
             function: function,
             line: line
         )
+        
+        return CustomStringError(describing: errorString)
     }
 
     @_disfavoredOverload
     @_transparent
+    @discardableResult
     public func error(
         _ error:  @autoclosure () -> Error,
         metadata: [String: Any]? = nil,
         file: String = #file,
         function: String = #function,
         line: UInt = #line
-    ) {
+    ) -> any Swift.Error {
+        let errorString: String = String(describing: error())
+
         self.log(
             level: .error,
-            String(describing: error()),
+            errorString,
             metadata: metadata,
             file: file,
             function: function,
             line: line
         )
+        
+        return CustomStringError(describing: errorString)
     }
 }
 

@@ -15,15 +15,21 @@ extension RecursiveSequence {
 }
 
 extension RecursiveSequence  {
-    public func recursiveForEach<T>(_ iterator: ((Unit) throws -> T)) rethrows {
+    public func recursiveForEach<T>(
+        _ iterator: ((Unit) throws -> T)
+    ) rethrows {
         try forEach({ try $0.collapse(iterator, { try $0.recursiveForEach(iterator) }) })
     }
     
-    public func recursiveMap<RDS: SequenceInitiableRecursiveSequence>(_ transform: ((Unit) throws -> RDS.Unit)) rethrows -> RDS {
+    public func recursiveMap<RDS: SequenceInitiableRecursiveSequence>(
+        _ transform: ((Unit) throws -> RDS.Unit)
+    ) rethrows -> RDS {
         return .init(try map({ try $0.map(transform, { try $0.recursiveMap(transform) }) }))
     }
     
-    public func recursiveFilter<RDS: SequenceInitiableRecursiveSequence>(_ predicate: ((Unit) throws -> Bool)) rethrows -> RDS where RDS.Unit == Unit {
+    public func recursiveFilter<RDS: SequenceInitiableRecursiveSequence>(
+        _ predicate: ((Unit) throws -> Bool)
+    ) rethrows -> RDS where RDS.Unit == Unit {
         return .init(try map({ try $0.filterOrMap(predicate, { try $0.recursiveFilter(predicate) }) }).compact())
     }
     

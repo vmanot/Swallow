@@ -54,7 +54,7 @@ public struct _CurrentXcodeProject {
         around initialURL: URL,
         selector: (([URL]) -> URL?)? = nil
     ) throws -> URL? {
-        guard !initialURL.path.hasPrefix(URL._developerXcodeDerivedData.path) else {
+        guard !initialURL.path.hasPrefix(try CanonicalFileDirectory.xcodeDerivedData.path) else {
             return nil
         }
                 
@@ -90,7 +90,7 @@ public struct _CurrentXcodeProject {
                 
                 currentURL.deleteLastPathComponent()
                 
-                guard currentURL != currentURLBeforeDeleting && !currentURL._isCanonicalDirectoryURL else {
+                guard currentURL != currentURLBeforeDeleting && !currentURL._hasUserHomeDirectoryPrefix else {
                     break
                 }
             }

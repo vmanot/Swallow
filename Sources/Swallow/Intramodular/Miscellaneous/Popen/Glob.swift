@@ -2,6 +2,7 @@
 // Copyright (c) Vatsal Manot
 //
 
+import Foundation
 import Darwin
 import Swift
 
@@ -15,13 +16,14 @@ public class Glob: Sequence, IteratorProtocol {
         }
     }
     
-    public func next() -> String? {
+    public func next() -> URL? {
         defer { index += 1 }
-#if !os(Linux)
-        guard index < pglob.gl_matchc else { return nil }
-#endif
-        return pglob.gl_pathv[index]
-            .flatMap { String(cString: $0) }
+        
+        guard index < pglob.gl_matchc else {
+            return nil
+        }
+        
+        return pglob.gl_pathv[index].flatMap({ URL(fileURLWithPath: String(cString: $0)) })
     }
     
     deinit {

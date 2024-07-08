@@ -6,9 +6,9 @@ import Foundation
 import Swallow
 
 extension Data {
-    public init(from value: NSValue) {
+    public init(from value: NSValue) throws {
         self = .allocate(
-            byteCount: value.objCTypeEncoding.sizeInBytes,
+            byteCount: try value.objCTypeEncoding.sizeInBytes,
             alignment: value.objCTypeEncoding.alignmentInBytes
         )
 

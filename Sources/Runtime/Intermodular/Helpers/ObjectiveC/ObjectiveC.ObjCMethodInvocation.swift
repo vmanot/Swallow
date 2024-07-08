@@ -37,10 +37,12 @@ extension ObjCMethodInvocation {
         return invocation
     }
     
-    public func execute() -> AnyObjCCodable {
+    public func execute() throws -> AnyObjCCodable {
         let invocation = toNSInvocation()
-        invocation.invoke()
-        return .init(_returnValueFromInvocation: invocation)
+        
+        try invocation.invoke()
+        
+        return try AnyObjCCodable(_returnValueFromInvocation: invocation)
     }
 }
 
@@ -56,7 +58,7 @@ extension ObjCObject {
         )
         let invocation = ObjCMethodInvocation(method: method, payload: payload)
         
-        return invocation.execute()
+        return try invocation.execute()
     }
     
     public func invokeSelector(_ selector: ObjCSelector, with argument: AnyObjCCodable) throws -> AnyObjCCodable {

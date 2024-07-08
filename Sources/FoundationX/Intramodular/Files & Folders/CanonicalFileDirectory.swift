@@ -10,22 +10,29 @@ import Swallow
 /// Written to improve API ergonomics.
 public struct CanonicalFileDirectory: Hashable, Sendable {
     public enum DirectoryName: Hashable, Sendable {
-        case desktop
-        case downloads
-        case documents
-        
+        case applications
+        case userHomeDirectory(_UserHomeDirectoryName)
         case applicationSupportFiles
         case iCloudDriveDocuments(containerID: String)
         case securityApplicationGroup(String)
         case ubiquityContainer(String)
         case appResources
         case appDocuments
+        case xcodeDerivedData
         
         case unspecified
     }
     
     var _name: DirectoryName
     var _unsandboxed: Bool? = nil
+    
+    public var url: URL {
+        try! toURL()
+    }
+    
+    public var path: String {
+        url.path
+    }
     
     init(_name: DirectoryName, _unsandboxed: Bool? = nil) {
         self._name = _name
@@ -35,14 +42,6 @@ public struct CanonicalFileDirectory: Hashable, Sendable {
     public static var unspecified: Self {
         Self(_name: .unspecified)
     }
-    
-    public static func sandboxed(_ name: DirectoryName) -> Self {
-        self.init(_name: name, _unsandboxed: false)
-    }
-    
-    public static func unsandboxed(_ name: DirectoryName) -> Self {
-        self.init(_name: name, _unsandboxed: true)
-    }
 }
 
 extension CanonicalFileDirectory {
@@ -50,12 +49,15 @@ extension CanonicalFileDirectory {
         let fileManager = FileManager.default
         
         switch _name {
-            case .desktop:
-                return _UserHomeDirectoryName.desktop.url
-            case .downloads:
-                return _UserHomeDirectoryName.downloads.url
-            case .documents:
-                return _UserHomeDirectoryName.documents.url
+            case .applications:
+                if let _unsandboxed, _unsandboxed {
+                    return URL(fileURLWithPath: "/Applications")
+                } else {
+                    return FileManager.default.urls(for: .applicationDirectory, in: .localDomainMask).first!
+                }
+            case .userHomeDirectory(let directory): do {
+                return directory.url(unsandboxed: _unsandboxed)
+            }
             case .applicationSupportFiles: do {
                 return try fileManager
                     .url(
@@ -67,9 +69,7 @@ extension CanonicalFileDirectory {
             }
             case .iCloudDriveDocuments(let identifier): do {
                 return try fileManager
-                    .url(
-                        forUbiquityContainerIdentifier: identifier
-                    )
+                    .url(forUbiquityContainerIdentifier: identifier)
                     .unwrap()
                     .appendingDirectoryPathComponent("Documents")
             }
@@ -84,31 +84,16 @@ extension CanonicalFileDirectory {
                     .unwrap()
             }
             case .appResources: do {
-                return Bundle.mainAppBundle.bundleURL
+                return Bundle.main.bundleURL
             }
             case .appDocuments: do {
                 return try fileManager.url(for: .documentDirectory, in: .userDomainMask)
             }
+            case .xcodeDerivedData:
+                return URL(fileURLWithPath: "/Users/\(NSUserName())/Library/Developer/Xcode/DerivedData")
             case .unspecified:
                 throw Never.Reason.illegal
         }
-    }
-}
-
-extension URL {
-    public init(
-        directory: CanonicalFileDirectory,
-        path: String
-    ) throws {
-        self = try directory + path
-    }
-    
-    public init(
-        directory: CanonicalFileDirectory,
-        subdirectory: String,
-        filename: String
-    ) throws {
-        self = (try directory + subdirectory).appendingPathComponent(filename, isDirectory: false)
     }
 }
 
@@ -150,11 +135,19 @@ extension URL {
     ) throws {
         self = try directory.toURL()
     }
-}
-
-extension Bundle {
-    fileprivate static var mainAppBundle: Bundle {
-        // Bundle.main always points to the main application bundle in an app context
-        return Bundle.main
+    
+    public init(
+        directory: CanonicalFileDirectory,
+        path: String
+    ) throws {
+        self = try directory + path
+    }
+    
+    public init(
+        directory: CanonicalFileDirectory,
+        subdirectory: String,
+        filename: String
+    ) throws {
+        self = (try directory + subdirectory).appendingPathComponent(filename, isDirectory: false)
     }
 }

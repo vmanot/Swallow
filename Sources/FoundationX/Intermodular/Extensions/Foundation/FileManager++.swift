@@ -533,7 +533,13 @@ extension FileManager {
     public func isDirectoryPracticallyEmpty(
         at location: some URLRepresentable
     ) -> Bool {
-        guard let contents = try? contentsOfDirectory(at: location.url) else {
+        let location: URL = location.url
+        
+        guard let contents = try? contentsOfDirectory(at: location) else {
+            if !fileExists(at: location) {
+                return true
+            }
+            
             return false
         }
         

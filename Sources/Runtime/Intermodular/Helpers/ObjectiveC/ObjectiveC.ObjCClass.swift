@@ -243,7 +243,7 @@ extension ObjCClass: ExtensibleSequence {
         let didInsert = class_addIvar(
             value,
             name.nullTerminatedUTF8String().value,
-            instanceVariable.typeEncoding.sizeInBytes,
+            try instanceVariable.typeEncoding.sizeInBytes,
             .init(log2(Double(instanceVariable.typeEncoding.alignmentInBytes))),
             instanceVariable.typeEncoding.value
         )

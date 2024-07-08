@@ -6,11 +6,11 @@ import Foundation
 import ObjectiveC
 import Swallow
 
-extension ObjCTypeEncoding: MetatypeRepresentable {
+extension ObjCTypeEncoding {
     public typealias OpaqueValue = Any.Type
     
-    public func toMetatype() -> Any.Type {
-        return ObjCTypeCoder.decode(self)
+    public func toMetatype() throws -> Any.Type {
+        return try ObjCTypeCoder.decode(self)
     }
     
     public init?(metatype type: Any.Type) {
@@ -53,16 +53,24 @@ extension ObjCClass: _NominalTypeMetadataType {
             return []
         }
         
-        return instanceVariables.map { variable -> NominalTypeMetadata.Field in
-            let type: TypeMetadata? = NSClassFromString(String(variable.typeEncoding.value.dropPrefixIfPresent("@\"").dropSuffixIfPresent("\""))).map({ TypeMetadata($0) })
-            
-            let field = NominalTypeMetadata.Field(
-                name: variable.name,
-                type: type ?? .init(variable.typeEncoding.toMetatype()),
-                offset: variable.offset
-            )
-            
-            return field
+        return instanceVariables.compactMap { (variable: ObjCInstanceVariable) -> NominalTypeMetadata.Field? in
+            do {
+                let className = String(variable.typeEncoding.value.dropPrefixIfPresent("@\"").dropSuffixIfPresent("\""))
+                
+                let type: TypeMetadata? = NSClassFromString(className).map {
+                    TypeMetadata($0)
+                }
+                
+                let field = NominalTypeMetadata.Field(
+                    name: variable.name,
+                    type: try type ?? TypeMetadata(variable.typeEncoding.toMetatype()),
+                    offset: variable.offset
+                )
+                
+                return field
+            } catch {
+                return nil
+            }
         }
     }
     

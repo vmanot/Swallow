@@ -119,13 +119,16 @@ extension OpaqueExistentialContainer: ObjCCodable {
         return ObjCTypeEncoding(metatype: type.base) ?? .unknown
     }
     
-    public init(decodingObjCValueFromRawBuffer buffer: UnsafeMutableRawPointer?, encoding: ObjCTypeEncoding) {
-        let type = TypeMetadata(encoding.toMetatype())
+    public init(
+        decodingObjCValueFromRawBuffer buffer: UnsafeMutableRawPointer?,
+        encoding: ObjCTypeEncoding
+    ) throws {
+        let type = try TypeMetadata(encoding.toMetatype())
         
         if let buffer = buffer {
             if let type = type.base as? ObjCCodable.Type {
                 self = .passUnretained(
-                    type.init(
+                    try type.init(
                         decodingObjCValueFromRawBuffer: buffer,
                         encoding: encoding
                     )

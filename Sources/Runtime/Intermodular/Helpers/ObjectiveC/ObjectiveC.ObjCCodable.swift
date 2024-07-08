@@ -6,9 +6,12 @@ import ObjectiveC
 import Swallow
 
 public protocol ObjCCodable {
-    var objCTypeEncoding: ObjCTypeEncoding { get }
+    var objCTypeEncoding: ObjCTypeEncoding { get throws }
     
-    init(decodingObjCValueFromRawBuffer _: UnsafeMutableRawPointer?, encoding: ObjCTypeEncoding)
+    init(
+        decodingObjCValueFromRawBuffer _: UnsafeMutableRawPointer?,
+        encoding: ObjCTypeEncoding
+    ) throws
      
     func encodeObjCValueToRawBuffer() -> UnsafeMutableRawPointer
     func deinitializeRawObjCValueBuffer(_: UnsafeMutableRawPointer)
@@ -47,12 +50,17 @@ extension Trivial where Self: ObjCCodable {
 // MARK: - Extensions
 
 extension ObjCCodable {
-    public func withUnsafeRawObjCValueBuffer<Result>(_ body: ((UnsafeMutableRawPointer) throws -> Result)) rethrows -> Result {
+    public func withUnsafeRawObjCValueBuffer<Result>(
+        _ body: ((UnsafeMutableRawPointer) throws -> Result)
+    ) rethrows -> Result {
         let buffer = encodeObjCValueToRawBuffer()
+        
         defer {
             deinitializeRawObjCValueBuffer(buffer)
+        
             buffer.deallocate()
         }
+        
         return try body(buffer)
     }
 }

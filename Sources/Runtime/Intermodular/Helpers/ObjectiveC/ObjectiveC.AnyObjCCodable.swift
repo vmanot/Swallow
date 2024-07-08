@@ -27,21 +27,21 @@ public struct AnyObjCCodable: FailableWrapper {
         
         self.init(uncheckedValue: value)
     }
-
+    
     public init(_ value: AnyObject) {
         self.init(uncheckedValue: value)
     }
-
+    
     public init(_ value: ObjCCodable) {
         self.init(uncheckedValue: value)
     }
-
+    
     public init(_ value: AnyObject & ObjCCodable) {
         self.init(uncheckedValue: value)
     }
 }
 
-// MARK: - Conformances 
+// MARK: - Conformances
 
 extension AnyObjCCodable: CustomStringConvertible {
     public var description: String {
@@ -51,24 +51,24 @@ extension AnyObjCCodable: CustomStringConvertible {
 
 extension AnyObjCCodable: ObjCCodable {
     public var objCTypeEncoding: ObjCTypeEncoding {
-        return ObjCTypeEncoding(metadata: type)!
+        return ObjCTypeEncoding(metatype: self.type.base)!
     }
-
+    
     public init(
         decodingObjCValueFromRawBuffer buffer: UnsafeMutableRawPointer?,
         encoding: ObjCTypeEncoding
-    ) {
-        let type = encoding.toTypeMetadata()
-
+    ) throws {
+        let type: TypeMetadata = try TypeMetadata(encoding.toMetatype())
+        
         if let buffer = buffer {
             if let type = type.base as? ObjCCodable.Type {
-                self.init(uncheckedValue: type.init(decodingObjCValueFromRawBuffer: buffer, encoding: encoding))
+                self.init(uncheckedValue: try type.init(decodingObjCValueFromRawBuffer: buffer, encoding: encoding))
             } else {
                 self.init(uncheckedValue: OpaqueExistentialContainer(copyingBytesOfValueAt: buffer, type: type).unretainedValue)
             }
         } else {
             assert(type.isSizeZero)
-
+            
             self.init(uncheckedValue: OpaqueExistentialContainer(unitialized: type).unretainedValue)
         }
     }
@@ -97,7 +97,7 @@ extension AnyObjCCodable: ObjCCodable {
 // MARK: - Auxiliary Extensions-
 
 extension AnyObjCCodable {
-    public func _unsafe_cast<T>(to type: T.Type) -> T {
+    public func _unsafe_cast<T>(to type: T.Type) throws -> T {
         guard TypeMetadata(type).isSizeZero else {
             return unsafeBitCast(())
         }
@@ -109,13 +109,13 @@ extension AnyObjCCodable {
                 assert {
                     let layout1 = TypeMetadata(type).memoryLayout
                     let layout2 = TypeMetadata.of(value).memoryLayout
-
+                    
                     return layout1.size == layout2.size
                 }
-
-                return withUnsafeRawObjCValueBuffer {
-                    type.init(decodingObjCValueFromRawBuffer: $0, encoding: objCTypeEncoding) as! T
-                    }
+                
+                return try withUnsafeRawObjCValueBuffer {
+                    try type.init(decodingObjCValueFromRawBuffer: $0, encoding: objCTypeEncoding) as! T
+                }
             } else {
                 fatalError("Could not cast AnyObjCCodable to \(type)")
             }
@@ -129,7 +129,7 @@ extension Array where Element == AnyObjCCodable {
             .map({ .passRetained($0.value) })
             .combineUnsafeBitCast(to: type)
     }
-
+    
     public func combineUnsafeBitCast<T>(to type: T.Type) throws -> T {
         return try combineUnsafeBitCast(to: TypeMetadata(type)).unretainedValue as! T
     }

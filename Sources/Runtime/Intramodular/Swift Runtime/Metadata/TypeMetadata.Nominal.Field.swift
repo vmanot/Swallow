@@ -27,9 +27,11 @@ extension TypeMetadata.Nominal {
 }
 
 extension TypeMetadata.Nominal.Field {
-    public init(objCInstanceVariable: ObjCInstanceVariable) {
+    public init(
+        objCInstanceVariable: ObjCInstanceVariable
+    ) throws {
         self.name = objCInstanceVariable.name
-        self.type = .init(objCInstanceVariable.typeEncoding.toMetatype())
+        self.type = try TypeMetadata(objCInstanceVariable.typeEncoding.toMetatype())
         self.offset = objCInstanceVariable.offset
     }
 }

@@ -25,7 +25,7 @@ extension NSString: DataEncodableWithDefaultStrategy {
 
 extension NSValue: DataEncodableWithDefaultStrategy {
     public func data(using _: Void) throws -> Data {
-        var data = Data(repeating: 0, count: objCTypeEncoding.sizeInBytes)
+        var data = try Data(repeating: 0, count: objCTypeEncoding.sizeInBytes)
         
         data.withUnsafeMutableBytes {
             getValue($0.baseAddress!)

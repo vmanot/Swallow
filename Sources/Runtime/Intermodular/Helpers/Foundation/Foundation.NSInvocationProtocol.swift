@@ -50,7 +50,7 @@ extension NSInvocationProtocol {
 // MARK: - Helpers
 
 extension ObjCCodable {
-    public init(_returnValueFromInvocation invocation: NSInvocationProtocol) {
+    public init(_returnValueFromInvocation invocation: NSInvocationProtocol) throws {
         let methodReturnLength = invocation.methodSignature.methodReturnLength
         let buffer = UnsafeMutableRawPointer.allocate(capacity: .init(methodReturnLength))
 
@@ -58,30 +58,46 @@ extension ObjCCodable {
             invocation.getReturnValue(buffer)
         }
 
-        self.init(decodingObjCValueFromRawBuffer: buffer, encoding: .init(String(utf8String: invocation.methodSignature.methodReturnType)))
-        
-        buffer.deallocate()
+        do {
+            try self.init(
+                decodingObjCValueFromRawBuffer: buffer,
+                encoding: ObjCTypeEncoding(String(utf8String: invocation.methodSignature.methodReturnType))
+            )
+            
+            buffer.deallocate()
+        } catch {
+            buffer.deallocate()
+
+            throw error
+        }
     }
 }
 
 extension ObjCMethodInvocation {
-    public init(nsInvocation: NSInvocationProtocol) {
+    public init(nsInvocation: NSInvocationProtocol) throws {
         let target = asObjCObject(nsInvocation.target)
-        let method = target.objCClass[methodNamed: nsInvocation.selector.value]!
+        let method = try target.objCClass[methodNamed: nsInvocation.selector.value].unwrap()
         
         var arguments: [AnyObjCCodable] = []
         
         for (index, type) in method.argumentTypes.enumerated().dropFirst(2) {
-            let buffer = UnsafeMutableRawBufferPointer.allocate(for: type.toTypeMetadata())
+            let buffer = UnsafeMutableRawBufferPointer.allocate(for: TypeMetadata(try type.toMetatype()))
 
             nsInvocation.getArgument(buffer.baseAddress!, atIndex: index)
 
-            arguments += AnyObjCCodable(decodingObjCValueFromRawBuffer: buffer.baseAddress, encoding: type)
+            arguments += try AnyObjCCodable(
+                decodingObjCValueFromRawBuffer: buffer.baseAddress,
+                encoding: type
+            )
 
             buffer.deallocate()
         }
 
-        let payload = Payload(target: target, selector: method.getDescription().selector, arguments: arguments)
+        let payload = Payload(
+            target: target,
+            selector: method.getDescription().selector,
+            arguments: arguments
+        )
 
         self.init(method: method, payload: payload)
     }

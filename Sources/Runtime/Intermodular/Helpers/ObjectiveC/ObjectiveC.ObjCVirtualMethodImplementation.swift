@@ -60,7 +60,7 @@ extension ObjCObject where Self: NSObjectProtocol {
         }
     }
     
-    private func processVirtual(invocation: NSInvocationProtocol) {
+    private func processVirtual(invocation: NSInvocationProtocol) throws {
         let selector = ObjCSelector(invocation.selector)
         
         func invoke() {
@@ -72,14 +72,15 @@ extension ObjCObject where Self: NSObjectProtocol {
         if hasRegisteredIntercept(for: selector) {
             let sendIntercepts = methodSendIntercepts[selector]
             let invocationIntercepts = methodInvocationIntercepts[selector]
-            let payload = ObjCMethodInvocation(nsInvocation: invocation).payload
+            let payload = try ObjCMethodInvocation(nsInvocation: invocation).payload
             
             sendIntercepts?.forEach({ $0.consume(payload: payload) })
             
             invoke()
             
-            invocationIntercepts.map {
-                let returnValue = AnyObjCCodable(_returnValueFromInvocation: invocation)
+            try invocationIntercepts.map {
+                let returnValue = try AnyObjCCodable(_returnValueFromInvocation: invocation)
+             
                 $0.forEach {
                     $0.consume(payload: payload, returnValue: returnValue)
                 }
@@ -89,11 +90,11 @@ extension ObjCObject where Self: NSObjectProtocol {
         }
     }
     
-    fileprivate func newForwardInvocation(_ invocation: NSInvocationProtocol) {
+    fileprivate func newForwardInvocation(_ invocation: NSInvocationProtocol) throws {
         let selector = ObjCSelector(invocation.selector)
         
         if objCClass.isVirtual(selector: selector) {
-            processVirtual(invocation: invocation)
+            try processVirtual(invocation: invocation)
         } else {
             _ = try! invokeSelector(
                 .preserved_forwardInvocation,
@@ -109,7 +110,9 @@ extension ObjCClass {
             return
         }
         
-        let newForwardInvocationImpl: (@convention(c) (NSObjectProtocol & ObjCObject, Selector, NSInvocationProtocol) -> Void) = { $0.newForwardInvocation($2) }
+        let newForwardInvocationImpl: (@convention(c) (NSObjectProtocol & ObjCObject, Selector, NSInvocationProtocol) -> Void) = {
+            try! $0.newForwardInvocation($2)
+        }
         
         try replace(
             methodNamed: .forwardInvocation,

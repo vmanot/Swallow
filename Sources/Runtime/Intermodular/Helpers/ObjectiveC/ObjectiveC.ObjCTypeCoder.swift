@@ -159,7 +159,7 @@ extension ObjCTypeCoder {
     
     public static func decode(
         atom encoding: String
-    ) -> [Any.Type] {
+    ) throws -> [Any.Type] {
         if encoding.contains("b") {
             let sizeInBits = encoding
                 .replacingOccurrences(of: "b", with: "")
@@ -171,10 +171,12 @@ extension ObjCTypeCoder {
             return Array<Any.Type>(repeating: Byte.self, count: sizeInBits / 8)
         }
         
-        return encoding.map({ decode(.init(.init($0))) })
+        return try encoding.map({ try decode(.init(.init($0))) })
     }
     
-    public static func indent(_ value: RecursiveArray<String>) -> RecursiveArray<String> {
+    public static func indent(
+        _ value: RecursiveArray<String>
+    ) -> RecursiveArray<String> {
         var value = value.flatteningToUnitIfNecessary()
         var needsIndent = false
         var indentCount: Int = 0
@@ -206,7 +208,7 @@ extension ObjCTypeCoder {
         let encoding = indent(encoding)
         
         if let unitValue = encoding.leftValue {
-            return ObjCTypeContainerDecoderRuleForNoRule.process(decode(atom: unitValue))
+            return ObjCTypeContainerDecoderRuleForNoRule.process(try decode(atom: unitValue))
         } else if let rule = (encoding.first?.leftValue).flatMap({ (prefix: String) in
             rules.find({ $0.prefix == prefix })
         }) {
@@ -221,7 +223,7 @@ extension ObjCTypeCoder {
             }
             
             if let unitValue = encoding.leftValue {
-                return rule.process(decode(atom: unitValue))
+                return rule.process(try decode(atom: unitValue))
             }
             
             else {
@@ -247,7 +249,7 @@ extension ObjCTypeCoder {
         return try? decode(parser.input(encoding.losingNominalPrecision.value).recursiveMap({ String($0) }))
     }
     
-    public static func decode(_ encoding: ObjCTypeEncoding) -> Any.Type {
+    public static func decode(_ encoding: ObjCTypeEncoding) throws -> Any.Type {
         if let result = registry[encoding]?.base {
             return result
         } else if let result = decode(possibleSimple: encoding) {
@@ -255,9 +257,9 @@ extension ObjCTypeCoder {
         } else if let result = decode(parsing: encoding) {
             return result
         } else {
-            return TypeMetadata(
-                tupleWithTypes: Array<Any.Type>(repeating: Byte.self, count: encoding.sizeInBytes)
-            ).base
+            let types = Array<Any.Type>(repeating: Byte.self, count: try encoding.sizeInBytes)
+            
+            return TypeMetadata(tupleWithTypes: types).base
         }
     }
 }

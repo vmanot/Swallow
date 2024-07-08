@@ -24,7 +24,7 @@ extension ObjCTypeEncoding {
     public static var void = Self("v")
     
     public var isSizeZero: Bool {
-        self == .void || toTypeMetadata().isSizeZero
+        self == .void || ((try? TypeMetadata(toMetatype()).isSizeZero) ?? false)
     }
     
     public var losingNominalPrecision: ObjCTypeEncoding {
@@ -84,9 +84,17 @@ extension ObjCTypeEncoding {
     }
     
     public var sizeInBytes: Int {
-        var result = 0
-        NSGetSizeAndAlignment(value, &result, nil)
-        return result
+        get throws {
+            if value.hasPrefix("{") && value.hasSuffix("}") {
+                if value.contains("RESERVED") {
+                    throw Never.Reason.unsupported
+                }
+            }
+            
+            var result = 0
+            NSGetSizeAndAlignment(value, &result, nil)
+            return result
+        }
     }
     
     public var alignmentInBytes: Int {
