@@ -202,13 +202,27 @@ extension FunctionDeclSyntax {
 }
 
 extension DeclGroupSyntax {
+    public var memberFunctions: [FunctionDeclSyntax] {
+        var result = [FunctionDeclSyntax]()
+        
+        for member in memberBlock.members {
+            if let function = member.decl.as(FunctionDeclSyntax.self) {
+                result.append(function)
+            }
+        }
+        
+        return result
+    }
+
     public var memberFunctionStandins: [FunctionDeclSyntax.SignatureStandin] {
         var standins = [FunctionDeclSyntax.SignatureStandin]()
+        
         for member in memberBlock.members {
             if let function = member.decl.as(FunctionDeclSyntax.self) {
                 standins.append(function.signatureStandin)
             }
         }
+        
         return standins
     }
     

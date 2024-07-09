@@ -30,7 +30,7 @@ public struct IdentifierIndexingArray<Element, ID: Hashable>: IdentifierIndexing
         id: @escaping (Element) -> ID
     ) {
         self.base = OrderedCollections.OrderedDictionary(
-            uniqueKeysWithValues: elements.map({ (key: id($0), value: $0) })
+            uniqueKeysWithValues: elements.distinct(by: id).map({ (key: id($0), value: $0) })
         )
         self.id = id
     }

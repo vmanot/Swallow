@@ -18,8 +18,8 @@ public struct _ManagedActorInitializationOptionName: Hashable, Sendable {
 
 @attached(memberAttribute)
 @attached(extension, conformances: _ManagedActorProtocol, names: arbitrary)
-@attached(peer, names: prefixed(_ManagedActorMethodList_))
-@attached(member, names: named(_managedActorScratchpad))
+@attached(peer, names: prefixed(_ManagedActorMethodTrampolineList_))
+@attached(member, names: named(_managedActorDispatch))
 public macro ManagedActor(_ options: _ManagedActorInitializationOptionName...) = #externalMacro(
     module: "SwallowMacros",
     type: "ManagedActorMacro"
@@ -28,13 +28,12 @@ public macro ManagedActor(_ options: _ManagedActorInitializationOptionName...) =
 /// `extension` macro cannot be attached to extension...
 ///
 ///  (╯°□°）╯︵ ┻━┻
-/*
- @attached(extension, names: arbitrary)
- public macro ManagedActorExtension() = #externalMacro(
- module: "SwallowMacros",
- type: "ManagedActorMacro"
- )
- */
+@attached(peer, names: prefixed(_ManagedActorMethodTrampolineList_))
+@attached(member, names: arbitrary, named(_managedActorDispatch))
+public macro ManagedActorExtension() = #externalMacro(
+    module: "SwallowMacros",
+    type: "ManagedActorMacro"
+)
 
 @attached(peer, names: prefixed(_ManagedActorMethod_))
 public macro ManagedActorMethod() = #externalMacro(
@@ -47,60 +46,134 @@ public protocol _StaticManagedActorMethodConfiguration {
     associatedtype Throws: _StaticBoolean
 }
 
-open class _AnyManagedActorMethod {
-    public var _caller: Any?
-    
-    public init() {
-        
-    }
-}
-
 @dynamicMemberLookup
 public protocol _ManagedActorProtocol: AnyObject {
-    associatedtype _ManagedActorMethodListType: Initiable
+    associatedtype _ManagedActorMethodTrampolineListType: _ManagedActorMethodTrampolineList
     
     static var _managedActorInitializationOptions: Set<_ManagedActorInitializationOption> { get }
     
-    var _managedActorScratchpad: _ManagedActorScratchpad<Self> { get }
+    var _managedActorDispatch: _ManagedActorDispatch<Self> { get }
     
-    dynamic subscript<T: _ManagedActorMethodProtocol>(
-        dynamicMember keyPath: KeyPath<_ManagedActorMethodListType, T>
+    dynamic subscript<T: _ManagedActorMethodTrampolineProtocol>(
+        dynamicMember keyPath: KeyPath<_ManagedActorMethodTrampolineListType, T>
     ) -> T { get }
     
     @inline(never)
-    dynamic func _performInnerBodyOfMethod<M: _ManagedActorMethodProtocol, R>(
-        _ method: KeyPath<_ManagedActorMethodListType, M>,
+    dynamic func _performInnerBodyOfMethod<M: _ManagedActorMethodTrampolineProtocol, R>(
+        _ method: KeyPath<_ManagedActorMethodTrampolineListType, M>,
         operation: @escaping () throws -> R
     ) rethrows -> R
     
     @inline(never)
-    dynamic func _performInnerBodyOfMethod<M: _ManagedActorMethodProtocol, R>(
-        _ method: KeyPath<_ManagedActorMethodListType, M>,
+    dynamic func _performInnerBodyOfMethod<M: _ManagedActorMethodTrampolineProtocol, R>(
+        _ method: KeyPath<_ManagedActorMethodTrampolineListType, M>,
         operation: @escaping () async -> R
     ) async -> R
     
     @inline(never)
-    dynamic func _performInnerBodyOfMethod<M: _ManagedActorMethodProtocol, R>(
-        _ method: KeyPath<_ManagedActorMethodListType, M>,
+    dynamic func _performInnerBodyOfMethod<M: _ManagedActorMethodTrampolineProtocol, R>(
+        _ method: KeyPath<_ManagedActorMethodTrampolineListType, M>,
+        operation: @escaping () async throws -> R
+    ) async throws -> R
+    
+    @inline(never)
+    dynamic func _performInnerBodyOfMethod<M: _ManagedActorMethodTrampolineProtocol, R>(
+        _ method: KeyPath<Self, M>,
+        operation: @escaping () throws -> R
+    ) rethrows -> R
+    
+    @inline(never)
+    dynamic func _performInnerBodyOfMethod<M: _ManagedActorMethodTrampolineProtocol, R>(
+        _ method: KeyPath<Self, M>,
+        operation: @escaping () async -> R
+    ) async -> R
+    
+    @inline(never)
+    dynamic func _performInnerBodyOfMethod<M: _ManagedActorMethodTrampolineProtocol, R>(
+        _ method: KeyPath<Self, M>,
         operation: @escaping () async throws -> R
     ) async throws -> R
 }
 
-public protocol _ManagedActorMethodProtocol: _AnyManagedActorMethod, Initiable {
-    associatedtype OwnerType: _ManagedActorProtocol
-    
-    typealias _OptionalOwnerType = Optional<OwnerType>
+// MARK: - Implementation
+
+extension _ManagedActorProtocol {
+    public typealias _ManagedActorSelfType = Self
 }
 
-extension _ManagedActorMethodProtocol {
-    public var caller: OwnerType {
-        get {
-            self._caller! as! OwnerType
-        } set {
-            self._caller = newValue
+extension _ManagedActorProtocol {
+    public dynamic subscript<T: _ManagedActorMethodTrampolineProtocol>(
+        dynamicMember keyPath: KeyPath<_ManagedActorMethodTrampolineListType, T>
+    ) -> T {
+        let result = _ManagedActorMethodTrampolineListType()[keyPath: keyPath]
+        
+        result._caller = self
+        
+        return result
+    }
+    
+    @inline(never)
+    public dynamic func _performInnerBodyOfMethod<M: _ManagedActorMethodTrampolineProtocol, R>(
+        _ method: KeyPath<_ManagedActorMethodTrampolineListType, M>,
+        operation: @escaping () throws -> R
+    ) rethrows -> R {
+        try _managedActorDispatch._performInnerBodyOfMethod(method) {
+            try operation()
+        }
+    }
+    
+    @inline(never)
+    public dynamic func _performInnerBodyOfMethod<M: _ManagedActorMethodTrampolineProtocol, R>(
+        _ method: KeyPath<_ManagedActorMethodTrampolineListType, M>,
+        operation: @escaping () async -> R
+    ) async -> R {
+        await _managedActorDispatch._performInnerBodyOfMethod(method) {
+            await operation()
+        }
+    }
+    
+    @inline(never)
+    public dynamic func _performInnerBodyOfMethod<M: _ManagedActorMethodTrampolineProtocol, R>(
+        _ method: KeyPath<_ManagedActorMethodTrampolineListType, M>,
+        operation: @escaping () async throws -> R
+    ) async throws -> R {
+        try await _managedActorDispatch._performInnerBodyOfMethod(method) {
+            try await operation()
+        }
+    }
+    
+    @inline(never)
+    public dynamic func _performInnerBodyOfMethod<M: _ManagedActorMethodTrampolineProtocol, R>(
+        _ method: KeyPath<Self, M>,
+        operation: @escaping () throws -> R
+    ) rethrows -> R {
+        try _managedActorDispatch._performInnerBodyOfMethod(method) {
+            try operation()
+        }
+    }
+    
+    @inline(never)
+    public dynamic func _performInnerBodyOfMethod<M: _ManagedActorMethodTrampolineProtocol, R>(
+        _ method: KeyPath<Self, M>,
+        operation: @escaping () async -> R
+    ) async -> R {
+        await _managedActorDispatch._performInnerBodyOfMethod(method) {
+            await operation()
+        }
+    }
+    
+    @inline(never)
+    public dynamic func _performInnerBodyOfMethod<M: _ManagedActorMethodTrampolineProtocol, R>(
+        _ method: KeyPath<Self, M>,
+        operation: @escaping () async throws -> R
+    ) async throws -> R {
+        try await _managedActorDispatch._performInnerBodyOfMethod(method) {
+            try await operation()
         }
     }
 }
+
+// MARK: - Auxiliary
 
 @dynamicMemberLookup
 public struct _ManagedActorExplicitSelf<ActorType: _ManagedActorProtocol>: @unchecked Sendable {
@@ -110,8 +183,8 @@ public struct _ManagedActorExplicitSelf<ActorType: _ManagedActorProtocol>: @unch
         self.actor = actor
     }
     
-    public dynamic subscript<T: _ManagedActorMethodProtocol>(
-        dynamicMember keyPath: KeyPath<ActorType._ManagedActorMethodListType, T>
+    public dynamic subscript<T: _ManagedActorMethodTrampolineProtocol>(
+        dynamicMember keyPath: KeyPath<ActorType._ManagedActorMethodTrampolineListType, T>
     ) -> T {
         self.actor[dynamicMember: keyPath]
     }
@@ -122,46 +195,3 @@ extension _ManagedActorProtocol {
         _ManagedActorExplicitSelf(actor: self)
     }
 }
-
-extension _ManagedActorProtocol {
-    public dynamic subscript<T: _ManagedActorMethodProtocol>(
-        dynamicMember keyPath: KeyPath<_ManagedActorMethodListType, T>
-    ) -> T {
-        let result = _ManagedActorMethodListType()[keyPath: keyPath]
-        
-        result._caller = self
-        
-        return result
-    }
-    
-    @inline(never)
-    public dynamic func _performInnerBodyOfMethod<M: _ManagedActorMethodProtocol, R>(
-        _ method: KeyPath<_ManagedActorMethodListType, M>,
-        operation: @escaping () throws -> R
-    ) rethrows -> R {
-        try _managedActorScratchpad._performInnerBodyOfMethod(method) {
-            try operation()
-        }
-    }
-    
-    @inline(never)
-    public dynamic func _performInnerBodyOfMethod<M: _ManagedActorMethodProtocol, R>(
-        _ method: KeyPath<_ManagedActorMethodListType, M>,
-        operation: @escaping () async -> R
-    ) async -> R {
-        await _managedActorScratchpad._performInnerBodyOfMethod(method) {
-            await operation()
-        }
-    }
-    
-    @inline(never)
-    public dynamic func _performInnerBodyOfMethod<M: _ManagedActorMethodProtocol, R>(
-        _ method: KeyPath<_ManagedActorMethodListType, M>,
-        operation: @escaping () async throws -> R
-    ) async throws -> R {
-        try await _managedActorScratchpad._performInnerBodyOfMethod(method) {
-            try await operation()
-        }
-    }
-}
-

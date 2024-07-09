@@ -104,8 +104,12 @@ extension TypeSyntaxProtocol {
 }
 
 extension FunctionDeclSyntax {
+    public var _nameHasTrailingDollarSymbol: Bool {
+        name.trimmedDescription.hasSuffix("$")
+    }
+
     public var _hasTrailingEmptyVoidFlagParameter: Bool {
-        guard let last = signature.parameterClause.parameters.last else {
+        guard let last: FunctionParameterListSyntax.Element = signature.parameterClause.parameters.last else {
             return false
         }
         

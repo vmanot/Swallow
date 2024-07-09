@@ -40,7 +40,7 @@ extension ObjCMethodInvocation {
     public func execute() throws -> AnyObjCCodable {
         let invocation = toNSInvocation()
         
-        try invocation.invoke()
+        invocation.invoke()
         
         return try AnyObjCCodable(_returnValueFromInvocation: invocation)
     }

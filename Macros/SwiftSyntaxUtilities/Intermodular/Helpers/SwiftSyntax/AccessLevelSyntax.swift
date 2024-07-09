@@ -87,6 +87,10 @@ extension EnumDeclSyntax: AccessLevelSyntax {
     
 }
 
+extension ExtensionDeclSyntax: AccessLevelSyntax {
+    
+}
+
 extension FunctionDeclSyntax: AccessLevelSyntax {
     
 }
