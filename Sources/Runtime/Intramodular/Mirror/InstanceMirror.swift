@@ -6,8 +6,6 @@ import OrderedCollections
 @_spi(Internal) import Swallow
 
 public struct InstanceMirror<Subject>: _InstanceMirrorType, _VisitableMirror, MirrorType {
-    private var lock = OSUnfairLock()
-    
     public var subject: Any
     public let typeMetadata: TypeMetadata.NominalOrTuple
             
@@ -30,6 +28,16 @@ public struct InstanceMirror<Subject>: _InstanceMirrorType, _VisitableMirror, Mi
         }
         
         guard let metadata = _openExistential(subject, do: _typeMetadataFromValue) ?? TypeMetadata.NominalOrTuple.of(subject) else {
+            if TypeMetadata(type(of: subject)).kind == .optional {
+                guard let value = Optional(_unwrapping: subject) else {
+                    return nil
+                }
+                
+                self.init(_subject: value)
+                
+                return
+            }
+            
             assertionFailure()
             
             return nil
@@ -84,6 +92,10 @@ extension InstanceMirror {
     }
 
     public var fields: [NominalTypeMetadata.Field] {
+        typeMetadata.fields
+    }
+    
+    public var fieldDescriptors: [NominalTypeMetadata.Field] {
         typeMetadata.fields
     }
     
@@ -306,6 +318,34 @@ extension InstanceMirror {
                 }.map({ (AnyCodingKey(stringValue: $0.name), $0) }),
                 uniquingKeysWith: { lhs, rhs in lhs }
             )
+        }
+    }
+}
+
+extension InstanceMirror {
+    public func _smartForEachField<T>(
+        ofPropertyWrapperType type: T.Type,
+        depth: Int = 1,
+        operation: (T) throws -> Void
+    ) rethrows {
+        if let sequence = (subject as? any Sequence)?.__opaque_eraseToAnySequence(), depth != 0 {
+            for element in sequence {
+                guard let mirror = InstanceMirror<Any>(element) else {
+                    continue
+                }
+                
+                try mirror._smartForEachField(ofPropertyWrapperType: type, depth: 0, operation: operation)
+            }
+        } else {
+            for fieldDescriptor in fieldDescriptors {
+                guard fieldDescriptor.name.hasPrefix("_") else {
+                    return
+                }
+                
+                if let field = self[fieldDescriptor] as? T  {
+                    try operation(field)
+                }
+            }
         }
     }
 }

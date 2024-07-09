@@ -9,6 +9,10 @@ extension Sequence {
     public func eraseToAnySequence() -> AnySequence<Element> {
         .init(self)
     }
+    
+    public func __opaque_eraseToAnySequence() -> AnySequence<Any> {
+        lazy.map({ $0 as Any }).eraseToAnySequence()
+    }
 }
 
 // MARK: - anySatisfy/allSatisfy
