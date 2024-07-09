@@ -54,7 +54,7 @@ public struct _CurrentXcodeProject {
         around initialURL: URL,
         selector: (([URL]) -> URL?)? = nil
     ) throws -> URL? {
-        guard !initialURL.path.hasPrefix(try CanonicalFileDirectory.xcodeDerivedData.path) else {
+        guard !initialURL.path.hasPrefix(CanonicalFileDirectory.xcodeDerivedData.path) else {
             return nil
         }
                 

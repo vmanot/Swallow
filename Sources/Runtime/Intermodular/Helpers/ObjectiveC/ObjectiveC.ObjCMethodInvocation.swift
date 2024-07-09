@@ -61,15 +61,24 @@ extension ObjCObject {
         return try invocation.execute()
     }
     
-    public func invokeSelector(_ selector: ObjCSelector, with argument: AnyObjCCodable) throws -> AnyObjCCodable {
+    public func invokeSelector(
+        _ selector: ObjCSelector,
+        with argument: AnyObjCCodable
+    ) throws -> AnyObjCCodable {
         return try invokeSelector(selector, with: [argument])
     }
     
-    public func invokeMethodNamed(_ name: String, with arguments: [AnyObjCCodable]) throws -> AnyObjCCodable {
+    public func invokeMethodNamed(
+        _ name: String,
+        with arguments: [AnyObjCCodable]
+    ) throws -> AnyObjCCodable {
         return try invokeSelector(.init(name: name), with: arguments)
     }
     
-    public func invokeMethodNamed(_ name: String, with argument: AnyObjCCodable) throws -> AnyObjCCodable {
+    public func invokeMethodNamed(
+        _ name: String,
+        with argument: AnyObjCCodable
+    ) throws -> AnyObjCCodable {
         return try invokeMethodNamed(name, with: [argument])
     }
 }
