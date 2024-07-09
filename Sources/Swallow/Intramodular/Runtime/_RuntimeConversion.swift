@@ -27,6 +27,7 @@ public final class _RuntimeConverter {
     }
 }
 
+@_alwaysEmitConformanceMetadata
 public protocol _NonGenericRuntimeConversionProtocol: _RuntimeConversion {
     associatedtype Source
     associatedtype Destination
@@ -34,6 +35,7 @@ public protocol _NonGenericRuntimeConversionProtocol: _RuntimeConversion {
     static func __convert(_ source: Source) throws -> Destination
 }
 
+@_alwaysEmitConformanceMetadata
 public protocol _GenericRuntimeConversionProtocol {
     static func __converts<T, U>(source: T.Type, to destination: U.Type) -> Bool?
     static func __converts<T, U>(source: T, to destination: U.Type) -> Bool?

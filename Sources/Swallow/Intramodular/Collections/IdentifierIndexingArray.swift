@@ -418,6 +418,14 @@ extension IdentifierIndexingArray {
         base.removeAll(where: { keys.contains($0.key) })
     }
     
+    @available(*, deprecated, renamed: "remove(elementIdentifiedBy:)")
+    @discardableResult
+    public mutating func removeAll(
+        identifiedBy id: ID
+    ) -> Element? {
+        remove(elementIdentifiedBy: id)
+    }
+    
     @discardableResult
     public mutating func update(_ element: Element) -> Element? {
         base.updateValue(element, forKey: _idForElement(element))
