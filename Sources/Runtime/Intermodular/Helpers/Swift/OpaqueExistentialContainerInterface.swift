@@ -42,15 +42,23 @@ extension OpaqueExistentialContainerInterface {
         return try withUnsafeMutableBytes(of: &_value, body)
     }
     
-    static func copyValue(from address: UnsafeRawPointer?) -> Any {
-        if let address = address {
+    static func copyValue(
+        from address: UnsafeRawPointer?
+    ) -> Any? {
+        if let address: UnsafeRawPointer = address {
+            if swift_isClassType(self) {
+                guard address.assumingMemoryBound(to: Optional<AnyObject>.self).pointee != nil else {
+                    return nil
+                }
+            }
+            
             return address.assumingMemoryBound(to: Self.self).pointee
         } else {
             let type = TypeMetadata(self)
             
             assert(type.isSizeZero)
             
-            return OpaqueExistentialContainer(unitialized: type)
+            return nil
         }
     }
     
@@ -97,7 +105,7 @@ extension OpaqueExistentialContainer {
         if type.memoryLayout.size == 0 {
             assert(address == nil)
             
-            self.init(unitialized: type)
+            self.init(uninitialized: type)
         } else {
             self = .passUnretained(type.opaqueExistentialInterface.copyValue(from: address!.rawRepresentation))
         }
@@ -191,7 +199,7 @@ extension OpaqueExistentialContainer: UnmanagedProtocol {
             let type = TypeMetadata.of(value)
             let buffer = Buffer((unsafeBitCast(try! cast(value, to: AnyObject.self)), nil, nil))
             
-            return .init(buffer: buffer, type: type)
+            return OpaqueExistentialContainer(buffer: buffer, type: type)
         } else {
             var result = unsafeBitCast(value, to: OpaqueExistentialContainer.self)
             

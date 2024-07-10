@@ -104,8 +104,17 @@ public func _unwrapPossiblyOptionalAny(
 }
 
 /// Performs a check at runtime to determine whether a given value is `nil` or not.
-public func _isValueNil(_ value: Any) -> Bool {
-    Optional(_unwrapping: value).isNil
+@inlinable
+public func _isValueNil(_ value: Any, valueType: Any.Type?) -> Bool {
+    let valueType: Any.Type = valueType ?? type(of: value)
+    
+    if _swift_isClassType(valueType) {
+        let object = unsafeBitCast(_runtimeCast(value, to: AnyObject.self)!, to: Optional<AnyObject>.self)
+        
+        return object == nil
+    }
+    
+    return Optional(_unwrapping: value).isNil
 }
 
 public func _isValueNil(_ value: Any?) -> Bool {
@@ -113,7 +122,7 @@ public func _isValueNil(_ value: Any?) -> Bool {
         return true
     }
     
-    return Optional(_unwrapping: value).isNil
+    return _isValueNil(value, valueType: nil)
 }
 
 public func _initializeNilLiteral<T>(ofType type: T.Type) throws -> T {

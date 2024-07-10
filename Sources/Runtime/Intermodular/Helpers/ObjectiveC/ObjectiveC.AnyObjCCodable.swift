@@ -69,7 +69,7 @@ extension AnyObjCCodable: ObjCCodable {
         } else {
             assert(type.isSizeZero)
             
-            self.init(uncheckedValue: OpaqueExistentialContainer(unitialized: type).unretainedValue)
+            self.init(uncheckedValue: OpaqueExistentialContainer(uninitialized: type).unretainedValue)
         }
     }
     

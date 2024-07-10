@@ -24,7 +24,7 @@ extension ContiguousStorage {
     public func withUnsafeBytes<T>(
         _ f: ((UnsafeRawBufferPointer) throws -> T)
     ) rethrows -> T {
-        try withUnsafeBufferPointer({ try f(.init($0)) })
+        try withUnsafeBufferPointer({ try f(UnsafeRawBufferPointer($0)) })
     }
     
     public func withUnsafeBufferPointer<T>(

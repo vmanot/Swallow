@@ -19,12 +19,14 @@ public struct OpaqueExistentialContainer: CustomDebugStringConvertible {
             (pointer0, pointer1, pointer2)
         }
         
+        @_transparent
         public init(_ value: Value) {
             self.pointer0 = value.0
             self.pointer1 = value.1
             self.pointer2 = value.2
         }
         
+        @_transparent
         public init() {
             self.init((nil, nil, nil))
         }
@@ -45,13 +47,15 @@ public struct OpaqueExistentialContainer: CustomDebugStringConvertible {
     public var buffer: Buffer
     public var type: TypeMetadata
     
+    @_transparent
     public init(buffer: Buffer, type: TypeMetadata) {
         self.buffer = buffer
         self.type = type
     }
     
-    public init(unitialized type: TypeMetadata) {
-        self.init(buffer: .init(), type: type)
+    @_transparent
+    public init(uninitialized type: TypeMetadata) {
+        self.init(buffer: Buffer(), type: type)
     }
 }
 
@@ -139,7 +143,7 @@ extension OpaqueExistentialContainer: ObjCCodable {
         } else {
             assert(encoding.isSizeZero)
             
-            self.init(unitialized: type)
+            self.init(uninitialized: type)
         }
     }
     
@@ -167,7 +171,7 @@ extension OpaqueExistentialContainer: ObjCCodable {
 extension Array where Element == OpaqueExistentialContainer {
     public func combineCast(to type: TypeMetadata) throws -> OpaqueExistentialContainer {
         if count == 0 && type.memoryLayout.size == 0 {
-            return OpaqueExistentialContainer(unitialized: type)
+            return OpaqueExistentialContainer(uninitialized: type)
         } else if count == 1 && self[0].type == type {
             return self[0]
         } else if let tuple = TypeMetadata.Tuple(type.base), tuple.fields.map({ $0.type }) == map({ $0.type }) {
@@ -185,7 +189,7 @@ extension Array where Element == OpaqueExistentialContainer {
     
     public func combineUnsafeBitCast(to type: TypeMetadata) throws -> OpaqueExistentialContainer {
         if count == 0 && type.memoryLayout.size == 0 {
-            return OpaqueExistentialContainer(unitialized: type)
+            return OpaqueExistentialContainer(uninitialized: type)
         } else if count == 1 && self[0].type.memoryLayout == type.memoryLayout {
             return self[0]
         } else if let tuple = TypeMetadata.Tuple(type.base), tuple.fields.map({ $0.type.memoryLayout }) == map({ $0.type.memoryLayout }) {

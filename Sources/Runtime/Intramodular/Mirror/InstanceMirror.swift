@@ -53,9 +53,26 @@ public struct InstanceMirror<Subject>: _InstanceMirrorType, _VisitableMirror, Mi
     public init?(
         _ subject: Subject
     ) {
+        if swift_isClassType(Subject.self) {
+            if unsafeBitCast(subject, to: Optional<AnyObject>.self) == nil {
+                return nil
+            }
+        }
+        
         self.init(_subject: subject)
     }
     
+    @inlinable
+    public init?(
+        _ subject: Subject
+    ) where Subject: AnyObject {
+        if unsafeBitCast(subject, to: Optional<AnyObject>.self) == nil {
+            return nil
+        }
+        
+        self.init(_subject: subject)
+    }
+
     @inlinable
     public init(
         reflecting subject: Subject
@@ -120,7 +137,7 @@ extension InstanceMirror {
     /// This is **unsafe**.
     public subscript(
         field: NominalTypeMetadata.Field
-    ) -> Any {
+    ) -> Any? {
         get {
             if fields.count == 1, fields.first!.type.kind == .existential, typeMetadata.memoryLayout.size == MemoryLayout<Any>.size {
                 let mirror = Mirror(reflecting: subject)
@@ -133,15 +150,23 @@ extension InstanceMirror {
                 
                 return child.value
             }
-            
-            return OpaqueExistentialContainer.withUnretainedValue(subject) {
-                $0.withUnsafeBytes { bytes in
-                    field.type.opaqueExistentialInterface.copyValue(
-                        from: bytes.baseAddress?.advanced(by: field.offset)
-                    )
+             
+            let result: Any? = OpaqueExistentialContainer.withUnretainedValue(subject) {
+                $0.withUnsafeBytes { bytes -> Any? in
+                    let result: Any? = field.type.opaqueExistentialInterface.copyValue(from: bytes.baseAddress?.advanced(by: field.offset))
+                                        
+                    return result
                 }
             }
+                        
+            return result
         } set {
+            guard let newValue else {
+                assertionFailure()
+                
+                return
+            }
+            
             assert(type(of: newValue) == field.type.base)
             
             var _subject: Any = subject
@@ -328,22 +353,26 @@ extension InstanceMirror {
         depth: Int = 1,
         operation: (T) throws -> Void
     ) rethrows {
-        if let sequence = (subject as? any Sequence)?.__opaque_eraseToAnySequence(), depth != 0 {
-            for element in sequence {
-                guard let mirror = InstanceMirror<Any>(element) else {
-                    continue
+        try withExtendedLifetime(self.subject) {
+            if let sequence = (subject as? any Sequence)?.__opaque_eraseToAnySequence(), depth != 0 {
+                for element in sequence {
+                    guard let mirror = InstanceMirror<Any>(element) else {
+                        continue
+                    }
+                    
+                    try mirror._smartForEachField(ofPropertyWrapperType: type, depth: 0, operation: operation)
                 }
-                
-                try mirror._smartForEachField(ofPropertyWrapperType: type, depth: 0, operation: operation)
-            }
-        } else {
-            for fieldDescriptor in fieldDescriptors {
-                guard fieldDescriptor.name.hasPrefix("_") else {
-                    return
-                }
-                
-                if let field = self[fieldDescriptor] as? T  {
-                    try operation(field)
+            } else {
+                for fieldDescriptor in fieldDescriptors {
+                    guard fieldDescriptor.name.hasPrefix("_") else {
+                        return
+                    }
+                    
+                    if let fieldValue: T = self[fieldDescriptor] as? T {
+                        try withExtendedLifetime(fieldValue) {
+                            try operation(fieldValue)
+                        }
+                    }
                 }
             }
         }
