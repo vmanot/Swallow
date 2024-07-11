@@ -29,10 +29,12 @@ extension SyntaxCollection {
         }
     }
 
+    @discardableResult
     public mutating func removeAll(
         where shouldBeRemoved: (Element) throws -> Bool
-    ) rethrows {
+    ) rethrows -> [Element] {
         var indicesToRemove: [SyntaxChildrenIndex] = []
+        var result: [Element] = []
         
         for index in self.indices {
             if try shouldBeRemoved(self[index]) {
@@ -41,11 +43,13 @@ extension SyntaxCollection {
         }
         
         guard !indicesToRemove.isEmpty else {
-            return
+            return result
         }
 
         for index in indicesToRemove.reversed() {
-            self.remove(at: index)
+            result.append(self.remove(at: index))
         }
+        
+        return result
     }
 }

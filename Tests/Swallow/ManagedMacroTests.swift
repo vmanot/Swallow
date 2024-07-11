@@ -34,12 +34,20 @@ fileprivate final class TestActor {
     var x: Int = 0
     
     func foo$(
-        _ int: Int
+        _ x: Int
     ) async throws -> Int {
-        return 68 + int
+        return 68 + x
     }
     
     func bar$(
+        _ int: Int
+    ) async throws -> Int {
+        self.baz()
+        
+        return try await self.foo(-68) + int
+    }
+    
+    func bart$(
         _ int: Int
     ) async throws -> Int {
         self.baz()

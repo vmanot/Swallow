@@ -36,6 +36,12 @@ public macro ManagedActorExtension() = #externalMacro(
 )
 
 @attached(peer, names: prefixed(_ManagedActorMethod_))
+public macro _ManagedActorMethod() = #externalMacro(
+    module: "SwallowMacros",
+    type: "ManagedActorMethodMacro"
+)
+
+@attached(peer, names: prefixed(_ManagedActorMethod_))
 public macro ManagedActorMethod() = #externalMacro(
     module: "SwallowMacros",
     type: "ManagedActorMethodMacro"
@@ -49,10 +55,11 @@ public protocol _StaticManagedActorMethodConfiguration {
 @dynamicMemberLookup
 public protocol _ManagedActorProtocol: AnyObject {
     associatedtype _ManagedActorMethodTrampolineListType: _ManagedActorMethodTrampolineList
-    
+    associatedtype _ManagedActorDispatchType: _ManagedActorDispatch<Self> = _ManagedActorDispatch<Self>
+
     static var _managedActorInitializationOptions: Set<_ManagedActorInitializationOption> { get }
     
-    var _managedActorDispatch: _ManagedActorDispatch<Self> { get }
+    var _managedActorDispatch: _ManagedActorDispatchType { get }
     
     dynamic subscript<T: _ManagedActorMethodTrampolineProtocol>(
         dynamicMember keyPath: KeyPath<_ManagedActorMethodTrampolineListType, T>
@@ -141,7 +148,10 @@ extension _ManagedActorProtocol {
             try await operation()
         }
     }
-    
+}
+
+extension _ManagedActorProtocol {
+    @_disfavoredOverload
     @inline(never)
     public dynamic func _performInnerBodyOfMethod<M: _ManagedActorMethodTrampolineProtocol, R>(
         _ method: KeyPath<Self, M>,
@@ -152,6 +162,7 @@ extension _ManagedActorProtocol {
         }
     }
     
+    @_disfavoredOverload
     @inline(never)
     public dynamic func _performInnerBodyOfMethod<M: _ManagedActorMethodTrampolineProtocol, R>(
         _ method: KeyPath<Self, M>,
@@ -162,6 +173,7 @@ extension _ManagedActorProtocol {
         }
     }
     
+    @_disfavoredOverload
     @inline(never)
     public dynamic func _performInnerBodyOfMethod<M: _ManagedActorMethodTrampolineProtocol, R>(
         _ method: KeyPath<Self, M>,

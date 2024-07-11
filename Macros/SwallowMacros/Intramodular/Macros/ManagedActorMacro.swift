@@ -102,14 +102,21 @@ extension ManagedActorMacro: MemberAttributeMacro {
             guard member._nameHasTrailingDollarSymbol else {
                 return []
             }
-            
-            return [
-                AttributeSyntax(
-                    atSign: .atSignToken(),
-                    attributeName: IdentifierTypeSyntax(name: .identifier("ManagedActorMethod"))
-                ),
-                "\n@_disfavoredOverload",
+
+            let managedActorMethodAttribute = AttributeSyntax(
+                atSign: .atSignToken(),
+                attributeName: IdentifierTypeSyntax(name: .identifier("_ManagedActorMethod"))
+            )
+
+            var result: [AttributeSyntax] = [
+                "\n@_disfavoredOverload"
             ]
+            
+            if !member.attributes.contains(where: { $0.trimmedDescription.contains("@ManagedActorMethod") }) {
+                result.append(managedActorMethodAttribute)
+            }
+            
+            return result
         } else {
             return []
         }

@@ -2,6 +2,7 @@
 // Copyright (c) Vatsal Manot
 //
 
+import Swallow
 import SwiftDiagnostics
 import SwiftSyntax
 import SwiftSyntaxMacros
@@ -44,26 +45,34 @@ public struct ManagedActorMethodMacro: PeerMacro {
         forwarding declaration: FunctionDeclSyntax
     ) throws -> DeclSyntax {
         let concreteTypeName: String = try parent?.concreteTypeName.unwrap() ?? "\(name).OwnerType"
-        
         var declaration: FunctionDeclSyntax = declaration
         
         declaration.accessLevel = .public
         
-        let keyPathName: String = declaration._formattedManagedActorMethodName
+        let keyPathKeyName: String = declaration._formattedManagedActorMethodName
+        let keyPathExpr: TokenSyntax
         
-        let callAsFunctionDecl = try declaration
+        if parent != nil {
+            keyPathExpr = "\\.\(raw: keyPathKeyName)"
+        } else {
+            keyPathExpr = "\\OwnerType._ManagedActorMethodTrampolineListType.\(raw: keyPathKeyName)"
+        }
+        
+        var callAsFunctionDecl: FunctionDeclSyntax = try declaration
             .makeDuplicate(
                 named: "callAsFunction",
                 caller: "self.caller"
             )
             .mappingBody { body in
                 """
-                \(declaration.makeCallExpressionEffectSpecifiersPrefix) caller._performInnerBodyOfMethod(\\.\(raw: keyPathName)) {
+                \(declaration.makeCallExpressionEffectSpecifiersPrefix) caller._performInnerBodyOfMethod(\(keyPathExpr)) {
                     \(body)
                 }
                 """
             }
         
+        callAsFunctionDecl.attributes.removeAll(where: { $0.trimmedDescription.contains("@ManagedActorMethod") })
+                        
         let result = DeclSyntax(
             """
             public final class \(name): _PartialManagedActorMethodTrampoline<\(raw: concreteTypeName)>, _ManagedActorMethodTrampolineProtocol {

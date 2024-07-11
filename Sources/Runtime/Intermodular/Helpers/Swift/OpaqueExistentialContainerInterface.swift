@@ -107,7 +107,7 @@ extension OpaqueExistentialContainer {
             
             self.init(uninitialized: type)
         } else {
-            guard let value = type.opaqueExistentialInterface.copyValue(from: address!.rawRepresentation) else {
+            guard let value: Any = type.opaqueExistentialInterface.copyValue(from: address!.rawRepresentation) else {
                 return nil
             }
             
