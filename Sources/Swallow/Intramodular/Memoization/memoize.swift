@@ -102,7 +102,7 @@ struct _GloballyMemoizedValues {
     @usableFromInline
     class _KeyValueMap {
         let lock = OSUnfairLock()
-
+        
         @usableFromInline
         var storage: [Int: Any] = [:]
         
@@ -117,11 +117,11 @@ struct _GloballyMemoizedValues {
             operation fn: () -> Result
         ) -> Result {
             get {
-                let result: Result = fn()
-
                 return lock.withCriticalScope {
                     guard let result = storage[key.hashValue].map({ $0 as! Result }) else {
-                    storage[key.hashValue] = result
+                        let result: Result = fn()
+
+                        storage[key.hashValue] = result
                         
                         return result
                     }
@@ -138,17 +138,17 @@ struct _GloballyMemoizedValues {
             operation fn: () async throws -> Result
         ) -> Result {
             get async throws {
-                let result: Result = try await fn()
-                
-                return lock.withCriticalScope {
-                    guard let result = storage[key.hashValue].map({ $0 as! Result }) else {
+                guard let result = lock.withCriticalScope(perform: { storage[key.hashValue].map({ $0 as! Result }) }) else {
+                    let result: Result = try await fn()
+                    
+                    lock.withCriticalScope {
                         storage[key.hashValue] = result
-                        
-                        return result
                     }
                     
                     return result
                 }
+                
+                return result
             }
         }
     }

@@ -138,7 +138,7 @@ extension OpaqueExistentialContainer: ObjCCodable {
                     )
                 )
             } else {
-                self.init(copyingBytesOfValueAt: buffer, type: type)
+                self = try Self(copyingBytesOfValueAt: buffer, type: type).unwrap()
             }
         } else {
             assert(encoding.isSizeZero)
@@ -169,37 +169,53 @@ extension OpaqueExistentialContainer: ObjCCodable {
 // MARK: - Auxiliary Extensions
 
 extension Array where Element == OpaqueExistentialContainer {
-    public func combineCast(to type: TypeMetadata) throws -> OpaqueExistentialContainer {
+    public func combineCast(
+        to type: TypeMetadata
+    ) throws -> OpaqueExistentialContainer {
         if count == 0 && type.memoryLayout.size == 0 {
             return OpaqueExistentialContainer(uninitialized: type)
         } else if count == 1 && self[0].type == type {
             return self[0]
         } else if let tuple = TypeMetadata.Tuple(type.base), tuple.fields.map({ $0.type }) == map({ $0.type }) {
-            return OpaqueExistentialContainer(type: type) { bytes in
+            let result = OpaqueExistentialContainer(type: type) { bytes in
                 var offset = 0
                 for element in self {
                     element.updateValue(at: bytes.baseAddress?.advanced(by: offset))
                     offset += element.type.memoryLayout.size
                 }
             }
+            
+            guard let result else {
+                throw OpaqueExistentialContainer.Error.runtimeCastError
+            }
+            
+            return result
         } else {
             throw OpaqueExistentialContainer.Error.runtimeCastError
         }
     }
     
-    public func combineUnsafeBitCast(to type: TypeMetadata) throws -> OpaqueExistentialContainer {
+    public func combineUnsafeBitCast(
+        to type: TypeMetadata
+    ) throws -> OpaqueExistentialContainer {
         if count == 0 && type.memoryLayout.size == 0 {
             return OpaqueExistentialContainer(uninitialized: type)
         } else if count == 1 && self[0].type.memoryLayout == type.memoryLayout {
             return self[0]
         } else if let tuple = TypeMetadata.Tuple(type.base), tuple.fields.map({ $0.type.memoryLayout }) == map({ $0.type.memoryLayout }) {
-            return OpaqueExistentialContainer(type: type) { bytes in
+            let result = OpaqueExistentialContainer(type: type) { bytes in
                 var offset = 0
                 for element in self {
                     element.updateValue(at: bytes.baseAddress?.advanced(by: offset))
                     offset += element.type.memoryLayout.size
                 }
             }
+            
+            guard let result else {
+                throw OpaqueExistentialContainer.Error.runtimeCastError
+            }
+            
+            return result
         } else {
             throw OpaqueExistentialContainer.Error.runtimeCastError
         }

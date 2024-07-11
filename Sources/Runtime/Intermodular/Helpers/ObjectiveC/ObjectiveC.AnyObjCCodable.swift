@@ -64,7 +64,9 @@ extension AnyObjCCodable: ObjCCodable {
             if let type = type.base as? ObjCCodable.Type {
                 self.init(uncheckedValue: try type.init(decodingObjCValueFromRawBuffer: buffer, encoding: encoding))
             } else {
-                self.init(uncheckedValue: OpaqueExistentialContainer(copyingBytesOfValueAt: buffer, type: type).unretainedValue)
+                let container = try OpaqueExistentialContainer(copyingBytesOfValueAt: buffer, type: type).unwrap()
+                
+                self.init(uncheckedValue: container.unretainedValue)
             }
         } else {
             assert(type.isSizeZero)

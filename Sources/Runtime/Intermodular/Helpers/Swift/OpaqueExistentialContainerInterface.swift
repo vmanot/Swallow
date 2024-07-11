@@ -98,7 +98,7 @@ extension OpaqueExistentialContainerInterface {
 // MARK: - Helpers
 
 extension OpaqueExistentialContainer {
-    public init<ByteAddress: RawPointer>(
+    public init?<ByteAddress: RawPointer>(
         copyingBytesOfValueAt address: ByteAddress?,
         type: TypeMetadata
     ) {
@@ -107,18 +107,22 @@ extension OpaqueExistentialContainer {
             
             self.init(uninitialized: type)
         } else {
-            self = .passUnretained(type.opaqueExistentialInterface.copyValue(from: address!.rawRepresentation))
+            guard let value = type.opaqueExistentialInterface.copyValue(from: address!.rawRepresentation) else {
+                return nil
+            }
+            
+            self = .passUnretained(value)
         }
     }
     
-    public init<Bytes: RawBufferPointer>(
+    public init?<Bytes: RawBufferPointer>(
         copyingBytesOfValueFrom bytes: Bytes,
         type: TypeMetadata
     ) {
         self.init(copyingBytesOfValueAt: bytes.baseAddress, type: type)
     }
     
-    public init(
+    public init?(
         type: TypeMetadata,
         unsafeBytesOfValueInitializer: (UnsafeMutableRawBufferPointer) -> ()
     ) {
