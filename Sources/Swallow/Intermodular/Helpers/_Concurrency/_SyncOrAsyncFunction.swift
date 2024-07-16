@@ -24,6 +24,15 @@ public enum _SyncOrAsyncFunction<Input, Output>: _SyncOrAsyncFunction_Type, @unc
         self = .asynchronous(fn)
     }
     
+    
+    public static func _asyncTrampoline(
+        _ action: @escaping () -> _SyncOrAsyncFunction<Input, Output>
+    ) -> Self {
+        Self.init({
+           try await action().callAsFunction($0).value
+        })
+    }
+    
     public func callAsFunction(_ input: Input) -> _SyncOrAsyncValue<Output> {
         switch self {
             case .synchronous(let fn):

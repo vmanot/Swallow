@@ -7,15 +7,27 @@ import Swallow
 
 @propertyWrapper
 public struct _StaticMirrorQuery<T, U> {
-    public let type: T.Type
+    public let type: T
     public let wrappedValue: [U]
     
-    public init(type: T.Type, transform: ([U]) -> [U] = { $0 }) {
+    public init(type: T, transform: ([U]) -> [U] = { $0 }) {
         self.type = type
         
-        let value: [U] = try! TypeMetadata._queryAll(.nonAppleFramework, .conformsTo(type))
+        let value: [U] = try! TypeMetadata._queryAll(.nonAppleFramework, .conformsTo(type as! Any.Type))
         
         self.wrappedValue = transform(value)
+    }
+    
+    public init(
+        _ type: _StaticSwift._ProtocolAndExistentialTypePair<T, U>
+    ) {
+        self.init(type: type.protocolType)
+    }
+    
+    public init(
+        _ type: () -> _StaticSwift._ProtocolAndExistentialTypePair<T, U>
+    ) {
+        self.init(type: type as! T)
     }
 }
 

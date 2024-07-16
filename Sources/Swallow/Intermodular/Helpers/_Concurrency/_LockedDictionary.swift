@@ -4,20 +4,23 @@
 
 import Darwin
 
+@frozen
 public struct _LockedStateMap<Key: Hashable, Value> {
     @_LockedState
-    private var state: [Key: _LockedState<Value>] = [:]
+    public var _state: [Key: _LockedState<Value>] = [:]
     
+    @_transparent
     public init(initialState: [Key: Value]) {
-        self.state = initialState.mapValues({ _LockedState(initialState: $0) })
+        self._state = initialState.mapValues({ _LockedState(initialState: $0) })
     }
     
     public subscript(
         _ key: Key,
         default defaultValue: @autoclosure () -> Value
     ) -> _LockedState<Value> {
+        @_transparent
         get {
-            $state.withLock { state in
+            $_state.withLock { state in
                 if let value = state[key] {
                     return value
                 } else {
@@ -34,7 +37,10 @@ public struct _LockedStateMap<Key: Hashable, Value> {
     public subscript(
         _ key: Key
     ) -> _LockedState<Value> where Value: Initiable {
-        self[key, default: .init()]
+        @_transparent
+        get {
+            self[key, default: Value()]
+        }
     }
 }
 

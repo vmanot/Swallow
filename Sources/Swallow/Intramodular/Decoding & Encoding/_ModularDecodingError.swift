@@ -11,6 +11,7 @@ public enum _ModularDecodingError: Error {
     case typeMismatch(Any.Type, Context, AnyCodable?)
     case valueNotFound(Any.Type, Context, AnyCodable?)
     case keyNotFound(AnyCodingKey, Context, AnyCodable?)
+    case keyForbidden(AnyCodingKey, Context)
     case dataCorrupted(Context, AnyCodable?)
     
     case unknown(Swift.DecodingError)
@@ -104,22 +105,35 @@ public enum _ModularDecodingError: Error {
 }
 
 extension _ModularDecodingError {
-    public struct Context: Sendable {
-        public let type: Any.Type?
+    public struct Context: Hashable, Sendable {
+        @_HashableExistential
+        public var type: Any.Type?
         public let codingPath: CodingPath
-        public let debugDescription: String
-        public let underlyingError: (any Error)?
+        public let debugDescription: String?
+        public let underlyingError: AnyError?
         
         public init(
             type: Any.Type?,
             codingPath: [CodingKey],
-            debugDescription: String,
+            debugDescription: String?,
             underlyingError: (any Error)?
         ) {
             self.type = type
             self.codingPath = CodingPath(codingPath)
             self.debugDescription = debugDescription
-            self.underlyingError = underlyingError
+            self.underlyingError = AnyError(erasing: underlyingError)
+        }
+        
+        public init(
+            type: Any.Type,
+            codingPath: [CodingKey]
+        ) {
+            self.init(
+                type: type,
+                codingPath: codingPath,
+                debugDescription: nil,
+                underlyingError: nil
+            )
         }
     }
     
@@ -133,6 +147,8 @@ extension _ModularDecodingError {
                 return context
             case .keyNotFound(_, let context, _):
                 return context
+            case .keyForbidden(_, let context):
+                return context
             case .dataCorrupted(let context, _):
                 return context
             case .unknown(_):
@@ -140,6 +156,8 @@ extension _ModularDecodingError {
         }
     }
 }
+
+// MARK: - Conformances
 
 extension _ModularDecodingError.Context: CustomStringConvertible {
     public var description: String {

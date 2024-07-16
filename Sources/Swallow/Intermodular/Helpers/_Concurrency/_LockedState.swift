@@ -20,13 +20,17 @@ public struct _LockedState<State> {
             withLock {
                 $0 = newValue
             }
-        } 
+        }
     }
     
     public var projectedValue: Self {
+        @_transparent
         _read {
             yield self
-        } _modify {
+        }
+        
+        @_transparent
+        _modify {
             yield &self
         }
     }
@@ -47,8 +51,11 @@ public struct _LockedState<State> {
     }
     
     public subscript<T>(dynamicMember keyPath: KeyPath<State, T>) -> T {
-        withLock {
-            $0[keyPath: keyPath]
+        @_transparent
+        get {
+            withLock {
+                $0[keyPath: keyPath]
+            }
         }
     }
     

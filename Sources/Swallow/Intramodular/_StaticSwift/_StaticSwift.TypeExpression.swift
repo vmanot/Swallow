@@ -90,6 +90,19 @@ extension _StaticSwift {
             self.value = value
         }
     }
-    
+
     public typealias OpaqueExistentialTypeExpression = _StaticSwift.ExistentialTypeExpression<Any, Any.Type>
+    
+    public struct _ProtocolAndExistentialTypePair<ProtocolType, ExistentialType> {
+        public let protocolType: ProtocolType
+        public let existentialType: Metatype<ExistentialType>.Type
+        
+        public init(
+            protocolType: ProtocolType,
+            existentialType: Metatype<ExistentialType>.Type
+        ) {
+            self.protocolType = protocolType
+            self.existentialType = existentialType
+        }
+    }
 }

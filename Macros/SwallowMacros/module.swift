@@ -22,6 +22,7 @@ public struct module: CompilerPlugin {
         ManagedActorMacro.self,
         ManagedActorMethodMacro.self,
         MemoizedPropertyMacro.self,
+        MetatypeExpressionMacro.self,
         OnceMacro.self,
         OptionSetMacro.self,
         RuntimeConversionMacro.self,
