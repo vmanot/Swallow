@@ -238,7 +238,7 @@ public struct _UnsafeWeak<Value: AnyObject>: Wrapper {
 
 /// A weakly held value.
 @propertyWrapper
-public struct Weak<Value>: PropertyWrapper {
+public struct Weak<Value>: ExpressibleByNilLiteral, PropertyWrapper {
     private weak var _weakWrappedValue: AnyObject?
     private var _strongWrappedValue: Value?
     
@@ -272,7 +272,11 @@ public struct Weak<Value>: PropertyWrapper {
     public init() {
         self.init(wrappedValue: nil)
     }
-    
+
+    public init(nilLiteral: ()) {
+        
+    }
+
     public static func === (lhs: Self, rhs: Value) -> Bool where Value: AnyObject {
         lhs.wrappedValue === rhs
     }

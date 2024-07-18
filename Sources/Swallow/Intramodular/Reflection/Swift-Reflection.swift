@@ -71,15 +71,17 @@ public func _swift_isClassType(
 public func _stdlib_demangleName(
     _ mangled: String
 ) -> String {
-    return mangled.utf8CString.withUnsafeBufferPointer { (buffer: UnsafeBufferPointer<CChar>) in
+    // @convention(thin) (Optional<UnsafePointer<Int8>>, UInt, Optional<UnsafeMutablePointer<UInt8>>, Optional<UnsafeMutablePointer<UInt>>, UInt32) -> Optional<UnsafeMutablePointer<Int8>>
+    // @convention(thin) (Optional<UnsafePointer<Int8>>, Int, Optional<UnsafeMutablePointer<Int8>>, Optional<UnsafeMutablePointer<UInt>>, UInt32) -> Optional<UnsafeMutablePointer<Int8>>
+    
+    return mangled.utf8CString.withUnsafeBufferPointer { (buffer: UnsafeBufferPointer<CChar>) in        
         let result = _stdlib_demangleImpl(
-            buffer.baseAddress,
-            mangledNameLength: Int(buffer.count - 1),
+            mangledName: buffer.baseAddress as UnsafePointer<CChar>?,
+            mangledNameLength: UInt(buffer.count - 1),
             outputBuffer: nil,
             outputBufferSize: nil,
-            flags: 0
-        )
-            .map({ String(utf8String: $0, deallocate: true) })
+            flags: UInt32(0)
+        ).map({ String(utf8String: $0, deallocate: true) })
         
         guard let result else {
             runtimeIssue("Failed to demangle type: \(mangled)")

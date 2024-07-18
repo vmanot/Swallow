@@ -226,12 +226,19 @@ internal class _Fortify: ThreadLocal {
     
     fileprivate class func demangle(symbol: UnsafePointer<Int8>) -> String? {
         if let demangledNamePtr = _stdlib_demangleImpl(
-            symbol, mangledNameLength: UInt(strlen(symbol)),
-            outputBuffer: nil, outputBufferSize: nil, flags: 0) {
+            mangledName: symbol,
+            mangledNameLength: UInt(strlen(symbol)),
+            outputBuffer: nil,
+            outputBufferSize: nil,
+            flags: 0
+        ) {
             let demangledName = String(cString: demangledNamePtr)
+            
             free(demangledNamePtr)
+            
             return demangledName
         }
+        
         return nil
     }
 }
@@ -274,10 +281,10 @@ internal class ThreadLocal {
 }
 
 @_silgen_name("swift_demangle")
-private func _stdlib_demangleImpl(
-    _ mangledName: UnsafePointer<CChar>?,
+public func _stdlib_demangleImpl(
+    mangledName: UnsafePointer<CChar>?,
     mangledNameLength: UInt,
-    outputBuffer: UnsafeMutablePointer<UInt8>?,
+    outputBuffer: UnsafeMutablePointer<CChar>?,
     outputBufferSize: UnsafeMutablePointer<UInt>?,
     flags: UInt32
 ) -> UnsafeMutablePointer<CChar>?

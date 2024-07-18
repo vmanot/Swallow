@@ -149,3 +149,10 @@ extension Bundle {
         return nonAppleBinaries
     }
 }
+
+// MARK: - Supplementary
+
+extension Bundle.ID {
+    public static var finder: Self = "com.apple.finder"
+    public static var xcode: Self = "com.apple.dt.Xcode"
+}
