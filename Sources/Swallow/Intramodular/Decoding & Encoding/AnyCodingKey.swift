@@ -16,6 +16,17 @@ public struct AnyCodingKey: CodingKey, StringConvertible {
     
     private let storage: Storage
     
+    public var value: any Codable {
+        switch storage {
+            case .string(let value):
+                return value
+            case .integer(let value):
+                return value
+            default:
+                return stringValue
+        }
+    }
+    
     public var stringValue: String {
         switch storage {
             case .string(let value):
@@ -61,10 +72,10 @@ extension AnyCodingKey: Codable {
     public init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
         
-        if let value = try? container.decode(String.self) {
-            self.storage = .string(value)
-        } else if let value = try? container.decode(Int.self) {
+        if let value = try? container.decode(Int.self) {
             self.storage = .integer(value)
+        } else if let value = try? container.decode(String.self) {
+            self.storage = .string(value)
         } else {
             throw DecodingError.dataCorrupted(.init(codingPath: container.codingPath))
         }
@@ -97,6 +108,12 @@ extension AnyCodingKey: CustomDebugStringConvertible, CustomStringConvertible {
 
     public var description: String {
         stringValue
+    }
+}
+
+extension AnyCodingKey: CustomReflectable {
+    public var customMirror: Mirror {
+        Mirror(reflecting: stringValue)
     }
 }
 

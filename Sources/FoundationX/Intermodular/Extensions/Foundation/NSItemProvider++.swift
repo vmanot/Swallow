@@ -111,6 +111,6 @@ extension NSItemProvider {
     }
 }
 
-extension Foundation.NSItemProvider: @unchecked Sendable {
+extension Foundation.NSItemProvider: @unchecked Swift.Sendable {
     
 }

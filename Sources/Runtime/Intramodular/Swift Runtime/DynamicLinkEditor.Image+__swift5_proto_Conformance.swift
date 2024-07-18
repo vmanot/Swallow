@@ -93,7 +93,11 @@ extension DynamicLinkEditor.Image {
                 continue
             }
             
-            let protocolType: TypeMetadata? = conformance.protocol.metadata().map({ TypeMetadata($0) })
+            guard let protocolContext: _swift_GenericContext = conformance.protocol else {
+                continue
+            }
+            
+            let protocolType: TypeMetadata? = protocolContext.metadata().map({ TypeMetadata($0) })
             
             result[type, default: []].append(
                 _swift_TypeConformanceList.Conformance(

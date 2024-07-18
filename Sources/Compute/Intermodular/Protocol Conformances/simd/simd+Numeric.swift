@@ -5,7 +5,7 @@
 import simd
 import Swallow
 
-extension simd.simd_quatd: MutableArithmeticOperatable, Numeric {
+extension simd.simd_quatd: Swallow.MutableArithmeticOperatable, Swift.Numeric {
     public var magnitude: Double {
         return length
     }
@@ -23,7 +23,7 @@ extension simd.simd_quatd: MutableArithmeticOperatable, Numeric {
     }
 }
 
-extension simd.simd_quatf: MutableArithmeticOperatable, Numeric {
+extension simd.simd_quatf: Swallow.MutableArithmeticOperatable, Swift.Numeric {
     public var magnitude: Float {
         return length
     }

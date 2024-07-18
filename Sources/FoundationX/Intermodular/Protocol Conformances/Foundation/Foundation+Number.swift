@@ -5,7 +5,7 @@
 import Foundation
 import Swallow
 
-extension Decimal: Continuous, Signed, Number {
+extension Decimal: Swallow.Continuous, Swallow.Signed, Swallow.Number {
     @inlinable
     public var isNegative: Bool {
         return _isNegative.toBool()

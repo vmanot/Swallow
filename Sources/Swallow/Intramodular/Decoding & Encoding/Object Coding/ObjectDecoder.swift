@@ -9,9 +9,9 @@ public struct ObjectDecoder: Initiable {
     fileprivate struct Options {
         fileprivate var decodingStrategies = DecodingStrategies()
     }
-
+    
     fileprivate var options = Options()
-
+    
     public init() {
         
     }
@@ -45,9 +45,9 @@ public struct ObjectDecoder: Initiable {
     
     public struct DecodingStrategy<T: Decodable> {
         public typealias Closure = (Decoder) throws -> T
-    
+        
         fileprivate let closure: Closure
-
+        
         public init(closure: @escaping Closure) {
             self.closure = closure
         }
@@ -82,12 +82,12 @@ public struct ObjectDecoder: Initiable {
 extension ObjectDecoder {
     public struct Decoder: Swift.Decoder {
         fileprivate typealias Options = ObjectDecoder.Options
-
+        
         public let object: Any
         private let options: Options
         public let codingPath: [CodingKey]
         public let userInfo: [CodingUserInfoKey: Any]
-
+        
         fileprivate init(
             object: Any,
             options: Options,
@@ -106,11 +106,11 @@ extension ObjectDecoder.Decoder {
     public func container<Key>(
         keyedBy type: Key.Type
     ) throws -> KeyedDecodingContainer<Key> {
-        return .init(_KeyedDecodingContainer<Key>(decoder: self, wrapping: try cast()))
+        KeyedDecodingContainer(_KeyedDecodingContainer<Key>(decoder: self, wrapping: try cast()))
     }
     
     public func unkeyedContainer() throws -> UnkeyedDecodingContainer {
-        return _UnkeyedDecodingContainer(decoder: self, wrapping: try cast())
+        _UnkeyedDecodingContainer(decoder: self, wrapping: try cast())
     }
     
     public func singleValueContainer() throws -> SingleValueDecodingContainer {
@@ -127,6 +127,14 @@ extension ObjectDecoder.Decoder {
     
     private func cast<T>() throws -> T {
         guard let value = object as? T else {
+            if T.self == Swift.Array<Any>.self, let object = object as? [String: Any] {
+                let result: Array<Any> = Array(object).flatMap({
+                    [$0.key as Any, $0.value as Any]
+                })
+                
+                return result as! T
+            }
+            
             throw _typeMismatch(at: codingPath, expectation: T.self, reality: object)
         }
         
@@ -196,53 +204,72 @@ private struct _KeyedDecodingContainer<Key: CodingKey> : KeyedDecodingContainerP
     
     var codingPath: [CodingKey] { return decoder.codingPath }
     var allKeys: [Key] {
-        #if swift(>=4.1)
         return dictionary.keys.compactMap(Key.init)
-        #else
-        return dictionary.keys.flatMap(Key.init)
-        #endif
     }
-    func contains(_ key: Key) -> Bool { return dictionary[key.stringValue] != nil }
+    func contains(_ key: Key) -> Bool {
+        return dictionary[key.stringValue] != nil
+    }
     
     func decodeNil(forKey key: Key) throws -> Bool {
         return try object(for: key) is NSNull
     }
     
-    func decode(_ type: Bool.Type, forKey key: Key)   throws -> Bool { return try decoder(for: key).decode(type) }
-    func decode(_ type: String.Type, forKey key: Key) throws -> String { return try decoder(for: key).decode(type) }
-    func decode<T>(_ type: T.Type, forKey key: Key)   throws -> T where T: ShouldNotBeDecodedFromBool {
-        return try decoder(for: key).decode(type)
-    }
-    func decode<T>(_ type: T.Type, forKey key: Key)   throws -> T where T: Decodable {
+    func decode(_ type: Bool.Type, forKey key: Key) throws -> Bool {
         return try decoder(for: key).decode(type)
     }
     
-    func nestedContainer<NestedKey>(keyedBy type: NestedKey.Type,
-                                    forKey key: Key) throws -> KeyedDecodingContainer<NestedKey> {
-        return try decoder(for: key).container(keyedBy: type)
+    func decode(_ type: String.Type, forKey key: Key) throws -> String {
+        return try decoder(for: key).decode(type)
+    }
+    
+    func decode<T>(_ type: T.Type, forKey key: Key) throws -> T where T: ShouldNotBeDecodedFromBool {
+        return try decoder(for: key).decode(type)
+    }
+    
+    func decode<T: Decodable>(
+        _ type: T.Type,
+        forKey key: Key
+    ) throws -> T {
+        try decoder(for: key).decode(type)
+    }
+    
+    func nestedContainer<NestedKey>(
+        keyedBy type: NestedKey.Type,
+        forKey key: Key
+    ) throws -> KeyedDecodingContainer<NestedKey> {
+        try decoder(for: key).container(keyedBy: type)
     }
     
     func nestedUnkeyedContainer(forKey key: Key) throws -> UnkeyedDecodingContainer {
-        return try decoder(for: key).unkeyedContainer()
+        try decoder(for: key).unkeyedContainer()
     }
     
-    func superDecoder() throws -> Decoder { return try decoder(for: _ObjectCodingKey.super) }
-    func superDecoder(forKey key: Key) throws -> Decoder { return try decoder(for: key) }
+    func superDecoder() throws -> Decoder {
+        try decoder(for: _ObjectCodingKey.super)
+    }
     
-    private func object(for key: CodingKey) throws -> Any {
+    func superDecoder(forKey key: Key) throws -> Decoder {
+        try decoder(for: key)
+    }
+    
+    private func object(
+        for key: CodingKey
+    ) throws -> Any {
         guard let object = dictionary[key.stringValue] else {
             throw _keyNotFound(at: codingPath, key, "No value associated with key \(key) (\"\(key.stringValue)\").")
         }
+        
         return object
     }
     
-    private func decoder(for key: CodingKey) throws -> ObjectDecoder.Decoder {
-        return decoder.decoder(referencing: try object(for: key), as: key)
+    private func decoder(
+        for key: CodingKey
+    ) throws -> ObjectDecoder.Decoder {
+        decoder.decoder(referencing: try object(for: key), as: key)
     }
 }
 
 private struct _UnkeyedDecodingContainer: UnkeyedDecodingContainer {
-    
     private let decoder: ObjectDecoder.Decoder
     private let array: [Any]
     
@@ -252,9 +279,18 @@ private struct _UnkeyedDecodingContainer: UnkeyedDecodingContainer {
         self.currentIndex = 0
     }
     
-    var codingPath: [CodingKey] { return decoder.codingPath }
-    var count: Int? { return array.count }
-    var isAtEnd: Bool { return currentIndex >= array.count }
+    var codingPath: [CodingKey] {
+        return decoder.codingPath
+    }
+    
+    var count: Int? {
+        return array.count
+    }
+    
+    var isAtEnd: Bool {
+        return currentIndex >= array.count
+    }
+    
     var currentIndex: Int
     
     mutating func decodeNil() throws -> Bool {
@@ -267,35 +303,68 @@ private struct _UnkeyedDecodingContainer: UnkeyedDecodingContainer {
         }
     }
     
-    mutating func decode(_ type: Bool.Type)   throws -> Bool { return try currentDecoder { try $0.decode(type) } }
-    mutating func decode(_ type: String.Type) throws -> String { return try currentDecoder { try $0.decode(type) } }
-    mutating func decode<T>(_ type: T.Type)   throws -> T where T: ShouldNotBeDecodedFromBool {
-        return try currentDecoder { try $0.decode(type) }
+    mutating func decode(
+        _ type: Bool.Type
+    )   throws -> Bool { return try currentDecoder { try $0.decode(type) } }
+    mutating func decode(
+        _ type: String.Type
+    ) throws -> String { return try currentDecoder { try $0.decode(type) } }
+   
+    mutating func decode<T: ShouldNotBeDecodedFromBool>(
+        _ type: T.Type
+    ) throws -> T {
+        return try currentDecoder {
+            try $0.decode(type)
+        }
     }
-    mutating func decode<T>(_ type: T.Type)   throws -> T where T: Decodable {
-        return try currentDecoder { try $0.decode(type) }
+   
+    mutating func decode<T: Decodable>(
+        _ type: T.Type
+    ) throws -> T  {
+        return try currentDecoder {
+            try $0.decode(type)
+        }
     }
     
-    mutating func nestedContainer<NestedKey>(keyedBy type: NestedKey.Type) throws -> KeyedDecodingContainer<NestedKey> {
-        return try currentDecoder { try $0.container(keyedBy: type) }
+    mutating func nestedContainer<NestedKey>(
+        keyedBy type: NestedKey.Type
+    ) throws -> KeyedDecodingContainer<NestedKey> {
+        return try currentDecoder {
+            try $0.container(keyedBy: type)
+        }
     }
     
     mutating func nestedUnkeyedContainer() throws -> UnkeyedDecodingContainer {
-        return try currentDecoder { try $0.unkeyedContainer() }
+        return try currentDecoder {
+            try $0.unkeyedContainer()
+        }
     }
     
     mutating func superDecoder() throws -> Decoder {
-        return try currentDecoder { $0 }
+        return try currentDecoder {
+            $0
+        }
     }
     
-    private var currentKey: CodingKey { return _ObjectCodingKey(index: currentIndex) }
-    private var currentObject: Any { return array[currentIndex] }
-    
-    private func throwErrorIfAtEnd<T>(_ type: T.Type) throws {
-        if isAtEnd { throw _valueNotFound(at: codingPath + [currentKey], type, "Unkeyed container is at end.") }
+    private var currentKey: any CodingKey {
+        return _ObjectCodingKey(index: currentIndex)
     }
     
-    private mutating func currentDecoder<T>(closure: (ObjectDecoder.Decoder) throws -> T) throws -> T {
+    private var currentObject: Any {
+        return array[currentIndex]
+    }
+    
+    private func throwErrorIfAtEnd<T>(
+        _ type: T.Type
+    ) throws {
+        if isAtEnd {
+            throw _valueNotFound(at: codingPath + [currentKey], type, "Unkeyed container is at end.")
+        }
+    }
+    
+    private mutating func currentDecoder<T>(
+        closure: (ObjectDecoder.Decoder) throws -> T
+    ) throws -> T {
         try throwErrorIfAtEnd(T.self)
         let decoded: T = try closure(decoder.decoder(referencing: currentObject, as: currentKey))
         currentIndex += 1

@@ -5,7 +5,7 @@
 import Foundation
 import Swallow
 
-extension Data: DataCodableWithDefaultStrategies {
+extension Data: Swallow.DataCodableWithDefaultStrategies {
     public init(data: Data, using _: Void) throws {
         self = data
     }
@@ -15,15 +15,15 @@ extension Data: DataCodableWithDefaultStrategies {
     }
 }
 
-extension NSData: DataEncodableWithDefaultStrategy {
+extension NSData: Swallow.DataEncodableWithDefaultStrategy {
     public typealias DataEncodingStrategy = Data.DataEncodingStrategy
 }
 
-extension NSString: DataEncodableWithDefaultStrategy {
+extension NSString: Swallow.DataEncodableWithDefaultStrategy {
     public typealias DataEncodingStrategy = String.DataEncodingStrategy
 }
 
-extension NSValue: DataEncodableWithDefaultStrategy {
+extension NSValue: Swallow.DataEncodableWithDefaultStrategy {
     public func data(using _: Void) throws -> Data {
         var data = try Data(repeating: 0, count: objCTypeEncoding.sizeInBytes)
         

@@ -45,6 +45,19 @@ extension Dictionary {
         
         return result
     }
+    
+    public func mapDictionary<T: Hashable, U>(
+        key transformKey: (Key) throws -> T,
+        value transformValue: (Value) throws -> U
+    ) rethrows -> [T: U] {
+        var result = Dictionary<T, U>(minimumCapacity: count)
+        
+        for (key, value) in self {
+            result[try transformKey(key)] = try transformValue(value)
+        }
+        
+        return result
+    }
 }
 
 extension Dictionary {

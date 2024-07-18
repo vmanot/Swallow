@@ -5,7 +5,7 @@
 import Foundation
 import Swallow
 
-extension Decimal: BooleanInitiable {
+extension Decimal: Swallow.BooleanInitiable {
     @inlinable
     public init(_ value: Bool) {
         self.init(value as NSNumber)

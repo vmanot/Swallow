@@ -5,7 +5,7 @@
 import Swallow
 
 extension FileManager {
-    @MainActor(unsafe)
+    @MainActor
     public func withUserGrantedAccess<T>(
         to location: some URLRepresentable,
         scope: URL._FileOrDirectorySecurityScopedAccessManager.PreferredScope = .automatic,
@@ -29,7 +29,7 @@ extension FileManager {
         }
     }
     
-    @MainActor(unsafe)
+    @MainActor
     public func withUserGrantedAccess<T>(
         to location: some URLRepresentable,
         scope: URL._FileOrDirectorySecurityScopedAccessManager.PreferredScope = .automatic,

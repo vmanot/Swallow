@@ -5,6 +5,6 @@
 import Foundation
 import Swallow
 
-extension Foundation.Data: ExpressibleByArrayLiteral {
+extension Foundation.Data: Swift.ExpressibleByArrayLiteral {
     
 }

@@ -5,6 +5,6 @@
 import Foundation
 import Swallow
 
-extension Data: ResizableCollection {
+extension Data: Swallow.ResizableCollection {
     
 }

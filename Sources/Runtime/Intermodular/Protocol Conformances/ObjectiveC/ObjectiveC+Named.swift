@@ -5,7 +5,7 @@
 import ObjectiveC
 import Swallow
 
-extension Selector: MutableNamed {
+extension Selector: Swallow.MutableNamed {
     @inlinable
     public var name: String {
         get {

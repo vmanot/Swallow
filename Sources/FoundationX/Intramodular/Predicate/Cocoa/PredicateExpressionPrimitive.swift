@@ -136,16 +136,3 @@ public struct NilPredicateExpressionValue: PredicateExpressionPrimitive, Express
         
     }
 }
-
-// MARK: - Optional
-
-extension Optional: Comparable where Wrapped: Comparable {
-    public static func < (lhs: Self, rhs: Self) -> Bool {
-        switch (lhs, rhs) {
-            case let (.some(lhs), .some(rhs)):
-                return lhs < rhs
-            default:
-                return false
-        }
-    }
-}

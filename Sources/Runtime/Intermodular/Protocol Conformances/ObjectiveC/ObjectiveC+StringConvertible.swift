@@ -5,7 +5,7 @@
 import ObjectiveC
 import Swallow
 
-extension Selector: StringConvertible {
+extension Selector: Swallow.StringConvertible {
     public var stringValue: String {
         return value
     }

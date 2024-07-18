@@ -6,7 +6,7 @@ import _SwallowSwiftOverlay
 import Foundation
 import Swallow
 
-extension CharacterSet: Wrapper {
+extension CharacterSet: Swallow.Wrapper {
     public typealias Value = Set<Character>
     
     @inlinable

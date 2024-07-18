@@ -6,7 +6,7 @@ import CoreGraphics
 import Foundation
 import Swallow
 
-extension Decimal: NumberConvertible {
+extension Decimal: Swallow.NumberConvertible {
     @inlinable
     public func toBool() -> Bool {
         return .init(truncating: self as NSNumber)

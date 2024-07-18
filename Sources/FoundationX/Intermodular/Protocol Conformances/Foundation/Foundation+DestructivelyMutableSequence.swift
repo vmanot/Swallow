@@ -5,7 +5,7 @@
 import Foundation
 import Swallow
 
-extension NSMutableArray: DestructivelyMutableSequence {
+extension NSMutableArray: Swallow.DestructivelyMutableSequence {
     public func _forEach<T>(mutating iterator: ((inout Element) throws -> T)) rethrows {
         for (index, _) in enumerated() {
             _ = try iterator(&self[index])
@@ -39,7 +39,7 @@ extension NSMutableArray: DestructivelyMutableSequence {
     }
 }
 
-extension Foundation.NSMutableData: MutableSequence {
+extension Foundation.NSMutableData: Swallow.MutableSequence {
     public func _forEach<T>(mutating iterator: ((inout Element) throws -> T)) rethrows {
         for (index, _) in enumerated() {
             _ = try iterator(&self[_position: index])
@@ -47,7 +47,7 @@ extension Foundation.NSMutableData: MutableSequence {
     }
 }
 
-extension Foundation.NSMutableSet: DestructivelyMutableSequence {
+extension Foundation.NSMutableSet: Swallow.DestructivelyMutableSequence {
     public func _forEach<T>(mutating iterator: ((inout Element) throws -> T)) rethrows {
         try _forEach(destructivelyMutating: { try iterator(&$0!) })
     }

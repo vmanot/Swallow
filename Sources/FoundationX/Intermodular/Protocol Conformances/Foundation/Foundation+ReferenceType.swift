@@ -5,6 +5,6 @@
 import Foundation
 import Swallow
 
-extension Foundation.NSObject: ReferenceType {
+extension Foundation.NSObject: Swallow.ReferenceType {
     
 }

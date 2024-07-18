@@ -7,7 +7,7 @@
 import CoreGraphics
 import Swift
 
-extension CGFloat: LosslessStringConvertible {
+extension CGFloat: Swift.LosslessStringConvertible {
     @inlinable
     public init?(_ text: String) {
         guard let value = CGFloat.NativeType(text) else {

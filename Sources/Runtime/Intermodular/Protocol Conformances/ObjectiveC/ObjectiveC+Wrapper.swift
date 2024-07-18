@@ -5,7 +5,7 @@
 import ObjectiveC
 import Swallow
 
-extension ObjCBool: MutableWrapper {
+extension ObjCBool: Swallow.MutableWrapper {
     @inlinable
     public var value: Bool {
         get {
@@ -16,7 +16,7 @@ extension ObjCBool: MutableWrapper {
     }
 }
 
-extension Selector: MutableWrapper {
+extension Selector: Swallow.MutableWrapper {
     @inlinable
     public var value: String {
         get {

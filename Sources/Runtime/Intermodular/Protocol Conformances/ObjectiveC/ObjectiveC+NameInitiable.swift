@@ -5,7 +5,7 @@
 import ObjectiveC
 import Swallow
 
-extension Selector: NameInitiable {
+extension Selector: Swallow.NameInitiable {
 	public init(name: String) {
 		self = .init(stringLiteral: name)
 	}

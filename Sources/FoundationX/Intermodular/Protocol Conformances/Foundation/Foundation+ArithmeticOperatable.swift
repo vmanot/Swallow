@@ -5,7 +5,7 @@
 import Foundation
 import Swallow
 
-extension Foundation.CharacterSet: AdditionOperatable {
+extension Foundation.CharacterSet: Swallow.AdditionOperatable {
     public static func + (lhs: CharacterSet, rhs: CharacterSet) -> CharacterSet {
         lhs.union(rhs)
     }
@@ -15,11 +15,11 @@ extension Foundation.CharacterSet: AdditionOperatable {
     }
 }
 
-extension Foundation.Data: AdditionOperatable {
+extension Foundation.Data: Swallow.AdditionOperatable {
     
 }
 
-extension Foundation.Decimal: ArithmeticOperatable {
+extension Foundation.Decimal: Swallow.ArithmeticOperatable {
     public static func += (lhs: inout Decimal, rhs: Decimal) {
         lhs = lhs + rhs
     }

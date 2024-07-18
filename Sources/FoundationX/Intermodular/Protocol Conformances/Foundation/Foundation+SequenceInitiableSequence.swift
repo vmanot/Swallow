@@ -5,7 +5,7 @@
 import Foundation
 import Swallow
 
-extension Data: SequenceInitiableSequence {
+extension Data: Swallow.SequenceInitiableSequence {
     
 }
 

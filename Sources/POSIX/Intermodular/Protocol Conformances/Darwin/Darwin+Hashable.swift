@@ -5,7 +5,7 @@
 import Darwin
 import Swallow
 
-extension timeval: Hashable {
+extension timeval: Swift.Hashable {
     public func hash(into hasher: inout Hasher) {
         hasher.combine(tv_sec)
         hasher.combine(tv_usec)

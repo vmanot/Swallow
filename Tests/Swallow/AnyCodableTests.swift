@@ -14,6 +14,17 @@ final class AnyCodableTests: XCTestCase {
         
         XCTAssertNoThrow(try data.singleValueContainer())
     }
+    
+    func testDictionary() throws {
+        let animals: [Animal] = [Lion(roars: true), Monkey(screeches: false)]
+        
+        let dictionary1 = try AnyCodable(ObjectEncoder().encode(animals))
+        let dictionary2 = try [AnyCodable: AnyCodable](from: dictionary1)
+        
+        let dictionary1Value = try cast(dictionary1.value, to: [AnyCodable: AnyCodable].self)
+        
+        XCTAssertEqual(dictionary1Value, dictionary2)
+    }
 }
 
 fileprivate enum AnimalType: String, Codable, TypeDiscriminator {

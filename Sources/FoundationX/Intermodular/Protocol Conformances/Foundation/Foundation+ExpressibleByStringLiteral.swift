@@ -5,7 +5,7 @@
 import Foundation
 import Swallow
 
-extension NSRegularExpression.Options: ExpressibleByStringLiteral {
+extension NSRegularExpression.Options: Swift.ExpressibleByStringLiteral {
     public init(stringLiteral: String) {
         self.init(modeModifier: Character(stringLiteral))!
     }

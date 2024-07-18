@@ -7,7 +7,7 @@
 import MachO
 import Swallow
 
-extension NXArchInfo: Trivial, @unchecked Sendable {
+extension NXArchInfo: Swallow.Trivial, @unchecked Swift.Sendable {
     
 }
  

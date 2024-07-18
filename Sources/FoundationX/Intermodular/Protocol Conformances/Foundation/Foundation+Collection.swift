@@ -5,7 +5,7 @@
 import Foundation
 import Swallow
 
-extension NSRange: Collection, Countable {
+extension Foundation.NSRange: Swift.Collection, Swallow.Countable {
     public typealias Index = Int
     
     public var startIndex: Index {

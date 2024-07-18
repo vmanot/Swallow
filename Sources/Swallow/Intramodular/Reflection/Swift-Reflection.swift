@@ -181,6 +181,8 @@ public struct _swift_RelativeIndirectablePointer<Pointee> {
     
     @_transparent
     public func address(from pointer: UnsafeRawPointer) -> UnsafeRawPointer {
+        assert(unsafeBitCast(pointer, to: Optional<UnsafeRawPointer>.self) != nil)
+       
         let dest = pointer + Int(self.offset & ~1)
         
         // If the low bit is set, then this is an indirect address. Otherwise,

@@ -5,37 +5,37 @@
 import Foundation
 import Swallow
 
-extension NSAttributedString: MutableRepresentationConvertible {
+extension NSAttributedString: Swallow.MutableRepresentationConvertible {
     public var mutableRepresentation: NSMutableAttributedString {
         return .init(attributedString: self)
     }
 }
 
-extension NSCharacterSet: MutableRepresentationConvertible {
+extension NSCharacterSet: Swallow.MutableRepresentationConvertible {
     public var mutableRepresentation: NSMutableCharacterSet {
         return mutableCopy() as! NSMutableCharacterSet
     }
 }
 
-extension NSDictionary: MutableRepresentationConvertible {
+extension NSDictionary: Swallow.MutableRepresentationConvertible {
     public var mutableRepresentation: NSMutableDictionary {
         return .init(dictionary: self)
     }
 }
 
-extension NSData: MutableRepresentationConvertible {
+extension NSData: Swallow.MutableRepresentationConvertible {
     public var mutableRepresentation: NSMutableData {
         return NSMutableData(data: self as Data)
     }
 }
 
-extension NSSet: MutableRepresentationConvertible {
+extension NSSet: Swallow.MutableRepresentationConvertible {
     public var mutableRepresentation: NSMutableSet {
         return .init(set: self)
     }
 }
 
-extension NSString: MutableRepresentationConvertible {
+extension NSString: Swallow.MutableRepresentationConvertible {
     public var mutableRepresentation: NSMutableString {
         return .init(string: self)
     }

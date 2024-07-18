@@ -5,7 +5,7 @@
 import Foundation
 import Swallow
 
-extension Data: MutableContiguousStorage {
+extension Data: Swallow.MutableContiguousStorage {
     public func withBufferPointer<BP: InitiableBufferPointer & ConstantBufferPointer, T>(
         _ body: ((BP) throws -> T)
     ) rethrows -> T where Element == BP.Element {
@@ -19,7 +19,7 @@ extension Data: MutableContiguousStorage {
     }
 }
 
-extension NSData: ContiguousStorage {
+extension NSData: Swallow.ContiguousStorage {
     public typealias Element = Byte
     
     public func withBufferPointer<BP: InitiableBufferPointer & ConstantBufferPointer, T>(
@@ -29,7 +29,7 @@ extension NSData: ContiguousStorage {
     }
 }
 
-extension NSMutableData: MutableContiguousStorage {
+extension NSMutableData: Swallow.MutableContiguousStorage {
     public func withMutableBufferPointer<BP: InitiableBufferPointer & MutableBufferPointer, T>(
         _ body: ((BP) throws -> T)
     ) rethrows -> T where Element == BP.Element {

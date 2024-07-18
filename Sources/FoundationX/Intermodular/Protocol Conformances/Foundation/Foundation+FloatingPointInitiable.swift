@@ -6,7 +6,7 @@ import CoreGraphics
 import Foundation
 import Swallow
 
-extension Decimal: FloatingPointInitiable {
+extension Decimal: Swallow.FloatingPointInitiable {
     public init(_ value: NSDecimalNumber) {
         self = value as Decimal
     }

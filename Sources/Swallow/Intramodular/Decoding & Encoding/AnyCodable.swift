@@ -104,7 +104,7 @@ extension AnyCodable {
         return value
     }
     
-    public var value: Any? {
+    public var value: (any Codable)? {
         switch self {
             case .none:
                 return nil
@@ -289,6 +289,14 @@ extension AnyCodable: CustomStringConvertible {
             return ""
         }
     }
+    
+    public var prettyPrintedDescription: String {
+        let encoder = JSONEncoder()
+        
+        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+        
+        return try! String(data: try encoder.encode(self), using: String.DataDecodingStrategy(encoding: .utf8))
+    }
 }
 
 extension AnyCodable: Decoder {
@@ -303,15 +311,27 @@ extension AnyCodable: Decoder {
     public func container<Key: CodingKey>(
         keyedBy type: Key.Type
     ) throws -> KeyedDecodingContainer<Key> {
-        try _decoder().container(keyedBy: type)
+        do {
+            return try _decoder().container(keyedBy: type)
+        } catch {
+            throw error
+        }
     }
     
     public func unkeyedContainer() throws -> UnkeyedDecodingContainer {
-        try _decoder().unkeyedContainer()
+        do {
+            return try _decoder().unkeyedContainer()
+        } catch {
+            throw error
+        }
     }
     
     public func singleValueContainer() throws -> SingleValueDecodingContainer {
-        try _decoder().singleValueContainer()
+        do {
+            return try _decoder().singleValueContainer()
+        } catch {
+            throw error
+        }
     }
     
     private func _decoder() throws -> ObjectDecoder.Decoder {

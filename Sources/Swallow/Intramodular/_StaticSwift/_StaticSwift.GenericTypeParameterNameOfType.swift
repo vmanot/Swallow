@@ -4,12 +4,12 @@
 
 import Swift
 
-public protocol _StaticSwift_CanHavePlaceholderGenericTypeParameters {
+public protocol _StaticSwift_IsPlaceholderedVariantOfGenericType {
     associatedtype _StaticSwift_GenericTypeParameterName: _StaticSwift.GenericTypeParameterNameProtocol = Never
 }
 
-public protocol _StaticSwift_HasPlaceholderedGenericTypeParameters {
-    static var _StaticSwift_replacingGenericTypeParametersWithPlaceholders: any _StaticSwift_CanHavePlaceholderGenericTypeParameters.Type { get }
+public protocol _StaticSwift_HasPlaceholderedVariantOfGenericSelf {
+    static var _StaticSwift_replacingGenericTypeParametersWithPlaceholders: any _StaticSwift_IsPlaceholderedVariantOfGenericType.Type { get }
 }
 
 extension _StaticSwift {
@@ -19,7 +19,7 @@ extension _StaticSwift {
     
     public struct GenericTypeParameterNameOfType: CustomStringConvertible, Hashable {
         @_HashableExistential
-        public var type: any _StaticSwift_CanHavePlaceholderGenericTypeParameters.Type
+        public var type: any _StaticSwift_IsPlaceholderedVariantOfGenericType.Type
         @_HashableExistential
         public var parameter: (any _StaticSwift.GenericTypeParameterNameProtocol)?
         
@@ -27,7 +27,7 @@ extension _StaticSwift {
             String(describing: type) + (parameter.map({ " " + String(describing: $0) }) ?? "")
         }
         
-        public init<T: _StaticSwift_CanHavePlaceholderGenericTypeParameters>(
+        public init<T: _StaticSwift_IsPlaceholderedVariantOfGenericType>(
             type: T.Type,
             parameter: T._StaticSwift_GenericTypeParameterName?
         ) {

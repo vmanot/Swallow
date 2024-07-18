@@ -5,7 +5,7 @@
 import Foundation
 import Swallow
 
-extension NSAttributedString: Sequence {
+extension NSAttributedString: Swift.Sequence {
     public typealias Iterator = AnyIterator<Character>
     
     public func makeIterator() -> Iterator {
@@ -13,7 +13,7 @@ extension NSAttributedString: Sequence {
     }
 }
 
-extension NSHashTable: Sequence {
+extension NSHashTable: Swift.Sequence {
     public typealias Iterator = NSEnumerator
     
     @objc public dynamic func makeIterator() -> Iterator {
@@ -21,7 +21,7 @@ extension NSHashTable: Sequence {
     }
 }
 
-extension NSRange: Sequence {
+extension NSRange: Swift.Sequence {
     public typealias Iterator = AnyIterator<Int>
     
     public func makeIterator() -> Iterator {
@@ -29,7 +29,7 @@ extension NSRange: Sequence {
     }
 }
 
-extension NSString: Sequence {
+extension NSString: Swift.Sequence {
     public typealias Iterator = AnyIterator<Character>
     
     public func makeIterator() -> Iterator {

@@ -5,13 +5,13 @@
 import Foundation
 import Swallow
 
-extension CharacterSet: LosslessStringConvertible {
+extension CharacterSet: Swift.LosslessStringConvertible {
     public init(_ description: String) {
         self.init(charactersIn: description)
     }
 }
 
-extension Decimal: LosslessStringConvertible {
+extension Decimal: Swift.LosslessStringConvertible {
     public init?(_ description: String) {
         self.init(string: description, locale: nil)
     }

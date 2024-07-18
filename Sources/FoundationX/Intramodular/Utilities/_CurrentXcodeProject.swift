@@ -49,6 +49,7 @@ public struct _CurrentXcodeProject {
         )
     }
     
+    @MainActor
     public static func find<T: SearchableItem>(
         itemOfType type: T,
         around initialURL: URL,

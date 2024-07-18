@@ -83,8 +83,7 @@ open class Popen: FILEStream, Sequence, IteratorProtocol {
     }
 }
 
-extension UnsafeMutablePointer: FILEStream,
-                                Sequence, IteratorProtocol where Pointee == FILE {
+extension Swift.UnsafeMutablePointer: Swallow.FILEStream, Swift.Sequence, Swift.IteratorProtocol where Pointee == FILE {
     public typealias Element = String
     public var fileStream: Self { return self }
 }

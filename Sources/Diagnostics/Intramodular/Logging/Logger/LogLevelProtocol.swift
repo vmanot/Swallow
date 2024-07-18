@@ -94,7 +94,7 @@ public enum ServerLogLevel: String, ServerLogLevelProtocol {
 }
 
 #if canImport(os)
-extension os.OSLogType: LogLevelProtocol {
+extension os.OSLogType: Diagnostics.LogLevelProtocol {
     public var stringValue: String {
         switch self {
             case .debug:
@@ -114,7 +114,7 @@ extension os.OSLogType: LogLevelProtocol {
 
 #if canImport(OSLog)
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-extension OSLogEntryLog.Level: LogLevelProtocol {
+extension OSLogEntryLog.Level: Diagnostics.LogLevelProtocol {
     public var stringValue: String {
         switch self {
             case .undefined:

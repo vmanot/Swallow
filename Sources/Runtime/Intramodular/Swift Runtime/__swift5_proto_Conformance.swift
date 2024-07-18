@@ -19,12 +19,18 @@ public struct __swift5_proto_Conformance: Hashable {
         self.raw.load(as: _swift_ConformanceDescriptor.self)
     }
     
-    var `protocol`: _swift_GenericContext {
+    var `protocol`: _swift_GenericContext? {
         let maybeProtocol = _swift_RelativeIndirectablePointer<_swift_GenericContextDescriptor>(
             offset: descriptor.protocol
         )
         
-        return _swift_GenericContext(raw: maybeProtocol.address(from: self.raw))
+        let address: UnsafeRawPointer = maybeProtocol.address(from: self.raw)
+                
+        if unsafeBitCast(address, to: Optional<UnsafeRawPointer>.self) == nil {
+            return nil
+        }
+        
+        return _swift_GenericContext(raw: address)
     }
     
     var type: Any.Type? {

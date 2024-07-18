@@ -5,7 +5,7 @@
 import Foundation
 import Swift
 
-extension Foundation.FileManager.SearchPathDirectory: CaseIterable {
+extension Foundation.FileManager.SearchPathDirectory: Swift.CaseIterable {
     #if os(iOS) || os(macOS)
     public static let allCases: [Self] = [
         .applicationDirectory,

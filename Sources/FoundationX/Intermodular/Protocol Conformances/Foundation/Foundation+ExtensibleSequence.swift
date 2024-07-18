@@ -5,7 +5,7 @@
 import Foundation
 import Swallow
 
-extension Data: ExtensibleSequence {
+extension Data: Swallow.ExtensibleSequence {
     public typealias ElementInsertResult = Void
     public typealias ElementsInsertResult = Void
     public typealias ElementAppendResult = Void
@@ -26,7 +26,7 @@ extension Data: ExtensibleSequence {
     }
 }
 
-extension NSMutableArray: ExtensibleSequence {
+extension NSMutableArray: Swallow.ExtensibleSequence {
     public typealias ElementInsertResult = Void
     public typealias ElementsInsertResult = Void
     public typealias ElementAppendResult = Void
@@ -41,7 +41,7 @@ extension NSMutableArray: ExtensibleSequence {
     }
 }
 
-extension NSMutableData: ExtensibleSequence {
+extension NSMutableData: Swallow.ExtensibleSequence {
     @objc public dynamic func insert(_ newElement: Element) {
         insert(contentsOf: CollectionOfOne(newElement))
     }

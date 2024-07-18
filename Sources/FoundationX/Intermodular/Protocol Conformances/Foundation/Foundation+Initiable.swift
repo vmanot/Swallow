@@ -5,60 +5,60 @@
 import Foundation
 import Swallow
 
-extension Calendar: Initiable {
+extension Calendar: Swallow.Initiable {
     public init() {
         self = .current
     }
 }
 
-extension CharacterSet: Initiable {
+extension CharacterSet: Swallow.Initiable {
     
 }
 
-extension Data: Initiable {
+extension Data: Swallow.Initiable {
     
 }
 
-extension Data.ReadingOptions: Initiable {
+extension Data.ReadingOptions: Swallow.Initiable {
     
 }
 
-extension Data.WritingOptions: Initiable {
+extension Data.WritingOptions: Swallow.Initiable {
     
 }
 
-extension Date: Initiable {
+extension Date: Swallow.Initiable {
     
 }
 
-extension DateInterval: Initiable {
+extension DateInterval: Swallow.Initiable {
     
 }
 
-extension Decimal: Initiable {
+extension Decimal: Swallow.Initiable {
     
 }
 
-extension Locale: Initiable {
+extension Locale: Swallow.Initiable {
     public init() {
         self = .current
     }
 }
 
-extension NSObject: Initiable {
+extension NSObject: Swallow.Initiable {
     
 }
 
-extension NSRegularExpression.Options: Initiable {
+extension NSRegularExpression.Options: Swallow.Initiable {
     public init() {
         self = .anchorsMatchLines
     }
 }
 
-extension PersonNameComponents: Initiable {
+extension PersonNameComponents: Swallow.Initiable {
     
 }
 
-extension UUID: Initiable {
+extension UUID: Swallow.Initiable {
     
 }
