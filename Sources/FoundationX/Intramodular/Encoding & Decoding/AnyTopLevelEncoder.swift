@@ -6,32 +6,36 @@ import Combine
 import Swallow
 
 @frozen
-public struct AnyTopLevelEncoder<Output>: TopLevelEncoder, Sendable {
-    @usableFromInline
-    let _encode: @Sendable (Encodable) throws -> Output
+public struct AnyTopLevelEncoder<Output>: TopLevelEncoder, @unchecked Sendable {
+    private var _encoder: any TopLevelEncoder
     
-    @_transparent
-    public init<Encoder: TopLevelEncoder>(
-        erasing encoder: Encoder
+    private init<Encoder: TopLevelEncoder>(
+        _erasing encoder: Encoder
     ) where Encoder.Output == Output {
+        assert(!(encoder is _AnyTopLevelDataCoder))
+        
         if let encoder = encoder as? AnyTopLevelEncoder<Output> {
             self = encoder
         } else {
-            self._encode = { try encoder.encode($0) }
+            self._encoder = encoder
         }
     }
     
-    @_transparent
+    public init<Encoder: TopLevelEncoder>(
+        erasing encoder: Encoder
+    ) where Encoder.Output == Output {
+        self.init(_erasing: encoder)
+    }
+
     public init<Coder: TopLevelDataCoder>(
         erasing coder: Coder
     ) where Output == Data {
-        self._encode = { try coder.encode($0) }
+        self.init(_erasing: coder)
     }
     
-    @_transparent
     public func encode<T: Encodable>(
         _ input: T
     ) throws -> Output {
-        try _encode(input)
+        try _encoder.encode(input) as! Output
     }
 }

@@ -2,7 +2,7 @@
 // Copyright (c) Vatsal Manot
 //
 
-import Swallow
+import Swift
 
 public func unimplemented<Result>(
     _ description: @autoclosure @escaping @Sendable () -> String = "",

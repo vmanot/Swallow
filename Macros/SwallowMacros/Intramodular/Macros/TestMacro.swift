@@ -7,7 +7,7 @@ import SwiftSyntaxBuilder
 import SwiftSyntaxMacros
 import SwiftSyntaxUtilities
 
-public struct OnceMacro: DeclarationMacro {
+public struct TestMacro: DeclarationMacro {
     public static func expansion(
         of node: some FreestandingMacroExpansionSyntax,
         in context: some MacroExpansionContext
@@ -18,6 +18,10 @@ public struct OnceMacro: DeclarationMacro {
             """
             @frozen
             public struct \(name): Swallow._PerformOnceOnAppLaunchClosure {
+                public static var _isInlineTestCase: Bool {
+                    true
+                }
+            
                 public init() {
                 
                 }
@@ -28,7 +32,24 @@ public struct OnceMacro: DeclarationMacro {
             }
             """
         )
-       
+        
+        return [result]
+    }
+}
+
+public struct InitializeInlineXCTestCasesMacro: DeclarationMacro {
+    public static func expansion(
+        of node: some FreestandingMacroExpansionSyntax,
+        in context: some MacroExpansionContext
+    ) throws -> [DeclSyntax] {
+        let result: DeclSyntax = """
+        final class InlineXCTestCases: XCTestCase {
+            func testAllInlineTestCases() async throws {
+                try await Runtime._SwallowMacros_module._executeDiscoveredInlineTestCases()
+            }
+        }
+        """
+        
         return [result]
     }
 }

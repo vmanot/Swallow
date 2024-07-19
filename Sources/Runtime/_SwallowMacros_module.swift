@@ -9,6 +9,9 @@ public class _SwallowMacros_module: NSObject {
     private static let lock = OSUnfairLock()
     private static var initialized: Bool = false
     
+    private static let _didCompleteSweep = _AsyncGate(initiallyOpen: false)
+    private static var _inlineTestCases: [any _PerformOnceOnAppLaunchClosure.Type] = []
+    
     public override init() {
         Self.lock.withCriticalScope {
             guard !Self.initialized else {
@@ -26,16 +29,42 @@ public class _SwallowMacros_module: NSObject {
     }
     
     private static func _performAllPerformOnceOnAppLaunchClosures() {
-        let closures = TypeMetadataIndex.shared.fetch(
-            .conformsTo((any _PerformOnceOnAppLaunchClosure).self),
-            .nonAppleFramework
-        )
+        let discovered: [any _PerformOnceOnAppLaunchClosure.Type] = TypeMetadataIndex.shared
+            .fetch(
+                .conformsTo((any _PerformOnceOnAppLaunchClosure).self),
+                .nonAppleFramework
+            )
+            .map({ try! cast($0) })
         
-        closures.forEach {
-            let type = $0 as! any _PerformOnceOnAppLaunchClosure.Type
-            
+        let regular: [any _PerformOnceOnAppLaunchClosure.Type] = discovered.filter({ !$0._isInlineTestCase })
+        
+        _inlineTestCases = discovered.filter({ $0._isInlineTestCase })
+        
+        regular.forEach { type in
             type.init().perform()
         }
+
+        _didCompleteSweep.open()
+    }
+    
+    public static func _executeDiscoveredInlineTestCases() async throws {
+        guard _isDebugAssertConfiguration else {
+            return
+        }
+        
+        await _inlineTestCases.asyncForEach { @MainActor type in
+            await XCTAssertNoThrowAsync { @MainActor in
+                do {
+                    try await type.init().perform().value
+                } catch {
+                    runtimeIssue(error)
+                    
+                    throw error
+                }
+            }
+        }
+        
+        _inlineTestCases = []
     }
 }
 

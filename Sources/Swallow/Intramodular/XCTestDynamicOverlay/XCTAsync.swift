@@ -3,7 +3,7 @@
 //
 
 import Foundation
-import Swallow
+import Swift
 
 @_transparent
 public func XCTAssertNoThrowAsync<T>(
