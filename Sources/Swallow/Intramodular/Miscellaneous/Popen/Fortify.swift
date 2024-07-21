@@ -149,7 +149,7 @@ internal class _Fortify: ThreadLocal {
     /// - Returns: value if block returns value
     @usableFromInline
     class func protect<T>(
-        block: () throws -> T
+        block: @Sendable () throws -> T
     ) throws -> T {
         let local = threadLocal
         

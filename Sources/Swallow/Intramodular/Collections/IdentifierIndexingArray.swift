@@ -633,6 +633,8 @@ extension ForEach where Content: View {
     {
         self.init(data, id: \.id) { $element in
             let id = element.id
+            let element: Element = $element.wrappedValue
+            
             let binding = Binding<Element>(
                 get: {
                     return element
