@@ -23,7 +23,7 @@ public enum Fortify {
     /// - Returns: value if block returns value
     @_transparent
     public static func protect<T>(
-        block: () throws -> T
+        block: @Sendable () throws -> T
     ) throws -> T {
         return try _Fortify.protect(block: block)
     }

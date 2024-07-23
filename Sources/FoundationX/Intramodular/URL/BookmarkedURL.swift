@@ -106,7 +106,15 @@ extension BookmarkedURL: Codable {
             } else {
                 let container = try decoder.container(keyedBy: CodingKeys.self)
                 
-                url = try container.decode(URL.self, forKey: .url)
+                do {
+                    self.url = try container.decode(URL.self, forKey: .url)
+                } catch {
+                    let urlString = try container.decode(String.self, forKey: .url)
+                    
+                    assert(urlString.hasPrefix("file://"))
+                    
+                    self.url = try URL(string: urlString).unwrap()
+                }
                 
                 do {
                     bookmarkData = try container.decodeIfPresent(Data.self, forKey: .bookmarkData)

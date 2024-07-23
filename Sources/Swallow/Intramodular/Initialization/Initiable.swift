@@ -4,14 +4,17 @@
 
 import Swift
 
+@_alwaysEmitConformanceMetadata
 public protocol _ThrowingInitiable {
     init() throws
 }
 
-public protocol Initiable {
+@_alwaysEmitConformanceMetadata
+public protocol Initiable: _ThrowingInitiable {
     init()
 }
 
+@_alwaysEmitConformanceMetadata
 public protocol AllCaseInitiable {
     static var all: Self { get }
 }

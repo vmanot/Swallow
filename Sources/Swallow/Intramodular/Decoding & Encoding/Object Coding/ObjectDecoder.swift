@@ -193,7 +193,6 @@ extension ObjectDecoder.Decoder {
 }
 
 private struct _KeyedDecodingContainer<Key: CodingKey> : KeyedDecodingContainerProtocol {
-    
     private let decoder: ObjectDecoder.Decoder
     private let dictionary: [String: Any]
     
@@ -305,11 +304,20 @@ private struct _UnkeyedDecodingContainer: UnkeyedDecodingContainer {
     
     mutating func decode(
         _ type: Bool.Type
-    )   throws -> Bool { return try currentDecoder { try $0.decode(type) } }
+    )   throws -> Bool {
+        return try currentDecoder {
+            try $0.decode(type)
+        }
+    }
+    
     mutating func decode(
         _ type: String.Type
-    ) throws -> String { return try currentDecoder { try $0.decode(type) } }
-   
+    ) throws -> String {
+        return try currentDecoder {
+            try $0.decode(type)
+        }
+    }
+    
     mutating func decode<T: ShouldNotBeDecodedFromBool>(
         _ type: T.Type
     ) throws -> T {
@@ -317,7 +325,7 @@ private struct _UnkeyedDecodingContainer: UnkeyedDecodingContainer {
             try $0.decode(type)
         }
     }
-   
+    
     mutating func decode<T: Decodable>(
         _ type: T.Type
     ) throws -> T  {
@@ -366,20 +374,33 @@ private struct _UnkeyedDecodingContainer: UnkeyedDecodingContainer {
         closure: (ObjectDecoder.Decoder) throws -> T
     ) throws -> T {
         try throwErrorIfAtEnd(T.self)
+        
         let decoded: T = try closure(decoder.decoder(referencing: currentObject, as: currentKey))
+        
         currentIndex += 1
+        
         return decoded
     }
 }
 
 extension ObjectDecoder.Decoder: SingleValueDecodingContainer {
-    public func decodeNil() -> Bool { return object is NSNull }
-    public func decode(_ type: Bool.Type)   throws -> Bool { return try applyStrategy(type) ?? cast() }
-    public func decode(_ type: String.Type) throws -> String { return try applyStrategy(type) ?? cast() }
-    public func decode<T>(_ type: T.Type)   throws -> T where T: ShouldNotBeDecodedFromBool {
+    public func decodeNil() -> Bool {
+        return object is NSNull
+    }
+    
+    public func decode(_ type: Bool.Type) throws -> Bool {
         return try applyStrategy(type) ?? cast()
     }
-    public func decode<T>(_ type: T.Type)   throws -> T where T: Decodable {
+    
+    public func decode(_ type: String.Type) throws -> String {
+        return try applyStrategy(type) ?? cast()
+    }
+    
+    public func decode<T>(_ type: T.Type) throws -> T where T: ShouldNotBeDecodedFromBool {
+        return try applyStrategy(type) ?? cast()
+    }
+    
+    public func decode<T>(_ type: T.Type) throws -> T where T: Decodable {
         return try applyStrategy(type) ?? type.init(from: self)
     }
 }
@@ -483,9 +504,11 @@ extension ObjectDecoder.DecodingStrategy where T == Decimal {
 extension ObjectDecoder.DecodingStrategy where T == Double {
     public static let deferredToDouble: ObjectDecoder.DoubleDecodingStrategy? = nil
     
-    public static func convertNonConformingFloatFromString(_ positiveInfinity: String,
-                                                           _ negativeInfinity: String,
-                                                           _ nan: String) -> ObjectDecoder.DoubleDecodingStrategy {
+    public static func convertNonConformingFloatFromString(
+        _ positiveInfinity: String,
+        _ negativeInfinity: String,
+        _ nan: String
+    ) -> ObjectDecoder.DoubleDecodingStrategy {
         return .custom { decoder in
             if let double = decoder.object as? Double {
                 return double
@@ -506,9 +529,11 @@ extension ObjectDecoder.DecodingStrategy where T == Double {
 extension ObjectDecoder.DecodingStrategy where T == Float {
     public static let deferredToFloat: ObjectDecoder.FloatDecodingStrategy? = nil
     
-    public static func convertNonConformingFloatFromString(_ positiveInfinity: String,
-                                                           _ negativeInfinity: String,
-                                                           _ nan: String) -> ObjectDecoder.FloatDecodingStrategy {
+    public static func convertNonConformingFloatFromString(
+        _ positiveInfinity: String,
+        _ negativeInfinity: String,
+        _ nan: String
+    ) -> ObjectDecoder.FloatDecodingStrategy {
         return .custom { decoder in
             if let float = decoder.object as? Float {
                 return float

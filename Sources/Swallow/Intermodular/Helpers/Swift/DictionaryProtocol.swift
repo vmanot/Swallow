@@ -16,6 +16,16 @@ public protocol DictionaryProtocol<DictionaryKey, DictionaryValue> {
     subscript(_: DictionaryKey) -> DictionaryValue? { get }
 }
 
+extension DictionaryProtocol {
+    public static var _opaque_DictionaryKey: Any.Type {
+        DictionaryKey.self
+    }
+    
+    public static var _opaque_DictionarValue: Any.Type {
+        DictionaryValue.self
+    }
+}
+
 public protocol _CircularKeyPathReferenceKeyedDictionary {
     subscript<Value>(_key keyPath: KeyPath<Self, Value>) -> Value? { get set }
 }

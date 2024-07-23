@@ -182,9 +182,19 @@ extension AnyCodable: AnyCodableConvertible {
 
 extension AnyCodable: Codable {
     public init(from decoder: Decoder) throws {
+        if let decoder = decoder as? ObjectDecoder.Decoder {
+            if let object = decoder.object as? [String: Any] {
+                _ = object
+                
+                self = Self.dictionary(try Dictionary<String, AnyCodable>(from: decoder))
+                
+                return
+            }
+        }
+        
         if var container = try? decoder.unkeyedContainer() {
             var value: [AnyCodable] = []
-            
+
             container.count.map({ value.reserveCapacity($0) })
             
             while !container.isAtEnd {

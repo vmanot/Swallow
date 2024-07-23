@@ -53,6 +53,12 @@ extension _TypeAssociatedID: Identifiable {
     }
 }
 
+extension _TypeAssociatedID: _ThrowingInitiable where RawValue: _ThrowingInitiable {
+    public init() throws {
+        self.init(rawValue: try .init())
+    }
+}
+
 extension _TypeAssociatedID: Initiable where RawValue: Initiable {
     public init() {
         self.init(rawValue: .init())

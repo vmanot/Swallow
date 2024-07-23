@@ -310,7 +310,7 @@ public struct WeakObjectPointer<Value>: Hashable {
 
 // MARK: - Conformances
 
-extension Pair: Initiable where T: Initiable, U: Initiable {
+extension Pair: _ThrowingInitiable, Initiable where T: Initiable, U: Initiable {
     public init() {
         self.init((.init(), .init()))
     }

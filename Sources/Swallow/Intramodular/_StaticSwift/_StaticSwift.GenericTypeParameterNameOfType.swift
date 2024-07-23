@@ -4,15 +4,18 @@
 
 import Swift
 
+@_alwaysEmitConformanceMetadata
 public protocol _StaticSwift_IsPlaceholderedVariantOfGenericType {
     associatedtype _StaticSwift_GenericTypeParameterName: _StaticSwift.GenericTypeParameterNameProtocol = Never
 }
 
+@_alwaysEmitConformanceMetadata
 public protocol _StaticSwift_HasPlaceholderedVariantOfGenericSelf {
     static var _StaticSwift_replacingGenericTypeParametersWithPlaceholders: any _StaticSwift_IsPlaceholderedVariantOfGenericType.Type { get }
 }
 
 extension _StaticSwift {
+    @_alwaysEmitConformanceMetadata
     public protocol GenericTypeParameterNameProtocol: Hashable {
         
     }

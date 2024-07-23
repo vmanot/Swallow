@@ -210,7 +210,7 @@ extension IdentifierIndexingArray: Hashable where Element: Hashable {
     }
 }
 
-extension IdentifierIndexingArray: Initiable where Element: Identifiable, Element.ID == ID {
+extension IdentifierIndexingArray: _ThrowingInitiable, Initiable where Element: Identifiable, Element.ID == ID {
     public init() {
         self.init([], id: \.id)
     }
@@ -662,11 +662,12 @@ extension ForEach where Content: View {
     ) where Data == LazyMapSequence<IdentifierIndexingArrayOf<Element>.Indices, (IdentifierIndexingArrayOf<Element>.Index, ID)>, ID == Element.ID, IdentifierIndexingArrayOf<Element>.Index: Hashable, Content == SwiftUI._ConditionalContent<UnwrappedContent, EmptyView>
     {
         self.init(data, id: \.id) { $element in
+            let elementBox = _UncheckedSendable(element)
             let id = element.id
             let binding = Binding<Element>(
                 get: {
                     if data.wrappedValue.contains(elementIdentifiedBy: id) {
-                        return element
+                        return elementBox.wrappedValue
                     } else {
                         runtimeIssue("Recovering by creating placeholder element.")
                         
