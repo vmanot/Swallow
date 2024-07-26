@@ -7,6 +7,8 @@ import Swallow
 
 /// A type that logs its activities.
 public protocol Logging {
+    static var logger: PassthroughLogger { get }
+    
     var logger: PassthroughLogger { get }
 }
 
@@ -15,6 +17,10 @@ public protocol Logging {
 private var logger_objcAssociationKey: UInt = 0
 
 extension Logging {
+    public static var logger: PassthroughLogger {
+        PassthroughLogger(source: .type(self))
+    }
+    
     public var logger: PassthroughLogger {
         if swift_isClassType(type(of: self)) {
             let _self = self as! any Logging & AnyObject

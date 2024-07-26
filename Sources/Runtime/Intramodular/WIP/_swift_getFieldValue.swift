@@ -2,7 +2,7 @@
 // Copyright (c) Vatsal Manot
 //
 
-private import os
+internal import os
 import Swallow
 
 public struct _SwiftRuntimeField {

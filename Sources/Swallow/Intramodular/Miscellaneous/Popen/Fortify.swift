@@ -128,11 +128,13 @@ internal class _Fortify: ThreadLocal {
         runLoop: RunLoop,
         onError: @escaping (_ err: Error) -> Void
     ) {
+        let _runLoop = _UncheckedSendable(runLoop)
+        
         runLoop.perform {
             while true {
                 do {
                     try protect {
-                        runLoop.run()
+                        _runLoop.wrappedValue.run()
                     }
                 }
                 catch {

@@ -7,6 +7,7 @@
 import AppKit
 import Foundation
 
+@available(macCatalyst, unavailable)
 extension NSRunningApplication {
     public convenience init(
         runningAppWithID bundleID: Bundle.ID

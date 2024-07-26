@@ -163,6 +163,7 @@ extension PassthroughLogger {
             case logger(any LoggerProtocol, scope: AnyLogScope?)
             case something(Any)
             case object(Weak<AnyObject>)
+            case type(Any.Type)
         }
         
         private let content: Content
@@ -193,6 +194,8 @@ extension PassthroughLogger {
                     } else {
                         return "(null)"
                     }
+                case .type(let type):
+                    return String(describing: type)
             }
         }
         
@@ -215,7 +218,9 @@ extension PassthroughLogger {
             Self(content: .logger(logger, scope: scope))
         }
         
-        public static func object(_ object: AnyObject) -> Self {
+        public static func object(
+            _ object: AnyObject
+        ) -> Self {
             if object is any LoggerProtocol {
                 assertionFailure()
             }
@@ -223,8 +228,16 @@ extension PassthroughLogger {
             return Self(content: .object(Weak(wrappedValue: object)))
         }
         
-        public static func something(_ thing: Any) -> Self {
-            if swift_isClassType(type(of: thing)) {
+        public static func type(
+            _ type: Any.Type
+        ) -> Self {
+            return Self(content: .type(type))
+        }
+        
+        public static func something(
+            _ thing: Any
+        ) -> Self {
+            if swift_isClassType(Swift.type(of: thing)) {
                 return .object(thing as AnyObject)
             } else {
                 return .init(content: .something(thing))

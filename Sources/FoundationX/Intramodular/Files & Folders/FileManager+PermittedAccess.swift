@@ -5,6 +5,33 @@
 import Swallow
 
 extension FileManager {
+    public func requestingUserGrantedAccessIfPossible<T>(
+        for location: some URLRepresentable,
+        scope: URL._FileOrDirectorySecurityScopedAccessManager.PreferredScope = .automatic,
+        perform operation: (URL) throws -> T
+    ) throws -> T {
+        if Thread.isMainThread {
+            return try MainActor.unsafeAssumeIsolated {
+                try self.withUserGrantedAccess(to: location, scope: scope, perform: operation)
+            }
+        } else {
+            return try operation(location.url)
+        }
+    }
+    
+    @MainActor
+    public func requestingUserGrantedAccessIfPossible<T>(
+        for location: some URLRepresentable,
+        scope: URL._FileOrDirectorySecurityScopedAccessManager.PreferredScope = .automatic,
+        perform operation: (URL) async throws -> T
+    ) async throws -> T {
+        let result: T = try await self.withUserGrantedAccess(to: location, scope: scope, perform: operation)
+        
+        return result
+    }
+}
+
+extension FileManager {
     @MainActor
     public func withUserGrantedAccess<T>(
         to location: some URLRepresentable,

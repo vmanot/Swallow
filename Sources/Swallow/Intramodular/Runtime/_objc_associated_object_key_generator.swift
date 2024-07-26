@@ -2,7 +2,7 @@
 // Copyright (c) Vatsal Manot
 //
 
-private import _RuntimeC
+internal import _RuntimeC
 import Swift
 
 public final class _objc_associated_object_key_generator {
