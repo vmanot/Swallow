@@ -58,7 +58,10 @@ public struct _PolymorphicTopLevelDecoder<Base: TopLevelDecoder>: TopLevelDecode
         self.base = base
     }
     
-    public func decode<T: Decodable>(_ type: T.Type, from input: Base.Input) throws -> T {
+    public func decode<T: Decodable>(
+        _ type: T.Type,
+        from input: Base.Input
+    ) throws -> T {
         try base.decode(
             _PolymorphicDecodingProxy<T>.self,
             from: input
@@ -100,11 +103,10 @@ fileprivate struct _PolymorphicProxyDecodable<T: PolymorphicDecodable>: _Polymor
             throw error
         }
         
-        let subtype = try T.resolveSubtype(for: discriminator)
+        let subtype: any PolymorphicDecodable.Type = try T.resolveSubtype(for: discriminator)
         
         do {
-            let _subtype = try cast(subtype, to: (any PolymorphicDecodable.Type).self)
-            let subdiscriminator = try _subtype.decodeTypeDiscriminator(from: decoder)
+            let subdiscriminator: any Equatable = try subtype.decodeTypeDiscriminator(from: decoder)
             
             if let discriminator = discriminator as? any TypeDiscriminator,
                let subdiscriminator = subdiscriminator as? any TypeDiscriminator,

@@ -28,6 +28,21 @@ public func _memoize<Key: Hashable, Result>(
     function: StaticString = #function,
     line: UInt = #line,
     column: UInt = #column,
+    operation: () throws -> Result
+) throws -> Result {
+    let location = SourceCodeLocation(file: file, function: function, line: line, column: column)
+    
+    return try _GloballyMemoizedValues[location][key, operation: operation]
+}
+
+@inlinable
+@inline(__always)
+public func _memoize<Key: Hashable, Result>(
+    uniquingWith key: Key,
+    file: StaticString = #fileID,
+    function: StaticString = #function,
+    line: UInt = #line,
+    column: UInt = #column,
     operation: () async throws -> Result
 ) async throws -> Result {
     let location = SourceCodeLocation(file: file, function: function, line: line, column: column)
@@ -117,17 +132,34 @@ struct _GloballyMemoizedValues {
             operation fn: () -> Result
         ) -> Result {
             get {
-                return lock.withCriticalScope {
-                    guard let result = storage[key.hashValue].map({ $0 as! Result }) else {
-                        let result: Result = fn()
-
-                        storage[key.hashValue] = result
-                        
-                        return result
-                    }
+                guard let result = lock.withCriticalScope(perform: { storage[key.hashValue].map({ $0 as! Result }) }) else {
+                    let result: Result = fn()
+                    
+                    storage[key.hashValue] = result
                     
                     return result
                 }
+                
+                return result
+            }
+        }
+        
+        @inline(__always)
+        @usableFromInline
+        subscript<Key: Hashable, Result>(
+            _ key: Key,
+            operation fn: () throws -> Result
+        ) -> Result {
+            get throws {
+                guard let result = lock.withCriticalScope(perform: { storage[key.hashValue].map({ $0 as! Result }) }) else {
+                    let result: Result = try fn()
+                    
+                    storage[key.hashValue] = result
+                    
+                    return result
+                }
+                
+                return result
             }
         }
         

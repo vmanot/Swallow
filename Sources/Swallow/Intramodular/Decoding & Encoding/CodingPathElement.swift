@@ -5,7 +5,7 @@
 import Foundation
 import Swift
 
-public enum CodingPathElement: Codable, Hashable, Sendable {
+public enum CodingPathElement: Codable, CustomStringConvertible, Hashable, Sendable {
     case key(AnyCodingKey)
     case `super`(key: AnyCodingKey?)
     
@@ -15,6 +15,10 @@ public enum CodingPathElement: Codable, Hashable, Sendable {
         }
         
         return result
+    }
+    
+    public init(_ key: any CodingKey) {
+        self = .key(AnyCodingKey(erasing: key))
     }
     
     public var description: String {
@@ -36,6 +40,14 @@ public struct CodingPath: Codable, CustomStringConvertible, Hashable, Sendable, 
 
     public init(_ path: [CodingKey]) {
         self.base = path.map({ CodingPathElement.key(AnyCodingKey(erasing: $0)) })
+    }
+    
+    public mutating func append(_ element: CodingPathElement) {
+        self.base.append(element)
+    }
+    
+    public mutating func append(_ element: any CodingKey) {
+        self.base.append(CodingPathElement(element))
     }
     
     public func makeIterator() -> Array<CodingPathElement>.Iterator {

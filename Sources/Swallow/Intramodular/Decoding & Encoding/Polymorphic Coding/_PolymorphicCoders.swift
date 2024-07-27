@@ -12,7 +12,7 @@ protocol _PolymorphicDecoderType {
 
 /// A custom decoder.
 public struct _PolymorphicDecoder: _PolymorphicDecoderType, Decoder {
-    var base: Decoder
+    public var base: Decoder
     
     public var codingPath: [CodingKey] {
         base.codingPath
@@ -74,24 +74,28 @@ struct _PolymorphicDecodingProxy<T: Decodable>: CustomStringConvertible, _Polymo
             return
         }
         
-        let decoder = _PolymorphicDecoder(decoder)
-        
-        do {
-            if let type = T.self as? any PolymorphicDecodable.Type {
-                self.value = try cast(try type._PolymorphicProxyDecodableType().init(from: decoder).value, to: T.self)
-            } else {
-                do {
-                    self.value = try T.init(from: decoder._polymorphic())
-                } catch {
-                    if let value = try? _UnsafeSerializationContainer(from: decoder._polymorphic()).data {
-                        self.value = value
-                    } else {
-                        throw error
+        if let decoder = decoder as? (any _PolymorphicDecoderType) {
+            self.value = try T.init(from: decoder.base)
+        } else {
+            let decoder = decoder._polymorphic()
+            
+            do {
+                if let type = T.self as? any PolymorphicDecodable.Type {
+                    self.value = try cast(try type._PolymorphicProxyDecodableType().init(from: decoder).value, to: T.self)
+                } else {
+                    do {
+                        self.value = try T.init(from: decoder)
+                    } catch {
+                        if let value = try? _UnsafeSerializationContainer(from: decoder).data {
+                            self.value = value
+                        } else {
+                            throw error
+                        }
                     }
                 }
+            } catch {
+                throw error
             }
-        } catch {
-            throw error
         }
     }
     

@@ -11,11 +11,9 @@ public final class TypeMetadataIndex {
     public private(set) static var shared: TypeMetadataIndex = {
         let result = TypeMetadataIndex()
         
-        result.preheat()
-        
         return result
     }()
-
+    
     @frozen
     @usableFromInline
     enum StateFlag {
@@ -48,12 +46,6 @@ public final class TypeMetadataIndex {
     internal init() {
         
     }
-    
-    public func preheat() {
-        lock.withCriticalScope {
-            _ = _queryIndices
-        }
-    }
 }
 
 extension TypeMetadataIndex {
@@ -63,16 +55,14 @@ extension TypeMetadataIndex {
     ) -> [Any.Type] {
         fetch(predicates)
     }
-
+    
     @_optimize(speed)
     public func fetch(
         _ predicates: [QueryPredicate]
     ) -> [Any.Type] {
-        lock.withCriticalScope {
-            _fetch(predicates).map({ $0.base })
-        }
+        _fetch(predicates).map({ $0.base })
     }
-        
+    
     @usableFromInline
     @_optimize(speed)
     func _fetch(
@@ -95,12 +85,14 @@ extension TypeMetadataIndex {
             let predicates = Set(predicates)
             let key: AnyHashable = Hashable2ple((protocolType, predicates))
             
-            if let result = _queryResultsByConformances[key] {
+            if let result = lock.withCriticalScope(perform: { _queryResultsByConformances[key] }) {
                 return result
             } else {
                 let result = _queryTypes(conformingTo: protocolType, predicates)
                 
-                _queryResultsByConformances[key] = result
+                lock.withCriticalScope {
+                    _queryResultsByConformances[key] = result
+                }
                 
                 return result
             }
@@ -118,7 +110,7 @@ extension TypeMetadataIndex {
         var result: Set<TypeMetadata> = []
         
         func validateSkip(_ type: TypeMetadata) {
-
+            
         }
         
         assert(!types.isEmpty)
@@ -181,12 +173,12 @@ extension TypeMetadataIndex {
                 return objCClasses
             }
         }()
-
+        
         private var nonAppleSwiftTypes: Set<TypeMetadata> = {
             var allSwiftTypes: Set<TypeMetadata> = []
             let allRuntimeDiscoveredTypes = RuntimeDiscoverableTypes.enumerate().map({ TypeMetadata($0) })
             
-            allSwiftTypes.formUnion(consume allRuntimeDiscoveredTypes)
+            allSwiftTypes.formUnion(allRuntimeDiscoveredTypes)
             
             let imagesToSearch = DynamicLinkEditor.Image.allCases.filter {
                 !$0._matches(DynamicLinkEditor.Image._ImagePathFilter.appleFramework)
@@ -194,12 +186,12 @@ extension TypeMetadataIndex {
             
             for image in imagesToSearch {
                 for conformanceList in image._parseSwiftProtocolConformancesPerType2() {
-                    if let type = conformanceList.type, type._isIndexWorthy {
+                    if let type = conformanceList.type {
                         allSwiftTypes.insert(type)
                     }
                     
                     for conformance in conformanceList.conformances {
-                        if let type = conformance.type, type._isIndexWorthy {
+                        if let type = conformance.type {
                             allSwiftTypes.insert(type)
                         }
                         
@@ -212,11 +204,11 @@ extension TypeMetadataIndex {
             
             return allSwiftTypes
         }()
-                
+        
         private lazy var nonUnderscoredTypes: Set<TypeMetadata> = {
             allTypes.filter({ !$0.name.hasPrefix("_") })
         }()
-                    
+        
         private lazy var allTypes: Set<TypeMetadata> = {
             objCClasses.union(nonAppleSwiftTypes) // FIXME
         }()
@@ -224,7 +216,7 @@ extension TypeMetadataIndex {
         init() {
             self.nonAppleSwiftTypes.formUnion(bundledObjCClasses)
         }
-
+        
         @_optimize(speed)
         @usableFromInline
         func fetch(_ predicates: Set<QueryPredicate>) -> Set<TypeMetadata> {
@@ -246,7 +238,7 @@ extension TypeMetadataIndex {
                 return nonUnderscoredTypes.intersection(objCClasses).subtracting(appleFrameworkObjCClasses)
             } else if predicates == [.pureSwift, .nonAppleFramework] {
                 return nonAppleSwiftTypes
-            } else if predicates == [.pureSwift] {                
+            } else if predicates == [.pureSwift] {
                 return nonAppleSwiftTypes
             }
             
