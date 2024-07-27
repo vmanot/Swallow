@@ -214,3 +214,26 @@ let package = Package(
     ],
     swiftLanguageVersions: [.v5]
 )
+
+func addUnsafeFlags(to targets: inout [Target]) {
+    let unsafeFlags: [SwiftSetting] = [
+        .unsafeFlags([
+            "-Xfrontend",
+            "-disable-autolink-framework",
+            "-Xfrontend",
+            "-enforce-exclusivity=unchecked",
+            "-Xfrontend",
+            "-validate-tbd-against-ir=none"
+        ])
+    ]
+    
+    for i in 0..<targets.count {
+        if targets[i].swiftSettings == nil {
+            targets[i].swiftSettings = unsafeFlags
+        } else {
+            targets[i].swiftSettings?.append(contentsOf: unsafeFlags)
+        }
+    }
+}
+
+addUnsafeFlags(to: &package.targets)

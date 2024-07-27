@@ -45,7 +45,7 @@ extension ObjCTypeCoder {
     public static func encode(_ type: Any.Type) throws -> ObjCTypeEncoding? {
         if let result = registry[TypeMetadata(type)] {
             return result
-        } else if let result = try ((type as? (any OptionalProtocol.Type))?._opaque_Optional_WrappedType).map(encode) {
+        } else if let result = try ((type as? (any OptionalProtocol.Type))?._opaque_Optional_WrappedType).map({ try encode($0) }) {
             return result
         } else if let result = try (type as? ObjCTypeEncodable.Type)?.objCTypeEncoding {
             return result

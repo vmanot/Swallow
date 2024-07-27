@@ -4,11 +4,7 @@
 
 import Swift
 
-extension String {
-    public func contains(substring: Substring?) -> Bool {
-        return substring.map({ contains(substring: $0) }) ?? false
-    }
-    
+extension String {    
     public subscript(
         firstSubstring substring: String
     ) -> Substring? {

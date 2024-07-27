@@ -183,6 +183,7 @@ extension DynamicLibraryLoader {
             image: DynamicLinkEditor.Image
         ) {
             self._rawValue = rawValue
+            self.image = image
         }
         
         private func invalidate() {

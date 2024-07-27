@@ -9,6 +9,10 @@ extension URL {
     public final class _SavedBookmarks: @unchecked Sendable {
         private static let lock = OSUnfairLock()
         
+        @UserDefault(
+            "Foundation.URL._SavedBookmarks.items",
+            store: UserDefaults(suiteName: "com.vmanot.Swallow")!
+        )
         static var items: IdentifierIndexingArrayOf<URL.Bookmark> = []
         
         public static func bookmark(

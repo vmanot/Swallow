@@ -53,29 +53,35 @@ extension _PartialKeyPathType {
     public static func _unsafe_allKeyPathsByName() -> [String: PartialKeyPath<Root>] {
         var keyPaths = [String: PartialKeyPath<Root>]()
         
-        let success = _forEachFieldWithKeyPath(of: Root.self, options: [.ignoreFunctions]) { name, keyPath in
-            keyPaths[name] = keyPath
-            
-            return true
+        let success: Bool
+        
+        if swift_isClassType(Root.self) {
+            success = _forEachFieldWithKeyPath(of: Root.self, options: [.classType, .ignoreFunctions, .ignoreUnknown]) { name, keyPath in
+                keyPaths[name] = keyPath
+                
+                return true
+            }
+        } else {
+            success = _forEachFieldWithKeyPath(of: Root.self, options: [.ignoreFunctions, .ignoreUnknown]) { name, keyPath in
+                keyPaths[name] = keyPath
+                
+                return true
+            }
         }
         
-        // precondition(success, "Failed to determine all key-paths of \(Root.self)")
-        
+        if !success {
+            if keyPaths.isEmpty {
+                runtimeIssue("Failed to determine all key-paths of \(Root.self)")
+            } else {
+                runtimeIssue("Failed to determine some key-paths of \(Root.self)")
+            }
+        }
+                
         return keyPaths
     }
 
     public static func _unsafe_allKeyPaths() -> [PartialKeyPath<Root>] {
-        var keyPaths = [PartialKeyPath<Root>]()
-        
-        let success = _forEachFieldWithKeyPath(of: Root.self, options: [.ignoreFunctions]) { _, keyPath in
-            keyPaths.append(keyPath)
-            
-            return true
-        }
-        
-        precondition(success, "Failed to determine all key-paths of \(Root.self)")
-        
-        return keyPaths
+        Array(_unsafe_allKeyPathsByName().values)
     }
 }
 
