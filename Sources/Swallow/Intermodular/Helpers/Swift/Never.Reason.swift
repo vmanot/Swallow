@@ -14,10 +14,12 @@ extension Never {
             case abstract
             case deprecated
             case illegal
+            case invalid
             case impossible
             case unavailable
             case unexpected
             case unimplemented
+            case unknown
             case unsupported
         }
         
@@ -51,6 +53,11 @@ extension Never.Reason {
     }
     
     @_transparent
+    public static var invalid: Self {
+        .init(_base: .invalid)
+    }
+    
+    @_transparent
     public static var impossible: Self {
         assertionFailure()
         
@@ -72,6 +79,11 @@ extension Never.Reason {
         assertionFailure()
         
         return .init(_base: .unimplemented)
+    }
+    
+    @_transparent
+    public static var unknown: Self {
+        .init(_base: .unknown)
     }
     
     @_transparent

@@ -192,6 +192,11 @@ extension URL {
         return isDirectory
     }
     
+    /// Drop the fucking "/" at the end.
+    public var _standardizedFilePath: String {
+        path.dropSuffixIfPresent("/")
+    }
+
     /// Adds the missing fucking "/" at the end.
     public var _standardizedDirectoryPath: String {
         path.addingSuffixIfMissing("/")

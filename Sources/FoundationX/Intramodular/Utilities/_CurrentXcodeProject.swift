@@ -2,8 +2,6 @@
 // Copyright (c) Vatsal Manot
 //
 
-#if os(macOS)
-
 import Foundation
 import Swallow
 
@@ -59,7 +57,7 @@ public struct _CurrentXcodeProject {
             return nil
         }
                 
-        return try FileManager.default.withUserGrantedAccess(to: initialURL) { (url: URL) -> URL? in
+        let result: URL? = try FileManager.default.withUserGrantedAccess(to: initialURL) { (url: URL) -> URL? in
             var currentURL: URL = url
             
             var result: Set<URL> = []
@@ -102,6 +100,16 @@ public struct _CurrentXcodeProject {
                 return nil
             }
         }
+        
+        guard var result: URL else {
+            return nil
+        }
+        
+        result = try FileManager.default.withUserGrantedAccess(to: result) {
+            try URL._SavedBookmarks.bookmark($0)
+        }
+        
+        return result
     }
 }
 
@@ -178,5 +186,3 @@ extension _CurrentXcodeProject.SearchableItem {
         return url.pathExtension == fileExtension && (fileName == nil || url.deletingPathExtension().lastPathComponent == fileName)
     }
 }
-
-#endif

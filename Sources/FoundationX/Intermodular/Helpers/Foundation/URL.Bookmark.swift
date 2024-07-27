@@ -39,23 +39,26 @@ extension URL {
             self.id = try id ?? ID(from: URL(resolvingBookmarkData: data, bookmarkDataIsStale: &stale))
         }
         
-        public init(data: Data, allowStale: Bool = true) throws {
+        public init(
+            data: Data,
+            allowStale: Bool = true
+        ) throws {
             var stale: Bool = false
             
             let url = try URL(resolvingBookmarkData: data, bookmarkDataIsStale: &stale)
-            
-            if stale {
-                guard allowStale else {
-                    throw URL.Bookmark.Error.bookmarkIsStale
-                }
-            }
-            
+                        
             self.data = data
             self.creationOptions = []
             self.id = ID(from: url)
             
             if stale {
-                _ = try? renew()
+                do {
+                    _ = try renew()
+                } catch {
+                    if !allowStale {
+                        throw URL.Bookmark.Error.bookmarkIsStale
+                    }
+                }
             }
         }
         

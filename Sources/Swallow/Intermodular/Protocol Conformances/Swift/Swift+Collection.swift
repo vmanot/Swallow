@@ -106,7 +106,7 @@ public struct SequenceToCollection<S: Sequence>: RandomAccessCollection, Wrapper
     }
     
     public subscript(index: Index) -> Element {
-        AnySequence(value).dropFirst(index).first.forceUnwrap()
+        try! AnySequence(value).dropFirst(index).first.forceUnwrap()
     }
     
     public func makeIterator() -> Iterator {

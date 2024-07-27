@@ -21,7 +21,7 @@ public struct AnyObjCCodable: FailableWrapper {
     }
     
     public init?(_ value: Value) {
-        guard value is ObjCCodable || ObjCTypeEncoding(metatype: Swift.type(of: value)) != nil else {
+        guard value is ObjCCodable || (try? ObjCTypeEncoding(metatype: Swift.type(of: value))) != nil else {
             return nil
         }
         
@@ -45,13 +45,19 @@ public struct AnyObjCCodable: FailableWrapper {
 
 extension AnyObjCCodable: CustomStringConvertible {
     public var description: String {
-        return "\(value) (\(objCTypeEncoding))"
+        if let objCTypeEncoding = try? objCTypeEncoding {
+            return "\(value) (\(objCTypeEncoding))"
+        } else {
+            return "\(value) (an error occurred while encoding)"
+        }
     }
 }
 
 extension AnyObjCCodable: ObjCCodable {
     public var objCTypeEncoding: ObjCTypeEncoding {
-        return ObjCTypeEncoding(metatype: self.type.base)!
+        get throws {
+            try ObjCTypeEncoding(metatype: self.type.base).unwrap()
+        }
     }
     
     public init(

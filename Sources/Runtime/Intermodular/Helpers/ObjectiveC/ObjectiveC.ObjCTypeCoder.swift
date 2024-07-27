@@ -42,25 +42,25 @@ extension ObjCTypeCoder {
         }
     }
     
-    public static func encode(_ type: Any.Type) -> ObjCTypeEncoding? {
+    public static func encode(_ type: Any.Type) throws -> ObjCTypeEncoding? {
         if let result = registry[TypeMetadata(type)] {
             return result
-        } else if let result = ((type as? (any OptionalProtocol.Type))?._opaque_Optional_WrappedType).map(encode) {
+        } else if let result = try ((type as? (any OptionalProtocol.Type))?._opaque_Optional_WrappedType).map(encode) {
             return result
-        } else if let result = (type as? ObjCTypeEncodable.Type)?.objCTypeEncoding {
+        } else if let result = try (type as? ObjCTypeEncodable.Type)?.objCTypeEncoding {
             return result
         } else if let result = encode(possibleSimple: type) {
             return result
         } else if let result = encode(possibleClass: type) {
             return result
-        } else if let result = encode(possibleStructure: type) {
+        } else if let result = try encode(possibleStructure: type) {
             return result
         }
         
         return nil
     }
     
-    public static func encode(possibleStructure type: Any.Type) -> ObjCTypeEncoding? {
+    public static func encode(possibleStructure type: Any.Type) throws -> ObjCTypeEncoding? {
         guard let type = TypeMetadata.Structure(type) else {
             return nil
         }
@@ -68,7 +68,7 @@ extension ObjCTypeCoder {
         var encodedTypes: [ObjCTypeEncoding] = []
         
         for field in type.fields {
-            guard let encoded = ObjCTypeCoder.encode(field.type.base) else {
+            guard let encoded = try ObjCTypeCoder.encode(field.type.base) else {
                 return nil
             }
             
@@ -82,8 +82,8 @@ extension ObjCTypeCoder {
         }
     }
     
-    public static func encode(unknownIfNil type: Any.Type) -> ObjCTypeEncoding {
-        return encode(type) ?? .unknown
+    public static func encode(unknownIfNil type: Any.Type) throws -> ObjCTypeEncoding {
+        return try encode(type) ?? .unknown
     }
 }
 
@@ -91,7 +91,7 @@ public protocol ObjCTypeContainerDecoderRule {
     static var prefix: String { get }
     static var suffix: String { get }
     
-    static func process(_: [Any.Type]) -> Any.Type
+    static func process(_: [Any.Type]) throws -> Any.Type
 }
 
 extension ObjCTypeContainerDecoderRule {
@@ -208,7 +208,7 @@ extension ObjCTypeCoder {
         let encoding = indent(encoding)
         
         if let unitValue = encoding.leftValue {
-            return ObjCTypeContainerDecoderRuleForNoRule.process(try decode(atom: unitValue))
+            return try ObjCTypeContainerDecoderRuleForNoRule.process(try decode(atom: unitValue))
         } else if let rule = (encoding.first?.leftValue).flatMap({ (prefix: String) in
             rules.find({ $0.prefix == prefix })
         }) {
@@ -223,11 +223,11 @@ extension ObjCTypeCoder {
             }
             
             if let unitValue = encoding.leftValue {
-                return rule.process(try decode(atom: unitValue))
+                return try rule.process(try decode(atom: unitValue))
             }
             
             else {
-                return rule.process(try encoding.map({ try decode(.init($0)) }))
+                return try rule.process(try encoding.map({ try decode(.init($0)) }))
             }
         }
         
@@ -259,7 +259,7 @@ extension ObjCTypeCoder {
         } else {
             let types = Array<Any.Type>(repeating: Byte.self, count: try encoding.sizeInBytes)
             
-            return TypeMetadata(tupleWithTypes: types).base
+            return try TypeMetadata(tupleWithTypes: types).base
         }
     }
 }

@@ -6,14 +6,9 @@ import Foundation
 @_spi(Internal) import Swallow
 
 extension URL {
-    @_spi(Internal)
     public final class _SavedBookmarks: @unchecked Sendable {
         private static let lock = OSUnfairLock()
         
-        @UserDefault(
-            "Foundation.URL._SavedBookmarks.items",
-            store: UserDefaults(suiteName: "com.vmanot.Swallow")!
-        )
         static var items: IdentifierIndexingArrayOf<URL.Bookmark> = []
         
         public static func bookmark(
@@ -27,7 +22,7 @@ extension URL {
                 }
                 
                 let bookmarkData = try url._bookmarkDataWithSecurityScopedAccess()
-                let bookmark = try URL.Bookmark(data: bookmarkData)
+                let bookmark = try URL.Bookmark(data: bookmarkData, allowStale: true)
                 
                 Task.detached(priority: .utility) {
                     lock.withCriticalScope {

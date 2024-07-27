@@ -120,7 +120,9 @@ extension OpaqueExistentialContainer: MutableContiguousStorage {
 
 extension OpaqueExistentialContainer: ObjCCodable {
     public var objCTypeEncoding: ObjCTypeEncoding {
-        return ObjCTypeEncoding(metatype: type.base) ?? .unknown
+        get throws {
+            try ObjCTypeEncoding(metatype: type.base) ?? .unknown
+        }
     }
     
     public init(

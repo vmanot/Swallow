@@ -59,7 +59,7 @@ extension _PartialKeyPathType {
             return true
         }
         
-        precondition(success, "Failed to determine all key-paths of \(Root.self)")
+        // precondition(success, "Failed to determine all key-paths of \(Root.self)")
         
         return keyPaths
     }

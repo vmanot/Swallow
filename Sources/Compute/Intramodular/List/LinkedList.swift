@@ -96,7 +96,7 @@ extension LinkedList: Collection {
             
             _ = iterator.exhaust(count: index)
             
-            return iterator.next().forceUnwrap()
+            return try! iterator.next().forceUnwrap()
         }
     }
 }

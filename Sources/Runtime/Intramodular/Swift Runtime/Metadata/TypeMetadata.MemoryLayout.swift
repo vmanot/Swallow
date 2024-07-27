@@ -71,7 +71,9 @@ extension _TypeMetadataType {
     }
     
     public var byteTupleRepresentation: TypeMetadata {
-        TypeMetadata(tupleWithTypes: Array<Any.Type>(repeating: Byte.self, count: memoryLayout.size))
+        get throws {
+            try TypeMetadata(tupleWithTypes: Array<Any.Type>(repeating: Byte.self, count: memoryLayout.size))
+        }
     }
 }
 

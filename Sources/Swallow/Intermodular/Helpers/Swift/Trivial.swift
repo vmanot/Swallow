@@ -57,7 +57,7 @@ extension Trivial {
                 Array($0)
             }
         } set {
-            self = Self(bytes: newValue).forceUnwrap()
+            self = try! Self(bytes: newValue).forceUnwrap()
         }
     }
     

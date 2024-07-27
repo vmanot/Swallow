@@ -486,7 +486,7 @@ extension RangeReplaceableCollection {
         }
         
         guard !(subranges.count == 1) else {
-            return replaceSubrange(subranges.first.forceUnwrap(), with: replacements.first.forceUnwrap())
+            return replaceSubrange(try! subranges.first.forceUnwrap(), with: try! replacements.first.forceUnwrap())
         }
         
         let sortedReplacements = subranges
@@ -495,8 +495,8 @@ extension RangeReplaceableCollection {
             .lazy
             .map({ ($0.0, Optional.some($0.1)) })
         
-        let first = sortedReplacements.first.forceUnwrap()
-        let last = sortedReplacements.last.forceUnwrap()
+        let first: (Range<Self.Index>, Optional<Replacement>) = try! sortedReplacements.first.forceUnwrap()
+        let last: (Range<Self.Index>, Optional<Replacement>) = try! sortedReplacements.last.forceUnwrap()
         
         sortedReplacements
             .consecutives()

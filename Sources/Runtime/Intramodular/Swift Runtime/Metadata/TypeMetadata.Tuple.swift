@@ -42,7 +42,7 @@ extension TypeMetadata.Tuple: SwiftRuntimeTypeMetadataWrapper {
 extension TypeMetadata {
     public init<C: Collection>(
         tupleWithTypes types: C
-    ) where C.Element == TypeMetadata {
+    ) throws where C.Element == TypeMetadata {
         switch types.count {
             case 0:
                 self = .init(Void.self)
@@ -61,11 +61,13 @@ extension TypeMetadata {
             default:
                 assertionFailure()
                 
-                self = Array(types).reduce({ .init(_concatenate($0.base, $1.base)) }).forceUnwrap() // ugly workaround
+                self = try Array(types).reduce({ .init(_concatenate($0.base, $1.base)) }).forceUnwrap() // ugly workaround
         }
     }
     
-    public init<C: Collection>(tupleWithTypes types: C) where C.Element == Any.Type {
-        self.init(tupleWithTypes: types.lazy.map({ TypeMetadata($0) }))
+    public init<C: Collection>(
+        tupleWithTypes types: C
+    ) throws where C.Element == Any.Type {
+        try self.init(tupleWithTypes: types.lazy.map({ TypeMetadata($0) }))
     }
 }

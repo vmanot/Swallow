@@ -29,6 +29,6 @@ extension ObjectiveCBridgeableWrapper {
     }
     
     public static func _unconditionallyBridgeFromObjectiveC(_ source: _ObjectiveCType?) -> Self {
-        return .init(source.forceUnwrap())
+        return .init(try! source.forceUnwrap())
     }
 }

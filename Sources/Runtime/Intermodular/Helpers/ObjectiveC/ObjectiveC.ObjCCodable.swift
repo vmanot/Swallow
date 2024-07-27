@@ -27,7 +27,9 @@ extension ObjCCodable {
 
 extension ObjCTypeEncodable where Self: ObjCCodable {
     public var objCTypeEncoding: ObjCTypeEncoding {
-        return Self.objCTypeEncoding
+        get throws {
+            try Self.objCTypeEncoding
+        }
     }
 }
 

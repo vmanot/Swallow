@@ -7,67 +7,104 @@ import FoundationX
 import Swallow
 
 public final class DynamicLibraryLoader {
-    private class CachedHandle  {
-        var handle: UnsafeMutableRawPointer
-        var refCount: Int = 0
+    public struct LoadFlags: OptionSet {
+        public typealias RawValue = Int32
+        public var rawValue: RawValue
         
-        init(handle: UnsafeMutableRawPointer, refCount: Int) {
-            self.handle = handle
-            self.refCount = refCount
+        public init(rawValue: RawValue) {
+            self.rawValue = rawValue
         }
+        
+        public static let local = Self(rawValue: RTLD_LOCAL)
+        public static let lazy = Self(rawValue: RTLD_LAZY)
+        public static let now = Self(rawValue: RTLD_NOW)
+#if os(Linux)
+        public static let bindingMask = Self(rawValue: RTLD_BINDING_MASK)
+        public static let deepBind = Self(rawValue: RTLD_DEEPBIND)
+#endif
+        public static let noLoad = Self(rawValue: RTLD_NOLOAD)
+        public static let global = Self(rawValue: RTLD_GLOBAL)
+        public static let noDelete = Self(rawValue: RTLD_NODELETE)
     }
     
     @_OSUnfairLocked
-    private static var handleCache: [String: CachedHandle] = [:]
+    private static var handleCache: [String: Handle] = [:]
     
     public let libraryPath: String
-    private var handle: UnsafeMutableRawPointer?
-        
+    
+    private var rawHandle: UnsafeMutableRawPointer?
+    
+    public var image: DynamicLinkEditor.Image {
+        get throws {
+            try open().image.unwrap()
+        }
+    }
+    
     public init(libraryPath: String) {
         self.libraryPath = libraryPath
     }
     
-    deinit {
-        close()
+    public init(library: URL) {
+        self.libraryPath = library.path
     }
     
-    public func open() throws {
-        if let cachedHandle = DynamicLibraryLoader.handleCache[libraryPath]?.handle {
-            handle = cachedHandle
-            DynamicLibraryLoader.handleCache[libraryPath]?.refCount += 1
-        } else {
-            let (executablePath, _) = try self.executablePath(for: libraryPath)
-            guard let newHandle = dlopen(executablePath.cString(using: .utf8), RTLD_NOW) else {
-                throw Error(
-                    kind: .openFailed,
-                    libraryPath: executablePath,
-                    additionalInfo: nil
-                )
+    @discardableResult
+    public static func load(at libraryURL: URL, flags: LoadFlags) throws -> DynamicLibraryLoader.Handle {
+        try DynamicLibraryLoader(library: libraryURL).open()
+    }
+    
+    @discardableResult
+    public static func load(atPath libraryPath: String, flags: LoadFlags) throws -> DynamicLibraryLoader.Handle {
+        try DynamicLibraryLoader(libraryPath: libraryPath).open()
+    }
+    
+    @discardableResult
+    public func open(flags: LoadFlags = .now) throws -> Handle {
+        if let handle: Handle = DynamicLibraryLoader.handleCache[libraryPath] {
+            if let existingRawHandle = self.rawHandle {
+                assert(existingRawHandle == handle.rawValue)
+                
+                return handle
             }
-            handle = newHandle
-            DynamicLibraryLoader.handleCache[libraryPath] = .init(handle: newHandle, refCount: 1)
+            
+            self.rawHandle = handle.rawValue
+            
+            DynamicLibraryLoader.handleCache[libraryPath]?.refCount += 1
+            
+            return handle
         }
+        
+        let (executablePath, _) = try self.executablePath(for: libraryPath)
+        
+        let index = DynamicLinkEditor._totalImageCount
+
+        guard let rawHandle: UnsafeMutableRawPointer = dlopen(executablePath.cString(using: .utf8), flags.rawValue) else {
+            throw Error(
+                kind: .openFailed,
+                libraryPath: executablePath,
+                additionalInfo: nil
+            )
+        }
+        
+        self.rawHandle = rawHandle
+        
+        let image = DynamicLinkEditor.Image(index: index)
+        
+        let result = Handle(rawValue: rawHandle, image: image)
+        
+        DynamicLibraryLoader.handleCache[libraryPath] = result
+        
+        return result
     }
     
     public func close() {
-        if let handle = handle {
-            DynamicLibraryLoader.releaseHandle(for: libraryPath, handle: handle)
-            self.handle = nil
-        }
-    }
-    
-    public func lookup(
-        symbol symbolName: String
-    ) throws -> SymbolAddress {
-        guard let handle else {
-            throw Error(kind: .notOpened, libraryPath: libraryPath, additionalInfo: nil)
+        guard let handle = rawHandle else {
+            return
         }
         
-        guard let symbolAddress = dlsym(handle, symbolName) else {
-            throw Error(kind: .symbolLookupFailed, libraryPath: libraryPath, additionalInfo: symbolName)
-        }
+        DynamicLibraryLoader.releaseHandle(for: libraryPath, handle: handle)
         
-        return SymbolAddress(rawValue: symbolAddress)
+        self.rawHandle = nil
     }
     
     private func executablePath(
@@ -92,32 +129,22 @@ public final class DynamicLibraryLoader {
         for libraryPath: String,
         handle: UnsafeMutableRawPointer
     ) {
-        if var refCount = DynamicLibraryLoader.handleCache[libraryPath]?.refCount {
-            refCount -= 1
+        guard let handle: Handle = DynamicLibraryLoader.handleCache[libraryPath] else {
+            return
+        }
+        
+        handle.refCount -= 1
+        
+        if handle.refCount == 0 {
+            dlclose(handle.rawValue)
             
-            if refCount == 0 {
-                dlclose(handle)
-                DynamicLibraryLoader.handleCache[libraryPath] = nil
-            } else {
-                DynamicLibraryLoader.handleCache[libraryPath]?.refCount = refCount
-            }
+            DynamicLibraryLoader.handleCache[libraryPath] = nil
         }
     }
 }
 
 extension DynamicLibraryLoader {
-    public var image: DynamicLinkEditor.Image {
-        get throws {
-            if handle == nil {
-                try open()
-            }
-            
-            return try DynamicLinkEditor.Image._allCases().first(where: { $0.name == libraryPath }).unwrap()
-        }
-    }
-}
-
-extension DynamicLibraryLoader {
+    @frozen
     public struct SymbolAddress: Hashable, @unchecked Sendable {
         public let rawValue: UnsafeRawPointer
         
@@ -127,11 +154,63 @@ extension DynamicLibraryLoader {
     }
 }
 
+// MARK: - Auxiliary
+
+extension DynamicLibraryLoader {
+    @objc public class Handle: NSObject {
+        fileprivate var refCount: Int = 1 {
+            didSet {
+                if refCount == 0 {
+                    invalidate()
+                }
+            }
+        }
+        
+        public fileprivate(set) var _rawValue: UnsafeMutableRawPointer?
+        
+        public var rawValue: UnsafeMutableRawPointer? {
+            if _rawValue == nil {
+                runtimeIssue("Dynamic library handle used after being released.")
+            }
+            
+            return _rawValue
+        }
+        
+        public fileprivate(set) var image: DynamicLinkEditor.Image?
+        
+        fileprivate init(
+            rawValue: UnsafeMutableRawPointer,
+            image: DynamicLinkEditor.Image
+        ) {
+            self._rawValue = rawValue
+        }
+        
+        private func invalidate() {
+            image = nil
+            _rawValue = nil
+        }
+        
+        public func address(
+            forSymbolWithName symbolName: String
+        ) throws -> DynamicLibraryLoader.SymbolAddress {
+            guard let symbolAddress = dlsym(rawValue, symbolName) else {
+                throw DynamicLibraryLoader.Error(
+                    kind: .symbolLookupFailed,
+                    libraryPath: try image.unwrap().name,
+                    additionalInfo: symbolName
+                )
+            }
+            
+            return SymbolAddress(rawValue: symbolAddress)
+        }
+    }
+}
+
 // MARK: - Error Handling
 
 extension DynamicLibraryLoader {
-    struct Error: Swift.Error {
-        enum Kind {
+    public struct Error: CustomStringConvertible, Swift.Error {
+        public enum Kind {
             case notOpened
             case bundleNotLoaded
             case executablePathNotFound
@@ -139,11 +218,11 @@ extension DynamicLibraryLoader {
             case symbolLookupFailed
         }
         
-        let kind: Kind
-        let libraryPath: String
-        let additionalInfo: String?
+        public let kind: Kind
+        public let libraryPath: String
+        public let additionalInfo: String?
         
-        var description: String {
+        public var description: String {
             switch kind {
                 case .notOpened:
                     return "Library not opened: \(libraryPath)"

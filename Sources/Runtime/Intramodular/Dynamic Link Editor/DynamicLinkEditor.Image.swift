@@ -22,6 +22,10 @@ extension DynamicLinkEditor {
     public struct Image: Hashable, Identifiable, @unchecked Sendable, _FailableInitiableFromURL {
         public static var _allAddedCases = IdentifierIndexingArrayOf<Self>()
         
+        public var isValid: Bool {
+            index < DynamicLinkEditor._totalImageCount
+        }
+
         public let index: UInt32
         public let name: String
         public let header: UnsafePointer<mach_header>
@@ -35,7 +39,6 @@ extension DynamicLinkEditor {
             .init(rawValue: name)
         }
         
-        @_transparent
         public init(
             index: UInt32,
             slide: Int? = nil,
@@ -48,6 +51,8 @@ extension DynamicLinkEditor {
             self.slide = slide ?? _dyld_get_image_vmaddr_slide(index)
             
             Self._allAddedCases.update(self)
+            
+            assert(isValid)
         }
         
         @_transparent

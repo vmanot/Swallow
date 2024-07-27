@@ -43,7 +43,9 @@ extension Int64: ObjCTypeEncodable {
 
 extension Optional: ObjCTypeEncodable {
     public static var objCTypeEncoding: ObjCTypeEncoding {
-        return ObjCTypeEncoding(metatype: Wrapped.self) ?? .unknown
+        get throws {
+            try ObjCTypeEncoding(metatype: Wrapped.self) ?? .unknown
+        }
     }
 }
 
@@ -89,6 +91,8 @@ extension UnsafeRawPointer: ObjCTypeEncodable {
 
 extension _UnsafeTrivialRepresentationOf: ObjCTypeEncodable {
     public static var objCTypeEncoding: ObjCTypeEncoding {
-        return ObjCTypeEncoding(metatype: Value.self) ?? .unknown
+        get throws {
+            try ObjCTypeEncoding(metatype: Value.self) ?? .unknown
+        }
     }
 }

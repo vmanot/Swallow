@@ -247,12 +247,13 @@ extension Optional {
     /// Force unwraps this `Optional`.
     @_transparent
     @inlinable
+    @_disfavoredOverload
     public func forceUnwrap(
         file: StaticString = #file,
         function: StaticString = #function,
         line: UInt = #line,
         column: UInt = #column
-    ) -> Wrapped {
+    ) throws -> Wrapped {
         try! unwrap(file: file, line: line)
     }
 }
@@ -260,7 +261,7 @@ extension Optional {
 extension Optional {
     /// Force unwraps this `Optional`.
     @inlinable
-    public func forceUnwrap() -> Wrapped {
+    public func forceUnwrap() throws -> Wrapped {
         try! unwrap()
     }
 }

@@ -9,8 +9,8 @@ public struct ObjCTypeContainerDecoderRuleForNoRule: ObjCTypeContainerDecoderRul
     public static let prefix = ""
     public static let suffix = ""
     
-    public static func process(_ types: [Any.Type]) -> Any.Type {
-        TypeMetadata(tupleWithTypes: types).base
+    public static func process(_ types: [Any.Type]) throws -> Any.Type {
+        try TypeMetadata(tupleWithTypes: types).base
     }
 }
 
@@ -18,8 +18,8 @@ public struct ObjCTypeContainerDecoderRuleForArray: ObjCTypeContainerDecoderRule
     public static let prefix = "["
     public static let suffix = "]"
     
-    public static func process(_ types: [Any.Type]) -> Any.Type {
-        TypeMetadata(tupleWithTypes: types).base
+    public static func process(_ types: [Any.Type]) throws -> Any.Type {
+        try TypeMetadata(tupleWithTypes: types).base
     }
 }
 
@@ -27,8 +27,8 @@ public struct ObjCTypeContainerDecoderRuleForConstantPointer: ObjCTypeContainerD
     public static let prefix = "r^"
     public static let suffix = ""
     
-    public static func process(_ types: [Any.Type]) -> Any.Type {
-        _extendMetatype(TypeMetadata(tupleWithTypes: types).base).UnsafePointer_Self()
+    public static func process(_ types: [Any.Type]) throws -> Any.Type {
+        try _extendMetatype(TypeMetadata(tupleWithTypes: types).base).UnsafePointer_Self()
     }
 }
 
@@ -36,8 +36,8 @@ public struct ObjCTypeContainerDecoderRuleForPointer: ObjCTypeContainerDecoderRu
     public static let prefix = "^"
     public static let suffix = ""
     
-    public static func process(_ types: [Any.Type]) -> Any.Type {
-        _extendMetatype(TypeMetadata(tupleWithTypes: types).base).UnsafeMutablePointer_Self()
+    public static func process(_ types: [Any.Type]) throws -> Any.Type {
+        try _extendMetatype(TypeMetadata(tupleWithTypes: types).base).UnsafeMutablePointer_Self()
     }
 }
 
@@ -45,8 +45,8 @@ public struct ObjCTypeContainerDecoderRuleForStructure: ObjCTypeContainerDecoder
     public static let prefix = "{"
     public static let suffix = "}"
     
-    public static func process(_ types: [Any.Type]) -> Any.Type {
-        TypeMetadata(tupleWithTypes: types).base
+    public static func process(_ types: [Any.Type]) throws -> Any.Type {
+        try TypeMetadata(tupleWithTypes: types).base
     }
 }
 
@@ -54,7 +54,7 @@ public struct ObjCTypeContainerDecoderRuleForUnion: ObjCTypeContainerDecoderRule
     public static let prefix = "("
     public static let suffix = ")"
     
-    public static func process(_ types: [Any.Type]) -> Any.Type {
-        (types.lazy.map({ TypeMetadata($0) }).sorted(by: { $0.memoryLayout.stride < $1.memoryLayout.stride }).last ?? TypeMetadata(Void.self)).byteTupleRepresentation.base
+    public static func process(_ types: [Any.Type]) throws -> Any.Type {
+        try (types.lazy.map({ TypeMetadata($0) }).sorted(by: { $0.memoryLayout.stride < $1.memoryLayout.stride }).last ?? TypeMetadata(Void.self)).byteTupleRepresentation.base
     }
 }

@@ -47,7 +47,7 @@ extension POSIXThreadMutexAttributes {
                 
                 pthread_mutexattr_getprotocol(value, ptcl)
                 
-                return POSIXThreadMutexPriorityProtocol(rawValue: ptcl.remove()).forceUnwrap()
+                return try POSIXThreadMutexPriorityProtocol(rawValue: ptcl.remove()).forceUnwrap()
             }
         } set {
             try! withConstructedValue { value in

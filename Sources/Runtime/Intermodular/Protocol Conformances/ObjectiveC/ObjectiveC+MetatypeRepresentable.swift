@@ -13,8 +13,8 @@ extension ObjCTypeEncoding {
         return try ObjCTypeCoder.decode(self)
     }
     
-    public init?(metatype type: Any.Type) {
-        guard let value = ObjCTypeCoder.encode(type) else {
+    public init?(metatype type: Any.Type) throws {
+        guard let value = try ObjCTypeCoder.encode(type) else {
             return nil
         }
         
