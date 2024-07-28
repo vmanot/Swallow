@@ -58,6 +58,7 @@ let package = Package(
             name: "_SwallowSwiftOverlay",
             dependencies: [
                 .product(name: "Collections", package: "swift-collections"),
+                .product(name: "OrderedCollections", package: "swift-collections"),
             ],
             path: "Sources/_SwallowSwiftOverlay",
             swiftSettings: []
