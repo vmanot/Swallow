@@ -94,7 +94,9 @@ public struct _LockedState<State> {
             }
         }
     }
-    
+}
+
+extension _LockedState {
     @_transparent
     public func memoizing<T>(
         _ keyPath: WritableKeyPath<State, T?>,
@@ -112,7 +114,7 @@ public struct _LockedState<State> {
             }
         }
     }
-    
+        
     @_transparent
     public func memoizing<T>(
         _ keyPath: WritableKeyPath<State, T?>,
@@ -129,6 +131,67 @@ public struct _LockedState<State> {
                 return value
             }
         }
+    }
+    
+    @_transparent
+    public func memoizing<T>(
+        _ keyPath: KeyPath<State.KeysType, T>,
+        _ body: (State) -> T
+    ) -> T where State: _KeyPathKeyedDictionary {
+        withLock { (state: inout State) in
+            if let value: T = state[_key: keyPath] {
+                return value
+            } else {
+                let value = body(state)
+                
+                state[_key: keyPath] = value
+                
+                return value
+            }
+        }
+    }
+
+    @_transparent
+    public func memoizing<T>(
+        _ keyPath: KeyPath<State.KeysType, T>,
+        _ body: () -> T
+    ) -> T where State: _KeyPathKeyedDictionary {
+        withLock { (state: inout State) in
+            if let value: T = state[_key: keyPath] {
+                return value
+            } else {
+                let value = body()
+                
+                state[_key: keyPath] = value
+                
+                return value
+            }
+        }
+    }
+
+    @_transparent
+    public func memoizing<T>(
+        _ keyPath: KeyPath<State.KeysType, T?>,
+        _ body: () -> T
+    ) -> T where State: _KeyPathKeyedDictionary {
+        withLock { (state: inout State) in
+            if let value: T = (state[_key: keyPath]).flatMap({ $0 }) {
+                return value
+            } else {
+                let value = body()
+                
+                state[_key: keyPath] = value
+                
+                return value
+            }
+        }
+    }
+    
+    @_transparent
+    public func memoizing<T: Initiable>(
+        _ keyPath: KeyPath<State.KeysType, T?>
+    ) -> T where State: _KeyPathKeyedDictionary {
+        memoizing(keyPath, { T.init() })
     }
 }
 

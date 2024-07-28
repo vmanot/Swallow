@@ -4,34 +4,31 @@
 
 import Swallow
 
+// TODO: @vmanot: Refactor this into a KeyPathMirror type
 extension TypeMetadata {
-    public var _shallow_allKeyPathsByName: [String: AnyKeyPath] {
-        _metadataCache.memoizing(\._shallow_allKeyPathsByName) {
-            func result<T>(_ type: T.Type) -> [String: AnyKeyPath] {
-                PartialKeyPath<T>._unsafe_allKeyPathsByName()
-            }
-            
-            return _openExistential(self.base, do: result)
-        }
-    }
-
-    public var _allKeyPathsInDeclarationOrder: [Int: (String, AnyKeyPath)] {
+    fileprivate var _allKeyPathsInDeclarationOrder: [Int: (String, AnyKeyPath)] {
         _openExistential(base, do: _swift_getAllKeyPaths)
     }
     
     public var _allKeyPathsByName: [String: AnyKeyPath] {
-        var result = [String: AnyKeyPath]()
-        
-        for (_, pair) in _allKeyPathsInDeclarationOrder {
-            result[pair.0] = pair.1
+        _externallyCachedValues.memoizing(\._allKeyPathsByName) {
+            var result = [String: AnyKeyPath]()
+            
+            for (_, pair) in _allKeyPathsInDeclarationOrder {
+                result[pair.0] = pair.1
+            }
+            
+            return result
         }
-        
-        return result
     }
-    
-    public var _allWritableKeyPathsByName: [String: AnyKeyPath] {
-        _allKeyPathsByName.filter { _, val in
-            String(describing: val).contains("WritableKeyPath")
+        
+    public var _allTopLevelKeyPathsByName: [String: AnyKeyPath] {
+        _externallyCachedValues.memoizing(\._allTopLevelKeyPathsByName) {
+            func result<T>(_ type: T.Type) -> [String: AnyKeyPath] {
+                PartialKeyPath<T>._unsafe_allTopLevelKeyPathsByName()
+            }
+            
+            return _openExistential(self.base, do: result)
         }
     }
     
@@ -43,14 +40,42 @@ extension TypeMetadata {
     
     public func keyPath<T, U>(
         named name: String,
-        ofType type: KeyPath<T, U>.Type
+        as type: KeyPath<T, U>.Type
     ) throws -> KeyPath<T, U> {
         try cast(_allKeyPathsByName[name], to: type)
     }
 }
 
+// MARK: - Internal
+
+extension _Swallow_KeyPathType {
+    public static func _opaque_unsafe_allKeyPaths() -> [AnyKeyPath] {
+        let _self = (self as! (any _PartialKeyPathType.Type))
+        
+        return _self.__opaque_unsafe_allTopLevelKeyPaths()
+    }
+    
+    public func _opaque_unsafe_allKeyPathsStemmingFromValue() -> [AnyKeyPath] {
+        let _self = (self as! (any _KeyPathType))
+        
+        return _self.__opaque_unsafe_allTopLevelKeyPathsStemmingFromValue()
+    }
+}
+
+extension _KeyPathType {
+    public func __opaque_unsafe_allTopLevelKeyPathsStemmingFromValue() -> [AnyKeyPath] {
+        PartialKeyPath<Value>._unsafe_allTopLevelKeyPathsByName().values.map { (keyPath:  PartialKeyPath<Value>) in
+            self._opaque_appending(path: keyPath)
+        }
+    }
+}
+
 extension _PartialKeyPathType {
-    public static func _unsafe_allKeyPathsByName() -> [String: PartialKeyPath<Root>] {
+    public static func __opaque_unsafe_allTopLevelKeyPaths() -> [AnyKeyPath] {
+        _unsafe_allTopLevelKeyPathsByName().map({ $0.value as AnyKeyPath })
+    }
+
+    public static func _unsafe_allTopLevelKeyPathsByName() -> [String: PartialKeyPath<Root>] {
         var keyPaths = [String: PartialKeyPath<Root>]()
         
         let success: Bool
@@ -76,41 +101,19 @@ extension _PartialKeyPathType {
                 runtimeIssue("Failed to determine some key-paths of \(Root.self)")
             }
         }
-                
+        
         return keyPaths
     }
-
-    public static func _unsafe_allKeyPaths() -> [PartialKeyPath<Root>] {
-        Array(_unsafe_allKeyPathsByName().values)
-    }
 }
 
-extension _Swallow_KeyPathType {
-    public static func _opaque_unsafe_allKeyPaths() -> [AnyKeyPath] {
-        let _self = (self as! (any _PartialKeyPathType.Type))
-        
-        return _self.__opaque_unsafe_allKeyPaths()
+// MARK: - Auxiliary
+
+extension _TypeMetadataCacheKeys {
+    var _allKeyPathsByName: [String: AnyKeyPath] {
+        fatalError(.abstract)
     }
     
-    public func _opaque_unsafe_allKeyPathsStemmingFromValue() -> [AnyKeyPath] {
-        let _self = (self as! (any _KeyPathType))
-        
-        return _self.__opaque_unsafe_allKeyPathsStemmingFromValue()
-    }
-}
-
-// MARK: - Internal
-
-extension _PartialKeyPathType {
-    fileprivate static func __opaque_unsafe_allKeyPaths() -> [AnyKeyPath] {
-        _unsafe_allKeyPaths().map({ $0 as AnyKeyPath })
-    }
-}
-
-extension _KeyPathType {
-    fileprivate func __opaque_unsafe_allKeyPathsStemmingFromValue() -> [AnyKeyPath] {
-        PartialKeyPath<Value>._unsafe_allKeyPaths().map { (keyPath:  PartialKeyPath<Value>) in
-            self._opaque_appending(path: keyPath)
-        }
+    var _allTopLevelKeyPathsByName: [String: AnyKeyPath] {
+        fatalError(.abstract)
     }
 }

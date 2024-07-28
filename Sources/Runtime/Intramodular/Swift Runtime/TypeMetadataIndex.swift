@@ -115,7 +115,10 @@ extension TypeMetadataIndex {
         
         assert(!types.isEmpty)
         
-        if protocolType.kind == .existential, let protocolExistentialMetatype: Any.Type = _swift_getExistentialMetatypeMetadata(protocolType.base) {
+        if
+            protocolType.kind == .existential,
+            let protocolExistentialMetatype: Any.Type = _swift_getExistentialMetatypeMetadata(protocolType.base)
+        {
             for type in types {
                 if type._conforms(toExistentialMetatype: protocolExistentialMetatype) {
                     result.insert(type)
@@ -270,7 +273,7 @@ extension TypeMetadata {
 
 extension TypeMetadata {
     fileprivate var _isIndexWorthy: Bool {
-        let typeName = _typeName(base)
+        let typeName: String = Swift._typeName(base)
         
         guard !typeName.hasPrefix("__C.") else {
             return false

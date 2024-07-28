@@ -22,9 +22,17 @@ public protocol FILEStream {
 }
 
 open class Popen: FILEStream, Sequence, IteratorProtocol {
-    static var openFILEStreams = 0
-    public static var shellCommand = "/bin/bash"
+    public struct TerminationError: Swift.Error {
+        
+    }
     
+    static var openFILEStreams = 0
+    
+    public static var shellCommand = "/bin/zsh"
+    
+    open var fileStream: UnsafeMutablePointer<FILE>
+    open var exitStatus: CInt?
+
     /// Execute a shell command
     /// - Parameters:
     ///   - cmd: Command to execute
@@ -37,7 +45,9 @@ open class Popen: FILEStream, Sequence, IteratorProtocol {
         guard let stdin = Popen(cmd: shell, mode: .write) else {
             return false
         }
+        
         stdin.print(cmd)
+        
         return stdin.terminatedOK()
     }
     
@@ -50,28 +60,36 @@ open class Popen: FILEStream, Sequence, IteratorProtocol {
     open class func system(
         _ cmd: String,
         errors: Bool = false
-    ) -> String? {
+    ) throws -> String? {
         let cmd = cmd + (errors ? " 2>&1" : "")
+        
         guard let outfp = Popen(cmd: cmd) else {
-            return "popen(\"\(cmd)\") failed."
+            runtimeIssue(cmd)
+            
+            throw TerminationError()
         }
-        let output = outfp.readAll()
+        
+        let output: String = outfp.readAll()
+   
         return outfp.terminatedOK() != errors ? output : nil
     }
-    
-    open var fileStream: UnsafeMutablePointer<FILE>
-    open var exitStatus: CInt?
-    
-    public init?(cmd: String, mode: Fopen.FILEMode = .read) {
+        
+    public init?(
+        cmd: String,
+        mode: Fopen.FILEMode = .read
+    ) {
         guard let handle = popen(cmd, mode.mode) else {
             return nil
         }
+        
         fileStream = handle
+        
         Self.openFILEStreams += 1
     }
     
     open func terminatedOK() -> Bool {
         exitStatus = pclose(fileStream)
+        
         return exitStatus! >> 8 == EXIT_SUCCESS
     }
     
@@ -79,6 +97,7 @@ open class Popen: FILEStream, Sequence, IteratorProtocol {
         if exitStatus == nil {
             _ = terminatedOK()
         }
+        
         Self.openFILEStreams -= 1
     }
 }
@@ -94,7 +113,6 @@ extension Swift.UnsafeMutablePointer: Swallow.FILEStream, Swift.Sequence, Swift.
 // useful as Task/FileHandle does not provide a
 // convenient way of reading an individual line.
 extension FILEStream {
-    
     public func next() -> String? {
         return readLine() // ** No longer includes tailing newline **
     }
@@ -123,29 +141,40 @@ extension FILEStream {
     }
     
     public func readAll(close: Bool = false) -> String {
-        defer { if close { _ = pclose(fileStream) } }
+        defer {
+            if close {
+                _ = pclose(fileStream)
+            }
+        }
+        
         var out = ""
+        
         while let line = readLine(strippingNewline: false) {
             out += line
         }
+        
         return out
     }
     
     @discardableResult
-    public func print(_ items: Any..., separator: String = " ",
-                      terminator: String = "\n") -> CInt {
-        return fputs(items.map { "\($0)" }.joined(
-            separator: separator)+terminator, fileStream)
+    public func print(
+        _ items: Any...,
+        separator: String = " ",
+        terminator: String = "\n"
+    ) -> CInt {
+        fputs(items
+            .map { "\($0)" }
+            .joined(separator: separator) + terminator, fileStream)
     }
     
     public func write(data: Data) -> Int {
-        return withUnsafeBytes(of: data) { buffer in
+        withUnsafeBytes(of: data) { buffer in
             fwrite(buffer.baseAddress, 1, buffer.count, fileStream)
         }
     }
     
     @discardableResult
     public func flush() -> CInt {
-        return fflush(fileStream)
+        fflush(fileStream)
     }
 }

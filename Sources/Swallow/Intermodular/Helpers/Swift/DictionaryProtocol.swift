@@ -26,13 +26,15 @@ extension DictionaryProtocol {
     }
 }
 
-public protocol _CircularKeyPathReferenceKeyedDictionary {
-    subscript<Value>(_key keyPath: KeyPath<Self, Value>) -> Value? { get set }
+public protocol _KeyPathKeyedDictionary {
+    associatedtype KeysType = Self
+    
+    subscript<Value>(_key keyPath: KeyPath<KeysType, Value>) -> Value? { get set }
 }
 
-extension _CircularKeyPathReferenceKeyedDictionary {
+extension _KeyPathKeyedDictionary {
     public mutating func initializing<Value>(
-        _ keyPath: KeyPath<Self, Value>,
+        _ keyPath: KeyPath<KeysType, Value>,
         operation: () -> Value
     ) -> Value {
         if let value = self[_key: keyPath] {
@@ -47,7 +49,7 @@ extension _CircularKeyPathReferenceKeyedDictionary {
     }
     
     public func initializing<Value>(
-        _ keyPath: KeyPath<Self, Value>,
+        _ keyPath: KeyPath<KeysType, Value>,
         operation: () -> Value
     ) -> Value where Self: AnyObject {
         if let value = self[_key: keyPath] {
