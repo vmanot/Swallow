@@ -40,6 +40,10 @@ extension NonCodingProperty: Hashable  {
     }
 }
 
+extension NonCodingProperty: Sendable where Value: Sendable {
+    
+}
+
 // MARK: - Auxiliary
 
 extension KeyedDecodingContainer {
