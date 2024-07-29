@@ -328,6 +328,16 @@ extension FileManager {
         try removeItem(at: url)
     }
     
+    public func removeItemIfNecessary(
+        atPath path: String
+    ) throws {
+        guard fileExists(atPath: path) else {
+            return
+        }
+        
+        try removeItem(atPath: path)
+    }
+    
     @available(macOS 11.0, iOS 14.0, watchOS 7.0, tvOS 14.0, *)
     public func removeItemIfNecessary(
         at url: FilePath

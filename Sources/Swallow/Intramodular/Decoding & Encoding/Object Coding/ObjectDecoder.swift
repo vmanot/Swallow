@@ -183,7 +183,7 @@ extension ObjectDecoder.Decoder {
         referencing object: Any,
         `as` key: CodingKey
     ) -> ObjectDecoder.Decoder {
-        return .init(
+        ObjectDecoder.Decoder(
             object: object,
             options: options,
             userInfo: userInfo,
@@ -406,23 +406,48 @@ extension ObjectDecoder.Decoder: SingleValueDecodingContainer {
 }
 
 func _dataCorrupted(at codingPath: [CodingKey], _ description: String, _ error: Error? = nil) -> DecodingError {
-    let context = DecodingError.Context(codingPath: codingPath, debugDescription: description, underlyingError: error)
+    let context = DecodingError.Context(
+        codingPath: codingPath,
+        debugDescription: description,
+        underlyingError: error
+    )
     return .dataCorrupted(context)
 }
 
-private func _keyNotFound(at codingPath: [CodingKey], _ key: CodingKey, _ description: String) -> DecodingError {
-    let context = DecodingError.Context(codingPath: codingPath, debugDescription: description)
+private func _keyNotFound(
+    at codingPath: [CodingKey],
+    _ key: CodingKey,
+    _ description: String
+) -> DecodingError {
+    let context = DecodingError.Context(
+        codingPath: codingPath,
+        debugDescription: description
+    )
     return.keyNotFound(key, context)
 }
 
-private func _valueNotFound(at codingPath: [CodingKey], _ type: Any.Type, _ description: String) -> DecodingError {
-    let context = DecodingError.Context(codingPath: codingPath, debugDescription: description)
+private func _valueNotFound(
+    at codingPath: [CodingKey],
+    _ type: Any.Type,
+    _ description: String
+) -> DecodingError {
+    let context = DecodingError.Context(
+        codingPath: codingPath,
+        debugDescription: description
+    )
     return .valueNotFound(type, context)
 }
 
-private func _typeMismatch(at codingPath: [CodingKey], expectation: Any.Type, reality: Any) -> DecodingError {
+private func _typeMismatch(
+    at codingPath: [CodingKey],
+    expectation: Any.Type,
+    reality: Any
+) -> DecodingError {
     let description = "Expected to decode \(expectation) but found \(type(of: reality)) instead."
-    let context = DecodingError.Context(codingPath: codingPath, debugDescription: description)
+    let context = DecodingError.Context(
+        codingPath: codingPath,
+        debugDescription: description
+    )
     return .typeMismatch(expectation, context)
 }
 

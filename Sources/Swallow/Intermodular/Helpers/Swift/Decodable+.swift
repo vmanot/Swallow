@@ -9,6 +9,14 @@ public struct DecoderUnwrapper: Decodable {
     public let value: Decoder
     
     public init(from decoder: Decoder) throws {
-        self.value = decoder
+        struct _SingleValue: Decodable {
+            let decoder: Decoder
+            
+            init(from decoder: Decoder) throws {
+                self.decoder = decoder
+            }
+        }
+        
+        self.value = try decoder.singleValueContainer().decode(_SingleValue.self).decoder
     }
 }

@@ -31,6 +31,22 @@ extension KeyedDecodingContainerProtocol {
     public func decoder(forKey key: Key) throws -> Decoder {
         try decode(DecoderUnwrapper.self, forKey: key).value
     }
+    
+    public func _firstValueDecoder(forKey key: Key) throws -> Decoder {
+        do {
+            var container = try nestedUnkeyedContainer(forKey: key)
+            
+            return try container.decode(DecoderUnwrapper.self).value
+        } catch {
+            return try decode(DecoderUnwrapper.self, forKey: key).value
+        }
+    }
+    
+    public func _decodeFirstUnkeyedValue<T: Decodable>(_ type: T.Type, forKey key: Key) throws -> T {
+        var container = try nestedUnkeyedContainer(forKey: key)
+        
+        return try container.decode(type)
+    }
 }
 
 extension KeyedDecodingContainerProtocol {
