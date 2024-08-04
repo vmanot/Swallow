@@ -78,6 +78,10 @@ public struct ManagedActorMethodMacro: PeerMacro {
             public final class \(name): _PartialManagedActorMethodTrampoline<\(raw: concreteTypeName)>, _ManagedActorMethodTrampolineProtocol {
                 public typealias OwnerType = _ManagedActorSelfType
                         
+                public static var name: _ManagedActorMethodName {
+                    _ManagedActorMethodName(rawValue: "\(name)")
+                }
+                
                 public override init() {
                     super.init()
                 }

@@ -7,15 +7,31 @@ import Swallow
 
 @propertyWrapper
 public struct _StaticMirrorQuery<T, U> {
-    public let type: T
+    public let type: T?
     public let wrappedValue: [U]
     
-    public init(type: T, transform: ([U]) -> [U] = { $0 }) {
+    public init(type: T?, transform: ([U]) -> [U] = { $0 }) {
         self.type = type
         
-        let value: [U] = try! TypeMetadata._queryAll(.nonAppleFramework, .conformsTo(type as! Any.Type))
+        let value: [U]
+        
+        do {
+            if let type {
+                value = try TypeMetadata._query(.nonAppleFramework, .conformsTo(type as! Any.Type))
+            } else {
+                assert(U.self == Any.Type.self)
+                
+                value = try TypeMetadata._query(.pureSwift).map({ $0.base }) as! [U]
+            }
+        } catch {
+            value = []
+        }
         
         self.wrappedValue = transform(value)
+    }
+    
+    public init() where T == Any.Type, U == Any.Type {
+        self.init(type: nil)
     }
     
     public init(
@@ -27,7 +43,7 @@ public struct _StaticMirrorQuery<T, U> {
     public init(
         _ type: () -> _StaticSwift._ProtocolAndExistentialTypePair<T, U>
     ) {
-        self.init(type: type as! T)
+        self.init(type: Optional.some(type as! T))
     }
 }
 
@@ -35,44 +51,3 @@ public struct _StaticMirrorQuery<T, U> {
 
 @available(*, deprecated, renamed: "StaticMirrorQuery")
 public typealias RuntimeDiscoveredTypes<T, U> = _StaticMirrorQuery<T, U>
-
-public enum RuntimeCoercionError: CustomStringConvertible, LocalizedError {
-    case coercionFailed(from: Any.Type, to: Any.Type, value: Any, location: SourceCodeLocation)
-    
-    public var description: String {
-        switch self {
-            case let .coercionFailed(sourceType, destinationType, value, location): do {
-                var description: String
-                
-                if let value = Optional(_unwrapping: value) {
-                    description = "Could not coerce \(value) to '\(destinationType)'"
-                } else {
-                    description = "Could not coerce value of type '\(sourceType)' to '\(destinationType)'"
-                }
-                
-                if let file = location.file, file != #file {
-                    description = "\(location): \(description)"
-                }
-                
-                return description
-            }
-        }
-    }
-}
-
-public func coerce<T, U>(
-    _ x: T,
-    to targetType: U.Type,
-    file: StaticString = #file,
-    fileID: StaticString = #fileID,
-    function: StaticString = #function,
-    line: UInt = #line,
-    column: UInt = #column
-) throws -> U {
-    throw RuntimeCoercionError.coercionFailed(
-        from: type(of: x),
-        to: targetType,
-        value: x,
-        location: .unavailable
-    )
-}

@@ -24,8 +24,6 @@ public struct Base64EncodedData: Hashable, Sendable {
             if let decodedData = Data(base64Encoded: newValue) {
                 data = decodedData
             } else {
-                // Handle invalid base64 string
-                print("Error: Invalid base64 string")
                 data = Data()
             }
         }

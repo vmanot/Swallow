@@ -4,6 +4,10 @@
 
 import Swift
 
+public protocol ManagedActorExecutor {
+    
+}
+
 @frozen
 public enum _ManagedActorInitializationOption: Hashable, Sendable {
     case serializedExecution

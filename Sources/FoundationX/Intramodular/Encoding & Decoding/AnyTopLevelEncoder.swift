@@ -12,7 +12,7 @@ public struct AnyTopLevelEncoder<Output>: TopLevelEncoder, @unchecked Sendable {
     private init<Encoder: TopLevelEncoder>(
         _erasing encoder: Encoder
     ) where Encoder.Output == Output {
-        assert(!(encoder is _AnyTopLevelDataCoder))
+        assert(!(encoder is _AnySpecializedTopLevelDataCoder))
         
         if let encoder = encoder as? AnyTopLevelEncoder<Output> {
             self = encoder

@@ -29,6 +29,17 @@ public struct AnyDiagnosticMessage: DiagnosticMessage, Error, FixItMessage, Expr
         self.file = file
     }
     
+    public init(
+        _ error: Never.Reason,
+        file: StaticString? = #file
+    ) {
+        self.init(
+            message: String(describing: error),
+            severity: .error,
+            file: file
+        )
+    }
+    
     public init(stringLiteral value: String) {
         self.init(message: value, severity: .error, file: nil)
     }

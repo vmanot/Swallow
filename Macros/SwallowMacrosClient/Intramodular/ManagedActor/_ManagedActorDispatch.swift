@@ -4,6 +4,10 @@
 
 import Swallow
 
+public struct _ManagedActorDispatchState {
+    
+}
+
 open class _ManagedActorDispatch<ActorType: _ManagedActorProtocol> {
     private weak var owner: ActorType?
     

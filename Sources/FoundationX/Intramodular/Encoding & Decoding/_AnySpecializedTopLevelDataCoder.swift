@@ -6,7 +6,7 @@ import Combine
 import Foundation
 import Swallow
 
-public enum _AnyTopLevelDataCoder: Sendable {
+public enum _AnySpecializedTopLevelDataCoder: Sendable {
     case dataCodableType(any DataCodable.Type, strategy: (decoding: any Sendable, encoding: any Sendable))
     case topLevelDataCoder(any TopLevelDataCoder, forType: Codable.Type)
     case custom(Custom)
@@ -23,7 +23,17 @@ public enum _AnyTopLevelDataCoder: Sendable {
     }
 }
 
-extension _AnyTopLevelDataCoder: TopLevelDataCoder {
+extension _AnySpecializedTopLevelDataCoder: TopLevelDataCoder {
+    public var userInfo: [CodingUserInfoKey: Any] {
+        get {
+            runtimeIssue(.unimplemented)
+            
+            return [:]
+        } set {
+            
+        }
+    }
+    
     public func decode(
         from data: Data
     ) throws -> Any {
@@ -70,7 +80,7 @@ extension _AnyTopLevelDataCoder: TopLevelDataCoder {
 
 // MARK: - Auxiliary
 
-extension _AnyTopLevelDataCoder {
+extension _AnySpecializedTopLevelDataCoder {
     public struct Custom: Sendable {
         public let type: Any.Type
         public let decode: @Sendable (Data) throws -> Any

@@ -5,30 +5,18 @@
 import Foundation
 import Swift
 
-public final class _RuntimeConverter {
-    public static let shared = _RuntimeConversion()
-    
-    
-    /*func foo() {
-        let descriptorUpdatingTypes: [any _GenericRuntimeConversionProtocol.Type] = try TypeMetadata._queryAll(
-            .conformsTo((any _StaticViewTypeDescriptorUpdating).self),
-            .nonAppleFramework,
-            .pureSwift
-        )
-        
-    }*/
-}
-
-@objc open class _RuntimeConversion: NSObject {
-    open class var type: Any.Type {
-        assertionFailure()
-        
-        return Never.self
+@objc open class _AnyRuntimeTypeConverter: NSObject {
+    open class var type: Any.Type? {
+        nil
     }
 }
 
+public protocol _RuntimeTypeConverterProtocol: _AnyRuntimeTypeConverter {
+    
+}
+
 @_alwaysEmitConformanceMetadata
-public protocol _NonGenericRuntimeConversionProtocol: _RuntimeConversion {
+public protocol _NonGenericRuntimeTypeConverterProtocol: _RuntimeTypeConverterProtocol {
     associatedtype Source
     associatedtype Destination
     
@@ -36,15 +24,15 @@ public protocol _NonGenericRuntimeConversionProtocol: _RuntimeConversion {
 }
 
 @_alwaysEmitConformanceMetadata
-public protocol _GenericRuntimeConversionProtocol {
+public protocol _GenericRuntimeTypeConverterProtocol: _RuntimeTypeConverterProtocol {
     static func __converts<T, U>(source: T.Type, to destination: U.Type) -> Bool?
     static func __converts<T, U>(source: T, to destination: U.Type) -> Bool?
     static func __convert<T, U>(source: T, to destination: U.Type) throws -> U
 }
 
-extension _GenericRuntimeConversionProtocol {
+extension _GenericRuntimeTypeConverterProtocol {
     public static func __converts<T, U>(source: T, to destination: U.Type) -> Bool? {
-        if let result = __converts(source: type(of: source), to: destination) {
+        if let result = __converts(source: Swift.type(of: source), to: destination) {
             if !result {
                 return false
             }
@@ -54,12 +42,12 @@ extension _GenericRuntimeConversionProtocol {
     }
 }
 
-public enum _GenericRuntimeConversions {
+public enum _RuntimeTypeConverters: _StaticSwift.Namespace {
     
 }
 
-extension _GenericRuntimeConversions {
-    public struct IdentifierIndexingArray_Array {
+extension _RuntimeTypeConverters {
+    public struct IdentifierIndexingArray_to_Array {
         public static func __converts<T, U>(
             source: T.Type,
             to destination: U.Type
@@ -95,4 +83,45 @@ extension _GenericRuntimeConversions {
             return try _openExistential(source, do: _convert)
         }
     }
+}
+
+public enum RuntimeCoercionError: CustomStringConvertible, LocalizedError {
+    case coercionFailed(from: Any.Type, to: Any.Type, value: Any, location: SourceCodeLocation)
+    
+    public var description: String {
+        switch self {
+            case let .coercionFailed(sourceType, destinationType, value, location): do {
+                var description: String
+                
+                if let value = Optional(_unwrapping: value) {
+                    description = "Could not coerce \(value) to '\(destinationType)'"
+                } else {
+                    description = "Could not coerce value of type '\(sourceType)' to '\(destinationType)'"
+                }
+                
+                if let file = location.file, file != #file {
+                    description = "\(location): \(description)"
+                }
+                
+                return description
+            }
+        }
+    }
+}
+
+public func coerce<T, U>(
+    _ x: T,
+    to targetType: U.Type,
+    file: StaticString = #file,
+    fileID: StaticString = #fileID,
+    function: StaticString = #function,
+    line: UInt = #line,
+    column: UInt = #column
+) throws -> U {
+    throw RuntimeCoercionError.coercionFailed(
+        from: type(of: x),
+        to: targetType,
+        value: x,
+        location: .unavailable
+    )
 }

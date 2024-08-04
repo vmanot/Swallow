@@ -19,7 +19,7 @@ public struct RuntimeConversionMacro: PeerMacro {
             throw AnyDiagnosticMessage()
         }
         
-        let name: TokenSyntax = context.makeUniqueName("_RuntimeConversion")
+        let name: TokenSyntax = context.makeUniqueName("_\(String(describing: RuntimeConversionMacro.self))")
         let callArgumentList: [String] = declaration.signature.parameterClause.parameters._toCallArgumentList()
                 
         let newBody: ExprSyntax =
@@ -43,7 +43,7 @@ public struct RuntimeConversionMacro: PeerMacro {
         
         let result = DeclSyntax(
         """
-        public class \(name): _NonGenericRuntimeConversionProtocol {
+        public class \(name): _NonGenericRuntimeTypeConverterProtocol {
             \(declaration)
         }
         """

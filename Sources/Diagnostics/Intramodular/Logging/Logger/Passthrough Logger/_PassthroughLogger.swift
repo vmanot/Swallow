@@ -22,9 +22,10 @@ final class _PassthroughLogger: LoggerProtocol, @unchecked Sendable {
     private let parent: _PassthroughLogger?
     
     var source: PassthroughLogger.Source
-    var scope: PassthroughLoggerScope
+    var scope: PassthroughLogger.Scope
     var configuration: PassthroughLogger.Configuration
     var entries: [LogEntry] = []
+    var entryPublisher = PassthroughSubject<LogEntry, Never>()
     
     private lazy var _platformLogger: OSLoggerProtocol? = {
         if #available(macOS 11.0, iOS 14.0, watchOS 7.0, tvOS 14.0, *) {
@@ -73,8 +74,18 @@ final class _PassthroughLogger: LoggerProtocol, @unchecked Sendable {
             message: message()
         )
         
-        if (configuration._dumpToConsole ?? (PassthroughLogger.Configuration.global._dumpToConsole ?? true)) {
-            if #available(macOS 11.0, iOS 14.0, watchOS 7.0, tvOS 14.0, *) {
+        if _isDebugAssertConfiguration {
+            if level == .error {
+                runtimeIssue(message().description)
+            }
+        }
+        
+        if let logEntryHandler = _TaskLocalValues._logEntryHandler {
+            logEntryHandler(entry)
+        } else {
+            let dumptoConsole = (configuration._dumpToConsole ?? (PassthroughLogger.Configuration.global._dumpToConsole ?? true))
+            
+            if dumptoConsole, #available(macOS 11.0, iOS 14.0, watchOS 7.0, tvOS 14.0, *) {
                 if let _platformLogger = _platformLogger as? OSLogger {
                     _platformLogger._log(level: level, message().description)
                 }
@@ -132,7 +143,7 @@ extension _PassthroughLogger: TextOutputStream {
 
 // MARK: - Helpers
 
-extension PassthroughLoggerScope {
+extension PassthroughLogger.Scope {
     fileprivate func _toTextualLogDumpScope() -> [_TextualLogDump.Scope]? {
         switch self {
             case .root:

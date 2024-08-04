@@ -12,7 +12,7 @@ extension Either: Hashable where LeftValue: Hashable, RightValue: Hashable {
 }
 
 @frozen
-public struct EmptyValue: Codable, Hashable {
+public struct EmptyValue: Codable, Hashable, Sendable {
     public init() {
         
     }
@@ -86,5 +86,12 @@ public struct ManyHashable: Hashable {
     @inlinable
     public static func == (lhs: Self, rhs: Self) -> Bool {
         lhs.hashValue == rhs.hashValue
+    }
+}
+
+@frozen
+public struct _CodableVoid: Codable, Hashable, Sendable {
+    public init() {
+        
     }
 }

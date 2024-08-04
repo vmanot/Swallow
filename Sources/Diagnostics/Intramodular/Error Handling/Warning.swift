@@ -4,7 +4,7 @@
 
 import Swallow
 
-public protocol Warning {
+public protocol Warning: Error, Sendable {
     
 }
 

@@ -98,7 +98,10 @@ public protocol KeyExposingMutableDictionaryProtocol: KeysExposingDictionaryProt
 // MARK: - Implementation
 
 extension DictionaryProtocol {
-    public func value(forKey key: DictionaryKey) -> DictionaryValue? {
+    @_disfavoredOverload
+    public func value(
+        forKey key: DictionaryKey
+    ) -> DictionaryValue? {
         self[key]
     }
     

@@ -12,6 +12,9 @@ public class _SwallowMacros_module: NSObject {
     private static let _didCompleteSweep = _AsyncGate(initiallyOpen: false)
     private static var _inlineTestCases: [any _PerformOnceOnAppLaunchClosure.Type] = []
     
+    @_StaticMirrorQuery(type: (any _PerformOnceOnAppLaunchClosure).self)
+    private static var performOnceOnAppLaunchClosureTypes: [any _PerformOnceOnAppLaunchClosure.Type]
+    
     public override init() {
         Self.lock.withCriticalScope {
             guard !Self.initialized else {
@@ -29,21 +32,14 @@ public class _SwallowMacros_module: NSObject {
     }
     
     private static func _performAllPerformOnceOnAppLaunchClosures() {
-        let discovered: [any _PerformOnceOnAppLaunchClosure.Type] = TypeMetadataIndex.shared
-            .fetch(
-                .conformsTo((any _PerformOnceOnAppLaunchClosure).self),
-                .nonAppleFramework
-            )
-            .map({ try! cast($0) })
-        
-        let regular: [any _PerformOnceOnAppLaunchClosure.Type] = discovered.filter({ !$0._isInlineTestCase })
-        
-        _inlineTestCases = discovered.filter({ $0._isInlineTestCase })
+        let regular = performOnceOnAppLaunchClosureTypes.filter({ !$0._isInlineTestCase })
+
+        _inlineTestCases = performOnceOnAppLaunchClosureTypes.filter({ $0._isInlineTestCase })
         
         regular.forEach { type in
             type.init().perform()
         }
-
+        
         _didCompleteSweep.open()
     }
     

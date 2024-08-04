@@ -8,6 +8,8 @@ import Swallow
 
 /// A type that defines methods for encoding & decoding data.
 public protocol TopLevelDataCoder: Sendable, TopLevelDecoder, TopLevelEncoder where Input == Foundation.Data, Output == Foundation.Data {
+    var userInfo: [CodingUserInfoKey: Any] { get set }
+    
     func decode<T: Decodable>(_ type: T.Type, from data: Data) throws -> T
     func encode<T: Encodable>(_ value: T) throws -> Data
 }
@@ -25,6 +27,15 @@ public struct PropertyListCoder: TopLevelDataCoder {
     
     private let decoder: PropertyListDecoder
     private let encoder: PropertyListEncoder
+    
+    public var userInfo: [CodingUserInfoKey: Any] {
+        get {
+            decoder.userInfo
+        } set {
+            encoder.userInfo = newValue
+            decoder.userInfo = newValue
+        }
+    }
     
     public init(format: PropertyListSerialization.PropertyListFormat = .binary) {
         self.format = format
@@ -59,12 +70,32 @@ extension TopLevelDataCoder where Self == PropertyListCoder {
 @frozen
 public struct JSONCoder: TopLevelDataCoder {
     @usableFromInline
+    let _decoder: JSONDecoder
+    @usableFromInline
     let decoder: AnyTopLevelDecoder<Data>
+    
+    @usableFromInline
+    let _encoder: JSONEncoder
     @usableFromInline
     let encoder: AnyTopLevelEncoder<Data>
     
-    public init(decoder: JSONDecoder, encoder: JSONEncoder) {
+    
+    public var userInfo: [CodingUserInfoKey: Any] {
+        get {
+            _decoder.userInfo
+        } set {
+            _encoder.userInfo = newValue
+            _decoder.userInfo = newValue
+        }
+    }
+
+    public init(
+        decoder: JSONDecoder,
+        encoder: JSONEncoder
+    ) {
+        self._decoder = decoder
         self.decoder = AnyTopLevelDecoder(erasing: decoder._polymorphic())
+        self._encoder = encoder
         self.encoder = AnyTopLevelEncoder(erasing: encoder)
     }
     

@@ -51,6 +51,10 @@ extension TypeMetadata: Named {
         _unqualifiedName.hasPrefix("_")
     }
     
+    public var _name: String {
+        _typeName(base)
+    }
+    
     public var _qualifiedName: String {
         _typeName(base, qualified: true)
     }

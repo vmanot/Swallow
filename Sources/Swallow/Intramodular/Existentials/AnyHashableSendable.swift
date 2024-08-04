@@ -4,6 +4,14 @@
 
 import Swift
 
+public struct AnySendable: Sendable {
+    public let base: any Sendable
+    
+    public init(erasing x: any Sendable) {
+        self.base = x
+    }
+}
+
 public struct AnyHashableSendable: Hashable, Sendable {
     public let base: any Hashable & Sendable
     

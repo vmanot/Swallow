@@ -49,23 +49,17 @@ public final class TypeMetadataIndex {
 }
 
 extension TypeMetadataIndex {
+    @_disfavoredOverload
     @_optimize(speed)
-    public func fetch(
+    public func _query(
         _ predicates: QueryPredicate...
-    ) -> [Any.Type] {
-        fetch(predicates)
+    ) -> Set<TypeMetadata> {
+        _query(predicates)
     }
-    
-    @_optimize(speed)
-    public func fetch(
-        _ predicates: [QueryPredicate]
-    ) -> [Any.Type] {
-        _fetch(predicates).map({ $0.base })
-    }
-    
+        
     @usableFromInline
     @_optimize(speed)
-    func _fetch(
+    func _query(
         _ predicates: [QueryPredicate]
     ) -> Set<TypeMetadata> {
         var predicates = predicates
@@ -253,19 +247,19 @@ extension TypeMetadataIndex {
 // MARK: - Supplementary
 
 extension TypeMetadata {
-    public static func _queryAll(
+    public static func _query(
         _ predicates: TypeMetadataIndex.QueryPredicate...
-    ) throws -> Array<Any.Type> {
-        TypeMetadataIndex.shared.fetch(predicates)
+    ) throws -> Set<TypeMetadata> {
+        TypeMetadataIndex.shared._query(predicates)
     }
     
-    public static func _queryAll<T>(
+    public static func _query<T>(
         _ predicates: TypeMetadataIndex.QueryPredicate...,
         returning: Array<T>.Type = Array<T>.self
     ) throws -> Array<T> {
         return try TypeMetadataIndex.shared
-            .fetch(predicates)
-            .map({ try cast($0) })
+            ._query(predicates)
+            .map({ try cast($0.base) })
     }
 }
 

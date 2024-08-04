@@ -5,14 +5,6 @@
 import Foundation
 import Swift
 
-@objc(_Swallow_RuntimeTypeDiscovery) open class _RuntimeTypeDiscovery: NSObject {
-    open class var type: Any.Type {
-        assertionFailure()
-        
-        return Never.self
-    }
-}
-
 @objc(_Swallow_RuntimeFunctionDiscovery)
 open class _RuntimeFunctionDiscovery: NSObject {
     public struct FunctionCaller: HashEquatable {
@@ -20,7 +12,7 @@ open class _RuntimeFunctionDiscovery: NSObject {
             case result(Result<Any, Error>)
             case promise(Task<Any, Error>)
         }
-
+        
         public let id = UUID()
         
         public func hash(into hasher: inout Hasher) {
@@ -68,6 +60,19 @@ open class _RuntimeFunctionDiscovery: NSObject {
                 return f
             }).unwrap()
         }
+    }
+}
+
+public struct _RuntimeDiscoveredFunction: Hashable, Identifiable {
+    @_HashableExistential
+    public var type: _RuntimeFunctionDiscovery.Type
+    
+    public init(_ type: _RuntimeFunctionDiscovery.Type) {
+        self.type = type
+    }
+    
+    public var id: AnyHashable {
+        type.attributes
     }
 }
 

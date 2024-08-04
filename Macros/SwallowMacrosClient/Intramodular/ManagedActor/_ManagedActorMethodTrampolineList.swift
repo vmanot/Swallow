@@ -4,10 +4,18 @@
 
 import Swallow
 
+public struct _ManagedActorMethodName: Codable, Hashable, RawRepresentable, Sendable {
+    public let rawValue: String
+    
+    public init(rawValue: String) {
+        self.rawValue = rawValue
+    }
+}
+
 @dynamicMemberLookup
 public protocol _ManagedActorMethodTrampolineList: Initiable {
     associatedtype ManagedActorType: _ManagedActorProtocol
-    
+        
     dynamic subscript<T: _ManagedActorMethodTrampolineProtocol>(
         dynamicMember keyPath: KeyPath<ManagedActorType, T>
     ) -> ManagedActorMethodTrampolineKeyPath<ManagedActorType, T> { get }
@@ -47,6 +55,8 @@ public protocol _ManagedActorMethodTrampolineProtocol: _AnyManagedActorMethodTra
     associatedtype OwnerType: _ManagedActorProtocol
     
     typealias _OptionalOwnerType = Optional<OwnerType>
+    
+    static var name: _ManagedActorMethodName { get }
 }
 
 extension _ManagedActorMethodTrampolineProtocol {

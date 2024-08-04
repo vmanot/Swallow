@@ -28,7 +28,9 @@ public struct KeyedValuesOf<Wrapped>: Initiable  {
     ///
     /// - Parameter keyPath: A keyPath path from `Wrapped` to a property of type `Value`.
     /// - Returns: The stored value.
-    public func value<Value>(for keyPath: WritableKeyPath<Wrapped, Value>) throws -> Value {
+    public func value<Value>(
+        for keyPath: KeyPath<Wrapped, Value>
+    ) throws -> Value {
         if let base = base {
             return base[keyPath: keyPath]
         } else {
@@ -48,7 +50,10 @@ public struct KeyedValuesOf<Wrapped>: Initiable  {
     ///
     /// - Parameter value: The value to store against `keyPath`.
     /// - Parameter keyPath: A key path from `Wrapped` to a property of type `Value`.
-    public mutating func setValue<Value>(_ value: Value, for keyPath: WritableKeyPath<Wrapped, Value>) {
+    public mutating func setValue<Value>(
+        _ value: Value,
+        for keyPath: WritableKeyPath<Wrapped, Value>
+    ) {
         if base != nil {
             base![keyPath: keyPath] = value
         } else {
@@ -106,7 +111,9 @@ extension KeyedValuesOf {
     ///
     /// - Parameter keyPath: A key path from `Wrapped` to a property of type `Value`.
     /// - Returns: The stored value, or `nil` if a value has not been set.
-    public subscript<Value>(dynamicMember keyPath: WritableKeyPath<Wrapped, Value?>) -> Value?? {
+    public subscript<Value>(
+        dynamicMember keyPath: WritableKeyPath<Wrapped, Value?>
+    ) -> Value?? {
         get {
             return try? self.value(for: keyPath)
         } set {
@@ -167,7 +174,7 @@ extension KeyedValuesOf: Diffable {
     }
     
     public static func diff(_ lhs: Wrapped, _ rhs: Wrapped) -> Difference {
-        .init(source: .init(from: lhs), destination: .init(from: rhs))
+        Difference(source: .init(from: lhs), destination: .init(from: rhs))
     }
 }
 

@@ -4,7 +4,7 @@
 
 @_exported import Swallow
 
-@attached(peer, names: suffixed(_RuntimeConversion))
+@attached(peer)
 public macro RuntimeConversion() = #externalMacro(
     module: "SwallowMacros",
     type: "RuntimeConversionMacro"

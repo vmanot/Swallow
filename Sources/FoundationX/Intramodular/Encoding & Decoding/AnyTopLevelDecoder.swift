@@ -11,7 +11,7 @@ public struct AnyTopLevelDecoder<Input>: TopLevelDecoder, @unchecked Sendable {
     init<Decoder: TopLevelDecoder>(
         _erasing decoder: Decoder
     ) where Decoder.Input == Input {
-        assert(!(decoder is _AnyTopLevelDataCoder))
+        assert(!(decoder is _AnySpecializedTopLevelDataCoder))
         
         if let decoder = decoder as? AnyTopLevelDecoder {
             self = decoder

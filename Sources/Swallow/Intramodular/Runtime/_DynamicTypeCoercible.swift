@@ -21,19 +21,19 @@ public protocol _DynamicTypeCoercion {
 
 extension _DynamicTypeCoercion {
     public func _coerce<T, U>(_ x: T, to _: U.Type) throws -> U {
-        fatalError()
+        TODO.unimplemented
     }
     
     public func _coerce<T>(_ x: Source, to _: T.Type) throws -> T {
-        fatalError()
+        TODO.unimplemented
     }
     
     public func _coerce<T>(_ x: T, to _: Destination.Type) throws -> Destination {
-        fatalError()
+        TODO.unimplemented
     }
     
     public func _coerce(_ source: Source, to _: Destination.Type) throws -> Destination {
-        fatalError()
+        TODO.unimplemented
     }
 }
 
