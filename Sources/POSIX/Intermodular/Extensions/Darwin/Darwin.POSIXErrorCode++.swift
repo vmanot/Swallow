@@ -4,7 +4,6 @@
 
 import Darwin
 import Foundation
-import Swallow
 
 extension POSIXErrorCode {
     public static var last: POSIXErrorCode! {

@@ -27,20 +27,7 @@ extension Collection {
     ) -> [Element] {
         _dispatch_concurrentMap({ predicate($0) ? $0 : nil }).compactMap({ $0 })
     }
-    
-    @_transparent
-    public func _dispatch_concurrentMap<T>(
-        _ transform: (Element) -> T
-    ) -> [T] {
-        var result = ContiguousArray<T?>(repeating: nil, count: count)
-        return result.withUnsafeMutableBufferPointer { buffer in
-            DispatchQueue.concurrentPerform(iterations: buffer.count) { idx in
-                buffer[idx] = transform(self[atDistance: idx])
-            }
-            return buffer.map({ $0! })
-        }
-    }
-    
+        
     @_transparent
     public func _dispatch_concurrentPerform(
         _ transform: (Element) -> Void
@@ -72,7 +59,23 @@ extension Set {
     ) rethrows -> Set<ElementOfResult> {
         try Set<ElementOfResult>(self.lazy.compactMap(transform))
     }
-    
+}
+
+#if swift(>=6.0)
+extension Sequence {
+    @_transparent
+    public func _dispatch_concurrentMap<T>(
+        _ transform: (Element) -> T
+    ) -> [T] {
+        var result = ContiguousArray<T?>(repeating: nil, count: count)
+        return result.withUnsafeMutableBufferPointer { buffer in
+            DispatchQueue.concurrentPerform(iterations: buffer.count) { idx in
+                buffer[idx] = transform(self[atDistance: idx])
+            }
+            return buffer.map({ $0! })
+        }
+    }
+
     @_transparent
     public func _dispatch_concurrentMap<T>(
         _ transform: (Element) -> T
@@ -86,3 +89,20 @@ extension Set {
         }
     }
 }
+#else
+extension Sequence {
+    @_transparent
+    public func _dispatch_concurrentMap<T>(
+        _ transform: (Element) -> T
+    ) -> [T] {
+        map(transform)
+    }
+    
+    @_transparent
+    public func _dispatch_concurrentMap<T>(
+        _ transform: (Element) -> T
+    ) -> Set<T> {
+        Set(map(transform))
+    }
+}
+#endif

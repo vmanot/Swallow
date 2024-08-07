@@ -2,7 +2,6 @@
 // Copyright (c) Vatsal Manot
 //
 
-import Swallow
 import SwiftSyntax
 
 extension AttributeSyntax {
