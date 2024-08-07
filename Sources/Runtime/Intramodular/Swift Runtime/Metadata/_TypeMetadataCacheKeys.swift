@@ -40,7 +40,7 @@ public final class _TypeMetadataCacheStorage: _KeyPathKeyedDictionary {
 }
 
 extension TypeMetadata {
-    public var _externallyCachedValues: _LockedState<_TypeMetadataCacheStorage> {
+    public var _cached: _LockedState<_TypeMetadataCacheStorage> {
         _read {
             yield _typeMetadataCacheMap[ObjectIdentifier(base), default: _TypeMetadataCacheStorage(type: base)]
         }

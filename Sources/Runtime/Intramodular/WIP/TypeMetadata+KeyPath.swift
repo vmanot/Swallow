@@ -11,7 +11,7 @@ extension TypeMetadata {
     }
     
     public var _allKeyPathsByName: [String: AnyKeyPath] {
-        _externallyCachedValues.memoizing(\._allKeyPathsByName) {
+        _cached.memoizing(\._allKeyPathsByName) {
             var result = [String: AnyKeyPath]()
             
             for (_, pair) in _allKeyPathsInDeclarationOrder {
@@ -23,7 +23,7 @@ extension TypeMetadata {
     }
         
     public var _allTopLevelKeyPathsByName: [String: AnyKeyPath] {
-        _externallyCachedValues.memoizing(\._allTopLevelKeyPathsByName) {
+        _cached.memoizing(\._allTopLevelKeyPathsByName) {
             func result<T>(_ type: T.Type) -> [String: AnyKeyPath] {
                 PartialKeyPath<T>._unsafe_allTopLevelKeyPathsByName()
             }
