@@ -59,6 +59,8 @@ extension DictionaryExprSyntax {
                 return true
             case .elements:
                 return false
+            @unknown default:
+                fatalError()
         }
     }
 }

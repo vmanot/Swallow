@@ -16,64 +16,68 @@ extension PatternBindingSyntax {
                 $0.accessorSpecifier.tokenKind == .keyword(.set)
             })
         }
-
+        
         set {
             // NOTE: Be careful that setter cannot be implemented without a getter.
             setNewAccessor(kind: .keyword(.set), newValue: newValue)
         }
     }
-
+    
     public var getter: AccessorDeclSyntax? {
         get {
             switch accessorBlock?.accessors {
-            case let .accessors(list):
-                return list.first(where: {
-                    $0.accessorSpecifier.tokenKind == .keyword(.get)
-                })
-            case let .getter(body):
-                return AccessorDeclSyntax(accessorSpecifier: .keyword(.get), body: .init(statements: body))
-            case .none:
-                return nil
+                case let .accessors(list):
+                    return list.first(where: {
+                        $0.accessorSpecifier.tokenKind == .keyword(.get)
+                    })
+                case let .getter(body):
+                    return AccessorDeclSyntax(accessorSpecifier: .keyword(.get), body: .init(statements: body))
+                case .none:
+                    return nil
+                case .some(_):
+                    return nil // FIXME
             }
-        }
-
-        set {
+        } set {
             let newAccessors: AccessorBlockSyntax.Accessors
-
+            
             switch accessorBlock?.accessors {
-            case .getter, .none:
-                if let newValue {
-                    if let body = newValue.body {
-                        newAccessors = .getter(body.statements)
-                    } else {
-                        let accessors = AccessorDeclListSyntax {
-                            newValue
-                        }
-                        newAccessors = .accessors(accessors)
-                    }
-                } else {
-                    accessorBlock = .none
-                    return
-                }
-
-            case let .accessors(list):
-                var newList = list
-                let accessor = list.first(where: { accessor in
-                    accessor.accessorSpecifier.tokenKind == .keyword(.get)
-                })
-                if let accessor,
-                   let index = list.index(of: accessor) {
+                case .getter, .none:
                     if let newValue {
-                        newList[index] = newValue
+                        if let body = newValue.body {
+                            newAccessors = .getter(body.statements)
+                        } else {
+                            let accessors = AccessorDeclListSyntax {
+                                newValue
+                            }
+                            newAccessors = .accessors(accessors)
+                        }
                     } else {
-                        newList.remove(at: index)
+                        accessorBlock = .none
+                        return
                     }
-                } else if let newValue {
-                    newList.append(newValue)
-                }
-                newAccessors = .accessors(newList)
+                    
+                case let .accessors(list):
+                    var newList = list
+                    let accessor = list.first(where: { accessor in
+                        accessor.accessorSpecifier.tokenKind == .keyword(.get)
+                    })
+                    if let accessor,
+                       let index = list.index(of: accessor) {
+                        if let newValue {
+                            newList[index] = newValue
+                        } else {
+                            newList.remove(at: index)
+                        }
+                    } else if let newValue {
+                        newList.append(newValue)
+                    }
+                    newAccessors = .accessors(newList)
+                case .some(_):
+                    assertionFailure() // FIXME
+                    
+                    return
             }
-
+            
             if accessorBlock == nil {
                 accessorBlock = .init(accessors: newAccessors)
             } else {
@@ -81,7 +85,7 @@ extension PatternBindingSyntax {
             }
         }
     }
-
+    
     public var isGetOnly: Bool {
         if initializer != nil {
             return false
@@ -114,7 +118,7 @@ extension PatternBindingSyntax {
             setNewAccessor(kind: .keyword(.willSet), newValue: newValue)
         }
     }
-
+    
     public var didSet: AccessorDeclSyntax? {
         get {
             if let accessors = accessorBlock?.accessors,
@@ -136,39 +140,39 @@ extension PatternBindingSyntax {
     // NOTE: - getter requires extra steps and should not be used.
     private mutating func setNewAccessor(kind: TokenKind, newValue: AccessorDeclSyntax?) {
         var newAccessor: AccessorBlockSyntax.Accessors
-
+        
         switch accessorBlock?.accessors {
-        case let .getter(body):
-            guard let newValue else { return }
-            newAccessor = .accessors(
-                AccessorDeclListSyntax {
-                    AccessorDeclSyntax(accessorSpecifier: .keyword(.get), body: .init(statements: body))
-                    newValue
+            case let .getter(body):
+                guard let newValue else { return }
+                newAccessor = .accessors(
+                    AccessorDeclListSyntax {
+                        AccessorDeclSyntax(accessorSpecifier: .keyword(.get), body: .init(statements: body))
+                        newValue
+                    }
+                )
+            case let .accessors(list):
+                var newList = list
+                let accessor = list.first(where: { accessor in
+                    accessor.accessorSpecifier.tokenKind == kind
+                })
+                if let accessor,
+                   let index = list.index(of: accessor) {
+                    if let newValue {
+                        newList[index] = newValue
+                    } else {
+                        newList.remove(at: index)
+                    }
                 }
-            )
-        case let .accessors(list):
-            var newList = list
-            let accessor = list.first(where: { accessor in
-                accessor.accessorSpecifier.tokenKind == kind
-            })
-            if let accessor,
-               let index = list.index(of: accessor) {
-                if let newValue {
-                    newList[index] = newValue
-                } else {
-                    newList.remove(at: index)
-                }
-            }
-            newAccessor = .accessors(newList)
-        case .none:
-            guard let newValue else { return }
-            newAccessor = .accessors(
-                AccessorDeclListSyntax {
-                    newValue
-                }
-            )
+                newAccessor = .accessors(newList)
+            case .none:
+                guard let newValue else { return }
+                newAccessor = .accessors(
+                    AccessorDeclListSyntax {
+                        newValue
+                    }
+                )
         }
-
+        
         if accessorBlock == nil {
             accessorBlock = .init(accessors: newAccessor)
         } else {

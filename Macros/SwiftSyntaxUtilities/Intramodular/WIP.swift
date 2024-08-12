@@ -47,7 +47,6 @@ extension VariableDeclSyntax {
 }
 
 extension AttributeListSyntax.Element {
-    
     /// Attribute list may contains a `#if ... #else ... #end` wrapped
     /// attributes. Unconditional attribute name means attributes outside
     /// `#if ... #else ... #end`.
@@ -58,11 +57,11 @@ extension AttributeListSyntax.Element {
                 return syntax.hasName(name)
             case .ifConfigDecl:
                 return false
+            @unknown default:
+                fatalError()
         }
     }
-    
 }
-
 
 extension AttributeSyntax {
     

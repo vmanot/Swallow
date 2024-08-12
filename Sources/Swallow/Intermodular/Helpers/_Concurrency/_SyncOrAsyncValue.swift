@@ -21,6 +21,12 @@ public enum _SyncOrAsyncValue<Value> {
         self = .asynchronous(_AsyncPromise(value))
     }
     
+    public static func asynchronous(
+        _ value: @escaping () async throws -> Value
+    ) -> Self {
+        Self(evaluating: value)
+    }
+
     public static func synchronous(
         _ value: @autoclosure () throws -> Value
     ) -> Self {

@@ -39,3 +39,29 @@ extension Unmanaged {
         return passUnretained(instance).autorelease()
     }
 }
+
+extension Unmanaged {
+    public func map<T: AnyObject>(
+        _ transform: (Instance) throws -> T
+    ) rethrows -> Unmanaged<T> {
+        try _withUnsafeGuaranteedRef {
+            try .passUnretained(transform($0))
+        }
+    }
+    
+    public func map<T: AnyObject>(
+        _ transform: (Instance) throws -> T?
+    ) rethrows -> Unmanaged<T>? {
+        try _withUnsafeGuaranteedRef {
+            try transform($0).map({ .passUnretained($0) })
+        }
+    }
+    
+    public func flatMap<T>(
+        _ transform: (Instance) throws -> T
+    ) rethrows -> T {
+        try _withUnsafeGuaranteedRef {
+            try transform($0)
+        }
+    }
+}

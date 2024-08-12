@@ -149,7 +149,7 @@ extension _HashableBagOfExistentials: MergeOperatable {
     }
 }
 
-extension _HashableBagOfExistentials: Sequence {
+extension _HashableBagOfExistentials: SequenceInitiableSequence {
     public init(_ elements: some Sequence<Existential>) {
         self.base = .init(elements)
     }
