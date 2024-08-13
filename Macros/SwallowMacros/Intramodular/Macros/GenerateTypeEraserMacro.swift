@@ -4,117 +4,11 @@
 
 import SwiftDiagnostics
 import SwiftSyntax
-import SwiftSyntaxBuilder
 import SwiftSyntaxMacros
 import SwiftSyntaxUtilities
 
-public struct GenerateTypeEraser1: PeerMacro {
-    public static func expansion(
-        of node: AttributeSyntax,
-        providingPeersOf declaration: some DeclSyntaxProtocol,
-        in context: some MacroExpansionContext
-    ) throws -> [DeclSyntax] {
-        guard let declaration = declaration.as(ProtocolDeclSyntax.self) else {
-            let error = AnyDiagnosticMessage(.unsupported)
-            
-            let fixit = FixIt.replace(
-                message: error,
-                oldNode: node,
-                newNode: DeclSyntax(stringLiteral: "")
-            )
-            
-            let diagnostic = Diagnostic(node: node, message: error, fixIt: fixit)
-            
-            context.diagnose(diagnostic)
-            
-            return []
-        }
-        
-        let typeEraserDeclarationName: TokenSyntax = try declaration.makeTypeEraserName()
-        let protocolName: TokenSyntax = declaration.name
-        let members: MemberBlockItemListSyntax = declaration.memberBlock.members
-        let memberDeclarations: [DeclSyntax] = members.map(\.decl)
-        let baseVariableName: String = protocolName.text.lowercased()
-        
-        let comformanceDeclarations = memberDeclarations
-            .flatMap { decl -> [String] in
-                if let funcDecl = decl.as(FunctionDeclSyntax.self) {
-                    let parameters = funcDecl.parameterList
-                    let inputTypes = parameters
-                        .map { "_ \($0.name.text): \($0.type.description)" }
-                        .joined(separator: ", ")
-                    let inputParameters = parameters
-                        .map { $0.name.text }
-                        .joined(separator: ", ")
-                    let returnType = funcDecl.explicitReturnType?.name ?? "Void"
-                    
-                    return [
-                        "private var _\(funcDecl.name): (\(inputTypes)) -> \(returnType)",
-                        "\(funcDecl.trimmed) { _\(funcDecl.name)(\(inputParameters)) }"
-                    ]
-                } else if let varDecl = decl.as(VariableDeclSyntax.self) {
-                    var declarations: [String] = []
-                    for (name, type) in zip(varDecl.names, varDecl.explicitlyDeclaredTypes) {
-                        declarations.append("private var _\(name): \(type)")
-                        declarations.append("var \(name): \(type) { _\(name) }")
-                    }
-                    return declarations
-                }
-                return []
-            }
-        
-        let initializerBodyDeclarations: [String] = memberDeclarations
-            .flatMap { decl -> [String] in
-                if let functionDecl = decl.as(FunctionDeclSyntax.self) {
-                    return ["_\(functionDecl.name) = \(baseVariableName).\(functionDecl.name)"]
-                } else if let variableDecl = decl.as(VariableDeclSyntax.self) {
-                    var declarations: [String] = []
-                    for name in variableDecl.names {
-                        declarations.append(
-                            "_\(name) = \(baseVariableName).\(name)"
-                        )
-                    }
-                    return declarations
-                }
-                return []
-            }
-        
-        let structDecl = try StructDeclSyntax("struct \(typeEraserDeclarationName): \(protocolName)") {
-            for comformanceDeclaration in comformanceDeclarations {
-                DeclSyntax(stringLiteral: comformanceDeclaration)
-            }
-            
-            DeclSyntax(
-                """
-                public func \(try declaration.makeTypeEraserFunctionName())() -> Self {
-                    self
-                }  
-                """
-            )
-            
-            try InitializerDeclSyntax("init(_ \(raw: baseVariableName): \(protocolName))") {
-                for initializerBodyDeclaration in initializerBodyDeclarations {
-                    ExprSyntax(stringLiteral: initializerBodyDeclaration)
-                }
-            }
-        }
-        
-        return [DeclSyntax(structDecl)]
-    }
-}
-
 public struct GenerateTypeEraserMacro {
     
-}
-
-extension NamedDeclSyntax {
-    public func makeTypeEraserName() throws -> TokenSyntax {
-        "Any\(self.name)"
-    }
-    
-    public func makeTypeEraserFunctionName() throws -> TokenSyntax {
-        "eraseToAny\(self.name)"
-    }
 }
 
 extension GenerateTypeEraserMacro: ExtensionMacro {
@@ -130,12 +24,18 @@ extension GenerateTypeEraserMacro: ExtensionMacro {
         }
         
         let typeEraserDeclarationName: TokenSyntax = try declaration.makeTypeEraserName()
+        let distributedTypeEraserDeclarationName: TokenSyntax = try declaration.makeDistributedTypeEraserName()
+        let distributedTypeEraserFunctionName: TokenSyntax = try declaration.makeDistributedTypeEraserFunctionName()
         
         let result = try ExtensionDeclSyntax(
             """
             extension \(declaration.name) {
                 public func eraseTo\(typeEraserDeclarationName)() -> \(typeEraserDeclarationName) {
                     \(typeEraserDeclarationName)(self)
+                }  
+            
+                public func \(raw: distributedTypeEraserFunctionName)<ActorSystem: DistributedActorSystem>(actorSystem: ActorSystem) async throws -> \(distributedTypeEraserDeclarationName)<ActorSystem> {
+                    try await \(distributedTypeEraserDeclarationName)(self, actorSystem: actorSystem)
                 }  
             }
             """
@@ -156,7 +56,13 @@ extension GenerateTypeEraserMacro: MemberMacro {
         }
         
         return [
-            "func \(try declaration.makeTypeEraserFunctionName())() -> \(try declaration.makeTypeEraserName())"
+            "func \(try declaration.makeTypeEraserFunctionName())() -> \(try declaration.makeTypeEraserName())",
+            """
+            #if canImport(Distributed)
+            @available(macOS 13.0, iOS 16.0, watchOS 9.0, tvOS 16.0, *)
+            func \(try declaration.makeDistributedTypeEraserFunctionName())<ActorSystem: DistributedActorSystem>(actorSystem: ActorSystem) async throws -> \(try declaration.makeDistributedTypeEraserName())<ActorSystem>
+            #endif
+            """
         ]
     }
 }
@@ -188,8 +94,9 @@ extension GenerateTypeEraserMacro: PeerMacro {
         let memberDeclarations: [DeclSyntax] = members.map(\.decl)
         
         var result: [DeclSyntax] = []
-
+        
         let structDecl = try makeTypeEraserStructDeclaration(
+            for: declaration,
             protocolName: protocolName,
             memberDeclarations: memberDeclarations
         )
@@ -205,6 +112,7 @@ extension GenerateTypeEraserMacro: PeerMacro {
     }
     
     private static func makeTypeEraserStructDeclaration(
+        for declaration: ProtocolDeclSyntax,
         protocolName: TokenSyntax,
         memberDeclarations: [DeclSyntax]
     ) throws -> StructDeclSyntax {
@@ -224,7 +132,7 @@ extension GenerateTypeEraserMacro: PeerMacro {
                     let returnType = funcDecl.explicitReturnType?.description ?? "Void"
                     
                     return  """
-                    func \(funcDecl.name)(\(parameters)) \(asyncKeyword)\(throwsKeyword) -> \(returnType) {
+                    public func \(funcDecl.name)(\(parameters)) \(asyncKeyword)\(throwsKeyword) -> \(returnType) {
                         return \(tryKeyword) \(awaitKeyword) base.\(funcDecl.name)(\(inputParameters)) 
                     };
                     
@@ -232,7 +140,7 @@ extension GenerateTypeEraserMacro: PeerMacro {
                 } else if let varDecl = decl.as(VariableDeclSyntax.self) {
                     for (name, type) in zip(varDecl.names, varDecl.explicitlyDeclaredTypes) {
                         return """
-                        var \(name): \(type) { 
+                        public var \(name): \(type) { 
                             base.\(name) 
                         };
                         """
@@ -242,14 +150,26 @@ extension GenerateTypeEraserMacro: PeerMacro {
                 return nil
             }
         
-        let result = try StructDeclSyntax("struct Any\(protocolName): \(protocolName)") {
+        let result = try StructDeclSyntax("public struct Any\(protocolName): \(protocolName), SwallowMacrosClient._DistributedTypeErasable") {
             DeclSyntax("private let base: any \(protocolName)")
             
             for conformanceDeclaration in conformanceDeclarations {
                 DeclSyntax(stringLiteral: conformanceDeclaration)
             }
             
-            try InitializerDeclSyntax("init(_ base: any \(protocolName))") {
+            let distributedTypeEraserName = try declaration.makeDistributedTypeEraserName()
+           
+            DeclSyntax(
+                """
+                public static func __distributedTypeEraserSwiftType<ActorSystem: DistributedActorSystem>(
+                    forActorSystem actorSystem: ActorSystem
+                ) throws -> Any.Type {
+                    \(distributedTypeEraserName)<ActorSystem>.self
+                }
+                """
+            )
+            
+            try InitializerDeclSyntax("public init(_ base: any \(protocolName))") {
                 ExprSyntax("self.base = base")
             }
         }
@@ -277,14 +197,14 @@ extension GenerateTypeEraserMacro: PeerMacro {
                     let returnType = funcDecl.explicitReturnType?.description ?? "Void"
                     
                     return  """
-                    distributed func \(funcDecl.name)(\(parameters)) \(asyncKeyword)\(throwsKeyword) -> \(returnType) {
+                    public distributed func \(funcDecl.name)(\(parameters)) \(asyncKeyword)\(throwsKeyword) -> \(returnType) {
                         return \(tryKeyword) \(awaitKeyword) base.\(funcDecl.name)(\(inputParameters)) 
                     };
                     """
                 } else if let varDecl = decl.as(VariableDeclSyntax.self) {
                     for (name, type) in zip(varDecl.names, varDecl.explicitlyDeclaredTypes) {
                         return """
-                        var \(name): \(type) { 
+                        public distributed var \(name): \(type) { 
                             base.\(name) 
                         };
                         """
@@ -294,14 +214,14 @@ extension GenerateTypeEraserMacro: PeerMacro {
                 return nil
             }
         
-        let result = try ActorDeclSyntax("distributed actor $\(protocolName)<ActorSystem: DistributedActorSystem>") {
+        let result = try ActorDeclSyntax("@available(macOS 13.0, iOS 16.0, watchOS 9.0, tvOS 16.0, *) public distributed actor $\(protocolName)<ActorSystem: DistributedActorSystem>: SwallowMacrosClient._DistributedTypeEraser") {
             DeclSyntax("private let base: any \(protocolName)")
             
             for conformanceDeclaration in conformanceDeclarations {
                 DeclSyntax(stringLiteral: conformanceDeclaration)
             }
             
-            try InitializerDeclSyntax("init(_ base: any \(protocolName), actorSystem: ActorSystem)") {
+            try InitializerDeclSyntax("public nonisolated init(_ base: any \(protocolName), actorSystem: ActorSystem) async throws") {
                 ExprSyntax("self.base = base")
                 ExprSyntax("self.actorSystem = actorSystem")
             }
@@ -311,56 +231,22 @@ extension GenerateTypeEraserMacro: PeerMacro {
     }
 }
 
+// MARK: - Auxiliary
 
-/*protocol ContentDrawable {
- var size: CGSize { get }
- var backgroundColor: Color { get }
- 
- func draw()
- }
- 
- struct AnyContentDrawable : ContentDrawable  {
- private var _size: CGSize
- var size: CGSize  {
- _size
- }
- private var _backgroundColor: Color
- var backgroundColor: Color  {
- _backgroundColor
- }
- private var _draw: () -> Void
- func draw() {
- _draw()
- }
- init(_ contentdrawable: ContentDrawable ) {
- _size = contentdrawable.size
- _backgroundColor = contentdrawable.backgroundColor
- _draw = contentdrawable.draw
- }
- }
- 
- protocol ContentDrawable {
- var size: CGSize { get }
- var backgroundColor: Color { get }
- 
- func draw()
- }
- 
- struct AnyContentDrawable  {
- private var base: any ContentDrawable
- var size: CGSize  {
- base.size
- }
- 
- var backgroundColor: Color  {
- base.backgroundColor
- }
- 
- func draw() {
- base.draw()
- }
- init(_ base: any ContentDrawable) {
- self.base = base
- }
- }
- */
+extension NamedDeclSyntax {
+    public func makeTypeEraserName() throws -> TokenSyntax {
+        "Any\(self.name.trimmed)"
+    }
+    
+    public func makeTypeEraserFunctionName() throws -> TokenSyntax {
+        "eraseToAny\(self.name.trimmed)"
+    }
+    
+    public func makeDistributedTypeEraserName() throws -> TokenSyntax {
+        "$\(self.name.trimmed)"
+    }
+    
+    public func makeDistributedTypeEraserFunctionName() throws -> TokenSyntax {
+        "__distributed_eraseToAny\(self.name.trimmed)"
+    }
+}
