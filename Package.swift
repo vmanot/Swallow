@@ -1,9 +1,10 @@
 // swift-tools-version:5.10
 
 import CompilerPluginSupport
+import Foundation
 import PackageDescription
 
-let package = Package(
+var package = Package(
     name: "Swallow",
     platforms: [
         .iOS(.v13),
@@ -154,11 +155,8 @@ let package = Package(
         .macro(
             name: "SwallowMacros",
             dependencies: [
-                .product(name: "SwiftDiagnostics", package: "swift-syntax"),
                 .product(name: "SwiftSyntax", package: "swift-syntax"),
                 .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
-                .product(name: "SwiftOperators", package: "swift-syntax"),
-                .product(name: "SwiftParser", package: "swift-syntax"),
                 .product(name: "SwiftParserDiagnostics", package: "swift-syntax"),
                 .product(name: "SwiftCompilerPlugin", package: "swift-syntax"),
                 "SwiftSyntaxUtilities",
@@ -181,8 +179,6 @@ let package = Package(
                 "SwiftSyntaxUtilities",
                 .product(name: "SwiftSyntax", package: "swift-syntax"),
                 .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
-                .product(name: "SwiftOperators", package: "swift-syntax"),
-                .product(name: "SwiftParser", package: "swift-syntax"),
                 .product(name: "SwiftParserDiagnostics", package: "swift-syntax"),
                 .product(name: "SwiftCompilerPlugin", package: "swift-syntax"),
             ],
@@ -193,8 +189,6 @@ let package = Package(
             dependencies: [
                 .product(name: "SwiftSyntax", package: "swift-syntax"),
                 .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
-                .product(name: "SwiftOperators", package: "swift-syntax"),
-                .product(name: "SwiftParser", package: "swift-syntax"),
                 .product(name: "SwiftParserDiagnostics", package: "swift-syntax"),
                 .product(name: "SwiftCompilerPlugin", package: "swift-syntax"),
                 "Swallow",
@@ -216,3 +210,60 @@ let package = Package(
     ],
     swiftLanguageVersions: [.v5]
 )
+
+// package-manifest-patch:start
+#if os(macOS)
+if ProcessInfo.processInfo.environment["FUCK_SWIFT_SYNTAX"] != nil {
+    patchSwiftSyntaxDependency(in: &package)
+}
+#endif
+
+private func patchSwiftSyntaxDependency(in package: inout Package) {
+    if let swiftSyntaxIndex = package.dependencies.firstIndex(where: { (dependency: Package.Dependency) in
+        guard case .sourceControl(_, let location, _) = dependency.kind else {
+            return false
+        }
+        
+        return location.contains("apple/swift-syntax.git")
+    }) {
+        package.dependencies[swiftSyntaxIndex] = Package.Dependency.package(
+            url: "https://github.com/sjavora/swift-syntax-xcframeworks.git",
+            from: "510.0.0"
+        )
+    }
+    
+    for index in 0..<package.targets.count {
+        var target: Target = package.targets[index]
+        var patched: Bool = false
+        
+        target.dependencies = target.dependencies.compactMap { (dependency: Target.Dependency) -> Target.Dependency? in
+            switch dependency {
+                case .productItem(let name, let package, let moduleAliases, let condition):
+                    let targets: Set<String> = ["SwiftSyntax", "SwiftSyntaxMacros", "SwiftCompilerPlugin", "SwiftParserDiagnostics"]
+                    
+                    if package == "swift-syntax", targets.contains(name) {
+                        if patched {
+                            return nil
+                        }
+                        
+                        patched = true
+                        
+                        return .productItem(
+                            name: "SwiftSyntaxWrapper",
+                            package: "swift-syntax-xcframeworks",
+                            moduleAliases: moduleAliases,
+                            condition: condition
+                        )
+                    }
+                    
+                default:
+                    break
+            }
+            
+            return dependency
+        }
+        
+        package.targets[index] = target
+    }
+}
+// package-manifest-patch:end
