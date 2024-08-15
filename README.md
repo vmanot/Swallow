@@ -104,10 +104,20 @@ do {
 }
 ```
 
-Error:
 ```
 +------------------------------------------------------------------------------+
 | keyNotFound("wrongKey", context for User: (coding path: []),                 |
 | Optional(["email": "john@example.com", "id": 1.0, "name": "John Doe"]))      |
 +------------------------------------------------------------------------------+
 ```
+
+## Compilation
+
+`swift-syntax` is the largest dependency of Swallow. At ~36000 LoC, it can add almost **twelve minutes** to release builds on Xcode Cloud.
+
+To speed up builds (macOS only for now):
+- Open Terminal and run `launchctl setenv FUCK_SWIFT_SYNTAX YES`.
+- Relaunch Xcode (this is necessary for it to load the new launch environment variable).
+- Update Swallow to the latest version.
+- Clean your build folder (**Product** -> **Clean Build Folder...**)
+- Build Swallow.
