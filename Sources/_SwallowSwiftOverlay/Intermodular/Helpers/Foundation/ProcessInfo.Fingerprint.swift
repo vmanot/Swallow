@@ -36,8 +36,21 @@ extension ProcessInfo {
         }
     }
     
+    private static var _lastFingerprint: Fingerprint?
+    
     public static var fingerprint: Fingerprint {
-        ProcessInfo.processInfo.fingerprint
+        if let result = _lastFingerprint {
+            assert(result == ProcessInfo.processInfo.fingerprint)
+            
+            return result
+        } else {
+            let result = ProcessInfo.processInfo.fingerprint
+            
+            _lastFingerprint = result
+            
+            return result
+        }
+        
     }
     
     public var fingerprint: Fingerprint {

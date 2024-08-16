@@ -155,11 +155,7 @@ var package = Package(
         .macro(
             name: "SwallowMacros",
             dependencies: [
-                .product(name: "SwiftSyntax", package: "swift-syntax"),
-                .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
-                .product(name: "SwiftParserDiagnostics", package: "swift-syntax"),
-                .product(name: "SwiftCompilerPlugin", package: "swift-syntax"),
-                "SwiftSyntaxUtilities",
+                .target(name: "SwiftSyntaxUtilities", condition: .when(platforms: [.macOS])),
             ],
             path: "Macros/SwallowMacros"
         ),
@@ -176,11 +172,7 @@ var package = Package(
             name: "MacroBuilder",
             dependencies: [
                 "Swallow",
-                "SwiftSyntaxUtilities",
-                .product(name: "SwiftSyntax", package: "swift-syntax"),
-                .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
-                .product(name: "SwiftParserDiagnostics", package: "swift-syntax"),
-                .product(name: "SwiftCompilerPlugin", package: "swift-syntax"),
+                .target(name: "SwiftSyntaxUtilities", condition: .when(platforms: [.macOS])),
             ],
             path: "Macros/MacroBuilder"
         ),
@@ -203,7 +195,7 @@ var package = Package(
                 "Swallow",
                 "SwallowMacros",
                 "SwallowMacrosClient",
-                "SwiftSyntaxUtilities",
+                .target(name: "SwiftSyntaxUtilities", condition: .when(platforms: [.macOS])),
             ],
             path: "Tests/Swallow"
         ),
@@ -212,7 +204,7 @@ var package = Package(
 )
 
 // package-manifest-patch:start
-#if os(macOS)
+#if arch(arm64) && os(macOS) 
 if ProcessInfo.processInfo.environment["FUCK_SWIFT_SYNTAX"] != nil {
     patchSwiftSyntaxDependency(in: &package)
 }
@@ -228,7 +220,7 @@ private func patchSwiftSyntaxDependency(in package: inout Package) {
     }) {
         package.dependencies[swiftSyntaxIndex] = Package.Dependency.package(
             url: "https://github.com/sjavora/swift-syntax-xcframeworks.git",
-            from: "510.0.0"
+            from: "510.0.1"
         )
     }
     
@@ -252,7 +244,7 @@ private func patchSwiftSyntaxDependency(in package: inout Package) {
                             name: "SwiftSyntaxWrapper",
                             package: "swift-syntax-xcframeworks",
                             moduleAliases: moduleAliases,
-                            condition: condition
+                            condition: .when(platforms: [.macOS])
                         )
                     }
                     
