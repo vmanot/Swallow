@@ -210,6 +210,10 @@ if ProcessInfo.processInfo.environment["FUCK_SWIFT_SYNTAX"] != nil {
 }
 #endif
 
+#if FUCK_SWIFT_SYNTAX
+patchSwiftSyntaxDependency(in: &package)
+#endif
+
 private func patchSwiftSyntaxDependency(in package: inout Package) {
     if let swiftSyntaxIndex = package.dependencies.firstIndex(where: { (dependency: Package.Dependency) in
         guard case .sourceControl(_, let location, _) = dependency.kind else {

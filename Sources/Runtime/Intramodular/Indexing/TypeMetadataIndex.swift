@@ -173,7 +173,7 @@ extension TypeMetadataIndex {
         
         private var nonAppleSwiftTypes: Set<TypeMetadata> = {
             var allSwiftTypes: Set<TypeMetadata> = []
-            let allRuntimeDiscoveredTypes = RuntimeDiscoverableTypes.enumerate().map({ TypeMetadata($0) })
+            let allRuntimeDiscoveredTypes = RuntimeDiscoveryIndex.enumerate().map({ TypeMetadata($0) })
             
             allSwiftTypes.formUnion(allRuntimeDiscoveredTypes)
             

@@ -87,10 +87,18 @@ extension Data {
 }
 
 extension Data {
+    public enum _StringConversionError: Swift.Error {
+        case failure
+    }
+    
     public func toString(
         encoding: String.Encoding = .utf8
     ) throws -> String {
-        try String(data: self, encoding: encoding).unwrap()
+        do {
+            return try String(data: self, encoding: encoding).unwrap()
+        } catch {
+            throw _StringConversionError.failure
+        }
     }
 
     public func toStringTrimmingWhitespacesAndNewlines(

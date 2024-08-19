@@ -6,7 +6,7 @@ import Swallow
 import Foundation
 @_spi(Internal) import Swallow
 
-public enum RuntimeDiscoverableTypes {
+public enum RuntimeDiscoveryIndex {
     private static var lock = OSUnfairLock()
     
     public static func enumerate() -> [Any.Type] {

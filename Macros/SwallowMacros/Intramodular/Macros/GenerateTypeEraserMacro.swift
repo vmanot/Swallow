@@ -161,6 +161,10 @@ extension GenerateTypeEraserMacro: PeerMacro {
            
             DeclSyntax(
                 """
+                public static var _erasedProtocolType: Any.Type {
+                    (any \(protocolName.trimmed)).self
+                }
+                
                 public static func __distributedTypeEraserSwiftType<ActorSystem: DistributedActorSystem>(
                     forActorSystem actorSystem: ActorSystem
                 ) throws -> Any.Type {
@@ -214,7 +218,7 @@ extension GenerateTypeEraserMacro: PeerMacro {
                 return nil
             }
         
-        let result = try ActorDeclSyntax("@available(macOS 13.0, iOS 16.0, watchOS 9.0, tvOS 16.0, *) public distributed actor $\(protocolName)<ActorSystem: DistributedActorSystem>: SwallowMacrosClient._DistributedTypeEraser") {
+        let result = try ActorDeclSyntax("@available(macOS 13.0, iOS 16.0, watchOS 9.0, tvOS 16.0, *) public distributed actor $\(protocolName)<ActorSystem: DistributedActorSystem>: SwallowMacrosClient._DistributedTypeEraser, \(protocolName)") {
             DeclSyntax("private let base: any \(protocolName)")
             
             for conformanceDeclaration in conformanceDeclarations {

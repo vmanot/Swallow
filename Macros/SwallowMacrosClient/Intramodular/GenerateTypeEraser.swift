@@ -10,25 +10,35 @@ import Swift
 @attached(extension, names: arbitrary)
 @attached(peer, names: prefixed(Any), prefixed(`$`))
 @attached(member, names: prefixed(eraseToAny), prefixed(__distributed_eraseToAny))
-public macro GenerateTypeEraser() = #externalMacro(module: "SwallowMacros", type: "GenerateTypeEraserMacro")
+public macro GenerateTypeEraser() = #externalMacro(
+    module: "SwallowMacros",
+    type: "GenerateTypeEraserMacro"
+)
 
 @attached(extension, names: arbitrary)
 @attached(peer, names: prefixed(Any), prefixed(`$`))
 @attached(member, names: prefixed(eraseToAny))
-public macro _GenerateTypeEraser2() = #externalMacro(module: "SwallowMacros", type: "GenerateTypeEraserMacro2")
+public macro _GenerateTypeEraser2() = #externalMacro(
+    module: "SwallowMacros",
+    type: "GenerateTypeEraserMacro2"
+)
 
 #if canImport(Distributed)
+@_alwaysEmitConformanceMetadata
 @available(macOS 13.0, iOS 16.0, watchOS 9.0, tvOS 16.0, *)
 public protocol _DistributedTypeErasable {
+    /// The protocol type being erased.
+    static var _erasedProtocolType: Any.Type { get }
+    
     static func __distributedTypeEraserSwiftType<ActorSystem: DistributedActorSystem>(
         forActorSystem actorSystem: ActorSystem
     ) throws -> Any.Type
 }
 
+@_alwaysEmitConformanceMetadata
 @available(macOS 13.0, iOS 16.0, watchOS 9.0, tvOS 16.0, *)
-public protocol _DistributedTypeEraser {
+public protocol _DistributedTypeEraser<ActorSystem>: DistributedActor {
     associatedtype BaseType
-    associatedtype ActorSystem: DistributedActorSystem
     
     init(_ base: BaseType, actorSystem: ActorSystem) async throws
 }

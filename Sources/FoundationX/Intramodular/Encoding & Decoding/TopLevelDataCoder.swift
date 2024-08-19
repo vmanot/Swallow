@@ -150,3 +150,19 @@ public struct _TopLevelDecoderFromTopLevelDataCoder<Coder: TopLevelDataCoder>: T
         try base.decode(type, from: input)
     }
 }
+
+/*public struct _TopLevelDataCoded<WrappedValue, Coder: Initiable & TopLevelDataCoder>: Codable, Hashable {
+    public var wrappedValue: WrappedValue
+    
+    public init(wrappedValue: WrappedValue) {
+        self.wrappedValue = wrappedValue
+    }
+    
+    public func encode(to encoder: any Encoder) throws {
+        
+    }
+    
+    public init(from decoder: any Decoder) throws {
+
+    }
+}*/

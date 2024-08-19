@@ -41,6 +41,7 @@ extension Sequence {
 // MARK: - First
 
 public enum SequenceFirstAndOnlyError<S: Sequence>: Error {
+    case noElementFound
     case foundAnother(S.Element)
 }
 
@@ -87,8 +88,6 @@ extension Sequence {
         return nil
     }
 }
-
-
 
 extension Sequence {
     @_disfavoredOverload

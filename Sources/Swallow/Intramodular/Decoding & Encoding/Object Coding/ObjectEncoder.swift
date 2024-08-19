@@ -35,6 +35,27 @@ public struct ObjectEncoder: Initiable {
             throw EncodingError.invalidValue(value, context)
         }
     }
+    
+    @_disfavoredOverload
+    public func encode<T: Encodable, U>(
+        _ value: T,
+        as type: U.Type = U.self,
+        userInfo: [CodingUserInfoKey: Any] = [:]
+    ) throws -> U {
+        let encoded = try self.encode(value, userInfo: userInfo)
+        
+        switch type {
+            case Dictionary<AnyHashable, Any>.self: do {
+                if let encoded = encoded as? [String: Any] {
+                    return encoded.mapKeys({ AnyHashable($0) }) as! U
+                }
+            }
+            default:
+                break
+        }
+        
+        return try cast(encoded)
+    }
         
     public struct EncodingStrategy<T: Encodable> {
         public typealias Closure = (T, Encoder) throws -> Void

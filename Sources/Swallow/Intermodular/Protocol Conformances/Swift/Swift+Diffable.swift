@@ -154,6 +154,10 @@ public struct DictionaryDifference<Key: Hashable, Value>: _DiffableDifferenceTyp
         insertions.isEmpty && updates.isEmpty && removals.isEmpty
     }
     
+    public var insertedOrUpdatedValues: [Value] {
+        insertions.compactMap({ $0.value }) + updates.compactMap({ $0.value })
+    }
+    
     public init(
         insertions: [Change],
         updates: [Change],
