@@ -100,11 +100,11 @@ extension URL {
     public func path(
         relativeTo baseURL: URL
     ) throws -> RelativePath {
-        guard baseURL.scheme != nil, baseURL.host != nil else {
+        guard baseURL.scheme != nil, self.scheme != nil else {
             throw URLError(.badURL)
         }
         
-        guard self.scheme != nil, self.host != nil else {
+        guard baseURL.host == self.host else {
             throw URLError(.badURL)
         }
         

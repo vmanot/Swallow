@@ -96,25 +96,34 @@ extension GenerateTypeEraserMacro: PeerMacro {
         var result: [DeclSyntax] = []
         
         let structDecl = try makeTypeEraserStructDeclaration(
-            for: declaration,
             protocolName: protocolName,
-            memberDeclarations: memberDeclarations
+            memberDeclarations: memberDeclarations,
+            providingPeerOf: declaration
         )
-        let distributedTypeEraserDeclaration = try makeDistributedTypeEraserDeclaration(
-            protocolName: protocolName,
-            memberDeclarations: memberDeclarations
-        )
+        
+        let actorSystemTypes: [String?] = [nil, "MCActorSystem", "XPCActorSystem"]
         
         result.append(DeclSyntax(structDecl))
-        result.append(DeclSyntax(distributedTypeEraserDeclaration))
         
+        try actorSystemTypes.forEach {
+            let distributedTypeEraserDeclaration = try makeDistributedTypeEraserDeclaration(
+                protocolName: protocolName,
+                memberDeclarations: memberDeclarations,
+                providingPeerOf: declaration,
+                actorSystemType: $0,
+                in: context
+            )
+            
+            result.append(DeclSyntax(distributedTypeEraserDeclaration))
+        }
+
         return result
     }
     
     private static func makeTypeEraserStructDeclaration(
-        for declaration: ProtocolDeclSyntax,
         protocolName: TokenSyntax,
-        memberDeclarations: [DeclSyntax]
+        memberDeclarations: [DeclSyntax],
+        providingPeerOf declaration: ProtocolDeclSyntax
     ) throws -> StructDeclSyntax {
         let conformanceDeclarations = memberDeclarations
             .compactMap { (decl: DeclSyntax) -> String? in
@@ -183,10 +192,13 @@ extension GenerateTypeEraserMacro: PeerMacro {
     
     private static func makeDistributedTypeEraserDeclaration(
         protocolName: TokenSyntax,
-        memberDeclarations: [DeclSyntax]
+        memberDeclarations: [DeclSyntax],
+        providingPeerOf declaration: ProtocolDeclSyntax,
+        actorSystemType: String?,
+        in context: MacroExpansionContext
     ) throws -> ActorDeclSyntax {
-        let conformanceDeclarations = memberDeclarations
-            .compactMap { (decl: DeclSyntax) -> String? in
+        let conformanceDeclarations: [String] = memberDeclarations
+            .flatMap { (decl: DeclSyntax) -> [String] in
                 if let funcDecl = decl.as(FunctionDeclSyntax.self) {
                     
                     let parameters = funcDecl.parameterList
@@ -200,38 +212,77 @@ extension GenerateTypeEraserMacro: PeerMacro {
                     let tryKeyword = funcDecl.isThrowing ? "try" : ""
                     let returnType = funcDecl.explicitReturnType?.description ?? "Void"
                     
-                    return  """
-                    public distributed func \(funcDecl.name)(\(parameters)) \(asyncKeyword)\(throwsKeyword) -> \(returnType) {
-                        return \(tryKeyword) \(awaitKeyword) base.\(funcDecl.name)(\(inputParameters)) 
-                    };
-                    """
-                } else if let varDecl = decl.as(VariableDeclSyntax.self) {
-                    for (name, type) in zip(varDecl.names, varDecl.explicitlyDeclaredTypes) {
-                        return """
-                        public distributed var \(name): \(type) { 
-                            base.\(name) 
+                    return  [
+                        """
+                        public distributed dynamic func _\(funcDecl.name)(\(parameters)) \(asyncKeyword)\(throwsKeyword) -> \(returnType) {
+                            return \(tryKeyword) \(awaitKeyword) self.base.\(funcDecl.name)(\(inputParameters)) 
+                        };
+                        """,
+                        """
+                        @inline(never)
+                        public dynamic nonisolated func \(funcDecl.name)(\(parameters)) \(asyncKeyword)\(throwsKeyword) -> \(returnType) {
+                            return try await self._\(funcDecl.name)(\(inputParameters)) 
                         };
                         """
+                    ]
+                } else if let varDecl = decl.as(VariableDeclSyntax.self) {
+                    for (name, type) in zip(varDecl.names, varDecl.explicitlyDeclaredTypes) {
+                        return [
+                            """
+                            public distributed var \(name): \(type) { 
+                                base.\(name) 
+                            };
+                            """
+                        ]
                     }
                 }
                 
-                return nil
+                return []
             }
         
-        let result = try ActorDeclSyntax("@available(macOS 13.0, iOS 16.0, watchOS 9.0, tvOS 16.0, *) public distributed actor $\(protocolName)<ActorSystem: DistributedActorSystem>: SwallowMacrosClient._DistributedTypeEraser, \(protocolName)") {
-            DeclSyntax("private let base: any \(protocolName)")
+        if let actorSystemType {
+            let name = context.makeUniqueName("_ConcreteDistributedTypeEraser_\(protocolName.trimmedDescription)_" + actorSystemType)
             
-            for conformanceDeclaration in conformanceDeclarations {
-                DeclSyntax(stringLiteral: conformanceDeclaration)
+            let result = try ActorDeclSyntax("@available(macOS 13.0, iOS 16.0, watchOS 9.0, tvOS 16.0, *) public distributed actor \(name): SwallowMacrosClient._ConcreteDistributedTypeEraser, \(protocolName)") {
+                DeclSyntax("public typealias ActorSystem = \(raw: actorSystemType)")
+
+                DeclSyntax("@Indirect private var base: (any \(protocolName))!")
+                
+                for conformanceDeclaration in conformanceDeclarations {
+                    DeclSyntax(stringLiteral: conformanceDeclaration)
+                }
+                
+                try InitializerDeclSyntax("public init(_ base: (any \(protocolName))?, actorSystem: ActorSystem) async throws") {
+                    ExprSyntax("self.base = base")
+                    ExprSyntax("self.actorSystem = actorSystem")
+                }
+                
+                try InitializerDeclSyntax("public init(actorSystem: ActorSystem)") {
+                    ExprSyntax("self.actorSystem = actorSystem")
+                }
             }
             
-            try InitializerDeclSyntax("public nonisolated init(_ base: any \(protocolName), actorSystem: ActorSystem) async throws") {
-                ExprSyntax("self.base = base")
-                ExprSyntax("self.actorSystem = actorSystem")
+            return result
+        } else {
+            let result = try ActorDeclSyntax("@available(macOS 13.0, iOS 16.0, watchOS 9.0, tvOS 16.0, *) public distributed actor __dollar__\(protocolName.trimmed)<ActorSystem: DistributedActorSystem>: SwallowMacrosClient._DistributedTypeEraser, \(protocolName)") {
+                DeclSyntax("@Indirect private var base: (any \(protocolName))!")
+                
+                for conformanceDeclaration in conformanceDeclarations {
+                    DeclSyntax(stringLiteral: conformanceDeclaration)
+                }
+                
+                try InitializerDeclSyntax("public init(_ base: (any \(protocolName))?, actorSystem: ActorSystem) async throws") {
+                    ExprSyntax("self.base = base")
+                    ExprSyntax("self.actorSystem = actorSystem")
+                }
+                
+                try InitializerDeclSyntax("public init(actorSystem: ActorSystem)") {
+                    ExprSyntax("self.actorSystem = actorSystem")
+                }
             }
+            
+            return result
         }
-        
-        return result
     }
 }
 
@@ -247,7 +298,7 @@ extension NamedDeclSyntax {
     }
     
     public func makeDistributedTypeEraserName() throws -> TokenSyntax {
-        "$\(self.name.trimmed)"
+        "__dollar__\(self.name.trimmed)"
     }
     
     public func makeDistributedTypeEraserFunctionName() throws -> TokenSyntax {

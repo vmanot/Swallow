@@ -22,7 +22,7 @@ extension FunctionDeclSyntax {
         signature.parameterClause.parameters
     }
     
-    public var explicitReturnType: IdentifierTypeSyntax? {
-        signature.returnClause?.type.as(IdentifierTypeSyntax.self)
+    public var explicitReturnType: TypeSyntax? {
+        signature.returnClause?.type
     }
 }

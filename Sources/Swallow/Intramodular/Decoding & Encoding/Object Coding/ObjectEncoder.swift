@@ -56,7 +56,7 @@ public struct ObjectEncoder: Initiable {
         
         return try cast(encoded)
     }
-        
+    
     public struct EncodingStrategy<T: Encodable> {
         public typealias Closure = (T, Encoder) throws -> Void
         
@@ -322,23 +322,51 @@ extension ObjectEncoder.Encoder: SingleValueEncodingContainer {
         object = NSNull()
     }
     
-    public final func encode<T: CoderPrimitive>(_ value: T) throws {
+    public final func encode<T: CoderPrimitive>(
+        _ value: T
+    ) throws {
+        try _encodePrimitive(value)
+    }
+    
+    private final func _encodePrimitive<T: CoderPrimitive>(
+        _ value: T
+    ) throws {
         try box(value)
     }
     
-    public final func encode<T>(_ value: T) throws where T: Encodable {
-        assertCanEncodeNewValue()
-        
-        if try !applyStrategy(value) {
-            try value.encode(to: self)
+    public final func encode<T: Encodable>(
+        _ value: T
+    ) throws {
+        do {
+            assertCanEncodeNewValue()
+            
+            if T.self is any CoderPrimitive.Type {
+                let value = value as! any CoderPrimitive
+                
+                func encode<U: CoderPrimitive>(
+                    _ value: U
+                ) throws {
+                    try self._encodePrimitive(value)
+                }
+                
+                try _openExistential(value, do: encode)
+            } else {
+                if try !applyStrategy(value) {
+                    try value.encode(to: self)
+                }
+            }
+        } catch {
+            throw error
         }
     }
     
     private func applyStrategy<T: Encodable>(_ value: T) throws -> Bool {
         if let strategy = options.encodingStrategies[T.self] {
             try strategy.closure(value, self)
+        
             return true
         }
+        
         return false
     }
     

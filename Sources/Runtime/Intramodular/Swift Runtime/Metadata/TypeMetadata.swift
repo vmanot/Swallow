@@ -26,6 +26,25 @@ public struct TypeMetadata: _TypeMetadataType {
     public static func of(_ x: Any) -> Self {
         TypeMetadata(Swift.type(of: x))
     }
+    
+    public init?(name: String) {
+        guard let type: Any.Type = _typeByName(name) else {
+            return nil
+        }
+        
+        self.init(type)
+    }
+    
+    public init?(
+        name: String,
+        mangledName: String?
+    ) {
+        guard let type: Any.Type = _typeByName(name) ?? mangledName.flatMap(_typeByName) else {
+            return nil
+        }
+        
+        self.init(type)
+    }
 }
 
 // MARK: - Conformances

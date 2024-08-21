@@ -114,4 +114,47 @@ extension URL {
         
         return true
     }
+    
+    public static func nearestCommonAncestor(_ items: some Collection<URL>) -> URL? {
+        items._nearestCommonAncestor()
+    }
+}
+
+// MARK: - Auxiliary
+
+extension Collection where Element == URL {
+    func _nearestCommonAncestor() -> URL? {
+        guard !isEmpty else {
+            return nil
+        }
+        
+        guard count > 1 else {
+            return first
+        }
+        
+        let allComponents: [[String]] = map({ $0.pathComponents })
+        let minLength = allComponents.map({ $0.count }).min() ?? 0
+        
+        var commonComponents: [String] = []
+        
+        for i in 0..<minLength {
+            let componentsAtIndex = Set(allComponents.map { $0[i] })
+            
+            if componentsAtIndex.count == 1, let component = componentsAtIndex.first {
+                commonComponents.append(component)
+            } else {
+                break
+            }
+        }
+        
+        guard !commonComponents.isEmpty else {
+            return nil
+        }
+        
+        let scheme = first?.scheme ?? "https"
+        let host = (first?.host ?? "").trimmingCharacters(in: CharacterSet("/"))
+        let path = commonComponents.joined(separator: "/").trimmingCharacters(in: CharacterSet("/"))
+        
+        return URL(string: "\(scheme)://\(host)/\(path)")
+    }
 }

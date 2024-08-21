@@ -5,8 +5,27 @@
 import Combine
 import Swallow
 
-public struct AnyTopLevelDecoder<Input>: TopLevelDecoder, @unchecked Sendable {
-    private let _decoder: any TopLevelDecoder
+public struct AnyTopLevelDecoder<Input>: _TopLevelDecoderOrEncoderWithUserInfo, TopLevelDecoder, @unchecked Sendable {
+    private var _decoder: any TopLevelDecoder
+    private var _unusedUserInfo: [CodingUserInfoKey: Any] = [:]
+
+    public var userInfo: [CodingUserInfoKey: Any] {
+        get {
+            if let decoder = _decoder as? (any _TopLevelDecoderOrEncoderWithUserInfo) {
+                return decoder.userInfo
+            } else {
+                return _unusedUserInfo
+            }
+        } set {
+            if var decoder = _decoder as? (any _TopLevelDecoderOrEncoderWithUserInfo) {
+                decoder.userInfo = newValue
+                
+                self._decoder = decoder as! (any TopLevelDecoder)
+            } else {
+                self._unusedUserInfo = newValue
+            }
+        }
+    }
     
     init<Decoder: TopLevelDecoder>(
         _erasing decoder: Decoder

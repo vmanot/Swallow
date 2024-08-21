@@ -8,6 +8,7 @@ import Swift
 extension ProcessInfo {
     public struct Fingerprint: Codable, CustomStringConvertible, Hashable, Sendable {
         public let processID: Int32
+        public let processName: String
         public let processStartTime: Date?
         public let executablePath: String?
         public let commandLineArguments: [String]
@@ -16,13 +17,14 @@ extension ProcessInfo {
         public let groupIdentifier: GroupIdentifier
         
         public var description: String {
-            "\(ProcessInfo.processInfo.processName) (Fingerprint)"
+            "\(processName) (Fingerprint)"
         }
         
         public init(
             processInfo: ProcessInfo
         ) {
             self.processID = Int32(processInfo.processIdentifier)
+            self.processName = processInfo.processName
             self.processStartTime = processInfo.startTime
             self.executablePath = Bundle.main.executablePath
             self.commandLineArguments = CommandLine.arguments

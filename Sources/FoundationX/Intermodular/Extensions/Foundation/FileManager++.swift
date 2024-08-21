@@ -645,7 +645,14 @@ extension FileManager {
         ofType type: T.Type,
         at url: URL
     ) throws -> [T] {
-        try contentsOfDirectory(at: url).compactMap({ try? T.init(url: $0) })
+        try contentsOfDirectory(at: url).compactMap({ (item: URL) in try? T.init(url: item) })
+    }
+    
+    public func items<T: _FailableThrowingInitiableFromURL>(
+        ofType type: T.Type,
+        at url: URL
+    ) throws -> [T] {
+        try contentsOfDirectory(at: url).compactMap({ (item: URL) -> T? in try? T.init(url: item) })
     }
 }
 #endif

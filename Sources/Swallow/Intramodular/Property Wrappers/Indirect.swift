@@ -5,6 +5,7 @@
 import Swift
 
 /// An indirect, copy-on-write wrapper over a value.
+@frozen
 @propertyWrapper
 public struct Indirect<Value>: ParameterlessPropertyWrapper {
     @MutableValueBox

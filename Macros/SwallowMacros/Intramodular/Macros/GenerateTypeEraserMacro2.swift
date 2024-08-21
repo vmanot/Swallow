@@ -42,14 +42,14 @@ extension GenerateTypeEraserMacro2: PeerMacro {
         let comformanceDeclarations = memberDeclarations
             .flatMap { decl -> [String] in
                 if let funcDecl = decl.as(FunctionDeclSyntax.self) {
-                    let parameters = funcDecl.parameterList
-                    let inputTypes = parameters
+                    let parameters: FunctionParameterListSyntax = funcDecl.parameterList
+                    let inputTypes: String = parameters
                         .map { "_ \($0.name.text): \($0.type.description)" }
                         .joined(separator: ", ")
-                    let inputParameters = parameters
+                    let inputParameters: String = parameters
                         .map { $0.name.text }
                         .joined(separator: ", ")
-                    let returnType = funcDecl.explicitReturnType?.name ?? "Void"
+                    let returnType: String = funcDecl.explicitReturnType?.trimmedDescription ?? "Void"
                     
                     return [
                         "private var _\(funcDecl.name): (\(inputTypes)) -> \(returnType)",

@@ -21,6 +21,10 @@ public protocol _ThrowingInitiableFromURL {
     init(url: URL) throws
 }
 
+public protocol _FailableThrowingInitiableFromURL {
+    init?(url: URL) throws
+}
+
 public protocol URLRepresentable: _FailableInitiableFromURL, URLConvertible {
     var url: URL { get }
 
