@@ -21,7 +21,6 @@ var package = Package(
                 "_SwallowSwiftOverlay",
                 "SE0270_RangeSet",
                 "Swallow",
-                "SwallowMacrosClient",
                 "Compute",
                 "CoreModel",
                 "Diagnostics",
@@ -155,6 +154,10 @@ var package = Package(
         .macro(
             name: "SwallowMacros",
             dependencies: [
+                .product(name: "SwiftSyntax", package: "swift-syntax"),
+                .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
+                .product(name: "SwiftParserDiagnostics", package: "swift-syntax"),
+                .product(name: "SwiftCompilerPlugin", package: "swift-syntax"),
                 .target(name: "SwiftSyntaxUtilities", condition: .when(platforms: [.macOS])),
             ],
             path: "Macros/SwallowMacros"
