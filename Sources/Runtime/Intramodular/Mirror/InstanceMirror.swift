@@ -187,10 +187,14 @@ extension InstanceMirror {
     public subscript(_ key: AnyCodingKey) -> Any {
         get {
             func getValue<T>(from x: T) -> Any {
+                assert(T.self != Any.self)
+                
                 var x = x
                 
-                return swift_value(of: &x, key: key.stringValue)
+                return _swift_getFieldValue(&x, forKey: key.stringValue)
             }
+            
+            let subject: any Any = __fixed_opaqueExistential(subject)
             
             return _openExistential(subject, do: getValue)
         } set {

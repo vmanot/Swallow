@@ -15,7 +15,7 @@ package struct _SwiftRuntimeFieldByOffset {
     let offset: Int
 }
 
-public func _swift_getFields<InstanceType>(
+private func _swift_getFields<InstanceType>(
     _ instance: InstanceType
 ) -> [(field: _SwiftRuntimeField, value: Any?)] {
     func unwrap<T>(_ x: Any) -> T {
@@ -56,16 +56,22 @@ public func _opaque_swift_getFieldValue(
 
 private func _partiallyopaque_swift_getFieldValue<Value>(
     _ key: String,
-    _ type: Value.Type,
+    _ valueType: Value.Type,
     _ instance: Any
 ) throws -> Value {
-    let field = try _swift_getField_slow(key, type, Swift.type(of: instance))
+    let field = try _swift_getField_slow(key, valueType, Swift.type(of: instance))
     
     return try withUnsafeInstancePointer(instance) { pointer in
         func project<S>(_ type: S.Type) -> Value {
-            pointer.advanced(by: field.offset).withMemoryRebound(to: S.self, capacity: 1) { ptr in
-                unsafePartialBitCast(ptr.pointee, to: Value.self)
+            let buffer = pointer.advanced(by: field.offset).assumingMemoryBound(to: S.self)
+            
+            if valueType == Any.self {
+                let box = buffer.pointee as Any
+                
+                return box as! Value
             }
+            
+            return TypeMetadata(valueType)._unsafelyReadInstance(from: buffer) as! Value
         }
         
         return _openExistential(field.type, do: project)
@@ -127,34 +133,6 @@ package func __swift_setFieldValue<Value, InstanceType>(
     }
 }
 
-package struct _SwiftRuntimeFieldLookupCache {
-    private static var lock: os_unfair_lock_t = {
-        let lock = os_unfair_lock_t.allocate(capacity: 1)
-        
-        lock.initialize(to: os_unfair_lock_s())
-        
-        return lock
-    }()
-    
-    private static var storage = [UnsafeRawPointer: [String: _SwiftRuntimeFieldByOffset]]()
-    
-    static subscript(
-        type: Any.Type,
-        key: String
-    ) -> _SwiftRuntimeFieldByOffset? {
-        get {
-            storage[unsafeBitCast(type, to: UnsafeRawPointer.self)]?[key]
-        }
-        set {
-            os_unfair_lock_lock(lock); defer {
-                os_unfair_lock_unlock(lock)
-            }
-            
-            storage[unsafeBitCast(type, to: UnsafeRawPointer.self), default: [:]][key] = newValue
-        }
-    }
-}
-
 package func _swift_getField<Value>(
     _ key: String,
     _ type: Value.Type,
@@ -212,6 +190,36 @@ package func _swift_getField_slow<Value>(
     }
     
     throw _SwiftRuntimeFieldNotFoundError(type: Value.self, key: key, instance: instanceType)
+}
+
+// MARK: - Auxiliary
+
+package struct _SwiftRuntimeFieldLookupCache {
+    private static var lock: os_unfair_lock_t = {
+        let lock = os_unfair_lock_t.allocate(capacity: 1)
+        
+        lock.initialize(to: os_unfair_lock_s())
+        
+        return lock
+    }()
+    
+    private static var storage = [UnsafeRawPointer: [String: _SwiftRuntimeFieldByOffset]]()
+    
+    static subscript(
+        type: Any.Type,
+        key: String
+    ) -> _SwiftRuntimeFieldByOffset? {
+        get {
+            storage[unsafeBitCast(type, to: UnsafeRawPointer.self)]?[key]
+        }
+        set {
+            os_unfair_lock_lock(lock); defer {
+                os_unfair_lock_unlock(lock)
+            }
+            
+            storage[unsafeBitCast(type, to: UnsafeRawPointer.self), default: [:]][key] = newValue
+        }
+    }
 }
 
 // MARK: - Error Handling

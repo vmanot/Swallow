@@ -127,6 +127,7 @@ extension FunctionDeclSyntax {
             let argName = param.secondName ?? param.firstName
             
             let paramName = param.firstName
+            
             if paramName.text != "_" {
                 return "\(paramName.text): \(argName.text)"
             }

@@ -175,6 +175,10 @@ var package = Package(
             name: "MacroBuilder",
             dependencies: [
                 "Swallow",
+                .product(name: "SwiftSyntax", package: "swift-syntax"),
+                .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
+                .product(name: "SwiftParserDiagnostics", package: "swift-syntax"),
+                .product(name: "SwiftCompilerPlugin", package: "swift-syntax"),
                 .target(name: "SwiftSyntaxUtilities", condition: .when(platforms: [.macOS])),
             ],
             path: "Macros/MacroBuilder"
@@ -238,7 +242,12 @@ private func patchSwiftSyntaxDependency(in package: inout Package) {
         target.dependencies = target.dependencies.compactMap { (dependency: Target.Dependency) -> Target.Dependency? in
             switch dependency {
                 case .productItem(let name, let package, let moduleAliases, let condition):
-                    let targets: Set<String> = ["SwiftSyntax", "SwiftSyntaxMacros", "SwiftCompilerPlugin", "SwiftParserDiagnostics"]
+                    let targets: Set<String> = [
+                        "SwiftSyntax",
+                        "SwiftSyntaxMacros",
+                        "SwiftCompilerPlugin",
+                        "SwiftParserDiagnostics"
+                    ]
                     
                     if package == "swift-syntax", targets.contains(name) {
                         if patched {

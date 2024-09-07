@@ -8,7 +8,13 @@ import Swallow
 @frozen
 public struct TypeMetadata: _TypeMetadataType {
     public let base: Any.Type
-        
+    
+    public var size: Int {
+        get {
+            swift_getSize(of: base)
+        }
+    }
+    
     @_transparent
     public init(_ base: Any.Type) {
         self.base = base
@@ -77,12 +83,12 @@ extension TypeMetadata: Named {
     public var _qualifiedName: String {
         _typeName(base, qualified: true)
     }
-
+    
     public var _unqualifiedName: String {
         _typeName(base, qualified: false)
     }
     
-    @available(macOS 11.0, iOS 14.0, watchOS 7.0, tvOS 14.0, *) 
+    @available(macOS 11.0, iOS 14.0, watchOS 7.0, tvOS 14.0, *)
     public var mangledName: String? {
         _mangledTypeName(base)
     }
@@ -160,4 +166,16 @@ extension TypeMetadata {
         
         return _openExistential(self.base, do: _checkIsCovariant)
     }
+}
+
+// MARK: - Internal
+
+private func swift_getSize(
+    of type: Any.Type
+) -> Int {
+    func project<T>(_ type: T.Type) -> Int {
+        MemoryLayout<T>.size
+    }
+    
+    return _openExistential(type, do: project)
 }

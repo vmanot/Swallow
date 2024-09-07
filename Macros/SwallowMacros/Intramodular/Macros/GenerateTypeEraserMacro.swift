@@ -130,10 +130,8 @@ extension GenerateTypeEraserMacro: PeerMacro {
                 if let funcDecl = decl.as(FunctionDeclSyntax.self) {
                     
                     let parameters = funcDecl.parameterList
-                    let inputParameters = parameters
-                        .map({ $0.name.text })
-                        .joined(separator: ", ")
-                    
+                    let callArgumentListExpr: String = funcDecl._makeRawCallArgumentListTuple().trimmed.description
+
                     let asyncKeyword = funcDecl.isAsync ? "async " : ""
                     let awaitKeyword = funcDecl.isAsync ? "await" : ""
                     let throwsKeyword = funcDecl.isThrowing ? "throws" : ""
@@ -142,7 +140,7 @@ extension GenerateTypeEraserMacro: PeerMacro {
                     
                     return  """
                     public func \(funcDecl.name)(\(parameters)) \(asyncKeyword)\(throwsKeyword) -> \(returnType) {
-                        return \(tryKeyword) \(awaitKeyword) base.\(funcDecl.name)(\(inputParameters)) 
+                        return \(tryKeyword) \(awaitKeyword) base.\(funcDecl.name)\(callArgumentListExpr) 
                     };
                     
                     """
@@ -202,9 +200,7 @@ extension GenerateTypeEraserMacro: PeerMacro {
                 if let funcDecl = decl.as(FunctionDeclSyntax.self) {
                     
                     let parameters = funcDecl.parameterList
-                    let inputParameters = parameters
-                        .map({ $0.name.text })
-                        .joined(separator: ", ")
+                    let callArgumentListExpr: String = funcDecl._makeRawCallArgumentListTuple().trimmed.description
                     
                     let asyncKeyword = funcDecl.isAsync ? "async " : ""
                     let awaitKeyword = funcDecl.isAsync ? "await" : ""
@@ -212,16 +208,16 @@ extension GenerateTypeEraserMacro: PeerMacro {
                     let tryKeyword = funcDecl.isThrowing ? "try" : ""
                     let returnType = funcDecl.explicitReturnType?.description ?? "Void"
                     
-                    return  [
+                    return [
                         """
                         public distributed dynamic func _\(funcDecl.name)(\(parameters)) \(asyncKeyword)\(throwsKeyword) -> \(returnType) {
-                            return \(tryKeyword) \(awaitKeyword) self.base.\(funcDecl.name)(\(inputParameters)) 
+                            return \(tryKeyword) \(awaitKeyword) self.base.\(funcDecl.name)\(callArgumentListExpr) 
                         };
                         """,
                         """
                         @inline(never)
                         public dynamic nonisolated func \(funcDecl.name)(\(parameters)) \(asyncKeyword)\(throwsKeyword) -> \(returnType) {
-                            return try await self._\(funcDecl.name)(\(inputParameters)) 
+                            return try await self._\(funcDecl.name)\(callArgumentListExpr) 
                         };
                         """
                     ]
