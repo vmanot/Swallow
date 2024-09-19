@@ -17,7 +17,7 @@ extension UserDefaults {
 
 extension UserDefaults {
     public func decode<Value: Codable>(
-        _ type: Value.Type = Value.self, 
+        _ type: Value.Type = Value.self,
         forKey key: String
     ) throws -> Value? {
         guard value(forKey: key) != nil else {
@@ -82,7 +82,7 @@ extension PropertyListDecoder {
                 let decoder = copy()
                 
                 decoder.userInfo[CodingUserInfoKey.fragmentBoxedType] = type
-
+                
                 return try decoder
                     .decode(FragmentDecodingBox<T>.self, from: data)
                     .value
@@ -119,7 +119,7 @@ extension PropertyListEncoder {
         do {
             return try encode(value)
         } catch {
-            if case let EncodingError.invalidValue(_, context) = error, context.debugDescription.lowercased().contains("fragment") {
+            if error.isPossibleFragmentDecodingError {
                 return try encode(FragmentEncodingBox(wrappedValue: value))
             } else {
                 throw error
@@ -128,12 +128,18 @@ extension PropertyListEncoder {
     }
 }
 
-fileprivate extension CodingUserInfoKey {
-    static let fragmentBoxedType = CodingUserInfoKey(rawValue: "fragmentBoxedType")!
+extension CodingUserInfoKey {
+    fileprivate static let fragmentBoxedType = CodingUserInfoKey(rawValue: "fragmentBoxedType")!
 }
 
-fileprivate extension Error {
-    var isPossibleFragmentDecodingError: Bool {
+extension Error {
+    fileprivate var isPossibleFragmentDecodingError: Bool {
+        if let error = self as? EncodingError {
+            if case let EncodingError.invalidValue(_, context) = error, context.debugDescription.lowercased().contains("fragment") || String(describing: error).lowercased().contains("fragment") {
+                return true
+            }
+        }
+        
         switch self {
             case let error as EncodingError:
                 if error.context?.debugDescription.contains("fragment") == true {
