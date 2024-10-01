@@ -123,7 +123,7 @@ extension FileManager {
         to location: any URLRepresentable,
         perform operation: (URL) throws -> T
     ) throws -> T {
-        if let result = try Self._withCachedSecurityScopedAccessibleResourceURLIfExists(for: location, perform: operation) {
+        if let result: T = try? Self._withCachedSecurityScopedAccessibleResourceURLIfExists(for: location, perform: operation) {
             return result
         }
 
@@ -145,7 +145,7 @@ extension FileManager {
         to location: any URLRepresentable,
         perform operation: (URL) async throws -> T
     ) async throws -> T {
-        if let result = try await Self._withCachedSecurityScopedAccessibleResourceURLIfExists(for: location, perform: operation) {
+        if let result: T = try? await Self._withCachedSecurityScopedAccessibleResourceURLIfExists(for: location, perform: operation) {
             return result
         }
         

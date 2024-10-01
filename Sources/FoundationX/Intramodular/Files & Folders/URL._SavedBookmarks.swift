@@ -25,7 +25,7 @@ extension URL {
                     return url
                 }
                 
-                let bookmarkData = try url._bookmarkDataWithSecurityScopedAccess()
+                let bookmarkData: Data = try url._bookmarkDataWithSecurityScopedAccess()
                 let bookmark = try URL.Bookmark(data: bookmarkData, allowStale: true)
                 
                 Task.detached(priority: .utility) {
@@ -34,7 +34,9 @@ extension URL {
                     }
                 }
                 
-                return try bookmark.toURL()
+                let url: URL = try bookmark.toURL()
+                
+                return url
             } catch {
                 throw _Error.failedToSaveBookmarkData(error)
             }
@@ -44,7 +46,15 @@ extension URL {
             for url: any URLRepresentable
         ) throws -> URL? {
             let result: URL? = try lock.withCriticalScope { () -> URL? in
-                try self.items[id: URL.Bookmark.ID(from: url.url)]?.toURL()
+                guard let existingBookmark: URL.Bookmark = self.items[id: URL.Bookmark.ID(from: url.url)] else {
+                    return nil
+                }
+                
+                var bookmark = existingBookmark
+                
+                _ = try? bookmark.renew()
+                
+                return try bookmark.toURL()
             }
             
             guard let result else {

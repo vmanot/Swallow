@@ -32,32 +32,47 @@ extension URL._FileOrDirectorySecurityScopedAccessManager {
 extension URL._FileOrDirectorySecurityScopedAccessManager {
     @MainActor
     public static func requestAccess(
-        to url: URL
+        to url: URL,
+        needsPrompt: Bool = false
     ) throws -> URL {
+        let result: URL
+        
         let fileManager = FileManager.default
-        let isDirectory = FileManager.default.isDirectory(at: url)
+        let isDirectory: Bool = FileManager.default.isDirectory(at: url)
         
         if fileManager.fileExists(at: url) {
             guard isDirectory else {
-                let url = try promptForAccess(to: url, isDirectory: isDirectory)
+                let url: URL = try promptForAccess(to: url, isDirectory: isDirectory)
                 
-                let bookmarkedURL = try url._accessingSecurityScopedResource {
+                let bookmarkedURL: URL = try url._accessingSecurityScopedResource {
                     try URL._SavedBookmarks.bookmark(url)
                 }
                 
-                return bookmarkedURL
+                result = bookmarkedURL
+                
+                return result
             }
         }
         
         if let cachedURL = try? URL._SavedBookmarks.bookmarkedURL(for: url) {
             do {
                 if isDirectory {
-                    try _testWritingFile(inDirectory: cachedURL)
+                    do {
+                        try _testWritingFile(inDirectory: cachedURL)
+                        
+                        result = cachedURL
+                    } catch {
+                        result = try promptForAccess(to: url, isDirectory: isDirectory)
+                    }
+                } else {
+                    if FileManager.default.isReadableAndWritable(at: cachedURL) {
+                        result = try promptForAccess(to: url, isDirectory: isDirectory)
+                    } else {
+                        result = cachedURL
+                    }
                 }
-                
-                return cachedURL
             } catch {
-                let url = try promptForAccess(to: url, isDirectory: isDirectory)
+                let url: URL = try promptForAccess(to: url, isDirectory: isDirectory)
                 
                 do {
                     if isDirectory {
@@ -67,10 +82,10 @@ extension URL._FileOrDirectorySecurityScopedAccessManager {
                     assertionFailure(error)
                 }
                 
-                return url
+                result = url
             }
         } else {
-            if let ancestorURL = fileManager.nearestAccessibleSecurityScopedAncestor(for: url) {
+            if let ancestorURL: URL = fileManager.nearestAccessibleSecurityScopedAncestor(for: url) {
                 do {
                     let bookmarkedURL = try ancestorURL._accessingSecurityScopedResource {
                         if !fileManager.fileExists(at: url) {
@@ -105,15 +120,22 @@ extension URL._FileOrDirectorySecurityScopedAccessManager {
                 }
             }
             
-            let accessibleURL = try promptForAccess(to: url, isDirectory: isDirectory)
+            let accessibleURL: URL = try promptForAccess(to: url, isDirectory: isDirectory)
+            let bookmarkedURL: URL = try URL._SavedBookmarks.bookmark(accessibleURL)
             
-            let result = try URL._SavedBookmarks.bookmark(accessibleURL)
-
             do {
                 try _testWritingFile(inDirectory: url)
             } catch {
                 assertionFailure()
             }
+            
+            result = bookmarkedURL
+        }
+        
+        do {
+            return try URL._SavedBookmarks.bookmark(result)
+        } catch {
+            runtimeIssue(_Error.failedToBookmark(result))
             
             return result
         }
@@ -125,20 +147,18 @@ extension URL._FileOrDirectorySecurityScopedAccessManager {
         guard _isDebugAssertConfiguration else {
             return
         }
-                
+        
         guard FileManager.default.isReadableAndWritable(at: url) else {
-            runtimeIssue("Failed to write test file within \(url)")
-            
-            return
+            throw _Error.failedToWriteTemporaryTestFile
         }
-
+        
         let testFileURL: URL = url.appendingPathComponent(".temp_test_file")._fromURLToFileURL()
         
         _ = url.startAccessingSecurityScopedResource()
         
         do {
             try "test".write(to: testFileURL, atomically: true, encoding: .utf8)
-         
+            
             try FileManager.default.removeItem(at: testFileURL)
             
             url.stopAccessingSecurityScopedResource()
@@ -227,7 +247,7 @@ extension URL._FileOrDirectorySecurityScopedAccessManager {
         
         init(url: URL) {
             assert(!url.path.hasPrefix("//"))
-          
+            
             self.currentURL = url._isRelativeFilePath ? url.resolvingSymlinksInPath() : url
             self.isDirectory = url._isKnownOrIndicatedToBeFileDirectory
             
@@ -285,6 +305,8 @@ extension URL._FileOrDirectorySecurityScopedAccessManager {
         case accessCancelled
         case invalidDirectory
         case other(AnyError)
+        case failedToWriteTemporaryTestFile
+        case failedToBookmark(URL)
         
         @_disfavoredOverload
         public static func other(_ error: Error) -> AnyError {
