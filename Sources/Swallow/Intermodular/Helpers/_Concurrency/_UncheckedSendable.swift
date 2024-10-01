@@ -20,4 +20,8 @@ public struct _UncheckedSendable<Value>: @unchecked Sendable {
     public init(_ value: Value) {
         self.init(wrappedValue: value)
     }
+    
+    public func map<T>(_ transform: (Value) -> T) -> _UncheckedSendable<T> {
+        _UncheckedSendable<T>(transform(wrappedValue))
+    }
 }

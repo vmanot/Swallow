@@ -56,6 +56,12 @@ public struct _MediaAssetFileType: Hashable, Sendable {
                 return .heic
             case "image/webp":
                 return .webp
+            case "image/tiff":
+                return .tiff
+            case "image/bmp":
+                return .bmp
+            case "image/jp2":
+                return .jpeg2000
             case "video/mp4":
                 return .mp4
             case "video/x-m4v":
@@ -81,6 +87,12 @@ public struct _MediaAssetFileType: Hashable, Sendable {
                 return .heic
             case "public.webp":
                 return .webp
+            case "public.tiff":
+                return .tiff
+            case "com.microsoft.bmp":
+                return .bmp
+            case "public.jpeg-2000":
+                return .jpeg2000
             case "public.mpeg4":
                 return .mp4
             case "public.m4v":
@@ -137,6 +149,18 @@ extension _MediaAssetFileType {
         // WebP magic numbers https://en.wikipedia.org/wiki/List_of_file_signatures
         if _match([0x52, 0x49, 0x46, 0x46, nil, nil, nil, nil, 0x57, 0x45, 0x42, 0x50]) { return .webp }
         
+        // TIFF magic numbers (little endian) https://en.wikipedia.org/wiki/TIFF
+        if _match([0x49, 0x49, 0x2A, 0x00]) { return .tiff }
+        
+        // TIFF magic numbers (big endian) https://en.wikipedia.org/wiki/TIFF
+        if _match([0x4D, 0x4D, 0x00, 0x2A]) { return .tiff }
+        
+        // BMP magic numbers https://en.wikipedia.org/wiki/BMP_file_format
+        if _match([0x42, 0x4D]) { return .bmp }
+        
+        // JPEG 2000 magic numbers https://en.wikipedia.org/wiki/JPEG_2000
+        if _match([0x00, 0x00, 0x00, 0x0C, 0x6A, 0x50, 0x20, 0x20, 0x0D, 0x0A, 0x87, 0x0A]) { return .jpeg2000 }
+        
         // see https://stackoverflow.com/questions/21879981/avfoundation-avplayer-supported-formats-no-vob-or-mpg-containers
         // https://en.wikipedia.org/wiki/List_of_file_signatures
         if _match([0x66, 0x74, 0x79, 0x70, 0x69, 0x73, 0x6F, 0x6D], offset: 4) { return .mp4 }
@@ -162,12 +186,15 @@ extension _MediaAssetFileType: CaseIterable {
     public static let gif = Self(uti: "com.compuserve.gif", mimeType: "image/gif")
     public static let heic = Self(uti: "public.heic", mimeType: "image/heic")
     public static let webp = Self(uti: "public.webp", mimeType: "image/webp")
+    public static let tiff = Self(uti: "public.tiff", mimeType: "image/tiff")
+    public static let bmp = Self(uti: "com.microsoft.bmp", mimeType: "image/bmp")
+    public static let jpeg2000 = Self(uti: "public.jpeg-2000", mimeType: "image/jp2")
     public static let mp4 = Self(uti: "public.mpeg4", mimeType: "video/mp4")
     public static let m4v = Self(uti: "public.m4v", mimeType: "video/x-m4v")
     public static let mov = Self(uti: "public.mov", mimeType: "video/quicktime")
     
     public static var allCases: [Self] {
-        [.png, .jpeg, .gif, .heic, .webp, .mp4, .m4v, .mov]
+        [.png, .jpeg, .gif, .heic, .webp, .tiff, .bmp, .jpeg2000, .mp4, .m4v, .mov]
     }
 }
 

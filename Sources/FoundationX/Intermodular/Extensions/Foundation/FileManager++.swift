@@ -490,6 +490,22 @@ extension FileManager {
             try data.write(to: url)
         }
     }
+    
+    public func isEmptyFile(at url: URL) -> Bool {
+        guard let attributes: [FileAttributeKey : Any] = try? attributesOfItem(atPath: url.path) else {
+            return false
+        }
+        
+        guard let type: FileAttributeType = attributes[.type] as? FileAttributeType, type == .typeRegular else {
+            return false
+        }
+        
+        guard let size: Int64 = attributes[.size] as? Int64 else {
+            return false
+        }
+        
+        return size == 0
+    }
 }
 
 extension FileManager {
