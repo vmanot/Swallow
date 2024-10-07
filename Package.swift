@@ -126,10 +126,12 @@ var package = Package(
         ),
         .target(
             name: "_RuntimeC",
+            exclude: [],
             publicHeadersPath: "include",
             cSettings: [
-                .headerSearchPath("include")
-            ]
+                .headerSearchPath("include"),
+            ],
+            swiftSettings: []
         ),
         .target(
             name: "_RuntimeKeyPath",
@@ -200,7 +202,6 @@ var package = Package(
                 "_RuntimeC",
                 "Runtime",
                 "Swallow",
-                "SwallowMacros",
                 "SwallowMacrosClient",
                 .target(name: "SwiftSyntaxUtilities", condition: .when(platforms: [.macOS])),
             ],
