@@ -5,45 +5,31 @@
 import Foundation
 import Swallow
 
-public protocol _URLConvertible {
+public protocol URLConvertible {
     var url: URL { get }
 }
 
-public protocol URLConvertible: _URLConvertible {
-    var url: URL { get }
-}
-
-public protocol _FailableInitiableFromURL {
-    init?(url: URL)
-}
-
-public protocol _ThrowingInitiableFromURL {
-    init(url: URL) throws
-}
-
-public protocol _FailableThrowingInitiableFromURL {
+public protocol URLInitiable {
     init?(url: URL) throws
 }
 
-public protocol URLRepresentable: _FailableInitiableFromURL, URLConvertible {
+public protocol URLRepresentable: URLConvertible, URLInitiable {
     var url: URL { get }
-
+    
     init?(url: URL)
 }
 
-extension _FailableInitiableFromURL {
+extension URLInitiable {
     public init?(filePath: String) {
         let url = URL(fileURLWithPath: filePath)
         
-        self.init(url: url)
-    }
-}
-
-extension _ThrowingInitiableFromURL {
-    public init(filePath: String) throws {
-        let url = URL(fileURLWithPath: filePath)
-        
-        try self.init(url: url)
+        do {
+            try self.init(url: url)
+        } catch {
+            runtimeIssue(error)
+            
+            return nil
+        }
     }
 }
 

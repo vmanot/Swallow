@@ -156,10 +156,10 @@ var package = Package(
         .macro(
             name: "SwallowMacros",
             dependencies: [
-                .product(name: "SwiftSyntax", package: "swift-syntax"),
-                .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
-                .product(name: "SwiftParserDiagnostics", package: "swift-syntax"),
-                .product(name: "SwiftCompilerPlugin", package: "swift-syntax"),
+                .product(name: "SwiftSyntax", package: "swift-syntax", condition: .when(platforms: [.macOS])),
+                .product(name: "SwiftSyntaxMacros", package: "swift-syntax", condition: .when(platforms: [.macOS])),
+                .product(name: "SwiftParserDiagnostics", package: "swift-syntax", condition: .when(platforms: [.macOS])),
+                .product(name: "SwiftCompilerPlugin", package: "swift-syntax", condition: .when(platforms: [.macOS])),
                 .target(name: "SwiftSyntaxUtilities", condition: .when(platforms: [.macOS])),
             ],
             path: "Macros/SwallowMacros"
@@ -177,10 +177,10 @@ var package = Package(
             name: "MacroBuilder",
             dependencies: [
                 "Swallow",
-                .product(name: "SwiftSyntax", package: "swift-syntax"),
-                .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
-                .product(name: "SwiftParserDiagnostics", package: "swift-syntax"),
-                .product(name: "SwiftCompilerPlugin", package: "swift-syntax"),
+                .product(name: "SwiftSyntax", package: "swift-syntax", condition: .when(platforms: [.macOS])),
+                .product(name: "SwiftSyntaxMacros", package: "swift-syntax", condition: .when(platforms: [.macOS])),
+                .product(name: "SwiftParserDiagnostics", package: "swift-syntax", condition: .when(platforms: [.macOS])),
+                .product(name: "SwiftCompilerPlugin", package: "swift-syntax", condition: .when(platforms: [.macOS])),
                 .target(name: "SwiftSyntaxUtilities", condition: .when(platforms: [.macOS])),
             ],
             path: "Macros/MacroBuilder"
@@ -188,10 +188,10 @@ var package = Package(
         .target(
             name: "SwiftSyntaxUtilities",
             dependencies: [
-                .product(name: "SwiftSyntax", package: "swift-syntax"),
-                .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
-                .product(name: "SwiftParserDiagnostics", package: "swift-syntax"),
-                .product(name: "SwiftCompilerPlugin", package: "swift-syntax"),
+                .product(name: "SwiftSyntax", package: "swift-syntax", condition: .when(platforms: [.macOS])),
+                .product(name: "SwiftSyntaxMacros", package: "swift-syntax", condition: .when(platforms: [.macOS])),
+                .product(name: "SwiftParserDiagnostics", package: "swift-syntax", condition: .when(platforms: [.macOS])),
+                .product(name: "SwiftCompilerPlugin", package: "swift-syntax", condition: .when(platforms: [.macOS])),
                 "Swallow",
             ],
             path: "Macros/SwiftSyntaxUtilities"

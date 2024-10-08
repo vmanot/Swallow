@@ -6,8 +6,8 @@ import SwallowMacrosClient
 import XCTest
 import Distributed
 
-@GenerateTypeEraser
-protocol TypeErasableProtocol1 {
+/*@GenerateTypeEraser
+public protocol TypeErasableProtocol1 {
     func boo() -> Int
     func bar() throws -> Int
     func baz() async -> Int
@@ -35,3 +35,4 @@ struct Baz: TypeErasableProtocol1 {
 func foo(x: TypeErasableProtocol1) {
     x.boo()
 }
+*/

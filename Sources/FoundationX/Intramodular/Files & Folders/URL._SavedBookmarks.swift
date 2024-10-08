@@ -13,30 +13,31 @@ extension URL {
             "Foundation.URL._SavedBookmarks.items",
             store: UserDefaults(suiteName: "com.vmanot.Swallow")!
         )
-        static var items: IdentifierIndexingArrayOf<URL.Bookmark> = []
+        static var items: [URL.Bookmark.ID: URL.Bookmark] = [:]
         
         public static func bookmark(
             _ url: URL
         ) throws -> URL {
             do {
                 if !FileManager.default.fileExists(at: url) {
-                    runtimeIssue("Scoped bookmarks can only be created for existing files or directories. \(url) does not exist.")
-                    
-                    return url
+                    throw URL.ScopedBookmarkCreationError.fileDoesNotExist(url)
                 }
                 
                 let bookmarkData: Data = try url._bookmarkDataWithSecurityScopedAccess()
                 let bookmark = try URL.Bookmark(data: bookmarkData, allowStale: true)
-                
-                Task.detached(priority: .utility) {
-                    lock.withCriticalScope {
-                        self.items[id: bookmark.id] = bookmark
-                    }
+
+                let result: URL = try bookmark.toURL()
+
+                lock.withCriticalScope {
+                    self.items[URL.Bookmark.ID(from: url)] = bookmark
+                    self.items[bookmark.id] = bookmark
                 }
                 
-                let url: URL = try bookmark.toURL()
-                
-                return url
+                if result._isSandboxedURL == true && url._isSandboxedURL == false {
+                    return url
+                } else {
+                    return result
+                }
             } catch {
                 throw _Error.failedToSaveBookmarkData(error)
             }
@@ -45,20 +46,25 @@ extension URL {
         public static func bookmarkedURL(
             for url: any URLRepresentable
         ) throws -> URL? {
+            let url: URL = url.url
             let result: URL? = try lock.withCriticalScope { () -> URL? in
-                guard let existingBookmark: URL.Bookmark = self.items[id: URL.Bookmark.ID(from: url.url)] else {
+                guard let existingBookmark: URL.Bookmark = self.items[URL.Bookmark.ID(from: url)] else {
                     return nil
                 }
                 
                 var bookmark = existingBookmark
                 
                 _ = try? bookmark.renew()
-                
+                                                
                 return try bookmark.toURL()
             }
             
             guard let result else {
                 return nil
+            }
+            
+            guard url._isSandboxedURL == result._isSandboxedURL else {
+                return url
             }
             
             return result
@@ -73,7 +79,7 @@ extension URL {
         
         public static func removeAll() {
             lock.withCriticalScope {
-                items = []
+                items = [:]
             }
         }
     }
@@ -165,8 +171,15 @@ extension URL {
 
 @_spi(Internal)
 extension URL._SavedBookmarks {
-    public enum _Error: Error {
+    public enum _Error: Swift.Error {
+        case failedToCreateScopedBookmark(URL.ScopedBookmarkCreationError)
         case failedToSaveBookmarkData(Error)
         case unxpectedlyStale(URL)
+    }
+}
+
+extension URL {
+    public enum ScopedBookmarkCreationError: Swift.Error {
+        case fileDoesNotExist(URL)
     }
 }

@@ -100,21 +100,38 @@ extension URL._FileOrDirectorySecurityScopedAccessManager {
                     
                     return bookmarkedURL
                 } catch {
-                    if !fileManager.fileExists(at: url), let (directory, path) = fileManager.nearestAncestor(for: url, where: { fileManager.directoryExists(at: $0) }) {
-                        
-                        let accessibleDirectory = try promptForAccess(to: directory, isDirectory: true)
+                    if
+                        !fileManager.fileExists(at: url),
+                        let (directory, path) = fileManager.nearestAncestor(for: url, where: { fileManager.directoryExists(at: $0) })
+                    {
+                        let accessibleDirectory: URL = try promptForAccess(to: directory, isDirectory: true)
                         
                         return try accessibleDirectory._accessingSecurityScopedResource {
-                            let reconstructedURL = accessibleDirectory.appending(path)
-                            
-                            try FileManager.default.createDirectory(
-                                at: reconstructedURL,
-                                withIntermediateDirectories: true
-                            )
-                            
-                            let result = try URL._SavedBookmarks.bookmark(reconstructedURL)
-                            
-                            return result
+                            do {
+                                let reconstructedURL: URL = accessibleDirectory.appending(path)
+                                
+                                if isDirectory {
+                                    try FileManager.default.createDirectory(
+                                        at: reconstructedURL,
+                                        withIntermediateDirectories: true
+                                    )
+                                } else {
+                                    let parentURL: URL = reconstructedURL.deletingLastPathComponent()
+                                    
+                                    try FileManager.default.createDirectory(
+                                        at: parentURL,
+                                        withIntermediateDirectories: true
+                                    )
+
+                                    if parentURL._isKnownOrIndicatedToBeFileDirectory {
+                                        _ = try URL._SavedBookmarks.bookmark(parentURL)
+                                    }
+                                }
+                                                                
+                                return reconstructedURL
+                            } catch {
+                                throw error
+                            }
                         }
                     }
                 }
@@ -135,7 +152,7 @@ extension URL._FileOrDirectorySecurityScopedAccessManager {
         do {
             return try URL._SavedBookmarks.bookmark(result)
         } catch {
-            runtimeIssue(_Error.failedToBookmark(result))
+            runtimeIssue(SecurityScopedFileOrDirectoryAccessError.failedToBookmark(result))
             
             return result
         }
@@ -149,7 +166,7 @@ extension URL._FileOrDirectorySecurityScopedAccessManager {
         }
         
         guard FileManager.default.isReadableAndWritable(at: url) else {
-            throw _Error.failedToWriteTemporaryTestFile
+            throw SecurityScopedFileOrDirectoryAccessError.failedToWriteTemporaryTestFile
         }
         
         let testFileURL: URL = url.appendingPathComponent(".temp_test_file")._fromURLToFileURL()
@@ -194,20 +211,14 @@ extension URL._FileOrDirectorySecurityScopedAccessManager {
         switch response {
             case .OK, .continue:
                 guard let selectedURL = openPanel.url else {
-                    throw _Error.accessDenied
+                    throw SecurityScopedFileOrDirectoryAccessError.accessDenied
                 }
                 
-                do {
-                    return try URL._SavedBookmarks.bookmark(selectedURL)
-                } catch {
-                    runtimeIssue(error)
-                    
-                    return selectedURL
-                }
+                return selectedURL
             case .abort:
-                throw _Error.accessCancelled
+                throw SecurityScopedFileOrDirectoryAccessError.accessCancelled
             default:
-                throw _Error.accessDenied
+                throw SecurityScopedFileOrDirectoryAccessError.accessDenied
         }
     }
     
@@ -298,19 +309,16 @@ extension URL._FileOrDirectorySecurityScopedAccessManager {
 
 // MARK: - Error Handling
 
-extension URL._FileOrDirectorySecurityScopedAccessManager {
-    @_spi(Internal)
-    public enum _Error: Hashable, Error {
-        case accessDenied
-        case accessCancelled
-        case invalidDirectory
-        case other(AnyError)
-        case failedToWriteTemporaryTestFile
-        case failedToBookmark(URL)
-        
-        @_disfavoredOverload
-        public static func other(_ error: Error) -> AnyError {
-            AnyError(erasing: error)
-        }
+public enum SecurityScopedFileOrDirectoryAccessError: Hashable, Error {
+    case accessDenied
+    case accessCancelled
+    case invalidDirectory
+    case other(AnyError)
+    case failedToWriteTemporaryTestFile
+    case failedToBookmark(URL)
+    
+    @_disfavoredOverload
+    public static func other(_ error: Error) -> AnyError {
+        AnyError(erasing: error)
     }
 }

@@ -117,12 +117,13 @@ extension URL {
         while currentPath.path != "/" {
             do {
                 let resourceValues = try currentPath.resourceValues(forKeys: [.isSymbolicLinkKey])
+                
                 if resourceValues.isSymbolicLink == true {
                     return true
                 }
+                
                 currentPath.deleteLastPathComponent()
             } catch {
-                print("Error checking symbolic link: \(error)")
                 break
             }
         }

@@ -178,17 +178,17 @@ extension FileManager {
     public func nearestAccessibleSecurityScopedAncestor<T: URLRepresentable>(
         for location: T
     ) -> URL? {
-        let url = location.url._fromFileURLToURL()
+        let location: URL = location.url._fromFileURLToURL()
         
         if let result = try? URL._SavedBookmarks.bookmarkedURL(for: location) {
             return result
-        } else if let result = try? URL._SavedBookmarks.bookmark(location.url), FileManager.default.fileOrDirectoryExists(at: result) {
+        } else if FileManager.default.fileOrDirectoryExists(at: location), let result = try? URL._SavedBookmarks.bookmark(location) {
             return result
         } else {
             /// FIXME:!!!! This looped infinitely when given a malformed URL created with a #fileID
-            let parentURL = url.resolvingSymlinksInPath().deletingLastPathComponent()
+            let parentURL: URL = location.resolvingSymlinksInPath().deletingLastPathComponent()
             
-            guard !parentURL._isRootPath, parentURL != url, !parentURL._isRootPath, !parentURL.path.isEmpty else {
+            guard !parentURL._isRootPath, parentURL != location, !parentURL._isRootPath, !parentURL.path.isEmpty else {
                 return nil
             }
             
@@ -409,24 +409,12 @@ extension FileManager {
             guard case .failedToAccessSecurityScopedResource = error else {
                 throw error
             }
-
-            do {
-                let bookmarkedURL = try URL._SavedBookmarks.bookmark(url)
-                
-                do {
-                    contents = try bookmarkedURL._accessingSecurityScopedResource {
-                        try self.contents(of: bookmarkedURL)
-                    }
-                } catch {
-                    contents = self.contents(atPath: url.path)
-                    
-                    runtimeIssue("Bookmark creation failed, but read succeeded.")
-                }
-            } catch {
-                contents = self.contents(atPath: url.path)
-                
-                runtimeIssue("Recovered but encountered unknown error: \(error)")
+            
+            guard let _contents = self.contents(atPath: url.path), !_contents.isEmpty else {
+                throw error
             }
+            
+            contents = _contents
         }
         
         return try contents.unwrap()
@@ -511,7 +499,7 @@ extension FileManager {
 extension FileManager {
     public func copyFolders(
         from sourceURLs: [URL],
-        to destination: _URLConvertible,
+        to destination: URLConvertible,
         replaceExisting: Bool
     ) throws {
         let destinationURL = destination.url
@@ -657,18 +645,11 @@ extension FileManager {
             .first(where: { $0._fileExtension.map({ UTType(filenameExtension: $0) }) == fileExtension })
     }
     
-    public func items<T: _ThrowingInitiableFromURL>(
+    public func items<T: URLInitiable>(
         ofType type: T.Type,
         at url: URL
     ) throws -> [T] {
         try contentsOfDirectory(at: url).compactMap({ (item: URL) in try? T.init(url: item) })
-    }
-    
-    public func items<T: _FailableThrowingInitiableFromURL>(
-        ofType type: T.Type,
-        at url: URL
-    ) throws -> [T] {
-        try contentsOfDirectory(at: url).compactMap({ (item: URL) -> T? in try? T.init(url: item) })
     }
 }
 #endif

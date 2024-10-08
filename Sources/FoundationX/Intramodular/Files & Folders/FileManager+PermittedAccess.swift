@@ -131,7 +131,9 @@ extension FileManager {
         
         return try url._accessingSecurityScopedResource { () -> T in
             do {
-                _ = try URL._SavedBookmarks.bookmark(url)
+                if FileManager.default.fileExists(at: url) {
+                    _ = try URL._SavedBookmarks.bookmark(url)
+                }
             } catch {
                 runtimeIssue(error)
             }

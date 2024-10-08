@@ -13,11 +13,19 @@ extension URL {
         public private(set) var creationOptions: URL.BookmarkCreationOptions
         public let id: ID
         
-        public struct ID: Hashable, Sendable {
+        public struct ID: Codable, Hashable, Sendable {
             private let rawValue: String
             
             public init(from url: URL) {
                 self.rawValue = url._actuallyStandardizedFileURL.path
+            }
+            
+            public init(from decoder: Decoder) throws {
+                self.rawValue = try String(from: decoder)
+            }
+            
+            public func encode(to encoder: Encoder) throws {
+                try self.rawValue.encode(to: encoder)
             }
         }
         
@@ -153,7 +161,7 @@ extension URL.Bookmark {
     public func resolve() throws -> (url: URL, wasStale: Bool) {
         var isStale = false
         
-        let url = try URL(resolvingBookmarkData: data, bookmarkDataIsStale: &isStale)
+        let url = try URL(resolvingBookmarkData: data, options: [.withSecurityScope], bookmarkDataIsStale: &isStale)
         
         return (url, isStale)
     }
@@ -168,7 +176,7 @@ extension URL.Bookmark {
         
         let newBookmarkData: Data
         
-#if os(macOS)
+        #if os(macOS)
         if creationOptions.contains(.withSecurityScope) {
             guard url.startAccessingSecurityScopedResource() else {
                 throw Error.couldNotAccessWithSecureScope(url)
@@ -188,13 +196,13 @@ extension URL.Bookmark {
                 relativeTo: nil
             )
         }
-#else
+        #else
         newBookmarkData = try url.bookmarkData(
             options: creationOptions,
             includingResourceValuesForKeys: nil,
             relativeTo: nil
         )
-#endif
+        #endif
         
         self = try URL.Bookmark(
             data: newBookmarkData,

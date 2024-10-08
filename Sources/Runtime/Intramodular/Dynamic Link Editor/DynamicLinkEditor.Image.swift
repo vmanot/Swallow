@@ -19,7 +19,7 @@ extension DynamicLinkEditor {
     }
 
     @frozen
-    public struct Image: Hashable, Identifiable, @unchecked Sendable, _FailableInitiableFromURL {
+    public struct Image: Hashable, Identifiable, @unchecked Sendable, URLInitiable {
         public static var _allAddedCases = IdentifierIndexingArrayOf<Self>()
         
         public var isValid: Bool {
