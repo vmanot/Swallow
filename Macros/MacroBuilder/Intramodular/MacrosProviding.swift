@@ -7,8 +7,8 @@
 import SwiftCompilerPlugin
 import SwiftSyntaxMacros
 
-public protocol MacrosProviding: CompilerPlugin {
-    
-}
+FAILS
+
+public protocol MacrosProviding: CompilerPlugin {}
 
 #endif
