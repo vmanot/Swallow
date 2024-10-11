@@ -161,7 +161,11 @@ extension URL.Bookmark {
     public func resolve() throws -> (url: URL, wasStale: Bool) {
         var isStale = false
         
+        #if os(macOS)
         let url = try URL(resolvingBookmarkData: data, options: [.withSecurityScope], bookmarkDataIsStale: &isStale)
+        #else
+        let url = try URL(resolvingBookmarkData: data, options: [], bookmarkDataIsStale: &isStale)
+        #endif
         
         return (url, isStale)
     }
