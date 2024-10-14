@@ -51,9 +51,9 @@ extension _StaticProtocolMember: ExtensionMacro {
         in context: some MacroExpansionContext
     ) throws -> [ExtensionDeclSyntax] {
         let arguments = try node.labeledArguments!.decode(Arguments.self)
-
+        
         assert(!arguments.type.isEmpty)
-
+        
         return [
             try ExtensionDeclSyntax(
                 """

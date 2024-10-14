@@ -18,9 +18,9 @@ public macro GenerateTypeEraser() = #externalMacro(
 @attached(extension, names: arbitrary)
 @attached(peer, names: arbitrary, prefixed(Any), prefixed(`$`))
 @attached(member, names: prefixed(eraseToAny))
-public macro _GenerateTypeEraser2() = #externalMacro(
+public macro GenerateDistributedTypeEraser() = #externalMacro(
     module: "SwallowMacros",
-    type: "GenerateTypeEraserMacro2"
+    type: "GenerateDistributedTypeEraser"
 )
 
 #if canImport(Distributed)
