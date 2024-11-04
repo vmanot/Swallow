@@ -10,3 +10,8 @@ public macro _DebugLogMethod() = #externalMacro(
     type: "DebugLogMethodMacro"
 )
 
+@attached(memberAttribute)
+public macro DebugLog() = #externalMacro(
+    module: "SwallowMacros",
+    type: "DebugLogMacro"
+)
