@@ -46,7 +46,7 @@ var package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/apple/swift-collections", from: "1.1.0"),
-        .package(url: "https://github.com/apple/swift-syntax.git", from: "510.0.0"),
+        .package(url: "https://github.com/apple/swift-syntax.git", from: "600.0.1"),
     ],
     targets: [
         .target(
@@ -203,6 +203,7 @@ var package = Package(
                 "Runtime",
                 "Swallow",
                 "SwallowMacrosClient",
+                .product(name: "SwiftSyntaxMacrosTestSupport", package: "swift-syntax", condition: .when(platforms: [.macOS])),
                 .target(name: "SwiftSyntaxUtilities", condition: .when(platforms: [.macOS])),
             ],
             path: "Tests/Swallow"

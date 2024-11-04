@@ -16,6 +16,7 @@ public struct module: CompilerPlugin {
         AddCaseBooleanMacro.self,
         GenerateDuplicateMacro.self,
         GenerateTypeEraserMacro.self,
+        DebugLogMethodMacro.self,
         DeclarationScopeMacro.self,
         HadeanIdentifierMacro.self,
         HashableMacro.self,
