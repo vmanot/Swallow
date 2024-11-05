@@ -31,15 +31,25 @@ public struct DebugLogMethodMacro: BodyMacro {
                 }
             }
             
-            newBody.append(contentsOf: originalBody)
-            newBody.append("print(\"Exiting method \(raw: methodName)\")")
+            // Create a rewriter and process the original body
+            let rewriter = ReturnStatementRewriter(methodName: methodName)
+            let rewrittenBody = rewriter.visit(originalBody)
             
+            // Add the rewritten body
+            newBody.append(contentsOf: rewrittenBody)
+            newBody.append("print(\"Exiting method \(raw: methodName)\")")
             return newBody
         } else if let declaration = declaration.as(AccessorDeclSyntax.self) {
             var newBody: [CodeBlockItemSyntax] = [
                 "print(\"Entering method \(raw: declaration.accessorSpecifier.text)\")"
             ]
-            newBody.append(contentsOf: originalBody)
+            
+            // Create a rewriter and process the original body
+            let rewriter = ReturnStatementRewriter(methodName: declaration.accessorSpecifier.text)
+            let rewrittenBody = rewriter.visit(originalBody)
+            
+            // Add the rewritten body
+            newBody.append(contentsOf: rewrittenBody)
             newBody.append("print(\"Exiting method \(raw: declaration.accessorSpecifier.text)\")")
             return newBody
         } else {
@@ -47,5 +57,26 @@ public struct DebugLogMethodMacro: BodyMacro {
             newBody.append(contentsOf: originalBody)
             return newBody
         }
+    }
+}
+
+class ReturnStatementRewriter: SyntaxRewriter {
+    let methodName: String
+    init(methodName: String) {
+        self.methodName = methodName
+        super.init()
+    }
+    
+    override func visit(_ node: ReturnStmtSyntax) -> StmtSyntax {
+        // Create the print statement
+        let printStmt: CodeBlockItemSyntax
+        if let returnExpr = node.expression {
+            printStmt = "print(\"Exiting method \(raw: methodName) with return value: \\(\(returnExpr))\")"
+        } else {
+            printStmt = "print(\"Exiting method \(raw: methodName)\")"
+        }
+        
+        // Create a code block containing both the print and return statements
+        return "\n\(raw: printStmt)\(node)"
     }
 }

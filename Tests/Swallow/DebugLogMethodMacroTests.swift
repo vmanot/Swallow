@@ -15,8 +15,8 @@ final class DebugLogMethodMacroTests: XCTestCase {
         // Shouldn't print
         testClass.debugTestTwo(x: 20, y: "40")
         // Should print
-        let z = TestStruct(a: 30, b: "New", c: CGPoint(x: 10, y: 10))
-        testClass.debugTestThree(x: 10, y: "20", z: z)
+        let z = TestStruct(a: 1, b: "New", c: CGPoint(x: 10, y: 10))
+        let _ = testClass.debugTestThree(x: 0, y: "20", z: z)
     }
     
     func testDebugLogMethodMacroExpansion() {
@@ -79,8 +79,10 @@ final class DebugLogMethodMacroTests: XCTestCase {
                 print("Parameters:")
                 print("x: \\(x)")
                 if (x % 2 == 0) {
+                print("Exiting method test with return value: \\("Even")")
                         return "Even"
                     } else {
+                print("Exiting method test with return value: \\("Odd")")
                         return "Odd"
                     }
                 print("Exiting method test")
@@ -126,7 +128,9 @@ final class DebugLogMethodMacroTests: XCTestCase {
             var computedProperty: Int {
                 get {
                     print("Entering method get")
-                    return 42
+
+                    print("Exiting method get with return value: \\(42)")
+                            return 42
                     print("Exiting method get")
                 }
                 set {
@@ -152,5 +156,10 @@ fileprivate final class TestClass {
     func debugTestOne(x: Int, y: String) {}
     func debugTestTwo(x: Int, y: String) {}
     @_DebugLogMethod
-    func debugTestThree(x: Int, y: String, z: TestStruct) {}
+    func debugTestThree(x: Int, y: String, z: TestStruct) {
+        if x == 0 {
+            return
+        }
+        print("Yo hoo")
+    }
 }
