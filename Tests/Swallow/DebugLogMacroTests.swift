@@ -29,6 +29,61 @@ final class DebugLogMacroTests: XCTestCase {
         test.debugTestOne(x: 10, y: "20")
         test.debugTestTwo(x: 20, y: "40")
     }
+    
+    func testDebugLogMacroExpansion() {
+        assertMacroExpansion(
+            """
+            @DebugLog
+            class Test {
+                var a: Int
+            
+                func debugTest() {
+                    print("Test")
+                    return
+                }
+            }
+            """,
+            expandedSource: """
+            class Test {
+                var a: Int
+                @_DebugLogMethod
+            
+                func debugTest() {
+                    print("Test")
+                    return
+                }
+            }
+            """,
+            macros: ["DebugLog": DebugLogMacro.self]
+        )
+    }
+    
+    func testDebugLogMacroExpansionForAccessors() {
+        assertMacroExpansion(
+            """
+            @DebugLog
+            class Test {
+                var a: Int {
+                    get {
+                        return 42
+                    }
+                }
+            }
+            """,
+            expandedSource: """
+            class Test {
+                @_DebugLogMethod
+                var a: Int {
+                    get {
+                        return 42
+                    }
+                }
+            }
+            """,
+            macros: ["DebugLog": DebugLogMacro.self]
+        )
+    }
+    
 }
 
 @DebugLog
