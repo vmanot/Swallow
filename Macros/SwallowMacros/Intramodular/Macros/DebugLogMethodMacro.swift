@@ -5,7 +5,11 @@
 import SwiftSyntax
 import SwiftSyntaxMacros
 
-public struct DebugLogMethodMacro: BodyMacro {
+public struct DebugLogMethodMacro {
+    
+}
+
+extension DebugLogMethodMacro: BodyMacro {
     public static func expansion(
         of node: SwiftSyntax.AttributeSyntax,
         providingBodyFor declaration: some SwiftSyntax.DeclSyntaxProtocol & SwiftSyntax.WithOptionalCodeBlockSyntax,
@@ -53,30 +57,53 @@ public struct DebugLogMethodMacro: BodyMacro {
             newBody.append("print(\"Exiting method \(raw: declaration.accessorSpecifier.text)\")")
             return newBody
         } else {
-            var newBody: [CodeBlockItemSyntax] = []
-            newBody.append(contentsOf: originalBody)
-            return newBody
+            return []
         }
     }
 }
 
-class ReturnStatementRewriter: SyntaxRewriter {
-    let methodName: String
-    init(methodName: String) {
-        self.methodName = methodName
-        super.init()
-    }
-    
-    override func visit(_ node: ReturnStmtSyntax) -> StmtSyntax {
-        // Create the print statement
-        let printStmt: CodeBlockItemSyntax
-        if let returnExpr = node.expression {
-            printStmt = "print(\"Exiting method \(raw: methodName) with return value: \\(\(returnExpr))\")"
-        } else {
-            printStmt = "print(\"Exiting method \(raw: methodName)\")"
+extension DebugLogMethodMacro {
+    class ReturnStatementRewriter: SyntaxRewriter {
+        let methodName: String
+        
+        init(methodName: String) {
+            self.methodName = methodName
+            super.init()
         }
         
-        // Create a code block containing both the print and return statements
-        return "\n\(raw: printStmt)\(node)"
+        private func createPrintStatement(for returnStmt: ReturnStmtSyntax) -> CodeBlockItemSyntax {
+            if let returnExpr = returnStmt.expression {
+                return "print(\"Exiting method \(raw: methodName) with return value: \\(\(returnExpr))\")"
+            } else {
+                return "print(\"Exiting method \(raw: methodName)\")"
+            }
+        }
+        
+        private func processStatements(_ statements: CodeBlockItemListSyntax) -> [CodeBlockItemSyntax] {
+            var newStatements = [CodeBlockItemSyntax]()
+            
+            for statement in statements {
+                if let returnStmt = statement.item.as(ReturnStmtSyntax.self) {
+                    newStatements.append(createPrintStatement(for: returnStmt))
+                    newStatements.append(statement)
+                } else {
+                    newStatements.append(statement)
+                }
+            }
+            
+            return newStatements
+        }
+        
+        override func visit(_ node: CodeBlockSyntax) -> CodeBlockSyntax {
+            let newStatements = processStatements(node.statements)
+            return CodeBlockSyntax(
+                statements: CodeBlockItemListSyntax(newStatements)
+            )
+        }
+        
+        override func visit(_ node: CodeBlockItemListSyntax) -> CodeBlockItemListSyntax {
+            let newStatements = processStatements(node)
+            return CodeBlockItemListSyntax(newStatements)
+        }
     }
-}
+}	

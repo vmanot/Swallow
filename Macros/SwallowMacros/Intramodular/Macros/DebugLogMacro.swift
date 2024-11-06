@@ -11,6 +11,7 @@ public struct DebugLogMacro: MemberAttributeMacro {
     }
 
     static let configuration = Configuration()
+    static let nameIdentifier = "_DebugLogMethod"
     
     public static func expansion(
         of node: AttributeSyntax,
@@ -20,23 +21,16 @@ public struct DebugLogMacro: MemberAttributeMacro {
     ) throws -> [AttributeSyntax] {
         let debugLogMethodAttribute = AttributeSyntax(
             atSign: .atSignToken(),
-            attributeName: IdentifierTypeSyntax(name: .identifier("_DebugLogMethod"))
+            attributeName: IdentifierTypeSyntax(name: .identifier(nameIdentifier))
         )
-        var result: [AttributeSyntax] = []
-        
-        if let member = member.as(FunctionDeclSyntax.self) {
-            if !member.attributes.contains(where: { $0.trimmedDescription.contains("@_DebugLogMethod") }) {
-                result.append(debugLogMethodAttribute)
-            }
-            return result
+        if let member = member.as(FunctionDeclSyntax.self),
+           !member.attributes.contains(where: { $0.trimmedDescription.contains(nameIdentifier) }) {
+            return [debugLogMethodAttribute]
         } else if let member = member.as(VariableDeclSyntax.self),
-             DebugLogMacro.configuration.shouldHookProperties {
-            if !member.attributes.contains(where: { $0.trimmedDescription.contains("@_DebugLogMethod") }) {
-                result.append(debugLogMethodAttribute)
-            }
-            return result
-        } else {
-            return []
+                  DebugLogMacro.configuration.shouldHookProperties,
+                  !member.attributes.contains(where: { $0.trimmedDescription.contains(nameIdentifier) }) {
+            return [debugLogMethodAttribute]
         }
+        return []
     }
 }

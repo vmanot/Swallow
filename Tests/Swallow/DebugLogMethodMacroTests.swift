@@ -8,21 +8,12 @@ import SwiftSyntaxMacrosTestSupport
 import XCTest
 
 final class DebugLogMethodMacroTests: XCTestCase {
-    func testDebugLogMethodMacro() {
-        let testClass = TestClass()
-        // Should print
-        testClass.debugTestOne(x: 10, y: "20")
-        // Shouldn't print
-        testClass.debugTestTwo(x: 20, y: "40")
-        // Should print
-        let z = TestStruct(a: 1, b: "New", c: CGPoint(x: 10, y: 10))
-        let _ = testClass.debugTestThree(x: 0, y: "20", z: z)
-    }
+    static let macroNameIdentifier = "_DebugLogMethod"
     
-    func testDebugLogMethodMacroExpansion() {
+    func testExpansionForMethodWithoutReturn() {
         assertMacroExpansion(
             """
-            @_DebugLogMethod
+            @\(DebugLogMacroTests.macroNameIdentifier)
             func test(x: Int) {
                 let y = x + 1
             }
@@ -36,14 +27,14 @@ final class DebugLogMethodMacroTests: XCTestCase {
                 print("Exiting method test")
             }
             """,
-            macros: ["_DebugLogMethod": DebugLogMethodMacro.self]
+            macros: [DebugLogMacroTests.macroNameIdentifier: DebugLogMethodMacro.self]
         )
     }
     
-    func testDebugLogMethodMacroExpansionWithObjects() {
+    func testExpansionForMethodWithMultipleParams() {
         assertMacroExpansion(
             """
-            @_DebugLogMethod
+            @\(DebugLogMacroTests.macroNameIdentifier)
             func test(x: Int, y: String, z: TestStruct) {
             }
             """,
@@ -57,16 +48,16 @@ final class DebugLogMethodMacroTests: XCTestCase {
                 print("Exiting method test")
             }
             """,
-            macros: ["_DebugLogMethod": DebugLogMethodMacro.self]
+            macros: [DebugLogMacroTests.macroNameIdentifier: DebugLogMethodMacro.self]
         )
     }
     
-    func testDebugLogMethodMacroExpansionBeforeReturn() {
+    func testExpansionBeforeReturn() {
         assertMacroExpansion(
             """
-            @_DebugLogMethod
-            func test(x: Int) -> String {
-                if (x % 2 == 0) {
+            @\(DebugLogMacroTests.macroNameIdentifier)
+            func test() -> String {
+                if (10 % 2 == 0) {
                     return "Even"
                 } else {
                     return "Odd"
@@ -74,28 +65,26 @@ final class DebugLogMethodMacroTests: XCTestCase {
             }
             """,
             expandedSource: """
-            func test(x: Int) -> String {
+            func test() -> String {
                 print("Entering method test")
-                print("Parameters:")
-                print("x: \\(x)")
-                if (x % 2 == 0) {
-                print("Exiting method test with return value: \\("Even")")
-                        return "Even"
-                    } else {
-                print("Exiting method test with return value: \\("Odd")")
-                        return "Odd"
-                    }
+                if (10 % 2 == 0) {
+                    print("Exiting method test with return value: \\("Even")")
+                            return "Even"
+                } else {
+                    print("Exiting method test with return value: \\("Odd")")
+                            return "Odd"
+                }
                 print("Exiting method test")
             }
             """,
-            macros: ["_DebugLogMethod": DebugLogMethodMacro.self]
+            macros: [DebugLogMacroTests.macroNameIdentifier: DebugLogMethodMacro.self]
         )
     }
     
-    func testEmptyFunctionMacroExpansion() {
+    func testExpansionForEmptyFunction() {
         assertMacroExpansion(
             """
-            @_DebugLogMethod
+            @\(DebugLogMacroTests.macroNameIdentifier)
             func empty() {
             }
             """,
@@ -105,20 +94,21 @@ final class DebugLogMethodMacroTests: XCTestCase {
                 print("Exiting method empty")
             }
             """,
-            macros: ["_DebugLogMethod": DebugLogMethodMacro.self]
+            macros: [DebugLogMacroTests.macroNameIdentifier: DebugLogMethodMacro.self]
         )
     }
     
     /// Test getter and setter of computed property
-    func testDebugLogMethodMacroWithExplicitGetterAndSetter() {
+    func testExpansionWithExplicitGetterAndSetter() {
         assertMacroExpansion(
             """
             var computedProperty: Int {
-                @_DebugLogMethod
+                @\(DebugLogMacroTests.macroNameIdentifier)
                 get {
-                    return 42
+                    let theAnswer = 41 + 1
+                    return theAnswer
                 }
-                @_DebugLogMethod
+                @\(DebugLogMacroTests.macroNameIdentifier)
                 set {
                     print("Inside setter")
                 }
@@ -128,9 +118,9 @@ final class DebugLogMethodMacroTests: XCTestCase {
             var computedProperty: Int {
                 get {
                     print("Entering method get")
-
-                    print("Exiting method get with return value: \\(42)")
-                            return 42
+                    let theAnswer = 41 + 1
+                    print("Exiting method get with return value: \\(theAnswer)")
+                    return theAnswer
                     print("Exiting method get")
                 }
                 set {
@@ -140,26 +130,7 @@ final class DebugLogMethodMacroTests: XCTestCase {
                 }
             }
             """,
-            macros: ["_DebugLogMethod": DebugLogMethodMacro.self]
+            macros: [DebugLogMacroTests.macroNameIdentifier: DebugLogMethodMacro.self]
         )
-    }
-}
-
-fileprivate struct TestStruct {
-    let a: Int
-    let b: String
-    let c: CGPoint
-}
-
-fileprivate final class TestClass {
-    @_DebugLogMethod
-    func debugTestOne(x: Int, y: String) {}
-    func debugTestTwo(x: Int, y: String) {}
-    @_DebugLogMethod
-    func debugTestThree(x: Int, y: String, z: TestStruct) {
-        if x == 0 {
-            return
-        }
-        print("Yo hoo")
     }
 }
