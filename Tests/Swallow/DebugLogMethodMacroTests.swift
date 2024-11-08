@@ -583,4 +583,59 @@ final class DebugLogMethodMacroTests: XCTestCase {
             macros: [DebugLogMacroTests.macroNameIdentifier: DebugLogMethodMacro.self]
         )
     }
+
+    func testExpansionWithExplicitGetterSetterAndVariableName() {
+        assertMacroExpansion(
+            """
+            var computedProperty: Int {
+                @\(DebugLogMacroTests.macroNameIdentifier)("computedProperty")
+                get {
+                    let theAnswer = 41 + 1
+                    return theAnswer
+                }
+                @\(DebugLogMacroTests.macroNameIdentifier)("computedProperty")
+                set {
+                    print("Inside setter")
+                }
+            }
+            """,
+            expandedSource: """
+            var computedProperty: Int {
+                get {
+                    print("Entering method get of variable computedProperty")
+                    let theAnswer = 41 + 1
+                    print("Exiting method get with return value: \\(theAnswer)")
+                    return theAnswer
+                    print("Exiting method get of variable computedProperty")
+                }
+                set {
+                    print("Entering method set of variable computedProperty")
+                    print("Inside setter")
+                    print("Exiting method set of variable computedProperty")
+                }
+            }
+            """,
+            macros: [DebugLogMacroTests.macroNameIdentifier: DebugLogMethodMacro.self]
+        )
+    }
+
+    /// When passing a parameter to the macro for a method, we ignore it.
+    func testExpansionForMethodWithVariableName() {
+        assertMacroExpansion(
+            """
+            @\(DebugLogMacroTests.macroNameIdentifier)("someVariable")
+            func test() {
+                let a = 1 + 1
+            }
+            """,
+            expandedSource: """
+            func test() {
+                print("Entering method test")
+                let a = 1 + 1
+                print("Exiting method test")
+            }
+            """,
+            macros: [DebugLogMacroTests.macroNameIdentifier: DebugLogMethodMacro.self]
+        )
+    }
 }

@@ -19,6 +19,15 @@ extension DebugLogMethodMacro: BodyMacro {
             return []
         }
         
+        // Extract variableName from attribute arguments if present
+        let variableName: String?
+        if case .argumentList(let arguments) = node.arguments,
+           let firstArg = arguments.first?.expression.as(StringLiteralExprSyntax.self) {
+            variableName = firstArg.segments.description
+        } else {
+            variableName = nil
+        }
+        
         if let declaration = declaration.as(FunctionDeclSyntax.self) {
             let methodName = declaration.name.text
             let parameters = declaration.signature.parameterClause.parameters
@@ -35,26 +44,25 @@ extension DebugLogMethodMacro: BodyMacro {
                 }
             }
             
-            // Create a rewriter and process the original body
             let rewriter = ReturnStatementRewriter(methodName: methodName)
             let rewrittenBody = rewriter.visit(originalBody)
             
-            // Add the rewritten body
             newBody.append(contentsOf: rewrittenBody)
             newBody.append("print(\"Exiting method \(raw: methodName)\")")
             return newBody
         } else if let declaration = declaration.as(AccessorDeclSyntax.self) {
+            let accessorType = declaration.accessorSpecifier.text
+            let variableNameSuffix = variableName.map { " of variable \($0)" } ?? ""
+            
             var newBody: [CodeBlockItemSyntax] = [
-                "print(\"Entering method \(raw: declaration.accessorSpecifier.text)\")"
+                "print(\"Entering method \(raw: accessorType)\(raw: variableNameSuffix)\")"
             ]
             
-            // Create a rewriter and process the original body
-            let rewriter = ReturnStatementRewriter(methodName: declaration.accessorSpecifier.text)
+            let rewriter = ReturnStatementRewriter(methodName: accessorType)
             let rewrittenBody = rewriter.visit(originalBody)
             
-            // Add the rewritten body
             newBody.append(contentsOf: rewrittenBody)
-            newBody.append("print(\"Exiting method \(raw: declaration.accessorSpecifier.text)\")")
+            newBody.append("print(\"Exiting method \(raw: accessorType)\(raw: variableNameSuffix)\")")
             return newBody
         } else {
             return []

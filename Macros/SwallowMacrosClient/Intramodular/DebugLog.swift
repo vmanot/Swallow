@@ -5,7 +5,7 @@
 import Swift
 
 @attached(body)
-public macro _DebugLogMethod() = #externalMacro(
+public macro _DebugLogMethod(_ variableName: String? = nil) = #externalMacro(
     module: "SwallowMacros",
     type: "DebugLogMethodMacro"
 )
