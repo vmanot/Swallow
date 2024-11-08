@@ -72,38 +72,39 @@ extension DebugLogMethodMacro {
         }
         
         private func createPrintStatement(for returnStmt: ReturnStmtSyntax) -> CodeBlockItemSyntax {
-            if let returnExpr = returnStmt.expression {
+            if let returnExpr = returnStmt.expression, returnExpr.is(NilLiteralExprSyntax.self) {
+                return "print(\"Exiting method \(raw: methodName) with return value: nil\")"
+            } else if let returnExpr = returnStmt.expression {
                 return "print(\"Exiting method \(raw: methodName) with return value: \\(\(returnExpr))\")"
             } else {
                 return "print(\"Exiting method \(raw: methodName)\")"
             }
         }
         
-        private func processStatements(_ statements: CodeBlockItemListSyntax) -> [CodeBlockItemSyntax] {
+        private func createPrintStatement(for throwStmt: ThrowStmtSyntax) -> CodeBlockItemSyntax {
+            return "print(\"Exiting method \(raw: methodName) throwing error: \\(\(throwStmt.expression))\")"
+        }
+        
+        private func processStatements(_ statements: CodeBlockItemListSyntax) -> CodeBlockItemListSyntax {
             var newStatements = [CodeBlockItemSyntax]()
-            
             for statement in statements {
                 if let returnStmt = statement.item.as(ReturnStmtSyntax.self) {
                     newStatements.append(createPrintStatement(for: returnStmt))
                     newStatements.append(statement)
-                } else {
+                } else if let throwStmt = statement.item.as(ThrowStmtSyntax.self) {
+                    newStatements.append(createPrintStatement(for: throwStmt))
                     newStatements.append(statement)
+                } else {
+                    for innerStatement in super.visit([statement]) {
+                        newStatements.append(innerStatement)
+                    }
                 }
             }
-            
-            return newStatements
-        }
-        
-        override func visit(_ node: CodeBlockSyntax) -> CodeBlockSyntax {
-            let newStatements = processStatements(node.statements)
-            return CodeBlockSyntax(
-                statements: CodeBlockItemListSyntax(newStatements)
-            )
+            return CodeBlockItemListSyntax(newStatements)
         }
         
         override func visit(_ node: CodeBlockItemListSyntax) -> CodeBlockItemListSyntax {
-            let newStatements = processStatements(node)
-            return CodeBlockItemListSyntax(newStatements)
+            return processStatements(node)
         }
     }
 }	

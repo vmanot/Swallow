@@ -12,7 +12,6 @@ final class DebugLogMacroTests: XCTestCase {
     static let macroNameIdentifier = "DebugLog"
     static let methodMacroNameIdentifier = "_DebugLogMethod"
     
-    /// TODO: Fix this. Macro shouldn't be added before the variable, it should only be added if there is a get / set method.
     func testExpansion() {
         assertMacroExpansion(
             """
@@ -27,7 +26,6 @@ final class DebugLogMacroTests: XCTestCase {
             """,
             expandedSource: """
             class Test {
-                @\(DebugLogMacroTests.methodMacroNameIdentifier)
                 var a: Int
                 @\(DebugLogMacroTests.methodMacroNameIdentifier)
                 func debugTest() {
@@ -40,7 +38,8 @@ final class DebugLogMacroTests: XCTestCase {
         )
     }
     
-    /// TODO: Fix this. We actually want the macro to be inserted above the get / set method, not the variable.
+    /// TODO: Fix this. We want the macro to be inserted above the get / set method.
+    /// This is not possible with the current capabilities of macros.
     func testExpansionForComputedProperty() {
         assertMacroExpansion(
             """
@@ -55,7 +54,6 @@ final class DebugLogMacroTests: XCTestCase {
             """,
             expandedSource: """
             class Test {
-                @\(DebugLogMacroTests.methodMacroNameIdentifier)
                 var a: Int {
                     get {
                         return 42
