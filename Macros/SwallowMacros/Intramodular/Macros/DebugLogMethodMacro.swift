@@ -33,14 +33,14 @@ extension DebugLogMethodMacro: BodyMacro {
             let parameters = declaration.signature.parameterClause.parameters
             
             var newBody: [CodeBlockItemSyntax] = [
-                "print(\"Entering method \(raw: methodName)\")"
+                "logger.debug(\"Entering method \(raw: methodName)\")"
             ]
             
             if !parameters.isEmpty {
-                newBody.append("print(\"Parameters:\")")
+                newBody.append("logger.debug(\"Parameters:\")")
                 for param in parameters {
                     let paramName = param.secondName?.text ?? param.firstName.text
-                    newBody.append("print(\"\(raw: paramName): \\(\(raw: paramName))\")")
+                    newBody.append("logger.debug(\"\(raw: paramName): \\(\(raw: paramName))\")")
                 }
             }
             
@@ -48,21 +48,21 @@ extension DebugLogMethodMacro: BodyMacro {
             let rewrittenBody = rewriter.visit(originalBody)
             
             newBody.append(contentsOf: rewrittenBody)
-            newBody.append("print(\"Exiting method \(raw: methodName)\")")
+            newBody.append("logger.debug(\"Exiting method \(raw: methodName)\")")
             return newBody
         } else if let declaration = declaration.as(AccessorDeclSyntax.self) {
             let accessorType = declaration.accessorSpecifier.text
             let variableNameSuffix = variableName.map { " of variable \($0)" } ?? ""
             
             var newBody: [CodeBlockItemSyntax] = [
-                "print(\"Entering method \(raw: accessorType)\(raw: variableNameSuffix)\")"
+                "logger.debug(\"Entering method \(raw: accessorType)\(raw: variableNameSuffix)\")"
             ]
             
             let rewriter = ReturnStatementRewriter(methodName: accessorType)
             let rewrittenBody = rewriter.visit(originalBody)
             
             newBody.append(contentsOf: rewrittenBody)
-            newBody.append("print(\"Exiting method \(raw: accessorType)\(raw: variableNameSuffix)\")")
+            newBody.append("logger.debug(\"Exiting method \(raw: accessorType)\(raw: variableNameSuffix)\")")
             return newBody
         } else {
             return []
@@ -81,16 +81,16 @@ extension DebugLogMethodMacro {
         
         private func createPrintStatement(for returnStmt: ReturnStmtSyntax) -> CodeBlockItemSyntax {
             if let returnExpr = returnStmt.expression, returnExpr.is(NilLiteralExprSyntax.self) {
-                return "print(\"Exiting method \(raw: methodName) with return value: nil\")"
+                return "logger.debug(\"Exiting method \(raw: methodName) with return value: nil\")"
             } else if let returnExpr = returnStmt.expression {
-                return "print(\"Exiting method \(raw: methodName) with return value: \\(\(returnExpr))\")"
+                return "logger.debug(\"Exiting method \(raw: methodName) with return value: \\(\(returnExpr))\")"
             } else {
-                return "print(\"Exiting method \(raw: methodName)\")"
+                return "logger.debug(\"Exiting method \(raw: methodName)\")"
             }
         }
         
         private func createPrintStatement(for throwStmt: ThrowStmtSyntax) -> CodeBlockItemSyntax {
-            return "print(\"Exiting method \(raw: methodName) throwing error: \\(\(throwStmt.expression))\")"
+            return "logger.debug(\"Exiting method \(raw: methodName) throwing error: \\(\(throwStmt.expression))\")"
         }
         
         private func processStatements(_ statements: CodeBlockItemListSyntax) -> CodeBlockItemListSyntax {

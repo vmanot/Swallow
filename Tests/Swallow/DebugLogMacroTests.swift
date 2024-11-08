@@ -33,6 +33,9 @@ final class DebugLogMacroTests: XCTestCase {
                     return
                 }
             }
+            
+            extension Test: Logging {
+            }
             """,
             macros: [DebugLogMacroTests.macroNameIdentifier: DebugLogMacro.self]
         )
@@ -59,6 +62,53 @@ final class DebugLogMacroTests: XCTestCase {
                         return 42
                     }
                 }
+            }
+            
+            extension Test: Logging {
+            }
+            """,
+            macros: [DebugLogMacroTests.macroNameIdentifier: DebugLogMacro.self]
+        )
+    }
+    
+    func testExpansionForClassWithProtocolConformance() {
+        assertMacroExpansion(
+            """
+            @\(DebugLogMacroTests.macroNameIdentifier)
+            class Test: Codable {
+            }
+            """,
+            expandedSource: """
+            class Test: Codable {
+            }
+            
+            extension Test: Logging {
+            }
+            """,
+            macros: [DebugLogMacroTests.macroNameIdentifier: DebugLogMacro.self]
+        )
+    }
+    
+    func testExpansionForClassWithExtension() {
+        assertMacroExpansion(
+            """
+            @\(DebugLogMacroTests.macroNameIdentifier)
+            class Test {
+            }
+            
+            extension Test: Codable {
+                func blah() {}
+            }
+            """,
+            expandedSource: """
+            class Test {
+            }
+            
+            extension Test: Codable {
+                func blah() {}
+            }
+            
+            extension Test: Logging {
             }
             """,
             macros: [DebugLogMacroTests.macroNameIdentifier: DebugLogMacro.self]

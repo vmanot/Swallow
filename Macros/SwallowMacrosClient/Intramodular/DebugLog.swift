@@ -11,6 +11,7 @@ public macro _DebugLogMethod(_ variableName: String? = nil) = #externalMacro(
 )
 
 @attached(memberAttribute)
+@attached(extension, names: arbitrary)
 public macro DebugLog() = #externalMacro(
     module: "SwallowMacros",
     type: "DebugLogMacro"

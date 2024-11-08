@@ -5,7 +5,11 @@
 import SwiftSyntax
 import SwiftSyntaxMacros
 
-public struct DebugLogMacro: MemberAttributeMacro {
+public struct DebugLogMacro {
+    
+}
+
+extension DebugLogMacro: MemberAttributeMacro {
     static let nameIdentifier = "_DebugLogMethod"
     
     public static func expansion(
@@ -23,5 +27,17 @@ public struct DebugLogMacro: MemberAttributeMacro {
             return [debugLogMethodAttribute]
         }
         return []
+    }
+}
+
+extension DebugLogMacro: ExtensionMacro {
+    public static func expansion(
+        of node: AttributeSyntax,
+        attachedTo declaration: some DeclGroupSyntax,
+        providingExtensionsOf type: some TypeSyntaxProtocol,
+        conformingTo protocols: [TypeSyntax],
+        in context: some MacroExpansionContext
+    ) throws -> [ExtensionDeclSyntax] {
+        return [try ExtensionDeclSyntax("extension \(type): Logging {}")]
     }
 }
