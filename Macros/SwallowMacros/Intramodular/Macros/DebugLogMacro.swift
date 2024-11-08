@@ -38,6 +38,11 @@ extension DebugLogMacro: ExtensionMacro {
         conformingTo protocols: [TypeSyntax],
         in context: some MacroExpansionContext
     ) throws -> [ExtensionDeclSyntax] {
-        return [try ExtensionDeclSyntax("extension \(type): Logging {}")]
+        if declaration.is(ClassDeclSyntax.self) ||
+            declaration.is(EnumDeclSyntax.self) ||
+            declaration.is(StructDeclSyntax.self) {
+            return [try ExtensionDeclSyntax("extension \(type): Logging {}")]
+        }
+        return []
     }
 }

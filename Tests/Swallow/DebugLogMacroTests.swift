@@ -114,4 +114,93 @@ final class DebugLogMacroTests: XCTestCase {
             macros: [DebugLogMacroTests.macroNameIdentifier: DebugLogMacro.self]
         )
     }
+    
+    func testExpansionForExtension() {
+        assertMacroExpansion(
+            """
+            @\(DebugLogMacroTests.macroNameIdentifier)
+            class Test {
+                func abc() {}
+            }
+            @\(DebugLogMacroTests.macroNameIdentifier)
+            extension Test: Codable {
+                func xyz() {}
+            }
+            """,
+            expandedSource: """
+            class Test {
+                @_DebugLogMethod
+                func abc() {}
+            }
+            extension Test: Codable {
+                @_DebugLogMethod
+                func xyz() {}
+            }
+            
+            extension Test: Logging {
+            }
+            """,
+            macros: [DebugLogMacroTests.macroNameIdentifier: DebugLogMacro.self]
+        )
+    }
+    
+    func testExpansionForStruct() {
+        assertMacroExpansion(
+            """
+            @\(DebugLogMacroTests.macroNameIdentifier)
+            struct Test {
+                func abc() {}
+            }
+            @\(DebugLogMacroTests.macroNameIdentifier)
+            extension Test: Codable {
+                func xyz() {}
+            }
+            """,
+            expandedSource: """
+            struct Test {
+                @_DebugLogMethod
+                func abc() {}
+            }
+            extension Test: Codable {
+                @_DebugLogMethod
+                func xyz() {}
+            }
+            
+            extension Test: Logging {
+            }
+            """,
+            macros: [DebugLogMacroTests.macroNameIdentifier: DebugLogMacro.self]
+        )
+    }
+    
+    func testExpansionForEnum() {
+        assertMacroExpansion(
+            """
+            @\(DebugLogMacroTests.macroNameIdentifier)
+            enum Test {
+                case a
+                func abc() {}
+            }
+            @\(DebugLogMacroTests.macroNameIdentifier)
+            extension Test: Codable {
+                func xyz() {}
+            }
+            """,
+            expandedSource: """
+            enum Test {
+                case a
+                @_DebugLogMethod
+                func abc() {}
+            }
+            extension Test: Codable {
+                @_DebugLogMethod
+                func xyz() {}
+            }
+            
+            extension Test: Logging {
+            }
+            """,
+            macros: [DebugLogMacroTests.macroNameIdentifier: DebugLogMacro.self]
+        )
+    }
 }
