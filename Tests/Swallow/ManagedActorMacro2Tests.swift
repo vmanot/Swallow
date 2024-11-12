@@ -4,133 +4,53 @@
 
 import SwiftUI
 import Swallow
-import SwallowMacros
 import SwallowMacrosClient
-import SwiftSyntaxMacrosTestSupport
 import XCTest
 
-final class ManagedActor2MacroTests: XCTestCase {
-    static let macroNameIdentifier = "ManagedActor2"
-    static let methodMacroNameIdentifier = "_ManagedActorMethod2"
+final class ManagedActorMacro2Tests: XCTestCase {
+    func testHashableExistentialInit() async throws {
+        let actor = TestActor()
+        
+        XCTAssert(type(of: actor)._managedActorInitializationOptions == [.serializedExecution])
+        
+        let fooResult = try await actor.foo$(1)
+        let barResult = try await actor.bar$(42)
+        
+        XCTAssert(fooResult == 69)
+        XCTAssert(barResult == 42)
+    }
+}
+
+@ManagedActor2(.serializedExecution)
+fileprivate final class TestActor {
+    var x: Int = 0
     
-    func testExpansionWithDollarSignFunction() {
-        assertMacroExpansion(
-            """
-            @\(ManagedActor2MacroTests.macroNameIdentifier)
-            class TestActor {
-                func test$() {
-                    print("Hello")
-                }
-                
-                func regularFunc() {
-                    print("Regular")
-                }
-            }
-            """,
-            expandedSource: """
-            class TestActor {
-                @_ManagedActorMethod2
-                func test$() {
-                    print("Hello")
-                }
-                
-                func regularFunc() {
-                    print("Regular")
-                }
-            }
-            """,
-            macros: [ManagedActor2MacroTests.macroNameIdentifier: ManagedActorMacro2.self]
-        )
+    func foo$(
+        _ x: Int
+    ) async throws -> Int {
+        return 68 + x
     }
     
-    func testExpansionWithExtension() {
-        assertMacroExpansion(
-            """
-            @\(ManagedActor2MacroTests.macroNameIdentifier)
-            extension TestActor {
-                func extensionFunc$() {
-                    print("Extension")
-                }
-                
-                func regularFunc() {
-                    print("Regular")
-                }
-            }
-            """,
-            expandedSource: """
-            extension TestActor {
-                @_ManagedActorMethod2
-                func extensionFunc$() {
-                    print("Extension")
-                }
-                
-                func regularFunc() {
-                    print("Regular")
-                }
-            }
-            """,
-            macros: [ManagedActor2MacroTests.macroNameIdentifier: ManagedActorMacro2.self]
-        )
+    func bar$(
+        _ int: Int
+    ) async throws -> Int {
+        self.baz$()
+        
+        return try await self.foo$(-68) + int
     }
     
-    func testExpansionWithPreexistingManagedActorMethod() {
-        assertMacroExpansion(
-            """
-            @\(ManagedActor2MacroTests.macroNameIdentifier)
-            class TestActor {
-                @ManagedActorMethod2
-                func alreadyManaged$() {
-                    print("Already managed")
-                }
-                
-                func new$() {
-                    print("New")
-                }
-            }
-            """,
-            expandedSource: """
-            class TestActor {
-                @ManagedActorMethod2
-                func alreadyManaged$() {
-                    print("Already managed")
-                }
-                @_ManagedActorMethod2
-                
-                func new$() {
-                    print("New")
-                }
-            }
-            """,
-            macros: [ManagedActor2MacroTests.macroNameIdentifier: ManagedActorMacro2.self]
-        )
+    func bart$(
+        _ int: Int
+    ) async throws -> Int {
+        self.baz$()
+        
+        return try await self.foo$(-68) + int
     }
-    
-    func testMethodMacroExpansion() {
-        assertMacroExpansion(
-            """
-            @\(ManagedActor2MacroTests.methodMacroNameIdentifier)
-            func test$() {
-                print("Original")
-            }
-            
-            @\(ManagedActor2MacroTests.methodMacroNameIdentifier)
-            func test() {
-                print("Original")
-            }
-            """,
-            expandedSource: """
-            func test$() {
-                {
-                    print("Original")
-                }
-            }
-            func test() {
-                {
-                    print("Original")
-                }
-            }
-            """,
-            macros: [ManagedActor2MacroTests.methodMacroNameIdentifier: ManagedActorMethodMacro2.self]
-        )
+}
+
+@ManagedActorExtension2
+extension TestActor {
+    func baz$() {
+        print("what")
     }
 }

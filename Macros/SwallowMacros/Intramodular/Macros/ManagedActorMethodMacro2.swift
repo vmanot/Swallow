@@ -16,14 +16,33 @@ public struct ManagedActorMethodMacro2: BodyMacro {
             return []
         }
         
-        // Extract original body
         guard let originalBody = function.body else {
             return []
         }
         
-        // We can intercept the function here and add statements to the body.
+        // Determine if we need 'try' and/or 'await' based on function signature
+        let needsTry = function.signature.effectSpecifiers?.throwsClause?.throwsSpecifier != nil
+        let needsAwait = function.signature.effectSpecifiers?.asyncSpecifier != nil
+        
+        // Choose the appropriate operation method based on combination
+        let operationMethod = switch (needsTry, needsAwait) {
+        case (true, true):
+            "_performThrowingAsyncOperation"
+        case (true, false):
+            "_performThrowingOperation"
+        case (false, true):
+            "_performAsyncOperation"
+        case (false, false):
+            "_performOperation"
+        }
+        
+        // Build the appropriate wrapper
+        let tryKeyword = needsTry ? "try " : ""
+        let awaitKeyword = needsAwait ? "await " : ""
+        
         let wrappedBody = """
-            \(originalBody)
+        return \(tryKeyword)\(awaitKeyword)self.\(operationMethod) {\(originalBody.statements)
+        }
         """
         
         return [CodeBlockItemSyntax(stringLiteral: wrappedBody)]
