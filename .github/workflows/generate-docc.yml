@@ -1,0 +1,49 @@
+name: Generate Documentation
+on:
+  push:
+    branches: [ master, documentation, docc-generation]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  generate:
+    runs-on: ghcr.io/cirruslabs/macos-runner:sonoma
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+      with:
+        ref: documentation  # Checkout documentation branch
+        fetch-depth: 0      # Needed for git history
+
+    - name: Configure Git
+      run: |
+        git config --global user.name "GitHub Actions Bot"
+        git config --global user.email "actions@github.com"
+
+    - name: Merge master into documentation
+      run: |
+        git fetch origin master
+        git merge origin/master --no-edit
+
+    - name: Generate Documentation
+      run: |
+        pwd
+        ls
+        sh ./scripts/generate-docc.sh
+
+    - name: Commit and push if changed
+      run: |
+        git add docs/
+        if git diff --staged --quiet; then
+          echo "No changes to commit"
+        else
+          git commit -m "Update documentation"
+          git push
+        fi
