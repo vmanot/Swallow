@@ -47,6 +47,7 @@ var package = Package(
     dependencies: [
         .package(url: "https://github.com/apple/swift-collections", from: "1.1.0"),
         .package(url: "https://github.com/apple/swift-syntax.git", from: "600.0.1"),
+        .package(url: "https://github.com/apple/swift-docc-plugin", from: "1.4.3"),
     ],
     targets: [
         .target(
@@ -238,12 +239,12 @@ private func patchSwiftSyntaxDependency(in package: inout Package) {
     }
     
     for index in 0..<package.targets.count {
-        var target: Target = package.targets[index]
+        let target: Target = package.targets[index]
         var patched: Bool = false
         
         target.dependencies = target.dependencies.compactMap { (dependency: Target.Dependency) -> Target.Dependency? in
             switch dependency {
-                case .productItem(let name, let package, let moduleAliases, let condition):
+                case .productItem(let name, let package, let moduleAliases, _):
                     let targets: Set<String> = [
                         "SwiftSyntax",
                         "SwiftSyntaxMacros",
