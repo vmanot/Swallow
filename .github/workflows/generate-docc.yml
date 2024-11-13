@@ -1,7 +1,7 @@
 name: Generate Documentation
 on:
   push:
-    branches: [ master, documentation ]
+    branches: [ master ]
   workflow_dispatch:
 
 permissions:
@@ -34,7 +34,9 @@ jobs:
 
     - name: Generate Documentation
       run: |
-        sh ./scripts/doc-build.sh
+        pwd
+        ls
+        sh ./scripts/generate-docc.sh
 
     - name: Commit and push if changed
       run: |
