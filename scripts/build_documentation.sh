@@ -3,7 +3,6 @@
 build_documentation() {
 	swift package resolve
 	target="$1"
-	build_flags=$(get_build_flags "$target")
 
 	# Create scheme for all targets
 	create_scheme "$target"
@@ -20,8 +19,7 @@ build_documentation() {
 		SWIFTPM_ENABLE_SYMBOL_GRAPH_EXTRACTION=1 \
 			swift build \
 			--package-path "$WORK_DIR" \
-			--target "$target"
-		#${build_flags} >"$LOG_FILE" 2>&1
+			--target "$target" >"$LOG_FILE" 2>&1
 
 		build_status=$?
 		if [ $build_status -ne 0 ]; then
@@ -92,8 +90,6 @@ build_documentation() {
 
 		start_time=$(date +%s)
 		echo_color "$BLUE" "Transforming documentation for ${target}..."
-		echo "DOCARCHIVE_PATH: $DOCARCHIVE_PATH"
-		echo "HOSTING_BASE_PATH: $HOSTING_BASE_PATH"
 		$(xcrun --find docc) process-archive \
 			transform-for-static-hosting "$DOCARCHIVE_PATH" \
 			--output-path "${OUTPUT_PATH}/${target}" \
@@ -104,16 +100,6 @@ build_documentation() {
 		echo_color "$RED" "Time taken for docc process-archive $(format_time $elapsed_time)"
 
 		check_status "Documentation transformed for ${target}"
-	fi
-}
-
-get_build_flags() {
-	target="$1"
-
-	if needs_special_flags "$target"; then
-		echo_color "$RED" "Target ${target} requires builtin support"
-		module_map_path="${PROJECT_DIR}/Sources/${target}/${target}.modulemap"
-		printf "%s " "-Xswiftc" "-Xfrontend" "-Xswiftc" "-enable-builtin" "-Xswiftc" "-Xcc" "-Xswiftc" "-fmodule-map-file=$module_map_path"
 	fi
 }
 
@@ -199,15 +185,4 @@ is_runtime_target() {
 	elapsed_time=$((end_time - start_time))
 
 	echo_color "$RED" "Time taken for is_runtime_target $(format_time $elapsed_time)"
-}
-
-needs_special_flags() {
-	target="$1"
-	source_dir="${PROJECT_DIR}/Sources/${target}"
-
-	# Check if any Swift file in the target uses Builtin
-	if find "$source_dir" -name "*.swift" -type f -exec grep -l "Builtin\." {} \; | grep -q .; then
-		return 0 # true
-	fi
-	return 1 # false
 }

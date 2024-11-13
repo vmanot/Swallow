@@ -8,7 +8,7 @@ cd "$PROJECT_DIR"
 PACKAGE_NAME="Swallow"
 DERIVED_DATA_PATH="/tmp/docbuild"
 OUTPUT_PATH="$PROJECT_DIR/docs"
-HOSTING_BASE_PATH="Swallow"
+HOSTING_BASE_PATH=""
 BUNDLE_IDENTIFIER="com.swallow.documentation"
 WORK_DIR="/tmp/swallow_doc_work"
 
@@ -39,21 +39,44 @@ check_status "Found $TARGET_COUNT targets"
 build_documentation_for_targets
 
 echo_color "$BLUE" "Generating documentation index page..."
-#. "$PROJECT_DIR/scripts/create_index_html.sh"
-#create_index_html
-#check_status "Index page generated"
 
 # Create .nojekyll file for GitHub Pages
 touch "${OUTPUT_PATH}/.nojekyll"
 
 # Clean up work directory
 rm -rf "$WORK_DIR"
-
-echo "<script>window.location.href += \"/documentation/swiftuix\"</script>" > docs/index.html;
-
 echo_color "$GREEN" "Documentation generation complete!"
-echo -e "Documentation can be found in: ${BLUE}${OUTPUT_PATH}${NC}"
+echo "Documentation can be found in: ${BLUE}${OUTPUT_PATH}${NC}"
 end_time=$(date +%s)
 elapsed_time=$((end_time - start_time))
 
 echo_color "$RED" "Time taken for documentation generation $(format_time $elapsed_time)"
+
+# At the end of your doc-build.sh, after generating all documentation
+echo_color "$BLUE" "Generating root index.html..."
+
+cat > "${OUTPUT_PATH}/index.html" <<EOF
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Swallow Documentation</title>
+    <script>
+        // Get the current URL path
+        var path = window.location.pathname;
+        // Remove the index.html if it's there
+        path = path.replace('index.html', '');
+        // Remove trailing slash if exists
+        path = path.replace(/\/$/, '');
+        // Redirect to the Swallow documentation
+        window.location.href = path + '/Swallow/index.html';
+    </script>
+    <!-- Fallback meta redirect -->
+    <meta http-equiv="refresh" content="0;url=./Swallow/index.html">
+</head>
+<body>
+    <p>Redirecting to <a href="./Swallow/index.html">Swallow documentation</a>...</p>
+</body>
+</html>
+EOF
+
+check_status "Root index.html generated"
