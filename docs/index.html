@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Swallow Documentation</title>
+    <script>
+        // Get the current URL path
+        var path = window.location.pathname;
+        // Remove the index.html if it's there
+        path = path.replace('index.html', '');
+        // Remove trailing slash if exists
+        path = path.replace(/\/$/, '');
+        // Redirect to the Swallow documentation
+        window.location.href = path + '/Swallow/index.html';
+    </script>
+    <!-- Fallback meta redirect -->
+    <meta http-equiv="refresh" content="0;url=./Swallow/index.html">
+</head>
+<body>
+    <p>Redirecting to <a href="./Swallow/index.html">Swallow documentation</a>...</p>
+</body>
+</html>
