@@ -203,6 +203,7 @@ var package = Package(
                 "Runtime",
                 "Swallow",
                 "SwallowMacrosClient",
+                .product(name: "SwiftSyntaxMacrosTestSupport", package: "swift-syntax", condition: .when(platforms: [.macOS])),
                 .target(name: "SwiftSyntaxUtilities", condition: .when(platforms: [.macOS])),
             ],
             path: "Tests/Swallow"
