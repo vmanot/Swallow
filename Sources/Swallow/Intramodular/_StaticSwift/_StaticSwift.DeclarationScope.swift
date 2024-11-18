@@ -110,3 +110,5 @@ private extension _StaticSwift {
     typealias ExampleDeclScope_2 = DeclarationScopeOf<ExampleScopes.Two>
     typealias ExampleDeclScope_1_2 = DeclarationScopeOf<ExampleDeclScope_2>.NestedIn<DeclarationScopeOf<ExampleDeclScope_1>>
 }
+
+

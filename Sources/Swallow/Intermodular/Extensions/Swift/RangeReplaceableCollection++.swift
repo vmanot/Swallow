@@ -441,14 +441,24 @@ extension RangeReplaceableCollection where Element: Identifiable {
     }
     
     /// Updates a given identifiable element if already present, inserts it otherwise.
+    @_disfavoredOverload
     public mutating func updateOrAppend(_ element: Element) {
-        if let index = firstIndex(where: { $0.id == element.id }) {
+        if let index: Self.Index = firstIndex(where: { $0.id == element.id }) {
             replace(at: index, with: element)
         } else {
             append(element)
         }
     }
     
+    /// Updates a given identifiable element if already present, inserts it otherwise.
+    public mutating func updateOrAppend(_ element: Element) where Self: MutableCollection {
+        if let index: Self.Index = firstIndex(where: { $0.id == element.id }) {
+            self[index] = element
+        } else {
+            append(element)
+        }
+    }
+
     /// Updates a given identifiable element if already present, inserts it otherwise.
     public mutating func updateOrAppend<S: Sequence>(contentsOf elements: S) where S.Element == Element {
         elements.forEach({ updateOrAppend($0) })

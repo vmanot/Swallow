@@ -30,10 +30,22 @@ public protocol MergeOperatable: ThrowingMergeOperatable {
 }
 
 extension ThrowingMergeOperatable {
-    public func _opaque_merging(_ other: Any) throws -> any ThrowingMergeOperatable {
+    public func _opaque_merging<T>(
+        _ other: T
+    ) throws -> any ThrowingMergeOperatable {
         try merging(try cast(other, to: Self.self))
     }
     
+    public mutating func _opaque_mergeInPlace<T>(
+        with other: T
+    ) throws {
+        let other: Self = try cast(other, to: Self.self)
+        
+        try mergeInPlace(with: other)
+    }
+}
+
+extension ThrowingMergeOperatable {
     public func mergingInPlace(
         with other: Self
     ) throws -> Self {
