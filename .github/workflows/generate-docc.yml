@@ -14,34 +14,23 @@ concurrency:
 jobs:
   generate:
     runs-on: ghcr.io/cirruslabs/macos-runner:sonoma
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v3
-      with:
-        ref: documentation
-        fetch-depth: 0
-
-    - name: Configure Git
-      run: |
-        git config --global user.name "GitHub Actions Bot"
-        git config --global user.email "actions@github.com"
-
-    - name: Merge master into documentation
-      run: |
-        git fetch origin master
-        git merge origin/master --no-edit
+      uses: actions/checkout@v4
 
     - name: Generate Documentation
       run: |
-        sh ./scripts/generate-docc.sh
+        if ! sh ./scripts/generate-docc.sh; then
+          echo "Documentation generation failed"
+          exit 1
+        fi
 
-    - name: Commit and push if changed
+    - name: Upload to Cloudflare
       run: |
-        git add documentation/
-        if git diff --staged --quiet; then
-          echo "No changes to commit"
-        else
-          git commit -m "Update documentation"
-          git push
+        if ! sh ./scripts/upload_to_cloudflare.sh; then
+          echo "Cloudflare upload failed"
+          exit 1
         fi
