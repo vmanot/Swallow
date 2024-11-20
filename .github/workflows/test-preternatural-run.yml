@@ -1,0 +1,20 @@
+name: 'Test Run Action'
+on: 
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test-swift-package:
+    runs-on: ghcr.io/cirruslabs/macos-runner:sonoma
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Test Swift Package Basic Functionality
+        uses: ./preternatural-run
+        with:
+          repo_url: 'PreternaturalAI/Scipio.git'
+          commit: 'main'
+          target: 'scipio'
+          command: 'prepare'
+          args: './Sources/Swallow'
