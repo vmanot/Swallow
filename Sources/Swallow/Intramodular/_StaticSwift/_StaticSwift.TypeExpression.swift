@@ -60,7 +60,7 @@ extension Optional where Wrapped: _StaticSwift.TypeExpression {
     }
 }
 
-// MARK: - Implemented Conformances
+// MARK: - Conformees
 
 extension _StaticSwift {
     public struct ConcreteTypeExpression<T>: _StaticSwift.TypeExpression {

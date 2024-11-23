@@ -34,7 +34,7 @@ extension SingleValueCache {
     }
 }
 
-// MARK: - Implemented Conformances
+// MARK: - Conformees
 
 public final class InMemorySingleValueCache<Value>: Initiable, SingleValueCache {
     private var value: Value?

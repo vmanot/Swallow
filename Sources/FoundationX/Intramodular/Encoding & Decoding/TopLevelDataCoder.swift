@@ -20,7 +20,7 @@ extension TopLevelDataCoder {
     }
 }
 
-// MARK: - Implemented Conformances
+// MARK: - Conformees
 
 public struct PropertyListCoder: TopLevelDataCoder {
     public let format: PropertyListSerialization.PropertyListFormat

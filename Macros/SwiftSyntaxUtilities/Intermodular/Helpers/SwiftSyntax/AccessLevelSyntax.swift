@@ -73,7 +73,7 @@ extension DeclGroupSyntax {
     }
 }
 
-// MARK: - Implemented Conformances
+// MARK: - Conformees
 
 extension ActorDeclSyntax: AccessLevelSyntax {
     

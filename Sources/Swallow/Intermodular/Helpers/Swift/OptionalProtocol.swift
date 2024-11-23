@@ -137,7 +137,7 @@ public func _isTypeOptionalType(_ type: Any.Type) -> Bool {
     type is any OptionalProtocol.Type
 }
 
-// MARK: - Implemented Conformances
+// MARK: - Conformees
 
 extension Optional: OptionalProtocol {
     public var _wrapped: Wrapped? {

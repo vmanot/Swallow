@@ -16,7 +16,7 @@ public protocol KeyedValues<Key, Value>: Collection where Element == (key: Key, 
     ) rethrows -> Dictionary<Key, T>
 }
 
-// MARK: - Implemented Conformances
+// MARK: - Conformees
 
 extension Dictionary: KeyedValues {
     public init(

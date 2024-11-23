@@ -92,7 +92,7 @@ extension CanonicalFileDirectory {
             case .xcodeDerivedData:
                 return URL(fileURLWithPath: "/Users/\(NSUserName())/Library/Developer/Xcode/DerivedData")
             case .unspecified:
-                throw Never.Reason.illegal
+                throw CanonicalFileDirectory.Error.directoryNotSpecified
         }
     }
 }
@@ -124,6 +124,14 @@ extension CanonicalFileDirectory {
         } catch {
             return rhs
         }
+    }
+}
+
+// MARK: - Error Handling
+
+extension CanonicalFileDirectory {
+    public enum Error: Swift.Error {
+        case directoryNotSpecified
     }
 }
 

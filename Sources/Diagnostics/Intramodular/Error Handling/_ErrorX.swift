@@ -88,7 +88,7 @@ public func _withErrorType<E: _ErrorX, R>(
     }
 }
 
-// MARK: - Implemented Conformances
+// MARK: - Conformees
 
 extension AnyError: _ErrorX {
     public var traits: ErrorTraits {

@@ -9,7 +9,7 @@ public protocol _TopLevelDecoderOrEncoderWithUserInfo {
     var userInfo: [CodingUserInfoKey: Any] { get set }
 }
 
-// MARK: - Implemented Conformances
+// MARK: - Conformees
 
 extension JSONDecoder: _TopLevelDecoderOrEncoderWithUserInfo {
     

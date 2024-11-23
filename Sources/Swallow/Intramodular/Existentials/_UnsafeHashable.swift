@@ -8,7 +8,7 @@ public protocol _UnsafeHashable {
     func _unsafelyHash(into hasher: inout Hasher) throws
 }
 
-// MARK: - Implemented Conformances
+// MARK: - Conformees
 
 extension HeterogeneousDictionary: _UnsafeHashable {
     public func _unsafelyHash(into hasher: inout Hasher) throws {

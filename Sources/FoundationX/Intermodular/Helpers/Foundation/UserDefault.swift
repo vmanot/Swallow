@@ -98,14 +98,24 @@ extension UserDefault {
 extension UserDefault {
     @propertyWrapper
     public struct Published {
+        public struct Configuration {
+            public var deferUpdates: Bool = false 
+        }
+        
+        public var configuration = Configuration()
+        
         @usableFromInline
         var subscription = ReferenceBox<(ObjectIdentifier, AnyCancellable)?>(wrappedValue: nil)
         
         @UserDefault
         public var wrappedValue: Value
         
-        public var projectedValue: Published {
-            self
+        public var projectedValue: Self {
+            get {
+                self
+            } set {
+                self = newValue
+            }
         }
         
         @inlinable
@@ -125,12 +135,14 @@ extension UserDefault {
 
                 return result
             } set {
-                if Thread.isMainThread {
-                    object.objectWillChange.send()
-                } else {
+                let propertyWrapper: UserDefault.Published = object[keyPath: storageKeyPath]
+
+                if !Thread.isMainThread || propertyWrapper.configuration.deferUpdates {
                     DispatchQueue.main.async {
                         object.objectWillChange.send()
                     }
+                } else {
+                    object.objectWillChange.send()
                 }
                 
                 object[keyPath: storageKeyPath].wrappedValue = newValue

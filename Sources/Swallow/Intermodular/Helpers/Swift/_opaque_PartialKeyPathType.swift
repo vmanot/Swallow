@@ -51,7 +51,7 @@ extension _KeyPathType {
     }
 }
 
-// MARK: - Implemented Conformances
+// MARK: - Conformees
 
 extension AnyKeyPath: _Swallow_KeyPathType {
     public static var _Swallow_KeyPathType_RootType: Any.Type {

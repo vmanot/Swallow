@@ -93,13 +93,21 @@ extension FileManager {
     public func fileExistsAndIsReadable<T: URLRepresentable>(
         at location: T
     ) -> Bool {
-        var url = location.url
-        
-        if isDirectory(at: url) && !url.path.hasSuffix("/") {
-            url = URL(fileURLWithPath: url.path.appending("/"))
+        do {
+            return try location.withResolvedURL { (url: URL) -> Bool in
+                var url = url
+                
+                if isDirectory(at: url) && !url.path.hasSuffix("/") {
+                    url = URL(fileURLWithPath: url.path.appending("/"))
+                }
+                
+                return isReadableFile(atPath: url.path)
+            }
+        } catch {
+            runtimeIssue(error)
+            
+            return false
         }
-        
-        return isReadableFile(atPath: url.path)
     }
     
     public func isReadable<T: URLRepresentable>(
@@ -502,29 +510,29 @@ extension FileManager {
         to destination: URLConvertible,
         replaceExisting: Bool
     ) throws {
-        let destinationURL = destination.url
-        
-        if !fileExists(atPath: destinationURL.path) {
-            try createDirectory(at: destinationURL, withIntermediateDirectories: true, attributes: nil)
-        } else {
-            guard isDirectory(at: destinationURL) else {
-                throw Never.Reason.illegal
-            }
-        }
-        
-        for sourceURL in sourceURLs {
-            let folderName = sourceURL.lastPathComponent
-            let destinationFolderURL = destinationURL.appendingPathComponent(folderName)
-            
-            if fileExists(atPath: destinationFolderURL.path) {
-                if replaceExisting {
-                    try removeItem(at: destinationFolderURL)
-                } else {
+        try destination.withResolvedURL { (destinationURL: URL) in
+            if !fileExists(atPath: destinationURL.path) {
+                try createDirectory(at: destinationURL, withIntermediateDirectories: true, attributes: nil)
+            } else {
+                guard isDirectory(at: destinationURL) else {
                     throw Never.Reason.illegal
                 }
             }
             
-            try copyItem(at: sourceURL, to: destinationFolderURL)
+            for sourceURL in sourceURLs {
+                let folderName = sourceURL.lastPathComponent
+                let destinationFolderURL = destinationURL.appendingPathComponent(folderName)
+                
+                if fileExists(atPath: destinationFolderURL.path) {
+                    if replaceExisting {
+                        try removeItem(at: destinationFolderURL)
+                    } else {
+                        throw Never.Reason.illegal
+                    }
+                }
+                
+                try copyItem(at: sourceURL, to: destinationFolderURL)
+            }
         }
     }
 }

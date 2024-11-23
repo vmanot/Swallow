@@ -24,7 +24,7 @@ extension DeclSyntaxProtocol {
     }
 }
 
-// MARK: - Implemented Conformances
+// MARK: - Conformees
 
 extension ClassDeclSyntax: DeclSyntaxWithMemberBlock {
     

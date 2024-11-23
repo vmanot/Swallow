@@ -21,7 +21,7 @@ public protocol LogStoreProtocol {
     ) throws -> LogEntries
 }
 
-// MARK: - Implemented Conformances
+// MARK: - Conformees
 
 #if canImport(OSLog)
 import OSLog

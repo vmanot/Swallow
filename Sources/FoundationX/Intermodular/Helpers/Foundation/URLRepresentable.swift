@@ -5,7 +5,13 @@
 import Foundation
 import Swallow
 
-public protocol URLConvertible {
+public protocol URLResolvable {
+    func withResolvedURL<R>(
+        perform operation: (URL) throws -> R
+    ) throws -> R
+}
+
+public protocol URLConvertible: URLResolvable {
     var url: URL { get }
 }
 
@@ -30,6 +36,14 @@ extension URLInitiable {
             
             return nil
         }
+    }
+}
+
+extension URLConvertible {
+    public func withResolvedURL<R>(
+        perform operation: (URL) throws -> R
+    ) throws -> R {
+        try operation(url)
     }
 }
 

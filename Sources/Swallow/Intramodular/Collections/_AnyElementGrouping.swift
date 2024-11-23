@@ -59,7 +59,7 @@ extension _AnyElementGrouping: Sequence  {
     }
 }
 
-// MARK: - Implemented Conformances
+// MARK: - Conformees
 
 extension Array: _ElementGrouping {
     public func _eraseTo_AnyElementGrouping() -> _AnyElementGrouping<Element> {

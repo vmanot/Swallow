@@ -11,11 +11,11 @@ extension FunctionDeclSyntax {
     }
     
     public var isThrowing: Bool {
-        signature.effectSpecifiers?.throwsSpecifier != nil
+        signature.effectSpecifiers?.throwsClause?.throwsSpecifier != nil
     }
 
     public var throwsKeyword: TokenSyntax? {
-        signature.effectSpecifiers?.throwsSpecifier
+        signature.effectSpecifiers?.throwsClause?.throwsSpecifier
     }
 
     public var parameterList: FunctionParameterListSyntax {

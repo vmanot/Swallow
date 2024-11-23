@@ -213,7 +213,7 @@ extension MutableValueBox: Hashable where WrappedValue: Hashable {
     }
 }
 
-// MARK: - Implemented Conformances
+// MARK: - Conformees
 
 public final class _IndirectMutablePropertyWrapper<P: MutablePropertyWrapper>: MutablePropertyWrapper {
     public typealias WrappedValue = P.WrappedValue

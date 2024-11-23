@@ -22,7 +22,7 @@ extension String {
     }
 }
 
-// MARK: - Implemented Conformances
+// MARK: - Conformees
 
 extension UUID: CustomTruncatedStringConvertible {
     public var truncatedDescription: String {

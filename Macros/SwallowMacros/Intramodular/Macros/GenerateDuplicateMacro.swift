@@ -145,7 +145,7 @@ extension FunctionDeclSyntax {
             result.prepend("await", separator: " ")
         }
         
-        if signature.effectSpecifiers?.throwsSpecifier != nil {
+        if signature.effectSpecifiers?.throwsClause?.throwsSpecifier != nil {
             result.prepend("try", separator: " ")
         }
         

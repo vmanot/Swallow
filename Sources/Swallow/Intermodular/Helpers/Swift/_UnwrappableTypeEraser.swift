@@ -44,7 +44,7 @@ extension _UnwrappableHashableTypeEraser {
     }
 }
 
-// MARK: - Implemented Conformances
+// MARK: - Conformees
 
 extension AnyHashable: _UnwrappableHashableTypeEraser {
     public typealias _UnwrappedBaseType = any Hashable

@@ -8,7 +8,7 @@ protocol _PlaceholderInitiable {
     init()
 }
 
-// MARK: - Implemented Conformances
+// MARK: - Conformees
 
 extension Array: _PlaceholderInitiable {
     

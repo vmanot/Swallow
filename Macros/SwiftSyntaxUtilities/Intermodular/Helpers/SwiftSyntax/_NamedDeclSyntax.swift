@@ -9,7 +9,7 @@ public protocol _NamedDeclSyntax: DeclSyntaxProtocol {
     var name: TokenSyntax { get }
 }
 
-// MARK: - Implemented Conformances
+// MARK: - Conformees
 
 extension ActorDeclSyntax: _NamedDeclSyntax {
     

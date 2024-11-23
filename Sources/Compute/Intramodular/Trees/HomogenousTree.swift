@@ -107,7 +107,7 @@ extension HomogenousTree {
     }
 }
 
-// MARK: - Implemented Conformances
+// MARK: - Conformees
 
 extension HomogenousTree where Self: Hashable, TreeValue: Hashable, Children: Collection, Children.Index: Hashable {
     public func hash(into hasher: inout Hasher) {

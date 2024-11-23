@@ -31,7 +31,7 @@ extension String {
     }
 }
 
-// MARK: - Implemented Conformances
+// MARK: - Conformees
 
 extension StringCodingStrategies {
     public struct Base64: StringCodingStrategy {
