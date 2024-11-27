@@ -6,41 +6,54 @@ import Foundation
 import Swallow
 
 @propertyWrapper
-public struct _StaticMirrorQuery<T, U> {
+public final class _StaticMirrorQuery<T, U> {
     public let type: T?
-    public let wrappedValue: [U]
+
+    private var _resolveWrappedValue: () -> [U]
+    private var _resolvedWrappedValue: [U]?
     
-    public init(type: T?, transform: ([U]) -> [U] = { $0 }) {
-        self.type = type
-        
-        let value: [U]
-        
-        do {
-            if let type {
-                value = try TypeMetadata._query(.nonAppleFramework, .conformsTo(type as! Any.Type))
-            } else {
-                assert(U.self == Any.Type.self)
-                
-                value = try TypeMetadata._query(.pureSwift).map({ $0.base }) as! [U]
-            }
-        } catch {
-            value = []
+    public var wrappedValue: [U] {
+        _resolvedWrappedValue.unwrapOrInitializeInPlace {
+            _resolveWrappedValue()
         }
-        
-        self.wrappedValue = transform(value)
     }
     
-    public init() where T == Any.Type, U == Any.Type {
+    public init(type: T?, transform: @escaping ([U]) -> [U] = { $0 }) {
+        self.type = type
+        
+        
+        self._resolveWrappedValue = { () -> [U] in
+            let value: [U]
+            
+            do {
+                if let type {
+                    value = try TypeMetadata._query(.nonAppleFramework, .conformsTo(type as! Any.Type))
+                } else {
+                    assert(U.self == Any.Type.self)
+                    
+                    value = try TypeMetadata._query(.pureSwift).map({ $0.base }) as! [U]
+                }
+            } catch {
+                value = []
+            }
+
+            let result: [U] = transform(value)
+            
+            return result
+        }
+    }
+    
+    public convenience init() where T == Any.Type, U == Any.Type {
         self.init(type: nil)
     }
     
-    public init(
+    public convenience init(
         _ type: _StaticSwift._ProtocolAndExistentialTypePair<T, U>
     ) {
         self.init(type: type.protocolType)
     }
     
-    public init(
+    public convenience init(
         _ type: () -> _StaticSwift._ProtocolAndExistentialTypePair<T, U>
     ) {
         self.init(type: Optional.some(type as! T))
