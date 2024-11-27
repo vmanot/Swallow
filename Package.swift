@@ -18,6 +18,7 @@ var package = Package(
             targets: [
                 "_PythonString",
                 "_RuntimeC",
+                "_RuntimeKeyPath",
                 "_SwallowSwiftOverlay",
                 "SE0270_RangeSet",
                 "Swallow",
@@ -27,7 +28,6 @@ var package = Package(
                 "FoundationX",
                 "LoremIpsum",
                 "POSIX",
-                "_RuntimeKeyPath",
                 "Runtime",
             ]
         ),
@@ -233,7 +233,7 @@ private func patchSwiftSyntaxDependency(in package: inout Package) {
     }) {
         package.dependencies[swiftSyntaxIndex] = Package.Dependency.package(
             url: "https://github.com/sjavora/swift-syntax-xcframeworks.git",
-            from: "510.0.1"
+            from: "600.0.1"
         )
     }
     

@@ -41,8 +41,8 @@ extension URL._FileOrDirectorySecurityScopedAccessManager {
         let isDirectory: Bool = FileManager.default.isDirectory(at: url)
         
         if fileManager.fileExists(at: url) {
-            guard isDirectory else {
-                let url: URL = try promptForAccess(to: url, isDirectory: isDirectory)
+            if !isDirectory {
+                let url: URL = try promptForAccess(to: url, isDirectory: false)
                 
                 let bookmarkedURL: URL = try url._accessingSecurityScopedResource {
                     try URL._SavedBookmarks.bookmark(url)
@@ -54,7 +54,7 @@ extension URL._FileOrDirectorySecurityScopedAccessManager {
             }
         }
         
-        if let cachedURL = try? URL._SavedBookmarks.bookmarkedURL(for: url) {
+        if let cachedURL: URL = try? URL._SavedBookmarks.bookmarkedURL(for: url) {
             do {
                 if isDirectory {
                     do {
@@ -253,13 +253,13 @@ extension URL._FileOrDirectorySecurityScopedAccessManager {
     }
     
     fileprivate final class _NSOpenSavePanelDelegate: NSObject, NSOpenSavePanelDelegate {
-        let currentURL: URL
+        let targetURL: URL
         let isDirectory: Bool?
         
         init(url: URL) {
             assert(!url.path.hasPrefix("//"))
             
-            self.currentURL = url._isRelativeFilePath ? url.resolvingSymlinksInPath() : url
+            self.targetURL = url._isRelativeFilePath ? url.resolvingSymlinksInPath() : url
             self.isDirectory = url._isKnownOrIndicatedToBeFileDirectory
             
             super.init()
@@ -269,7 +269,19 @@ extension URL._FileOrDirectorySecurityScopedAccessManager {
             _ sender: Any,
             shouldEnable url: URL
         ) -> Bool {
-            url == currentURL || url._standardizedDirectoryPath == currentURL._standardizedDirectoryPath
+            if url == targetURL {
+                return true
+            } else if url._standardizedDirectoryPath == targetURL._standardizedDirectoryPath {
+                return true
+            } else {
+                if isDirectory == false {
+                    if url._fromFileURLToURL().isAncestor(of: targetURL._fromFileURLToURL()) {
+                        return true
+                    }
+                }
+            }
+            
+            return false
         }
         
         func panel(
@@ -277,20 +289,20 @@ extension URL._FileOrDirectorySecurityScopedAccessManager {
             validate url: URL
         ) throws {
             let url = url._filePath
-            let currentURL = self.currentURL._filePath
+            let targetURL = self.targetURL._filePath
             
             if isDirectory == true {
-                guard url == currentURL else {
+                guard url == targetURL else {
                     throw NSError.genericApplicationError(
                         description: "Incorrect directory.",
-                        recoverySuggestion: "Select the directory “\(currentURL)”."
+                        recoverySuggestion: "Select the directory “\(targetURL)”."
                     )
                 }
             } else {
-                guard url == currentURL else {
+                guard url == targetURL else {
                     throw NSError.genericApplicationError(
                         description: "Incorrect file.",
-                        recoverySuggestion: "Select the file “\(currentURL)”."
+                        recoverySuggestion: "Select the file “\(targetURL)”."
                     )
                 }
             }

@@ -126,6 +126,7 @@ extension FileManager {
             // If it doesn't exist, recursively check parent directories
             while url.pathComponents.count > 1 {
                 url.deleteLastPathComponent()
+                
                 if isReadableFile(atPath: url.path) && isWritableFile(atPath: url.path) {
                     return true
                 }
@@ -162,23 +163,30 @@ extension FileManager {
     public func isSecurityScopedAccessible<T: URLRepresentable>(
         at location: T
     ) -> Bool {
-        let url = location.url._fromFileURLToURL()
+        let result: Bool
+        let url: URL = location.url._fromFileURLToURL()
         
         if ((try? URL._SavedBookmarks.bookmarkedURL(for: location.url._fromFileURLToURL())) as URL?) != nil {
-            return true
-        }
-        
-        if isReadableAndWritable(at: url) {
-            return true
+            result = true
+        } else if isReadableAndWritable(at: url) {
+            result = true
         } else {
             let parentURL = url.deletingLastPathComponent()
             
             guard parentURL != url, !parentURL._isRootPath, !parentURL.path.isEmpty else {
-                return false
+                result = false
+                
+                return result
             }
             
-            return isSecurityScopedAccessible(at: parentURL)
+            if isSecurityScopedAccessible(at: parentURL) {
+                result = true
+            } else {
+                result = isReadableAndWritable(at: url)
+            }
         }
+        
+        return result
     }
 }
 
