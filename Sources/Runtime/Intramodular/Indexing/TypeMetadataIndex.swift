@@ -22,7 +22,28 @@ public final class TypeMetadataIndex {
     
     @frozen
     public enum QueryPredicate: Hashable {
-        case conformsTo(Metatype<Any.Type>)
+        public enum Conformable: Hashable {
+            case metatype(Metatype<Any.Type>)
+            case objCProtocol(ObjCProtocol)
+            
+            public var swiftType: Any.Type? {
+                guard case .metatype(let type) = self else {
+                    return nil
+                }
+                
+                return type.wrappedValue
+            }
+            
+            public init(_ type: Any.Type) {
+                self = .metatype(Metatype<Any.Type>(type))
+            }
+            
+            public init(_ ptcl: ObjCProtocol) {
+                self = .objCProtocol(ptcl)
+            }
+        }
+        
+        case conformsTo(Conformable)
         case kind(Set<TypeMetadata.Kind>)
         case underscored(Bool)
         case nonAppleFramework
@@ -32,8 +53,16 @@ public final class TypeMetadataIndex {
             .kind(Set([kind]))
         }
         
-        public static func conformsTo(_ type: Any.Type) -> Self {
-            .conformsTo(Metatype<Any.Type>(type))
+        public static func conformsTo(
+            _ type: Any.Type
+        ) -> Self {
+            .conformsTo(Conformable(type))
+        }
+        
+        public static func conformsTo(
+            _ type: ObjCProtocol
+        ) -> Self {
+            .conformsTo(Conformable(type))
         }
     }
     
@@ -64,17 +93,18 @@ extension TypeMetadataIndex {
     ) -> Set<TypeMetadata> {
         var predicates = predicates
         
-        let protocolType = predicates
+        let protocolTypes: [Any.Type] = predicates
             .remove(byUnwrapping: {
                 if case .conformsTo(let protocolType) = $0 {
-                    return protocolType.value
+                    return protocolType.swiftType
                 } else {
                     return nil
                 }
             })
-            .first
         
-        if let protocolType {
+        assert(protocolTypes.count == 1, "multiple protocol types are currently unsupported")
+        
+        if let protocolType = protocolTypes.first {
             let protocolType = TypeMetadata(protocolType)
             let predicates = Set(predicates)
             let key: AnyHashable = Hashable2ple((protocolType, predicates))

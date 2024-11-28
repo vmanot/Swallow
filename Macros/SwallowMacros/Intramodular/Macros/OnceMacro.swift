@@ -16,8 +16,7 @@ public struct OnceMacro: DeclarationMacro {
         
         let result = DeclSyntax(
             """
-            @frozen
-            public struct \(name): Swallow._PerformOnceOnAppLaunchClosure {
+            public final class \(name): Swallow._PerformOnceOnAppLaunchClosure {
                 public init() {
                 
                 }
