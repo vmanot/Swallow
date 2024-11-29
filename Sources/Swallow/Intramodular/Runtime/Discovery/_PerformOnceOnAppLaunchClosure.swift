@@ -2,10 +2,16 @@
 // Copyright (c) Vatsal Manot
 //
 
+import Foundation
 import Swift
 
 @_alwaysEmitConformanceMetadata
-public protocol _PerformOnceOnAppLaunchClosure: Initiable {
+@objc public protocol _PerformOnceOnAppLaunchClosureObjC {
+    
+}
+
+@_alwaysEmitConformanceMetadata
+public protocol _PerformOnceOnAppLaunchClosure: _PerformOnceOnAppLaunchClosureObjC, Initiable {
     static var _isInlineTestCase: Bool { get }
     
     init()
