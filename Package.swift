@@ -203,7 +203,6 @@ var package = Package(
                 "Runtime",
                 "Swallow",
                 "SwallowMacrosClient",
-                .product(name: "SwiftSyntaxMacrosTestSupport", package: "swift-syntax", condition: .when(platforms: [.macOS])),
                 .target(name: "SwiftSyntaxUtilities", condition: .when(platforms: [.macOS])),
             ],
             path: "Tests/Swallow"
@@ -214,7 +213,7 @@ var package = Package(
 
 // package-manifest-patch:start
 #if arch(arm64) && os(macOS) 
-if ProcessInfo.processInfo.environment["FUCK_SWIFT_SYNTAX"] != nil {
+if ProcessInfo.processInfo.environment["FUCK_SWIFT_SYNTAX"] != nil || ProcessInfo.processInfo.environment["CI"] != nil {
     patchSwiftSyntaxDependency(in: &package)
 }
 #endif
