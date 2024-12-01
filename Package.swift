@@ -4,7 +4,7 @@ import CompilerPluginSupport
 import Foundation
 import PackageDescription
 
-var package = Package(
+let package = Package(
     name: "Swallow",
     platforms: [
         .iOS(.v13),
@@ -214,15 +214,11 @@ var package = Package(
 // package-manifest-patch:start
 #if arch(arm64) && os(macOS) 
 if ProcessInfo.processInfo.environment["FUCK_SWIFT_SYNTAX"] != nil || ProcessInfo.processInfo.environment["CI"] != nil {
-    patchSwiftSyntaxDependency(in: &package)
+    patchSwiftSyntaxDependency(in: package)
 }
 #endif
 
-#if FUCK_SWIFT_SYNTAX
-patchSwiftSyntaxDependency(in: &package)
-#endif
-
-private func patchSwiftSyntaxDependency(in package: inout Package) {
+private func patchSwiftSyntaxDependency(in package: Package) {
     if let swiftSyntaxIndex = package.dependencies.firstIndex(where: { (dependency: Package.Dependency) in
         guard case .sourceControl(_, let location, _) = dependency.kind else {
             return false
