@@ -233,12 +233,12 @@ private func patchSwiftSyntaxDependency(in package: Package) {
     }
     
     for index in 0..<package.targets.count {
-        var target: Target = package.targets[index]
+        let target: Target = package.targets[index]
         var patched: Bool = false
         
         target.dependencies = target.dependencies.compactMap { (dependency: Target.Dependency) -> Target.Dependency? in
             switch dependency {
-                case .productItem(let name, let package, let moduleAliases, let condition):
+            case .productItem(let name, let package, let moduleAliases, _):
                     let targets: Set<String> = [
                         "SwiftSyntax",
                         "SwiftSyntaxMacros",
