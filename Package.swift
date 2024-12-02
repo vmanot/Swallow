@@ -213,7 +213,7 @@ let package = Package(
 
 // package-manifest-patch:start
 #if arch(arm64) && os(macOS) 
-if ProcessInfo.processInfo.environment["FUCK_SWIFT_SYNTAX"] != nil != nil {
+if ProcessInfo.processInfo.environment["FUCK_SWIFT_SYNTAX"] != nil {
     patchSwiftSyntaxDependency(in: package)
 }
 #endif
