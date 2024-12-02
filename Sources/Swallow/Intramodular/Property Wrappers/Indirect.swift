@@ -50,9 +50,9 @@ extension Indirect: Decodable where Value: Decodable {
     
 }
 
-extension Indirect: CustomStringConvertible where Value: CustomStringConvertible {
+extension Indirect: CustomStringConvertible {
     public var description: String {
-        wrappedValue.description
+        String(describing: wrappedValue)
     }
 }
 
