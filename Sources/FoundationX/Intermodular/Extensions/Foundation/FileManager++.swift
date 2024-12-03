@@ -8,6 +8,23 @@ import Swallow
 import UniformTypeIdentifiers
 
 extension FileManager {
+    public func changeCurrentDirectory(to url: URL) {
+        changeCurrentDirectoryPath(url._standardizedFilePath)
+    }
+    
+    public func changeCurrentDirectory(
+        to directory: CanonicalFileDirectory,
+        path: String
+    ) {
+        let url: URL = directory.url.appending(.directory(path))
+        
+        assert(FileManager.default.isDirectory(at: url))
+        
+        changeCurrentDirectoryPath(url._standardizedFilePath)
+    }
+}
+
+extension FileManager {
     /// Returns a Boolean value that indicates whether a file or directory exists at a specified URL.
     public func fileExists(
         at url: URL

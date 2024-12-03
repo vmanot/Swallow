@@ -88,10 +88,18 @@ extension URL {
 
 extension URL {
     public func isAncestor(of url: URL) -> Bool {
-        if let scheme {
-            guard scheme == url.scheme && host == url.host else {
+        var url: URL = url
+        
+        if url.scheme == nil && self.scheme == "file" {
+            if FileManager.default.fileExists(at: url) {
+                url = url._fromURLToFileURL()
+            }
+        }
+        
+        if let scheme: String = self.scheme {
+            guard scheme == url.scheme && self.host == url.host else {
                 runtimeIssue("Invalid comparison.")
-                
+
                 return false
             }
         }

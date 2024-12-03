@@ -71,3 +71,13 @@ extension _AppSandboxManager {
     }
 }
 #endif
+
+// MARK: - Supplementary
+
+extension ProcessInfo {
+    public var _isRunningWithinSandboxedEnvironment: Bool {
+        assert(ProcessInfo.processInfo === self)
+        
+        return _AppSandboxManager.isAppSandboxed
+    }
+}
