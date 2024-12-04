@@ -94,6 +94,13 @@ extension FileManager {
 #endif
     }
     
+    /// Returns a Boolean value that indicates whether a directory exists at a specified path.
+    public func directoryExists(
+        atPath path: String
+    ) -> Bool {
+        directoryExists(at: URL(fileURLWithPath: path))
+    }
+    
     public func isDirectory<T: URLRepresentable>(
         at location: T
     ) -> Bool {
