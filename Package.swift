@@ -177,10 +177,11 @@ let package = Package(
             name: "MacroBuilder",
             dependencies: [
                 "Swallow",
+                .product(name: "SwiftCompilerPlugin", package: "swift-syntax", condition: .when(platforms: [.macOS])),
                 .product(name: "SwiftSyntax", package: "swift-syntax", condition: .when(platforms: [.macOS])),
+                .product(name: "SwiftSyntaxBuilder", package: "swift-syntax", condition: .when(platforms: [.macOS])),
                 .product(name: "SwiftSyntaxMacros", package: "swift-syntax", condition: .when(platforms: [.macOS])),
                 .product(name: "SwiftParserDiagnostics", package: "swift-syntax", condition: .when(platforms: [.macOS])),
-                .product(name: "SwiftCompilerPlugin", package: "swift-syntax", condition: .when(platforms: [.macOS])),
                 .target(name: "SwiftSyntaxUtilities", condition: .when(platforms: [.macOS])),
             ],
             path: "Macros/MacroBuilder"
@@ -188,10 +189,11 @@ let package = Package(
         .target(
             name: "SwiftSyntaxUtilities",
             dependencies: [
+                .product(name: "SwiftCompilerPlugin", package: "swift-syntax", condition: .when(platforms: [.macOS])),
                 .product(name: "SwiftSyntax", package: "swift-syntax", condition: .when(platforms: [.macOS])),
+                .product(name: "SwiftSyntaxBuilder", package: "swift-syntax", condition: .when(platforms: [.macOS])),
                 .product(name: "SwiftSyntaxMacros", package: "swift-syntax", condition: .when(platforms: [.macOS])),
                 .product(name: "SwiftParserDiagnostics", package: "swift-syntax", condition: .when(platforms: [.macOS])),
-                .product(name: "SwiftCompilerPlugin", package: "swift-syntax", condition: .when(platforms: [.macOS])),
                 "Swallow",
             ],
             path: "Macros/SwiftSyntaxUtilities"
@@ -212,7 +214,7 @@ let package = Package(
 )
 
 // package-manifest-patch:start
-#if arch(arm64) && os(macOS) 
+#if arch(arm64) && os(macOS)
 if ProcessInfo.processInfo.environment["FUCK_SWIFT_SYNTAX"] != nil {
     patchSwiftSyntaxDependency(in: package)
 }
@@ -227,20 +229,21 @@ private func patchSwiftSyntaxDependency(in package: Package) {
         return location.contains("apple/swift-syntax.git")
     }) {
         package.dependencies[swiftSyntaxIndex] = Package.Dependency.package(
-            url: "https://github.com/sjavora/swift-syntax-xcframeworks.git",
-            from: "600.0.1"
+            url: "https://github.com/swift-precompiled/swift-syntax",
+            from: "600.0.0"
         )
     }
     
-    for index in 0..<package.targets.count {
+    /*for index in 0..<package.targets.count {
         let target: Target = package.targets[index]
         var patched: Bool = false
         
         target.dependencies = target.dependencies.compactMap { (dependency: Target.Dependency) -> Target.Dependency? in
             switch dependency {
-            case .productItem(let name, let package, let moduleAliases, _):
+                case .productItem(let name, let package, let moduleAliases, _):
                     let targets: Set<String> = [
                         "SwiftSyntax",
+                        "SwiftSyntaxBuilder",
                         "SwiftSyntaxMacros",
                         "SwiftCompilerPlugin",
                         "SwiftParserDiagnostics"
@@ -254,8 +257,8 @@ private func patchSwiftSyntaxDependency(in package: Package) {
                         patched = true
                         
                         return .productItem(
-                            name: "SwiftSyntaxWrapper",
-                            package: "swift-syntax-xcframeworks",
+                            name: "SwiftSyntax",
+                            package: "swift-syntax",
                             moduleAliases: moduleAliases,
                             condition: .when(platforms: [.macOS])
                         )
@@ -269,6 +272,6 @@ private func patchSwiftSyntaxDependency(in package: Package) {
         }
         
         package.targets[index] = target
-    }
+    }*/
 }
 // package-manifest-patch:end
