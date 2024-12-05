@@ -42,6 +42,10 @@ public struct CodingPath: Codable, CustomStringConvertible, Hashable, Sendable, 
         self.base = path.map({ CodingPathElement.key(AnyCodingKey(erasing: $0)) })
     }
     
+    public init(_ path: [CodingPathElement]) {
+        self.base = path
+    }
+
     public mutating func append(_ element: CodingPathElement) {
         self.base.append(element)
     }
