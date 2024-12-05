@@ -156,6 +156,15 @@ extension URL {
         return self.path == "/" || resolvingSymlinksInPath().path == "/"
     }
     
+    /// Whether the `URL` is `.`.
+    public var _isSingleDot: Bool {
+        return self.path == "."
+    }
+    
+    public var _isAbsoluteRootOrAbsoluteCurrentDirectory: Bool {
+        _isRootPath || _isSingleDot
+    }
+
     /// Checks if the URL represents a hidden file or directory (i.e., starts with a dot).
     public var _isFileDotPrefixed: Bool {
         self.lastPathComponent.hasPrefix(".")

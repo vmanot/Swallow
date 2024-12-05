@@ -248,6 +248,7 @@ extension URL._FileOrDirectorySecurityScopedAccessManager {
             return "Your app needs access to the \(directoryName) folder. Please select to grant access."
         } else {
             let fileName = url.lastPathComponent
+            
             return "Your app needs access to \(fileName). Please select to grant access."
         }
     }
@@ -258,6 +259,7 @@ extension URL._FileOrDirectorySecurityScopedAccessManager {
         
         init(url: URL) {
             assert(!url.path.hasPrefix("//"))
+            assert(!url._isAbsoluteRootOrAbsoluteCurrentDirectory)
             
             self.targetURL = url._isRelativeFilePath ? url.resolvingSymlinksInPath() : url
             self.isDirectory = url._isKnownOrIndicatedToBeFileDirectory
@@ -274,10 +276,8 @@ extension URL._FileOrDirectorySecurityScopedAccessManager {
             } else if url._standardizedDirectoryPath == targetURL._standardizedDirectoryPath {
                 return true
             } else {
-                if isDirectory == false {
-                    if url._fromFileURLToURL().isAncestor(of: targetURL._fromFileURLToURL()) {
-                        return true
-                    }
+                if url._fromFileURLToURL().isAncestor(of: targetURL._fromFileURLToURL()) {
+                    return true
                 }
             }
             

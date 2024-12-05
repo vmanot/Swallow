@@ -4,6 +4,7 @@
 
 import Swift
 
+@_alwaysEmitConformanceMetadata
 public protocol CustomSourceDeclarationReflectable {
     static var customSourceDeclarationMirror: _StaticSwift.SourceDeclarationMirror { get }
 }
@@ -15,7 +16,7 @@ extension CustomSourceDeclarationReflectable {
 }
 
 extension _StaticSwift {
-    public struct SourceDeclarationMirror: ExpressibleByNilLiteral {
+    public struct SourceDeclarationMirror: ExpressibleByNilLiteral, @unchecked Sendable {
         public let sourceLocation: SourceCodeLocation?
         
         public init(
