@@ -101,19 +101,27 @@ extension ExtensibleRangeReplaceableCollection where ElementInsertResult == Void
 // MARK: - Extensions
 
 extension ExtensibleSequence {
-    public func inserting(_ newElement: Element) -> Self {
+    public func inserting(
+        _ newElement: Element
+    ) -> Self {
         return build(self, with: { $0.insert(newElement) })
     }
     
-    public func inserting<S: Sequence>(contentsOf newElements: S) -> Self where S.Element == Element {
+    public func inserting<S: Sequence>(
+        contentsOf newElements: S
+    ) -> Self where S.Element == Element {
         return build(self, with: { $0.insert(contentsOf: newElements) })
     }
     
-    public func appending(_ newElement: Element) -> Self {
+    public func appending(
+        _ newElement: Element
+    ) -> Self {
         return build(self, with: { $0.append(newElement) })
     }
     
-    public func appending<S: Sequence>(contentsOf newElements: S) -> Self where S.Element == Element {
+    public func appending<S: Sequence>(
+        contentsOf newElements: S
+    ) -> Self where S.Element == Element {
         return build(self, with: { $0.append(contentsOf: newElements) })
     }
 }

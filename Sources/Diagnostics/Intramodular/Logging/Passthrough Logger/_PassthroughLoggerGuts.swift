@@ -8,7 +8,7 @@ import Foundation
 
 /// A logger that broadcasts its entries.
 @usableFromInline
-final class _PassthroughLogger: LoggerProtocol, @unchecked Sendable {
+final class _PassthroughLoggerGuts: LoggerProtocol, @unchecked Sendable {
     typealias Source = PassthroughLogger.Source
     
     @usableFromInline
@@ -19,7 +19,7 @@ final class _PassthroughLogger: LoggerProtocol, @unchecked Sendable {
     typealias LogEntry = PassthroughLogger.LogEntry
     
     private let lock = OSUnfairLock()
-    private let parent: _PassthroughLogger?
+    private let parent: _PassthroughLoggerGuts?
     
     var source: PassthroughLogger.Source
     var scope: PassthroughLogger.Scope
@@ -45,7 +45,7 @@ final class _PassthroughLogger: LoggerProtocol, @unchecked Sendable {
         self.configuration = configuration
     }
     
-    init(parent: _PassthroughLogger, scope: AnyLogScope) {
+    init(parent: _PassthroughLoggerGuts, scope: AnyLogScope) {
         self.parent = parent
         self.source = .logger(parent, scope: scope)
         self.scope = .child(parent: parent.scope, scope: scope)
@@ -83,9 +83,9 @@ final class _PassthroughLogger: LoggerProtocol, @unchecked Sendable {
         if let logEntryHandler = _TaskLocalValues._logEntryHandler {
             logEntryHandler(entry)
         } else {
-            let dumptoConsole = (configuration._dumpToConsole ?? (PassthroughLogger.Configuration.global._dumpToConsole ?? true))
+            let shouldDumpToConsole: Bool = configuration._globallyResolved._dumpToConsole ?? true
             
-            if dumptoConsole, #available(macOS 11.0, iOS 14.0, watchOS 7.0, tvOS 14.0, *) {
+            if shouldDumpToConsole, #available(macOS 11.0, iOS 14.0, watchOS 7.0, tvOS 14.0, *) {
                 if let _platformLogger = _platformLogger as? OSLogger {
                     _platformLogger._log(level: level, message().description)
                 }
@@ -102,7 +102,7 @@ final class _PassthroughLogger: LoggerProtocol, @unchecked Sendable {
 
 // MARK: - Conformances
 
-extension _PassthroughLogger: _LogExporting {
+extension _PassthroughLoggerGuts: _LogExporting {
     public func exportLog() async throws -> some _LogFormat {
         _TextualLogDump(entries: entries.map {
             _TextualLogDump.Entry(
@@ -115,19 +115,19 @@ extension _PassthroughLogger: _LogExporting {
     }
 }
 
-extension _PassthroughLogger: ScopedLogger {
+extension _PassthroughLoggerGuts: ScopedLogger {
     @usableFromInline
     typealias Scope = AnyLogScope
     @usableFromInline
-    typealias ScopedLogger = _PassthroughLogger
+    typealias ScopedLogger = _PassthroughLoggerGuts
     
     @usableFromInline
     func scoped(to scope: Scope) throws -> ScopedLogger {
-        _PassthroughLogger(parent: self, scope: scope)
+        _PassthroughLoggerGuts(parent: self, scope: scope)
     }
 }
 
-extension _PassthroughLogger: TextOutputStream {
+extension _PassthroughLoggerGuts: TextOutputStream {
     public func write(_ string: String) {
         entries.append(
             .init(

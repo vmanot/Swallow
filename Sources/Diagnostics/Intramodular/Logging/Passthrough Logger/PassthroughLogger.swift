@@ -6,24 +6,49 @@ import Combine
 import Foundation
 import Swallow
 
+extension PassthroughLogger {
+    public struct Configuration: MergeOperatable {
+        @TaskLocal static var global = Self()
+        
+        public var _dumpToConsole: Bool?
+        
+        public init(
+            _dumpToConsole: Bool? = nil
+        ) {
+            self._dumpToConsole = _dumpToConsole
+        }
+        
+        mutating public func mergeInPlace(
+            with other: PassthroughLogger.Configuration
+        ) {
+            self._dumpToConsole = self._dumpToConsole ?? other._dumpToConsole
+        }
+        
+        /// Resolved by merging with `global`.
+        var _globallyResolved: Self {
+            mergingInPlace(with: .global)
+        }
+    }
+}
+
 /// A logger that broadcasts its entries.
 public final class PassthroughLogger: @unchecked Sendable, LoggerProtocol, ObservableObject {
     public typealias LogLevel = ClientLogLevel
     public typealias LogMessage = Message
     
     @usableFromInline
-    let base: _PassthroughLogger
+    let base: _PassthroughLoggerGuts
     
     public var entryPublisher: AnyPublisher<LogEntry, Never> {
-        base.entryPublisher.eraseToAnyPublisher()
+        self.base.entryPublisher.eraseToAnyPublisher()
     }
-    
-    private init(base: _PassthroughLogger) {
-        self.base = base
-    }
-    
+
     public var source: Source {
-        base.source
+        self.base.source
+    }
+
+    private init(base: _PassthroughLoggerGuts) {
+        self.base = base
     }
 }
 
@@ -33,14 +58,14 @@ extension PassthroughLogger {
     public convenience init(
         source: Source
     ) {
-        self.init(base: _PassthroughLogger(source: source))
+        self.init(base: _PassthroughLoggerGuts(source: source))
     }
     
     public convenience init(
         print: Bool
     ) {
         self.init(
-            base: _PassthroughLogger(
+            base: _PassthroughLoggerGuts(
                 source: .location(.unavailable),
                 configuration: .init(_dumpToConsole: print)
             )
@@ -75,11 +100,15 @@ extension PassthroughLogger: _LogExporting {
 }
 
 extension PassthroughLogger: ScopedLogger {
-    public func scoped(to scope: AnyLogScope) throws -> PassthroughLogger {
+    public func scoped(
+        to scope: AnyLogScope
+    ) throws -> PassthroughLogger {
         PassthroughLogger(base: try base.scoped(to: scope))
     }
     
-    public func scoped(to scope: some LogScope) throws -> PassthroughLogger {
+    public func scoped(
+        to scope: some LogScope
+    ) throws -> PassthroughLogger {
         PassthroughLogger(base: try base.scoped(to: AnyLogScope(_erasing: scope)))
     }
 }

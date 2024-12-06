@@ -22,7 +22,7 @@ extension PassthroughLogger {
                 case .sourceCodeLocation(let location):
                     return location.description
                 case .logger(let logger, let scope):
-                    if let logger = logger as? _PassthroughLogger {
+                    if let logger = logger as? _PassthroughLoggerGuts {
                         guard let scope else {
                             assertionFailure()
                             
@@ -91,18 +91,6 @@ extension PassthroughLogger {
             } else {
                 return .init(content: .something(thing))
             }
-        }
-    }
-    
-    public struct Configuration {
-        @TaskLocal static var global = Self()
-        
-        public var _dumpToConsole: Bool?
-        
-        public init(
-            _dumpToConsole: Bool? = nil
-        ) {
-            self._dumpToConsole = _dumpToConsole
         }
     }
 }

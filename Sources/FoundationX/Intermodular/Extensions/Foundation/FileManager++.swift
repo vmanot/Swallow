@@ -5,7 +5,6 @@
 import Foundation
 import System
 import Swallow
-import UniformTypeIdentifiers
 
 extension FileManager {
     public func changeCurrentDirectory(to url: URL) {
@@ -647,6 +646,28 @@ extension FileManager {
 
 #if canImport(UniformTypeIdentifiers)
 import UniformTypeIdentifiers
+
+@available(macOS 11.0, iOS 14.0, watchOS 7.0, tvOS 14.0, *)
+extension FileManager {
+    public func isFileOfType(
+        _ types: some Sequence<UTType>,
+        at url: URL
+    ) throws -> Bool {
+        let types = Set(types)
+        
+        assert(fileExists(at: url))
+        
+        guard let existingFileType = UTType(from: url) else {
+            assertionFailure()
+            
+            return false
+        }
+        
+        let result = types.contains(where: { $0 == existingFileType || $0.isSubtype(of: existingFileType) })
+        
+        return result
+    }
+}
 
 @available(macOS 11.0, iOS 14.0, watchOS 7.0, tvOS 14.0, *)
 extension FileManager {

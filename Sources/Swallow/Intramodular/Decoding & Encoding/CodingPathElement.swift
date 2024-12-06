@@ -31,8 +31,11 @@ public enum CodingPathElement: Codable, CustomStringConvertible, Hashable, Senda
     }
 }
 
-public struct CodingPath: Codable, CustomStringConvertible, Hashable, Sendable, Sequence {
-    private var base: [CodingPathElement]
+public struct CodingPath: Codable, CustomStringConvertible, ExpressibleByArrayLiteral, Hashable, Sendable, ExtensibleSequence {
+    public typealias ArrayLiteralElement = CodingPathElement
+    public typealias Element = CodingPathElement
+
+    private var base: [Element]
 
     public var description: String {
         base.map({ $0.description }).joined(separator: " -> ")
@@ -46,19 +49,41 @@ public struct CodingPath: Codable, CustomStringConvertible, Hashable, Sendable, 
         self.base = path
     }
 
-    public mutating func append(_ element: CodingPathElement) {
+    public mutating func insert(
+        _ element: CodingPathElement
+    ) {
+        self.base.insert(element)
+    }
+
+    public mutating func append(
+        _ element: CodingPathElement
+    ) {
         self.base.append(element)
     }
-    
-    public mutating func append(_ element: any CodingKey) {
-        self.base.append(CodingPathElement(element))
-    }
-    
+        
     public func makeIterator() -> Array<CodingPathElement>.Iterator {
         base.makeIterator()
     }
+    
+    public init(arrayLiteral elements: ArrayLiteralElement...) {
+        self.init(elements)
+    }
 }
 
+extension CodingPath {
+    public mutating func append<T: CodingKey>(
+        _ element: T
+    ) {
+        self.base.append(CodingPathElement(element))
+    }
+    
+    public func appending<T: CodingKey>(
+        _ element: T
+    ) -> Self {
+        return appending(.key(AnyCodingKey(erasing: element)))
+    }
+}
+                         
 // MARK: - Extensions
 
 extension CodingPathElement {
