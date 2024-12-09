@@ -128,7 +128,16 @@ public struct RelativeIndex: ExpressibleByIntegerLiteral {
 // MARK: - Error Handling
 
 
-private enum CollectionOfOneConversionError<Base: Collection>: Swift.Error {
+private enum CollectionOfOneConversionError<Base: Collection>: CustomStringConvertible, Swift.Error {
     case isEmpty
     case containsMoreThanOneElement(Base)
+    
+    public var description: String {
+        switch self {
+            case .isEmpty:
+                return "Unexpectedly found an empty collection."
+            case .containsMoreThanOneElement:
+                return "Unexpectedly found more than one element in the collection."
+        }
+    }
 }
