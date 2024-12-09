@@ -8,21 +8,23 @@ import OrderedCollections
 public struct InstanceMirror<Subject>: _InstanceMirrorType, _VisitableMirror, MirrorType {
     public var subject: Any
     public let typeMetadata: TypeMetadata.NominalOrTuple
-            
-    private init(
-        unchecked subject: Any,
+    
+    package var _fixedTypeMetadata: TypeMetadata {
+        TypeMetadata(__fixed_type(of: self.subject))
+    }
+
+    private init<T>(
+        unchecked subject: T,
         typeMetadata: TypeMetadata.NominalOrTuple
     ) {
         self.subject = subject
         self.typeMetadata = typeMetadata
     }
-    
-    package var _fixedTypeMetadata: TypeMetadata {
-        TypeMetadata(__fixed_type(of: self.subject))
-    }
         
     @usableFromInline
-    package init?(_subject subject: Any) {
+    internal init?(
+        _typeErasedSubject subject: Any
+    ) {
         func _typeMetadataFromValue<T>(_ x: T) -> TypeMetadata.NominalOrTuple? {
             TypeMetadata.NominalOrTuple(type(of: x))
         }
@@ -33,7 +35,7 @@ public struct InstanceMirror<Subject>: _InstanceMirrorType, _VisitableMirror, Mi
                     return nil
                 }
                 
-                self.init(_subject: value)
+                self.init(_typeErasedSubject: value)
                 
                 return
             }
@@ -48,7 +50,9 @@ public struct InstanceMirror<Subject>: _InstanceMirrorType, _VisitableMirror, Mi
             typeMetadata: metadata
         )
     }
-    
+}
+
+extension InstanceMirror {
     @inlinable
     public init?(
         _ subject: Subject
@@ -59,7 +63,7 @@ public struct InstanceMirror<Subject>: _InstanceMirrorType, _VisitableMirror, Mi
             }
         }
         
-        self.init(_subject: subject)
+        self.init(_typeErasedSubject: subject)
     }
     
     @inlinable
@@ -70,7 +74,7 @@ public struct InstanceMirror<Subject>: _InstanceMirrorType, _VisitableMirror, Mi
             return nil
         }
         
-        self.init(_subject: subject)
+        self.init(_typeErasedSubject: subject)
     }
 
     @inlinable
@@ -78,10 +82,10 @@ public struct InstanceMirror<Subject>: _InstanceMirrorType, _VisitableMirror, Mi
         reflecting subject: Subject
     ) throws {
         do {
-            self = try Self(_subject: __fixed_opaqueExistential(subject)).unwrap()
+            self = try Self(_typeErasedSubject: __fixed_opaqueExistential(subject)).unwrap()
         } catch {
             do {
-                self = try Self(_subject: subject).unwrap()
+                self = try Self(_typeErasedSubject: subject).unwrap()
             } catch(_) {
                 runtimeIssue("Failed to reflect subject of type: \(type(of: _unwrapPossiblyOptionalAny(subject)))")
                 
@@ -107,29 +111,25 @@ extension InstanceMirror {
             typeMetadata: supertypeMetadata
         )
     }
-
-    public var fields: [NominalTypeMetadata.Field] {
-        typeMetadata.fields
-    }
     
     public var fieldDescriptors: [NominalTypeMetadata.Field] {
         typeMetadata.fields
     }
     
-    public var allFields: [NominalTypeMetadata.Field] {
+    public var allFieldDescriptors: [NominalTypeMetadata.Field] {
         guard let supertypeMirror = supertypeMirror else {
-            return fields
+            return fieldDescriptors
         }
         
-        return .init(supertypeMirror.allFields.join(fields))
+        return [NominalTypeMetadata.Field](supertypeMirror.allFieldDescriptors.join(fieldDescriptors))
     }
     
     public var keys: [AnyCodingKey] {
-        fields.map({ .init(stringValue: $0.name) })
+        allFieldDescriptors.map({ .init(stringValue: $0.name) })
     }
     
     public var allKeys: [AnyCodingKey] {
-        allFields.map({ .init(stringValue: $0.name) })
+        allFieldDescriptors.map({ AnyCodingKey(stringValue: $0.name) })
     }
     
     /// Accesses the value of the given field.
@@ -139,7 +139,7 @@ extension InstanceMirror {
         field: NominalTypeMetadata.Field
     ) -> Any? {
         get {
-            if fields.count == 1, fields.first!.type.kind == .existential, typeMetadata.memoryLayout.size == MemoryLayout<Any>.size {
+            if keys.count == 1, fieldDescriptors.first!.type.kind == .existential, typeMetadata.memoryLayout.size == MemoryLayout<Any>.size {
                 let mirror = Mirror(reflecting: subject)
                 
                 assert(mirror.children.count == 1)
@@ -184,7 +184,9 @@ extension InstanceMirror {
         }
     }
     
-    public subscript(_ key: AnyCodingKey) -> Any {
+    public subscript(
+        _ key: AnyCodingKey
+    ) -> Any {
         get {
             func getValue<T>(from x: T) -> Any {
                 assert(T.self != Any.self)
@@ -198,7 +200,7 @@ extension InstanceMirror {
             
             return _openExistential(subject, do: getValue)
         } set {
-            guard let field = fieldForKey(key) else {
+            guard let field = _fieldDescriptorForKey(key) else {
                 assertionFailure()
                 
                 return
@@ -208,7 +210,7 @@ extension InstanceMirror {
         }
     }
     
-    private func fieldForKey(
+    func _fieldDescriptorForKey(
         _ key: AnyCodingKey
     ) -> NominalTypeMetadata.Field? {
         if let result = InstanceMirrorCache._cachedFieldsByNameByType[_fixedTypeMetadata]?[key] {
