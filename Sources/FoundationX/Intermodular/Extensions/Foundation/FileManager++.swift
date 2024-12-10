@@ -100,7 +100,7 @@ extension FileManager {
         directoryExists(at: URL(fileURLWithPath: path))
     }
     
-    public func isDirectory<T: URLRepresentable>(
+    public func isDirectory<T: URLConvertible>(
         at location: T
     ) -> Bool {
         let url = location.url
@@ -113,7 +113,7 @@ extension FileManager {
         return isDirectory.boolValue
     }
     
-    public func fileExistsAndIsReadable<T: URLRepresentable>(
+    public func fileExistsAndIsReadable<T: URLConvertible>(
         at location: T
     ) -> Bool {
         do {
@@ -133,13 +133,13 @@ extension FileManager {
         }
     }
     
-    public func isReadable<T: URLRepresentable>(
+    public func isReadable<T: URLConvertible>(
         at location: T
     ) -> Bool {
         fileExistsAndIsReadable(at: location)
     }
     
-    public func isReadableAndWritable<T: URLRepresentable>(
+    public func isReadableAndWritable<T: URLConvertible>(
         at location: T
     ) -> Bool {
         var url = location.url
@@ -300,6 +300,18 @@ extension FileManager {
 }
 
 extension FileManager {
+    public func createDirectory(
+        at url: some URLConvertible,
+        withIntermediateDirectories: Bool = false,
+        attributes: [FileAttributeKey: Any]? = nil
+    ) throws {
+        try createDirectory(
+            at: url.url,
+            withIntermediateDirectories: withIntermediateDirectories,
+            attributes: attributes
+        )
+    }
+
     public func createDirectoryIfNecessary(
         at url: URL,
         withIntermediateDirectories: Bool = false
@@ -470,25 +482,33 @@ extension FileManager {
     }
     
     public func contentsOfDirectory(
-        at url: URL
+        at url: some URLConvertible,
+        includingPropertiesForKeys keys: [URLResourceKey]? = [.isDirectoryKey],
+        options mask: FileManager.DirectoryEnumerationOptions = []
     ) throws -> [URL] {
-        func alternateResult() throws -> [URL] {
-            return try contentsOfDirectory(atPath: url.path).map { path in
-                let itemURL = url.appending(URL.PathComponent(rawValue: path, isDirectory: nil))
-                
-                assert(url.path != itemURL.path)
-                
-                return itemURL
+        try url.withResolvedURL { (url: URL) in
+            func alternateResult() throws -> [URL] {
+                return try contentsOfDirectory(atPath: url.path).map { path in
+                    let itemURL = url.appending(URL.PathComponent(rawValue: path, isDirectory: nil))
+                    
+                    assert(url.path != itemURL.path)
+                    
+                    return itemURL
+                }
             }
-        }
-        
-        do {
-            return try contentsOfDirectory(at: url, includingPropertiesForKeys: [.isDirectoryKey])
-        } catch(let error) {
+            
             do {
-                return try alternateResult()
-            } catch(_) {
-                throw error
+                return try contentsOfDirectory(
+                    at: url,
+                    includingPropertiesForKeys: keys,
+                    options: mask
+                )
+            } catch(let error) {
+                do {
+                    return try alternateResult()
+                } catch(_) {
+                    throw error
+                }
             }
         }
     }
