@@ -78,8 +78,8 @@ extension TypeMetadata._InstancePrototype {
 }
 
 extension TypeMetadata._InstancePrototype {
-    public init<T>(
-        reflecting type: T.Type
+    public init(
+        reflecting type: Any.Type
     ) throws {
         let placeholder = try cast(_generatePlaceholder(ofType: type), to: InstanceType.self)
         
