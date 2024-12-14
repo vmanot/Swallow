@@ -5,8 +5,8 @@
 import Swift
 
 @_spi(Internal)
-public struct SwiftRuntimeStructMetadataLayout: SwiftRuntimeContextualTypeMetadataLayout {
-    public typealias ContextDescriptor = SwiftRuntimeStructContextDescriptor
+public struct _StructMetadataLayout: _ContextualSwiftRuntimeTypeMetadataLayout {
+    public typealias ContextDescriptor = _StructContextDescriptor
     
     public var valueWitnessTable: UnsafePointer<SwiftRuntimeValueWitnessTable>
     public var kind: Int

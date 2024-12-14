@@ -6,10 +6,10 @@ import Swallow
 
 extension TypeMetadata {
     public struct MemoryLayout {
-        private let typeMetadata: SwiftRuntimeGenericMetadata
+        private let typeMetadata: _SwiftRuntimeTypeMetadata<_GenericMetadataLayout>
         
         public init(_ type: Any.Type) {
-            self.typeMetadata = SwiftRuntimeGenericMetadata(base: type)
+            self.typeMetadata = _SwiftRuntimeTypeMetadata<_GenericMetadataLayout>(base: type)
         }
     }
 }

@@ -9,7 +9,7 @@ extension TypeMetadata {
         public let base: Any.Type
         
         public init?(_ base: Any.Type) {
-            guard SwiftRuntimeTypeMetadata(base: base).kind == .tuple else {
+            guard _MetadataType(base: base).kind == .tuple else {
                 return nil
             }
             
@@ -33,8 +33,8 @@ extension TypeMetadata.Tuple {
 // MARK: - Conformances
 
 @_spi(Internal)
-extension TypeMetadata.Tuple: SwiftRuntimeTypeMetadataWrapper {
-    public typealias SwiftRuntimeTypeMetadata = SwiftRuntimeTupleMetadata
+extension TypeMetadata.Tuple: _SwiftRuntimeTypeMetadataRepresenting {
+    public typealias _MetadataType = _SwiftRuntimeTypeMetadata<_TupleMetadataLayout>
 }
 
 // MARK: - Helpers

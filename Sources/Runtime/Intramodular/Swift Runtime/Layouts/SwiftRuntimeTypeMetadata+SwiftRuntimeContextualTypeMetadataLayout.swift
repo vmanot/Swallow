@@ -5,7 +5,7 @@
 import ObjectiveC
 import Swallow
 
-extension SwiftRuntimeTypeMetadata where MetadataLayout: SwiftRuntimeContextualTypeMetadataLayout {
+extension _SwiftRuntimeTypeMetadata where MetadataLayout: _ContextualSwiftRuntimeTypeMetadataLayout {
     @usableFromInline
     var isGeneric: Bool {
         metadata.pointee.contextDescriptor.pointee.flags.contains(.generic)

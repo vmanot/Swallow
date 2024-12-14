@@ -5,10 +5,10 @@
 import Swift
 
 @_spi(Internal)
-public struct SwiftRuntimeEnumMetadataLayout: SwiftRuntimeContextualTypeMetadataLayout {
+public struct _EnumMetadataLayout: _ContextualSwiftRuntimeTypeMetadataLayout {
     public var valueWitnessTable: UnsafePointer<SwiftRuntimeValueWitnessTable>
     public var kind: Int
-    public var contextDescriptor: UnsafeMutablePointer<SwiftRuntimeStructMetadataLayout.ContextDescriptor>
+    public var contextDescriptor: UnsafeMutablePointer<_StructMetadataLayout.ContextDescriptor>
     public var parent: Int
     
     public var genericArgumentOffset: Int {

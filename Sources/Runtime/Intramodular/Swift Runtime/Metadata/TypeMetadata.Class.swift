@@ -11,7 +11,7 @@ extension TypeMetadata {
         public let base: Any.Type
         
         public init?(_ base: Any.Type) {
-            guard SwiftRuntimeTypeMetadata(base: base).kind == .class else {
+            guard _MetadataType(base: base).kind == .class else {
                 return nil
             }
             
@@ -41,6 +41,6 @@ extension TypeMetadata.Class {
 // MARK: - Conformances
 
 @_spi(Internal)
-extension TypeMetadata.Class: SwiftRuntimeTypeMetadataWrapper {
-    public typealias SwiftRuntimeTypeMetadata = SwiftRuntimeClassMetadata
+extension TypeMetadata.Class: _SwiftRuntimeTypeMetadataRepresenting {
+    public typealias _MetadataType = _SwiftRuntimeTypeMetadata<_ClassMetadataLayout>
 }

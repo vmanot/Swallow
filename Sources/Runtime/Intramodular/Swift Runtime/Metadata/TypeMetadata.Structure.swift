@@ -9,7 +9,7 @@ extension TypeMetadata {
         public let base: Any.Type
         
         public init?(_ base: Any.Type) {
-            guard SwiftRuntimeTypeMetadata(base: base).kind == .struct else {
+            guard _MetadataType(base: base).kind == .struct else {
                 return nil
             }
             
@@ -31,6 +31,6 @@ extension TypeMetadata.Structure {
 // MARK: - Conformances
 
 @_spi(Internal)
-extension TypeMetadata.Structure: SwiftRuntimeTypeMetadataWrapper {
-    public typealias SwiftRuntimeTypeMetadata = SwiftRuntimeStructMetadata
+extension TypeMetadata.Structure: _SwiftRuntimeTypeMetadataRepresenting {
+    public typealias _MetadataType = _SwiftRuntimeTypeMetadata<_StructMetadataLayout>
 }

@@ -12,7 +12,10 @@ public class _SwallowMacros_module: NSObject {
     private static let _didCompleteSweep = _AsyncGate(initiallyOpen: false)
     private static var _inlineTestCases: [any _PerformOnceOnAppLaunchClosure.Type] = []
     
-    @_StaticMirrorQuery(type: (any _PerformOnceOnAppLaunchClosure).self)
+    @_StaticMirrorQuery(
+        type: (any _PerformOnceOnAppLaunchClosure).self,
+        .nonAppleFramework
+    )
     private static var performOnceOnAppLaunchClosureTypes: [any _PerformOnceOnAppLaunchClosure.Type]
     
     public override init() {

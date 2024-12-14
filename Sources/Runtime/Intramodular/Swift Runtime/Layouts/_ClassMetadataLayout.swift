@@ -6,7 +6,7 @@ import Swift
 
 @_spi(Internal)
 @frozen
-public struct SwiftRuntimeClassMetadataLayout: SwiftRuntimeContextualTypeMetadataLayout {
+public struct _ClassMetadataLayout: _ContextualSwiftRuntimeTypeMetadataLayout {
     public var valueWitnessTable: UnsafePointer<SwiftRuntimeValueWitnessTable>
     public var isaPointer: Int
     public var superclass: AnyClass?
@@ -33,7 +33,7 @@ public struct SwiftRuntimeClassMetadataLayout: SwiftRuntimeContextualTypeMetadat
     /// if this is an artificial subclass.  We currently provide no
     /// supported mechanism for making a non-artificial subclass
     /// dynamically.
-    public var contextDescriptor: UnsafeMutablePointer<SwiftRuntimeClassContextDescriptor>
+    public var contextDescriptor: UnsafeMutablePointer<_ClassContextDescriptor>
     /// A function for destroying instance variables, used to clean up after an early return from a constructor.
     public var ivarDestroyer: UnsafeRawPointer?
     
@@ -44,4 +44,26 @@ public struct SwiftRuntimeClassMetadataLayout: SwiftRuntimeContextualTypeMetadat
     public var genericArgumentOffset: Int {
         contextDescriptor.pointee.genericArgumentOffset
     }
+}
+
+extension _SwiftRuntimeTypeMetadata where MetadataLayout == _ClassMetadataLayout {
+    func superclass() -> AnyClass? {
+        guard let superclass = metadata.pointee.superclass else {
+            return nil
+        }
+        
+        if superclass != getSwiftObjectBaseSuperclass() && superclass != NSObject.self {
+            return superclass
+        } else {
+            return nil
+        }
+    }
+}
+
+// MARK: - Auxiliary
+
+private func getSwiftObjectBaseSuperclass() -> AnyClass {
+    class Temp { }
+    
+    return class_getSuperclass(Temp.self)!
 }

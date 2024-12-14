@@ -72,7 +72,11 @@ public struct _LockedState<State> {
     ) rethrows -> T {
         try _buffer.withUnsafeMutablePointers { state, lock in
             _Lock.lock(lock)
-            defer { _Lock.unlock(lock) }
+            
+            defer {
+                _Lock.unlock(lock)
+            }
+            
             return try body(&state.pointee)
         }
     }

@@ -10,28 +10,34 @@ extension TypeMetadata {
         public let base: Any.Type
         
         public init?(_ base: Any.Type) {
-            guard SwiftRuntimeTypeMetadata(base: base).kind == .existential else {
+            guard _MetadataType(base: base).kind == .existential else {
                 return nil
             }
             
             self.base = base
         }
-        
-        public var mangledName: String {
-            if #available(macOS 11.0, iOS 14.0, watchOS 7.0, tvOS 14.0, *) {
-                TypeMetadata(base).mangledName!
-            } else {
-                fatalError()
-            }
+    }
+}
+
+extension TypeMetadata.Existential {
+    public var mangledName: String {
+        if #available(macOS 11.0, iOS 14.0, watchOS 7.0, tvOS 14.0, *) {
+            TypeMetadata(base).mangledName!
+        } else {
+            fatalError()
         }
+    }
+    
+    public var isClassConstrained: Bool {
+        _metadata.metadata.pointee.flags.isClassConstrained
     }
 }
 
 // MARK: - Conformances
 
 @_spi(Internal)
-extension TypeMetadata.Existential: SwiftRuntimeTypeMetadataWrapper {
-    public typealias SwiftRuntimeTypeMetadata = SwiftRuntimeExistentialMetadata
+extension TypeMetadata.Existential: _SwiftRuntimeTypeMetadataRepresenting {
+    public typealias _MetadataType = _SwiftRuntimeTypeMetadata<_ExistentialMetadataLayout>
 }
 
 // MARK: - Internal
@@ -102,21 +108,22 @@ extension TypeMetadata {
          
          return _conformsToProtocol(base, protocolDescriptor) != nil*/
     }
-    
-    @_optimize(speed)
-    @_transparent
+        
     public func _conforms(
         toExistentialMetatype testType: Any.Type
     ) -> Bool {
-        @_optimize(speed)
-        @_transparent
+        let base: Any.Type = self.base
+        
+        
         func _conformsToMetatype<A>(
             _ type: A.Type
         ) -> Bool {
-            self.base is A
+            base is A
         }
         
-        return _openExistential(testType, do: _conformsToMetatype)
+        let result: Bool = _openExistential(testType, do: _conformsToMetatype)
+        
+        return result
     }
     
     @_optimize(speed)
@@ -135,19 +142,6 @@ extension Metatype {
         TypeMetadata(_unwrapBase()).conforms(to: other._unwrapBase())
     }
 }
-
-@_silgen_name("swift_conformsToProtocol")
-@usableFromInline
-func _swift_conformsToProtocol(
-    _ type: Any.Type,
-    _ protocolDescriptor: UnsafeRawPointer
-) -> UnsafeRawPointer?
-
-@_silgen_name("swift_getExistentialMetatypeMetadata")
-@usableFromInline
-func _swift_getExistentialMetatypeMetadata(
-    _ instanceType: Any.Type
-) -> Any.Type?
 
 extension TypeMetadata.Existential {
     /// A discriminator to determine the special protocolness of an existential.
@@ -180,7 +174,7 @@ extension TypeMetadata.Existential {
         }
         
         /// Whether this existential is class constrained. E.g. AnyObject constraint.
-        public var isClassConstraint: Bool {
+        public var isClassConstrained: Bool {
             // Note this is inverted on purpose
             bits & 0x80000000 == 0
         }

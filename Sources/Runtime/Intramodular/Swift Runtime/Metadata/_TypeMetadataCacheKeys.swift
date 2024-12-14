@@ -37,7 +37,25 @@ public final class _TypeMetadataCacheStorage: _KeyPathKeyedDictionary {
             values[keyPath] = newValue
         }
     }
+    
+    @inline(__always)
+    public subscript<Value>(
+        _key keyPath: KeyPath<_TypeMetadataCacheKeys, Value>,
+        default defaultValue: @autoclosure () -> Value
+    ) -> Value {
+        @inline(__always)
+        get {
+            return values[keyPath, default: defaultValue()] as! Value
+        }
+        
+        @inline(__always)
+        set {
+            values[keyPath] = newValue
+        }
+    }
 }
+
+// MARK: - Supplementary
 
 extension TypeMetadata {
     public var _cached: _LockedState<_TypeMetadataCacheStorage> {

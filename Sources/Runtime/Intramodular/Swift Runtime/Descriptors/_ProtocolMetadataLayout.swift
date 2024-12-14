@@ -4,7 +4,7 @@
 
 import Swift
 
-struct SwiftRuntimeProtocolMetadataLayout {
+struct _ProtocolMetadataLayout {
     struct _ContextDescriptor {
         let _flags: SwiftRuntimeContextDescriptorFlags
         let _parent: Int32
@@ -17,7 +17,7 @@ struct SwiftRuntimeProtocolMetadataLayout {
     let associatedTypeNames: SwiftRuntimeUnsafeRelativePointer<Int32, CChar>
 }
 
-extension SwiftRuntimeProtocolMetadataLayout {
+extension _ProtocolMetadataLayout {
     struct ProtocolRequirement {
         let flags: ProtocolRequirement.Flags
         let defaultImpl: SwiftRuntimeUnsafeRelativePointer<Int32, ()>
@@ -40,7 +40,7 @@ extension SwiftRuntimeProtocolMetadataLayout {
     }
 }
 
-extension SwiftRuntimeProtocolMetadataLayout.ProtocolRequirement {
+extension _ProtocolMetadataLayout.ProtocolRequirement {
     /// A discriminator to determine what kind of protocol requirement this is.
     public enum Kind: UInt8 {
         case baseProtocol

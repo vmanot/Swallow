@@ -6,7 +6,7 @@ import Swift
 
 @_spi(Internal)
 @frozen
-public struct SwiftRuntimeClassContextDescriptor: SwiftRuntimeContextDescriptorProtocol {    
+public struct _ClassContextDescriptor: SwiftRuntimeContextDescriptorProtocol {    
     public var base: _swift_TypeContextDescriptor
     public var fieldDescriptor: SwiftRuntimeUnsafeRelativePointer<Int32, SwiftRuntimeFieldDescriptor>
     public var superClass: SwiftRuntimeUnsafeRelativePointer<Int32, Any.Type>
@@ -29,7 +29,7 @@ public struct SwiftRuntimeClassContextDescriptor: SwiftRuntimeContextDescriptorP
 }
 
 @_spi(Internal)
-extension SwiftRuntimeClassContextDescriptor {
+extension _ClassContextDescriptor {
     @frozen
     public struct NegativeSizeAndBoundsUnion {
         public var rawValue: Int32

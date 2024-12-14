@@ -130,21 +130,47 @@ extension DynamicLinkEditor.Image {
         
         static let appleFramework: Set<_ImagePathFilter> = [
             .coreSimulator,
+            .xcode,
+            .developerApplications,
+            .developerFrameworks,
+            .developerPrivateFrameworks,
+            .developerPlatforms,
+            .developerTools,
             .preboot,
             .systemFrameworks,
             .systemPrivateFrameworks,
+            .systemCoreServices,
+            .systemApplications,
+            .systemExtensions,
+            .systemLibraries,
             .userLibraries,
             .xcode
         ]
         
-        case coreSimulator = "/Library/Developer/CoreSimulator/"
+        case coreSimulator = "/Library/Developer/CoreSimulator"
+        case xcode = "/Applications/Xcode.app"
+        case developerApplications = "/Developer/Applications"
+        case developerFrameworks = "/Developer/Library/Frameworks"
+        case developerPrivateFrameworks = "/Developer/Library/PrivateFrameworks"
+        case developerPlatforms = "/Developer/Platforms"
+        case developerTools = "/Developer/Tools"
+
         case preboot = "/private/preboot"
-        case systemCoreServices = "/System/Library/CoreServices"
+
         case systemFrameworks = "/System/Library/Frameworks"
         case systemPrivateFrameworks = "/System/Library/PrivateFrameworks"
+        case systemCoreServices = "/System/Library/CoreServices"
+        case systemApplications = "/System/Applications"
+        case systemExtensions = "/System/Library/Extensions"
+        case systemLibraries = "/System/Library/Libraries"
+        case systemKernelExtensions = "/System/Library/Extensions/Kernels"
+
         case userLibraries = "/usr/lib"
-        case xcode = "/Applications/Xcode.app"
-        
+        case userLocalBin = "/usr/local/bin"
+        case userLocalLib = "/usr/local/lib"
+        case userBin = "/usr/bin"
+        case userSbin = "/usr/sbin"
+
         func matches(_ image: DynamicLinkEditor.Image) -> Bool {
             Self.matchesByName[Hashable2ple((self, image.name))].unwrapOrInitializeInPlace { () -> Bool in
                 return image.name.hasPrefix(self.rawValue)
@@ -213,6 +239,85 @@ extension ObjCClass {
             let aClass: AnyClass = objc_getClass(className) as! AnyClass
             
             result.append(ObjCClass(aClass))
+        }
+        
+        return result
+    }
+}
+
+extension DynamicLinkEditor.Image {
+    public struct Dependency {
+        public let name: String
+        public let compatibilityVersion: UInt32
+        public let currentVersion: UInt32
+        public let timestamp: UInt32
+    }
+    
+    public var dependencies: [Dependency] {
+        var deps: [Dependency] = []
+        var curCmd = UnsafeMutablePointer<load_command>(OpaquePointer(header))
+        
+        // Move past the header to the first load command
+        curCmd = UnsafeMutableRawPointer(mutating: header).advanced(by: MemoryLayout<mach_header_64>.size)
+            .assumingMemoryBound(to: load_command.self)
+        
+        // Iterate through all load commands
+        for _ in 0..<header.pointee.ncmds {
+            if curCmd.pointee.cmd == LC_LOAD_DYLIB || curCmd.pointee.cmd == LC_LOAD_WEAK_DYLIB {
+                let dylibCmd = UnsafeMutableRawPointer(curCmd)
+                    .assumingMemoryBound(to: dylib_command.self)
+                
+                // Get the string offset from the dylib command
+                let stringOffset = Int(dylibCmd.pointee.dylib.name.offset)
+                
+                // Calculate the address of the string
+                let stringPtr = UnsafeMutableRawPointer(dylibCmd)
+                    .advanced(by: stringOffset)
+                    .assumingMemoryBound(to: CChar.self)
+                
+                let name = String(cString: stringPtr)
+                let dependency = Dependency(
+                    name: name,
+                    compatibilityVersion: dylibCmd.pointee.dylib.compatibility_version,
+                    currentVersion: dylibCmd.pointee.dylib.current_version,
+                    timestamp: dylibCmd.pointee.dylib.timestamp
+                )
+                
+                deps.append(dependency)
+            }
+            
+            // Move to the next command
+            curCmd = UnsafeMutableRawPointer(curCmd)
+                .advanced(by: Int(curCmd.pointee.cmdsize))
+                .assumingMemoryBound(to: load_command.self)
+        }
+        
+        return deps
+    }
+    
+    public func depends(on other: DynamicLinkEditor.Image) -> Bool {
+        // Get the dependencies and check if any match the other image's name
+        // Note: We compare the last path component since full paths might differ
+        let otherName = (other.name as NSString).lastPathComponent
+        return dependencies.contains { dependency in
+            let depName = (dependency.name as NSString).lastPathComponent
+            return depName == otherName
+        }
+    }
+}
+
+// Example usage:
+extension DynamicLinkEditor.Image {
+    public var allDependencies: Set<DynamicLinkEditor.Image> {
+        var result: Set<DynamicLinkEditor.Image> = []
+        
+        for dependency in dependencies {
+            let depName = (dependency.name as NSString).lastPathComponent
+            if let depImage = DynamicLinkEditor.Image.allCases.first(where: {
+                ($0.name as NSString).lastPathComponent == depName
+            }) {
+                result.insert(depImage)
+            }
         }
         
         return result

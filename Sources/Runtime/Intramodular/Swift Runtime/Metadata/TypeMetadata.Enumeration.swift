@@ -9,7 +9,7 @@ extension TypeMetadata {
         public let base: Any.Type
         
         public init?(_ base: Any.Type) {
-            guard SwiftRuntimeTypeMetadata(base: base).kind == .enum else {
+            guard _MetadataType(base: base).kind == .enum else {
                 return nil
             }
             
@@ -31,6 +31,6 @@ extension TypeMetadata.Enumeration {
 // MARK: - Conformances
 
 @_spi(Internal)
-extension TypeMetadata.Enumeration: SwiftRuntimeTypeMetadataWrapper {
-    public typealias SwiftRuntimeTypeMetadata = SwiftRuntimeEnumMetadata
+extension TypeMetadata.Enumeration: _SwiftRuntimeTypeMetadataRepresenting {
+    public typealias _MetadataType = _SwiftRuntimeTypeMetadata<_EnumMetadataLayout>
 }

@@ -4,6 +4,17 @@
 
 import Darwin
 
+@_silgen_name("swift_conformsToProtocol")
+public func _swift_conformsToProtocol(
+    _ type: Any.Type,
+    _ protocolDescriptor: UnsafeRawPointer
+) -> UnsafeRawPointer?
+
+@_silgen_name("swift_getExistentialMetatypeMetadata")
+public func _swift_getExistentialMetatypeMetadata(
+    _ instanceType: Any.Type
+) -> Any.Type?
+
 @_silgen_name("$ss24_forEachFieldWithKeyPath2of7options4bodySbxm_s01_bC7OptionsVSbSPys4Int8VG_s07PartialeF0CyxGtXEtlF")
 public func _forEachFieldWithKeyPath<Root>(
     of type: Root.Type,

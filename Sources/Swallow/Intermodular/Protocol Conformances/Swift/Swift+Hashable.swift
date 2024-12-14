@@ -32,12 +32,16 @@ public struct Hashable2ple<T0: Hashable, T1: Hashable>: Hashable, Wrapper {
     public let value: (T0, T1)
     
     @inline(__always)
-    public init(_ value: (T0, T1)) {
+    public init(
+        _ value: (T0, T1)
+    ) {
         self.value = value
     }
         
     @inline(__always)
-    public init<A, B>(_ value: (T0, A, B)) where T1 == Hashable2ple<A, B> {
+    public init<A, B>(
+        _ value: (T0, A, B)
+    ) where T1 == Hashable2ple<A, B> {
         let first = value.0
         let next = Hashable2ple<A, B>((value.1, value.2))
         

@@ -15,59 +15,12 @@ public final class TypeMetadataIndex {
     }()
     
     @frozen
-    @usableFromInline
-    enum StateFlag {
-        case initialIndexingComplete
+    public enum StateFlag: Hashable {
+
     }
     
-    @frozen
-    public enum QueryPredicate: Hashable {
-        public enum Conformable: Hashable {
-            case metatype(Metatype<Any.Type>)
-            case objCProtocol(ObjCProtocol)
-            
-            public var swiftType: Any.Type? {
-                guard case .metatype(let type) = self else {
-                    return nil
-                }
-                
-                return type.wrappedValue
-            }
-            
-            public init(_ type: Any.Type) {
-                self = .metatype(Metatype<Any.Type>(type))
-            }
-            
-            public init(_ ptcl: ObjCProtocol) {
-                self = .objCProtocol(ptcl)
-            }
-        }
-        
-        case conformsTo(Conformable)
-        case kind(Set<TypeMetadata.Kind>)
-        case underscored(Bool)
-        case nonAppleFramework
-        case pureSwift
-        
-        public static func kind(_ kind: TypeMetadata.Kind) -> Self {
-            .kind(Set([kind]))
-        }
-        
-        public static func conformsTo(
-            _ type: Any.Type
-        ) -> Self {
-            .conformsTo(Conformable(type))
-        }
-        
-        public static func conformsTo(
-            _ type: ObjCProtocol
-        ) -> Self {
-            .conformsTo(Conformable(type))
-        }
-    }
-    
-    private lazy var _stateFlags: Set<StateFlag> = []
-    private lazy var _queryResultsByConformances: [AnyHashable: Set<TypeMetadata>] = [:]
+    private var _stateFlags: Set<StateFlag> = []
+    private var _queryResultsByConformances: [AnyHashable: Set<TypeMetadata>] = [:]
     private var _queryIndices = QueryIndices()
     
     var lock = OSUnfairLock()
@@ -75,9 +28,7 @@ public final class TypeMetadataIndex {
     internal init() {
         
     }
-}
-
-extension TypeMetadataIndex {
+    
     @_disfavoredOverload
     @_optimize(speed)
     public func _query(
@@ -85,84 +36,93 @@ extension TypeMetadataIndex {
     ) -> Set<TypeMetadata> {
         _query(predicates)
     }
-        
+    
     @usableFromInline
     @_optimize(speed)
     func _query(
         _ predicates: [QueryPredicate]
     ) -> Set<TypeMetadata> {
-        var predicates = predicates
+        let (protocolPredicates, otherPredicates) = splitPredicates(predicates)
         
-        let protocolTypes: [Any.Type] = predicates
-            .remove(byUnwrapping: {
-                if case .conformsTo(let protocolType) = $0 {
-                    return protocolType.swiftType
-                } else {
-                    return nil
-                }
-            })
+        if let result = handleProtocolConformanceQuery(protocolPredicates, otherPredicates) {
+            return result
+        }
+        
+        return _queryIndices.fetch(Set(otherPredicates))
+    }
+        
+    private func splitPredicates(
+        _ predicates: [QueryPredicate]
+    ) -> (protocols: [Any.Type], other: [QueryPredicate]) {
+        var remainingPredicates = predicates
+        let protocolTypes: [Any.Type] = remainingPredicates.remove(byUnwrapping: {
+            if case .conformsTo(let protocolType) = $0 {
+                return protocolType.swiftType
+            }
+            return nil
+        })
+        
+        return (protocolTypes, remainingPredicates)
+    }
+    
+    private func handleProtocolConformanceQuery(
+        _ protocolTypes: [Any.Type],
+        _ otherPredicates: [QueryPredicate]
+    ) -> Set<TypeMetadata>? {
+        guard let protocolType: Any.Type = protocolTypes.first else {
+            return nil
+        }
         
         assert(protocolTypes.count == 1, "multiple protocol types are currently unsupported")
         
-        if let protocolType = protocolTypes.first {
-            let protocolType = TypeMetadata(protocolType)
-            let predicates = Set(predicates)
-            let key: AnyHashable = Hashable2ple((protocolType, predicates))
-            
-            if let result = lock.withCriticalScope(perform: { _queryResultsByConformances[key] }) {
-                return result
-            } else {
-                let result = _queryTypes(conformingTo: protocolType, predicates)
-                
-                lock.withCriticalScope {
-                    _queryResultsByConformances[key] = result
-                }
-                
-                return result
-            }
+        let protocolMetadata = TypeMetadata(protocolType)
+        var otherPredicates: Set<QueryPredicate> = Set(otherPredicates)
+    
+        if (protocolMetadata.typed as? TypeMetadata.Existential)?.isClassConstrained == true {
+            otherPredicates.append(.kind(.class))
+        }
+
+        let cacheKey = Hashable2ple((protocolMetadata, otherPredicates))
+        
+        if let cached = lock.withCriticalScope(perform: { _queryResultsByConformances[cacheKey] }) {
+            return cached
         } else {
-            return _queryIndices.fetch(Set(predicates))
+            let result = queryTypesConformingTo(protocolMetadata, otherPredicates)
+            
+            lock.withCriticalScope {
+                _queryResultsByConformances[cacheKey] = result
+            }
+            
+            return result
         }
     }
     
-    private func _queryTypes(
-        conformingTo protocolType: TypeMetadata,
+    private func queryTypesConformingTo(
+        _ protocolType: TypeMetadata,
         _ predicates: Set<QueryPredicate>
     ) -> Set<TypeMetadata> {
-        let types: Set<TypeMetadata> = _queryIndices.fetch(predicates)
+        var result = Set<TypeMetadata>()
+        let conformanceChecker = ConformanceChecker(protocolType: protocolType)
         
-        var result: Set<TypeMetadata> = []
+        var predicates: Set<QueryPredicate> = predicates
         
-        func validateSkip(_ type: TypeMetadata) {
-            
+        if conformanceChecker.isClassConstrained {
+            predicates.insert(.kind(.class))
         }
         
-        assert(!types.isEmpty)
-        
-        if
-            protocolType.kind == .existential,
-            let protocolExistentialMetatype: Any.Type = _swift_getExistentialMetatypeMetadata(protocolType.base)
-        {
-            for type in types {
-                if type._conforms(toExistentialMetatype: protocolExistentialMetatype) {
-                    result.insert(type)
-                } else {
-                    validateSkip(type)
-                }
-            }
-        } else {
-            for type in types {
-                if type.conforms(to: protocolType) {
-                    result.insert(type)
-                } else {
-                    validateSkip(type)
-                }
+        let candidateTypes: Set<TypeMetadata> = _queryIndices.fetch(predicates)
+
+        for type in candidateTypes {
+            if conformanceChecker.typeConforms(type) {
+                result.insert(type)
             }
         }
         
         return result
     }
 }
+
+// MARK: - QueryIndices
 
 extension TypeMetadataIndex {
     @usableFromInline
@@ -201,29 +161,37 @@ extension TypeMetadataIndex {
             }
         }()
         
-        private var nonAppleSwiftTypes: Set<TypeMetadata> = {
+        private lazy var nonAppleSwiftTypes: Set<TypeMetadata> = {
             var allSwiftTypes: Set<TypeMetadata> = []
-            let allRuntimeDiscoveredTypes = RuntimeDiscoveryIndex.enumerate().map({ TypeMetadata($0) })
+            let allRuntimeDiscoveredTypes = _RuntimeTypeDiscoveryIndex.enumerate().map({ TypeMetadata($0) })
             
             allSwiftTypes.formUnion(allRuntimeDiscoveredTypes)
             
-            let imagesToSearch = DynamicLinkEditor.Image.allCases.filter {
+            let imagesToSearch: [DynamicLinkEditor.Image] = DynamicLinkEditor.Image.allCases.filter {
                 !$0._matches(DynamicLinkEditor.Image._ImagePathFilter.appleFramework)
+            }
+            
+            func index(_ type: TypeMetadata) {
+                guard type._isIndexWorthy else {
+                    return
+                }
+                
+                allSwiftTypes.insert(type)
             }
             
             for image in imagesToSearch {
                 for conformanceList in image._parseSwiftProtocolConformancesPerType2() {
-                    if let type = conformanceList.type {
-                        allSwiftTypes.insert(type)
+                    if let type: TypeMetadata = conformanceList.type {
+                        index(type)
                     }
                     
                     for conformance in conformanceList.conformances {
-                        if let type = conformance.type {
-                            allSwiftTypes.insert(type)
+                        if let type: TypeMetadata = conformance.type {
+                            index(type)
                         }
                         
-                        if let type = conformance.protocolType {
-                            allSwiftTypes.insert(type)
+                        if let type: TypeMetadata = conformance.protocolType {
+                            index(type)
                         }
                     }
                 }
@@ -232,45 +200,145 @@ extension TypeMetadataIndex {
             return allSwiftTypes
         }()
         
+        private lazy var nonAppleSwiftClasses: Set<TypeMetadata> = {
+            nonAppleSwiftTypes.filter({ swift_isClassType($0.base) })
+        }()
+        
+        private lazy var enumAndStructTypes: Set<TypeMetadata> = {
+            nonAppleSwiftTypes.filter({ $0.kind == .enum || $0.kind == .struct })
+        }()
+        
         private lazy var nonUnderscoredTypes: Set<TypeMetadata> = {
             allTypes.filter({ !$0.name.hasPrefix("_") })
         }()
         
         private lazy var allTypes: Set<TypeMetadata> = {
-            objCClasses.union(nonAppleSwiftTypes) // FIXME
+            objCClasses.union(nonAppleSwiftTypes)
         }()
         
         init() {
             self.nonAppleSwiftTypes.formUnion(bundledObjCClasses)
         }
-        
+                
         @_optimize(speed)
         @usableFromInline
         func fetch(_ predicates: Set<QueryPredicate>) -> Set<TypeMetadata> {
-            guard !predicates.isEmpty else {
-                return allTypes
-            }
-            
-            if predicates == [.kind([TypeMetadata.Kind.class])] {
-                return objCClasses
-            } else if predicates == [.nonAppleFramework] {
-                return nonAppleSwiftTypes // FIXME
-            } else if predicates == [.underscored(false)] {
-                return nonUnderscoredTypes
-            } else if predicates == [.underscored(false), .nonAppleFramework] {
-                return nonUnderscoredTypes.subtracting(appleFrameworkObjCClasses)
-            } else if predicates == [.kind([TypeMetadata.Kind.class]), .underscored(false)] {
-                return nonUnderscoredTypes.intersection(objCClasses)
-            } else if predicates == [.kind([TypeMetadata.Kind.class]), .underscored(false), .nonAppleFramework] {
-                return nonUnderscoredTypes.intersection(objCClasses).subtracting(appleFrameworkObjCClasses)
-            } else if predicates == [.pureSwift, .nonAppleFramework] {
-                return nonAppleSwiftTypes
-            } else if predicates == [.pureSwift] {
-                return nonAppleSwiftTypes
-            }
-            
-            fatalError()
+            let handler = PredicateHandler(predicates: predicates, indices: self)
+           
+            return handler.handle() ?? allTypes
         }
+    }
+}
+
+// MARK: - PredicateHandler
+
+extension TypeMetadataIndex.QueryIndices {
+    private struct PredicateHandler {
+        let predicates: Set<TypeMetadataIndex.QueryPredicate>
+        let indices: TypeMetadataIndex.QueryIndices
+        
+        func handle() -> Set<TypeMetadata>? {
+            if predicates.isEmpty {
+                return indices.allTypes
+            }
+                        
+            if predicates.count == 1 {
+                if let result = handleSinglePredicate(predicates.first!) {
+                    return result
+                } else {
+                    assertionFailure()
+                }
+            } else {
+                if predicates == [.nonAppleFramework, .kind(.class)] {
+                    return indices.nonAppleSwiftClasses
+                } else if predicates == [.nonAppleFramework, .kind(.enum, .struct)] {
+                    return indices.enumAndStructTypes
+                }
+            }
+            
+            return handleCompositePredicates()
+        }
+        
+        private func handleSinglePredicate(
+            _ predicate: TypeMetadataIndex.QueryPredicate
+        ) -> Set<TypeMetadata>? {
+            switch predicate {
+                case .kind(let kinds) where kinds == [.enum, .struct]:
+                    return indices.objCClasses
+                case .kind(let kinds) where kinds == [.class]:
+                    return indices.objCClasses
+                case .nonAppleFramework:
+                    return indices.nonAppleSwiftTypes
+                case .underscored(false):
+                    return indices.nonUnderscoredTypes
+                case .pureSwift:
+                    return indices.nonAppleSwiftTypes
+                default:
+                    return nil
+            }
+        }
+        
+        private func handleCompositePredicates() -> Set<TypeMetadata>? {
+            var result: Set<TypeMetadata> = indices.allTypes
+            
+            for predicate in predicates {
+                result = apply(predicate, to: result)
+            }
+            
+            return result
+        }
+        
+        private func apply(
+            _ predicate: TypeMetadataIndex.QueryPredicate,
+            to types: Set<TypeMetadata>
+        ) -> Set<TypeMetadata> {
+            switch predicate {
+                case .kind(let kinds):
+                    return types.filter {
+                        kinds.contains($0.kind)
+                    }
+                case .underscored(let include):
+                    return include ? types : types.filter({ !$0.name.hasPrefix("_") })
+                case .nonAppleFramework:
+                    return types.subtracting(indices.appleFrameworkObjCClasses)
+                case .pureSwift:
+                    return types.intersection(indices.nonAppleSwiftTypes)
+                case .conformsTo:
+                    // Handled separately in main query logic
+                    return types
+            }
+        }
+    }
+}
+
+// MARK: - ConformanceChecker
+
+private struct ConformanceChecker {
+    let protocolType: TypeMetadata
+    
+    fileprivate let existentialMetatype: Any.Type?
+    fileprivate let isClassConstrained: Bool
+
+    init(
+        protocolType: TypeMetadata
+    ) {
+        self.protocolType = protocolType
+        self.existentialMetatype = protocolType.kind == .existential ? _swift_getExistentialMetatypeMetadata(protocolType.base) : nil
+        self.isClassConstrained = TypeMetadata.Existential(protocolType.base)?.isClassConstrained ?? false
+    }
+    
+    func typeConforms(_ type: TypeMetadata) -> Bool {
+        if isClassConstrained {
+            guard swift_isClassType(type.base) else {
+                return false
+            }
+        }
+                
+        if let existentialMetatype = existentialMetatype {
+            return type._conforms(toExistentialMetatype: existentialMetatype)
+        }
+        
+        return type.conforms(to: protocolType)
     }
 }
 
@@ -283,6 +351,12 @@ extension TypeMetadata {
         TypeMetadataIndex.shared._query(predicates)
     }
     
+    public static func _query(
+        _ predicates: [TypeMetadataIndex.QueryPredicate]
+    ) throws -> Set<TypeMetadata> {
+        TypeMetadataIndex.shared._query(predicates)
+    }
+    
     public static func _query<T>(
         _ predicates: TypeMetadataIndex.QueryPredicate...,
         returning: Array<T>.Type = Array<T>.self
@@ -291,14 +365,70 @@ extension TypeMetadata {
             ._query(predicates)
             .map({ try cast($0.base) })
     }
+    
+    public static func _query<T>(
+        _ predicates: [TypeMetadataIndex.QueryPredicate],
+        returning: Array<T>.Type = Array<T>.self
+    ) throws -> Array<T> {
+        return try TypeMetadataIndex.shared
+            ._query(predicates)
+            .map({ try cast($0.base) })
+    }
 }
 
-// MARK: - Internal
+// MARK: - Auxiliary
+
+extension TypeMetadataIndex {
+    @frozen
+    public enum QueryPredicate: Hashable {
+        public enum Conformable: Hashable {
+            case metatype(Metatype<Any.Type>)
+            case objCProtocol(ObjCProtocol)
+            
+            public var swiftType: Any.Type? {
+                guard case .metatype(let type) = self else {
+                    return nil
+                }
+                
+                return type.wrappedValue
+            }
+            
+            public init(_ type: Any.Type) {
+                self = .metatype(Metatype<Any.Type>(type))
+            }
+            
+            public init(_ ptcl: ObjCProtocol) {
+                self = .objCProtocol(ptcl)
+            }
+        }
+        
+        case conformsTo(Conformable)
+        case kind(Set<TypeMetadata.Kind>)
+        case underscored(Bool)
+        case nonAppleFramework
+        case pureSwift
+                
+        public static func kind(_ kinds: TypeMetadata.Kind...) -> Self {
+            .kind(Set(kinds))
+        }
+        
+        public static func conformsTo(_ type: Any.Type) -> Self {
+            .conformsTo(Conformable(type))
+        }
+        
+        public static func conformsTo(_ type: ObjCProtocol) -> Self {
+            .conformsTo(Conformable(type))
+        }
+    }
+}
+
+// MARK: - Helpers
 
 extension TypeMetadata {
     fileprivate var _isIndexWorthy: Bool {
         let typeName: String = Swift._typeName(base)
         
+        // Filter out various framework and internal types
         guard !typeName.hasPrefix("__C.") else {
             return false
         }
