@@ -20,3 +20,4 @@ jobs:
       with:
         xcode-version: '16'
         configurations: '["debug"]'
+        fuck-swift-syntax: true
