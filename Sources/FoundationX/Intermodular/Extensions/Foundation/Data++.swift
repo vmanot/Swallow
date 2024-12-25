@@ -23,10 +23,10 @@ extension Data {
         let inferredFileExtension: String? = URL(fileURLWithPath: "./\(name)")._fileExtension
         
         let url =  nil
-            ?? bundle.url(forResource: name, withExtension: fileExtension)
-            ?? bundle.url(forResource: name, withExtension: nil)
-            ?? bundle.url(forResource: fileNameWithoutExtension, withExtension: inferredFileExtension)
-    
+        ?? bundle.url(forResource: name, withExtension: fileExtension)
+        ?? bundle.url(forResource: name, withExtension: nil)
+        ?? bundle.url(forResource: fileNameWithoutExtension, withExtension: inferredFileExtension)
+        
         guard
             let url = url,
             let data = try? Data(contentsOf: url)
@@ -100,7 +100,7 @@ extension Data {
             throw _StringConversionError.failure
         }
     }
-
+    
     public func toStringTrimmingWhitespacesAndNewlines(
         encoding: String.Encoding = .utf8
     ) -> String? {
@@ -109,10 +109,11 @@ extension Data {
 }
 
 extension Data {
-    public func decode<D: Decodable>(
-        _ type: D.Type,
-        using jsonDecoder: JSONDecoder = .init()
-    ) throws -> D {
-        try jsonDecoder.decode(type, from: self)
+    @available(*, deprecated)
+    public func decode<T: Decodable>(
+        _ type: T.Type,
+        using decoder: JSONDecoder = .init()
+    ) throws -> T {
+        try decoder.decode(type, from: self)
     }
 }

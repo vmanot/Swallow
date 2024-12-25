@@ -60,6 +60,12 @@ extension PassthroughLogger {
     ) {
         self.init(base: _PassthroughLoggerGuts(source: source))
     }
+     
+    public convenience init<T: AnyObject & Logging>(
+        source: T
+    ) {
+        self.init(source: .object(source))
+    }
     
     public convenience init(
         print: Bool
