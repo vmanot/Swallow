@@ -23,6 +23,10 @@ extension CanonicalFileDirectory {
 }
 
 extension CanonicalFileDirectory {
+    public static var home: Self {
+        Self(_name: .userHomeDirectory(.home))
+    }
+
     public static var desktop: Self {
         Self(_name: .userHomeDirectory(.desktop))
     }

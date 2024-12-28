@@ -6,7 +6,7 @@ import Swift
 import SwiftSyntax
 
 public protocol _NamedDeclSyntax: DeclSyntaxProtocol {
-    var name: TokenSyntax { get }
+    var name: TokenSyntax { get set }
 }
 
 // MARK: - Conformees

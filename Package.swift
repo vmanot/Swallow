@@ -205,6 +205,7 @@ let package = Package(
                 "Runtime",
                 "Swallow",
                 "SwallowMacrosClient",
+                .product(name: "SwiftSyntaxMacrosTestSupport", package: "swift-syntax", condition: .when(platforms: [.macOS])),
                 .target(name: "SwiftSyntaxUtilities", condition: .when(platforms: [.macOS])),
             ],
             path: "Tests/Swallow"
@@ -233,45 +234,5 @@ private func patchSwiftSyntaxDependency(in package: Package) {
             from: "600.0.0"
         )
     }
-    
-    /*for index in 0..<package.targets.count {
-        let target: Target = package.targets[index]
-        var patched: Bool = false
-        
-        target.dependencies = target.dependencies.compactMap { (dependency: Target.Dependency) -> Target.Dependency? in
-            switch dependency {
-                case .productItem(let name, let package, let moduleAliases, _):
-                    let targets: Set<String> = [
-                        "SwiftSyntax",
-                        "SwiftSyntaxBuilder",
-                        "SwiftSyntaxMacros",
-                        "SwiftCompilerPlugin",
-                        "SwiftParserDiagnostics"
-                    ]
-                    
-                    if package == "swift-syntax", targets.contains(name) {
-                        if patched {
-                            return nil
-                        }
-                        
-                        patched = true
-                        
-                        return .productItem(
-                            name: "SwiftSyntax",
-                            package: "swift-syntax",
-                            moduleAliases: moduleAliases,
-                            condition: .when(platforms: [.macOS])
-                        )
-                    }
-                    
-                default:
-                    break
-            }
-            
-            return dependency
-        }
-        
-        package.targets[index] = target
-    }*/
 }
 // package-manifest-patch:end

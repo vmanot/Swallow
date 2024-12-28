@@ -92,7 +92,7 @@ extension _UserHomeDirectoryName {
         _sandboxedURL._unsandboxedURL
     }
     
-    func url(unsandboxed: Bool?) -> URL {
+    public func _url(unsandboxed: Bool?) -> URL {
         if let unsandboxed: Bool {
             if unsandboxed {
                 return _unsandboxedURL

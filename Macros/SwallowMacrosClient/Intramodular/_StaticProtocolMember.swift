@@ -3,7 +3,6 @@
 //
 
 @_exported import Swallow
-@_exported import Swallow
 
 @attached(member, names: arbitrary)
 // @attached(extension, names: arbitrary)

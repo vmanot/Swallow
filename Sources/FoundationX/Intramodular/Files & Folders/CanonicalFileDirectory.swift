@@ -24,7 +24,7 @@ public struct CanonicalFileDirectory: Hashable, Sendable {
     }
     
     var _name: DirectoryName
-    var _unsandboxed: Bool? = nil
+    var _isUnsandboxed: Bool? = nil
     
     public var url: URL {
         try! toURL()
@@ -36,11 +36,17 @@ public struct CanonicalFileDirectory: Hashable, Sendable {
     
     init(_name: DirectoryName, _unsandboxed: Bool? = nil) {
         self._name = _name
-        self._unsandboxed = _unsandboxed
+        self._isUnsandboxed = _unsandboxed
     }
     
     public static var unspecified: Self {
         Self(_name: .unspecified)
+    }
+    
+    public func _unsandboxed() -> Self {
+        withMutableScope(self) {
+            $0._isUnsandboxed = true
+        }
     }
 }
 
@@ -50,13 +56,13 @@ extension CanonicalFileDirectory {
         
         switch _name {
             case .applications:
-                if let _unsandboxed, _unsandboxed {
+                if let _isUnsandboxed, _isUnsandboxed {
                     return URL(fileURLWithPath: "/Applications")
                 } else {
                     return FileManager.default.urls(for: .applicationDirectory, in: .localDomainMask).first!
                 }
             case .userHomeDirectory(let directory): do {
-                return directory.url(unsandboxed: _unsandboxed)
+                return directory._url(unsandboxed: _isUnsandboxed)
             }
             case .applicationSupportFiles: do {
                 return try fileManager

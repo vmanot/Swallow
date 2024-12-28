@@ -224,7 +224,7 @@ extension FileManager {
         } else if FileManager.default.fileOrDirectoryExists(at: location), let result = try? URL._SavedBookmarks.bookmark(location) {
             return result
         } else {
-            /// FIXME:!!!! This looped infinitely when given a malformed URL created with a #fileID
+            /// FIXME!!!: This looped infinitely when given a malformed URL created with a #fileID
             let parentURL: URL = location.resolvingSymlinksInPath().deletingLastPathComponent()
             
             guard !parentURL._isRootPath, parentURL != location, !parentURL._isRootPath, !parentURL.path.isEmpty else {

@@ -5,7 +5,7 @@
 import SwiftDiagnostics
 import Swallow
 
-public struct AnyDiagnosticMessage: DiagnosticMessage, Error, FixItMessage, ExpressibleByStringLiteral {
+public struct AnyDiagnosticMessage: DiagnosticMessage, Error, FixItMessage {
     public let message: String
     public let severity: DiagnosticSeverity
     
@@ -20,7 +20,7 @@ public struct AnyDiagnosticMessage: DiagnosticMessage, Error, FixItMessage, Expr
     }
     
     public init(
-        message: String = "An unknown error occurred in \(#fileID).", 
+        message: String = "An unknown error occurred in \(#fileID).",
         severity: DiagnosticSeverity = .error,
         file: StaticString? = #fileID
     ) {
@@ -28,7 +28,9 @@ public struct AnyDiagnosticMessage: DiagnosticMessage, Error, FixItMessage, Expr
         self.severity = severity
         self.file = file
     }
-    
+}
+
+extension AnyDiagnosticMessage {
     public init(
         _ error: Never.Reason,
         file: StaticString? = #file
@@ -39,8 +41,14 @@ public struct AnyDiagnosticMessage: DiagnosticMessage, Error, FixItMessage, Expr
             file: file
         )
     }
-    
-    public init(stringLiteral value: String) {
+}
+
+// MARK: - Conformances
+
+extension AnyDiagnosticMessage: ExpressibleByStringLiteral {
+    public init(
+        stringLiteral value: String
+    ) {
         self.init(message: value, severity: .error, file: nil)
     }
 }

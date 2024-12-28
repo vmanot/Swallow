@@ -39,7 +39,8 @@ public struct module: CompilerPlugin {
         TestMacro.self,
         TryMacro.self,
         TryAwaitMacro.self,
-        _InternalTestMacro.self
+        _InternalTestMacro.self,
+        SectionMacro.self,
     ]
     
     public init() {
