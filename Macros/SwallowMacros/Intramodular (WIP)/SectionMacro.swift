@@ -19,7 +19,7 @@ public struct SectionMacro: DeclarationMacro {
                 do {
                     return try DeclSyntax($0).unwrap()
                 } catch {
-                    if let syntax = try $0.item.modifyingDeclarationIfPresent({ (syntax: inout DeclSyntax) in
+                    if let syntax = $0.item.modifyingDeclarationIfPresent({ (syntax: inout DeclSyntax) in
                         if var _syntax = syntax.as(StructDeclSyntax.self) {
                             _syntax.name = "foo_\(raw: _syntax.name.trimmedDescription)"
 
