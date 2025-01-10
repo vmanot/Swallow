@@ -39,10 +39,15 @@ public protocol _KeyPathType: _opaque_KeyPathType, _opaque_PartialKeyPathType, _
     func _toKeyPath() -> KeyPath<Root, Value>
 
     func _opaque_appending(path: PartialKeyPath<Value>) -> AnyKeyPath
+    func _opaque_appending(path: AnyKeyPath) -> AnyKeyPath
 }
 
 extension _KeyPathType {
     public func _opaque_appending(path: PartialKeyPath<Value>) -> AnyKeyPath {
+        (path as! (any _KeyPathType))._unsafe_opaque_appended(to: _toKeyPath())
+    }
+    
+    public func _opaque_appending(path: AnyKeyPath) -> AnyKeyPath {
         (path as! (any _KeyPathType))._unsafe_opaque_appended(to: _toKeyPath())
     }
 

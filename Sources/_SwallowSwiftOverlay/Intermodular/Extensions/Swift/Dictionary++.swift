@@ -80,6 +80,13 @@ extension Dictionary {
         })
     }
     
+    /// Merges the key-value pairs in the given sequence into the dictionary, using a combining closure to determine the value for any duplicate keys.
+    public mutating func merge(
+        uniqueKeysWithValues other: [Key: Value]
+    ) {
+        merge(uniqueKeysWithValues: other.lazy.map({ ($0.key, $0.value) }))
+    }
+    
     public mutating func _unsafelyMerge<S: Sequence>(
         uniqueKeysWithValues other: S
     ) where S.Element == (Key, Value) {

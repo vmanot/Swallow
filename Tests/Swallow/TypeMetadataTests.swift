@@ -18,7 +18,14 @@ final class TypeMetadataTests: XCTestCase {
         XCTAssert(TypeMetadata.of(array).conforms(to: (any Sequence).self))
         
         
-        print(TypeMetadata.of(Image.self)._allKeyPathsByName)
+        print(TypeMetadata.of(Image.self)._allTopLevelKeyPathsByNameInDeclarationOrder)
+    }
+    
+    func testKeyPaths() throws {
+        let topLevelKeyPaths = TypeMetadata(SomeTypeWithNestedSubtypes.self)._allTopLevelKeyPathsByName
+        let allKeyPaths = TypeMetadata(SomeTypeWithNestedSubtypes.self)._recursivelyGetAllKeyPaths()
+        
+        print(topLevelKeyPaths, allKeyPaths)
     }
 }
 
@@ -43,5 +50,14 @@ extension TypeMetadataTests {
     
     public class Dog: Animal {
         public var nickname: String = "woof"
+    }
+    
+    public struct SomeTypeWithNestedSubtypes {
+        public let foo: Int
+        public let nested: NestedSubtype
+        
+        public struct NestedSubtype {
+            let bar: Int
+        }
     }
 }
