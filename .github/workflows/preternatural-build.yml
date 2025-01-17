@@ -10,7 +10,13 @@ concurrency:
 
 jobs:
   build:
-    uses: PreternaturalAI/preternatural-github-actions/.github/workflows/preternatural-build.yml@main
-    with:
-      xcode-version: '16'
-      configurations: '["debug"]'
+    runs-on: ghcr.io/cirruslabs/macos-runner:sonoma
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+    
+    - name: Run Preternatural Build (Xcode 16)
+      uses: PreternaturalAI/preternatural-github-actions/preternatural-build@main
+      with:
+        xcode-version: '16'
+        configurations: '["debug"]'
