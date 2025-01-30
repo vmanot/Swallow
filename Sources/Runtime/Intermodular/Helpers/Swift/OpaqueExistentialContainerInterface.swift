@@ -198,7 +198,9 @@ extension OpaqueExistentialContainer {
 extension OpaqueExistentialContainer: UnmanagedProtocol {
     public typealias Instance = Any
     
-    public static func passUnretained(_ value: Instance) -> OpaqueExistentialContainer {
+    public static func passUnretained(
+        _ value: Instance
+    ) -> OpaqueExistentialContainer {
         if Swift.type(of: value) is AnyClass {
             let type = TypeMetadata.of(value)
             let buffer = Buffer((unsafeBitCast(try! cast(value, to: AnyObject.self)), nil, nil))

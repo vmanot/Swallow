@@ -4,6 +4,15 @@
 
 import Darwin
 
+#if canImport(ObjectiveC)
+@_silgen_name("swift_getInitializedObjCClass")
+public func _swift_getInitializedObjCClass(_ c: AnyClass!) -> AnyClass!
+#else
+public func _swift_getInitializedObjCClass(_ c: AnyClass!) -> AnyClass! {
+    fatalError(Never.Reason.unavailable)
+}
+#endif
+
 @_silgen_name("swift_conformsToProtocol")
 public func _swift_conformsToProtocol(
     _ type: Any.Type,
@@ -168,18 +177,57 @@ public struct _SwiftRuntimeEachFieldOptions: OptionSet {
     }
 }
 
+public struct _swift_SignedPointer<Pointee> {
+    public var base: UnsafeRawPointer
+    
+    public var signed: UnsafeRawPointer {
+        base
+    }
+}
+
+public protocol _swift_RelativePointerProtocol {
+    associatedtype Pointee
+    
+    var offset: Int32 { get }
+    
+    func address(from ptr: UnsafeRawPointer) -> UnsafeRawPointer
+    func pointee(from ptr: UnsafeRawPointer) -> Pointee?
+}
+
 @frozen
-public struct _swift_RelativeDirectPointer<Pointee> {
+public struct _swift_RelativeDirectPointer<Pointee>: _swift_RelativePointerProtocol {
     public var offset: Int32
     
     @_transparent
     public init(offset: Int32) {
         self.offset = offset
     }
+        
+    @_transparent
+    public func address(
+        from pointer: UnsafeRawPointer
+    ) -> UnsafeRawPointer {
+        return pointer + UnsafeRawPointer.Stride(self.offset)
+    }
     
     @_transparent
-    public func address(from pointer: UnsafeRawPointer) -> UnsafeRawPointer {
-        return pointer + UnsafeRawPointer.Stride(self.offset)
+    public func pointee(
+        from pointer: UnsafeRawPointer
+    ) -> Pointee? {
+        if offset == 0 {
+            return nil
+        }
+        
+        return address(from: pointer).load(as: Pointee.self)
+    }
+}
+
+extension UnsafeRawPointer {
+    public func _swift_relativeDirectAddress<T>(as type: T.Type) -> UnsafeRawPointer {
+        let relativePointer = _swift_RelativeDirectPointer<T>(
+            offset: load(as: Int32.self)
+        )
+        return relativePointer.address(from: self)
     }
 }
 

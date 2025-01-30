@@ -5,7 +5,7 @@
 import Swallow
 
 @_spi(Internal)
-public protocol SwiftRuntimeContextDescriptorProtocol {
+public protocol _SwiftRuntimeContextDescriptorLayoutProtocol {
     associatedtype FieldOffsetVectorOffsetType: FixedWidthInteger
         
     var base: _swift_TypeContextDescriptor { get set }
@@ -17,7 +17,7 @@ public protocol SwiftRuntimeContextDescriptorProtocol {
     var genericContextHeader: TargetTypeGenericContextDescriptorHeader { get }
 }
 
-extension SwiftRuntimeContextDescriptorProtocol {
+extension _SwiftRuntimeContextDescriptorLayoutProtocol {
     public var flags: SwiftRuntimeContextDescriptorFlags {
         base.flags
     }
@@ -28,6 +28,27 @@ extension SwiftRuntimeContextDescriptorProtocol {
             base.mangledName
         } _modify {
             yield &base.mangledName
+        }
+    }
+    
+    @_transparent
+    public mutating func _unsafeSelfRelativeAddress<T>(
+        for field: KeyPath<Self, T>
+    ) -> UnsafeRawPointer {
+        withUnsafeMutablePointer(to: &self) { ptr in
+            let offset = MemoryLayout<Self>.offset(of: field)!
+            return ptr.rawRepresentation.advanced(by: offset)
+        }
+    }
+    
+    @_transparent
+    public mutating func _unsafeSelfRelativeAddress<T: _swift_RelativePointerProtocol>(
+        for field: KeyPath<Self, T>
+    ) -> UnsafeRawPointer {
+        withUnsafeMutablePointer(to: &self) { ptr in
+            let offset = MemoryLayout<Self>.offset(of: field)!
+            
+            return ptr.pointee[keyPath: field].address(from: ptr.advanced(by: offset))
         }
     }
 }
@@ -101,23 +122,47 @@ public struct SwiftRuntimeContextDescriptorFlags: OptionSet {
 }
 
 extension SwiftRuntimeContextDescriptorFlags {
-    @usableFromInline
-    struct KindSpecificFlags {
-        var rawValue: UInt64
+    @frozen
+    public struct KindSpecificFlags: RawRepresentable {
+        public var rawValue: UInt64
         
-        @usableFromInline
-        var classAreImmediateMembersNegative: Bool {
+        public init(rawValue: UInt64) {
+            self.rawValue = rawValue
+        }
+        
+        /// Whether this type context has any import information.
+        public var hasImportInfo: Bool {
+            rawValue & 0x4 != 0
+        }
+        
+        /// The resilient superclass type reference kind.
+        public var resilientSuperclassRefKind: SwiftRuntimeTypeReferenceKind {
+            SwiftRuntimeTypeReferenceKind(rawValue: UInt16(rawValue) & 0xE00)!
+        }
+        
+        /// Whether or not this class has any immediate members negative.
+        public var classAreImmediateMembersNegative: Bool {
             rawValue & 0x1000 != 0
         }
         
-        @usableFromInline
-        var classHasResilientSuperclass: Bool {
+        /// Whether or not this class has a resilient superclass.
+        public var classHasResilientSuperclass: Bool {
             rawValue & 0x2000 != 0
+        }
+        
+        /// Whether or not this class has an override table.
+        public var classHasOverrideTable: Bool {
+            rawValue & 0x4000 != 0
+        }
+        
+        /// Whether or not this class has a vtable.
+        public var classHasVTable: Bool {
+            rawValue & 0x8000 != 0
         }
     }
     
-    @usableFromInline
-    var kindSpecificFlags: KindSpecificFlags {
+    @inlinable
+    public var kindSpecificFlags: KindSpecificFlags {
         KindSpecificFlags(rawValue: UInt64(self._kindSpecificFlags))
     }
 }

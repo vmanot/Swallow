@@ -33,7 +33,7 @@ public struct __swift5_proto_Conformance: Hashable {
         return _swift_GenericContext(raw: address)
     }
     
-    var type: Any.Type? {
+    public var type: Any.Type? {
         guard let contextDescriptor else {
             return nil
         }
@@ -42,7 +42,7 @@ public struct __swift5_proto_Conformance: Hashable {
             offset: descriptor.typeRef
         )
         
-        guard let kind, kind != .IndirectTypeDescriptor else {
+        guard let kind, kind != .indirectTypeDescriptor else {
             return nil
         }
         
@@ -72,16 +72,18 @@ public struct __swift5_proto_Conformance: Hashable {
         let offset = start.load(as: Int32.self)
         let addr = start + Int(offset)
         
+        guard let kind: SwiftRuntimeTypeReferenceKind = kind else {
+            return nil
+        }
+        
         switch kind {
-            case .DirectTypeDescriptor:
+            case .directTypeDescriptor:
                 return _swift_GenericContext(raw: addr)
-            case .IndirectTypeDescriptor:
+            case .indirectTypeDescriptor:
                 return addr.load(as: _swift_GenericContext.self)
-            case .DirectObjCClassName:
+            case .directObjCClass:
                 return nil
-            case .IndirectObjCClass:
-                return nil
-            case nil:
+            case .indirectObjCClass:
                 return nil
         }
     }
@@ -179,9 +181,9 @@ struct _swift_GenericContextDescriptor {
     let parent: Int32
 }
 
+@_spi(Internal)
 @frozen
-@usableFromInline
-struct _swift_ConformanceDescriptor {
+public struct _swift_ConformanceDescriptor {
     let `protocol`: Int32
     let typeRef: Int32
     let witnessTablePattern: Int32

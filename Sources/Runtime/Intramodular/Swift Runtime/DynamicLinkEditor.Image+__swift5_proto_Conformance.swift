@@ -125,13 +125,13 @@ extension DynamicLinkEditor.Image {
         }
         
         switch kind {
-            case .DirectTypeDescriptor:
+            case .directTypeDescriptor:
                 break
-            case .IndirectTypeDescriptor:
+            case .indirectTypeDescriptor:
                 return nil
-            case .DirectObjCClassName:
+            case .directObjCClass:
                 break
-            case .IndirectObjCClass:
+            case .indirectObjCClass:
                 return nil
         }
         

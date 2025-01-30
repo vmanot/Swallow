@@ -5,7 +5,7 @@
 import Swift
 
 @_spi(Internal)
-public struct _StructContextDescriptor: SwiftRuntimeContextDescriptorProtocol {
+public struct _StructContextDescriptor: _SwiftRuntimeContextDescriptorLayoutProtocol {
     public typealias FieldTypeAccessor = @convention(c) (UnsafePointer<Int>) -> UnsafePointer<Int>
     
     public var base: _swift_TypeContextDescriptor
