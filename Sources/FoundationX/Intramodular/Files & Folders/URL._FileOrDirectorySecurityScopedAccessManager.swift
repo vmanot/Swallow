@@ -42,7 +42,12 @@ extension URL._FileOrDirectorySecurityScopedAccessManager {
         
         if fileManager.fileExists(at: url) {
             if !isDirectory {
-                let url: URL = try promptForAccess(to: url, isDirectory: false)
+                let url: URL = try promptForAccess(
+                    openPanelConfiguration: .init(
+                        targetURL: url,
+                        isKnownToBeDirectory: isDirectory
+                    )
+                )
                 
                 let bookmarkedURL: URL = try url._accessingSecurityScopedResource {
                     try URL._SavedBookmarks.bookmark(url)
@@ -62,17 +67,32 @@ extension URL._FileOrDirectorySecurityScopedAccessManager {
                         
                         result = cachedURL
                     } catch {
-                        result = try promptForAccess(to: url, isDirectory: isDirectory)
+                        result = try promptForAccess(
+                            openPanelConfiguration: .init(
+                                targetURL: url,
+                                isKnownToBeDirectory: isDirectory
+                            )
+                        )
                     }
                 } else {
                     if FileManager.default.isReadableAndWritable(at: cachedURL) {
-                        result = try promptForAccess(to: url, isDirectory: isDirectory)
+                        result = try promptForAccess(
+                            openPanelConfiguration: .init(
+                                targetURL: url,
+                                isKnownToBeDirectory: isDirectory
+                            )
+                        )
                     } else {
                         result = cachedURL
                     }
                 }
             } catch {
-                let url: URL = try promptForAccess(to: url, isDirectory: isDirectory)
+                let url: URL = try promptForAccess(
+                    openPanelConfiguration: .init(
+                        targetURL: url,
+                        isKnownToBeDirectory: isDirectory
+                    )
+                )
                 
                 do {
                     if isDirectory {
@@ -104,7 +124,12 @@ extension URL._FileOrDirectorySecurityScopedAccessManager {
                         !fileManager.fileExists(at: url),
                         let (directory, path) = fileManager.nearestAncestor(for: url, where: { fileManager.directoryExists(at: $0) })
                     {
-                        let accessibleDirectory: URL = try promptForAccess(to: directory, isDirectory: true)
+                        let accessibleDirectory: URL = try promptForAccess(
+                            openPanelConfiguration: .init(
+                                targetURL: directory,
+                                isKnownToBeDirectory: true
+                            )
+                        )
                         
                         return try accessibleDirectory._accessingSecurityScopedResource {
                             do {
@@ -137,7 +162,12 @@ extension URL._FileOrDirectorySecurityScopedAccessManager {
                 }
             }
             
-            let accessibleURL: URL = try promptForAccess(to: url, isDirectory: isDirectory)
+            let accessibleURL: URL = try promptForAccess(
+                openPanelConfiguration: .init(
+                    targetURL: url,
+                    isKnownToBeDirectory: isDirectory
+                )
+            )
             let bookmarkedURL: URL = try URL._SavedBookmarks.bookmark(accessibleURL)
             
             do {
@@ -188,14 +218,21 @@ extension URL._FileOrDirectorySecurityScopedAccessManager {
     
     @MainActor
     private static func promptForAccess(
-        to url: URL,
-        isDirectory: Bool
+        openPanelConfiguration: _OpenPanelConfiguration
     ) throws -> URL {
-        let openPanelDelegate = _NSOpenSavePanelDelegate(url: url)
-        let openPanel: NSOpenPanel = configureOpenPanel(for: url, isDirectory: isDirectory)
-        
+        let openPanelDelegate = _NSOpenSavePanelDelegate(url: openPanelConfiguration.targetURL)
+        let openPanel: NSOpenPanel = configureOpenPanel(configuration: openPanelConfiguration)
+                
         openPanel.delegate = openPanelDelegate
+                
+        if openPanelConfiguration.isKnownToBeDirectory {
+            if let initialURL = openPanelConfiguration.initialDirectoryURL, openPanel.directoryURL == nil {
+                openPanel.directoryURL = initialURL
+            }
+        }
         
+        assert(openPanel.directoryURL == openPanelConfiguration.initialDirectoryURL)
+
         if ProcessInfo.processInfo._isRunningWithinXCTest {
             openPanel.becomeKey()
             openPanel.orderFront(nil)
@@ -222,32 +259,47 @@ extension URL._FileOrDirectorySecurityScopedAccessManager {
         }
     }
     
+    fileprivate struct _OpenPanelConfiguration {
+        let targetURL: URL
+        let isKnownToBeDirectory: Bool
+        
+        var initialDirectoryURL: URL? {
+            (isKnownToBeDirectory ? targetURL : targetURL.deletingLastPathComponent())._fromURLToFileURL()
+        }
+    }
+    
     private static func configureOpenPanel(
-        for url: URL,
-        isDirectory: Bool
+        configuration: _OpenPanelConfiguration
     ) -> NSOpenPanel {
         let openPanel = NSOpenPanel()
         
-        openPanel.directoryURL = url.deletingLastPathComponent()
+        if let initialURL = configuration.initialDirectoryURL {
+            openPanel.directoryURL = initialURL
+        }
+        
         openPanel.canChooseFiles = true
-        openPanel.canChooseDirectories = isDirectory
+        openPanel.canChooseDirectories = configuration.isKnownToBeDirectory
         openPanel.canCreateDirectories = false
         openPanel.allowsMultipleSelection = false
-        openPanel.message = generateOpenPanelMessage(for: url, isDirectory: isDirectory)
+        openPanel.message = generateOpenPanelMessage(
+            openConfiguration: .init(
+                targetURL: configuration.targetURL,
+                isKnownToBeDirectory: configuration.isKnownToBeDirectory
+            )
+        )
         openPanel.prompt = "Grant Access"
         
         return openPanel
     }
     
     private static func generateOpenPanelMessage(
-        for url: URL,
-        isDirectory: Bool
+        openConfiguration: _OpenPanelConfiguration
     ) -> String {
-        if isDirectory {
-            let directoryName = _UserHomeDirectoryName(from: url)?.rawValue ?? "selected"
+        if openConfiguration.isKnownToBeDirectory {
+            let directoryName = _UserHomeDirectoryName(from: openConfiguration.targetURL)?.rawValue ?? "selected"
             return "Your app needs access to the \(directoryName) folder. Please select to grant access."
         } else {
-            let fileName = url.lastPathComponent
+            let fileName = openConfiguration.targetURL.lastPathComponent
             
             return "Your app needs access to \(fileName). Please select to grant access."
         }

@@ -2,7 +2,7 @@
 // Copyright (c) Vatsal Manot
 //
 
-#import "Swallow_module_init.h"
+#import "_Swallow_module_init.h"
 
 @implementation NSObject(_SwallowMacros_module_init)
 

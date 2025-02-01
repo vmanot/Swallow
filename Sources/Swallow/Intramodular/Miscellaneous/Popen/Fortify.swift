@@ -218,30 +218,12 @@ internal class _Fortify: ThreadLocal {
             let symbolStart = caller.index(before: symbolEnd)
             let symbolRange = symbolStart..<symbolEnd
             if let symbol = caller[try: symbolRange].map({ String($0) }),
-               let demangled = demangle(symbol: symbol) {
+               let demangled = _swift_demangle(mangledName: symbol) {
                 caller.replaceSubrange(symbolRange, with: demangled)
             }
             trace += caller+"\n"
         }
         return trace
-    }
-    
-    fileprivate class func demangle(symbol: UnsafePointer<Int8>) -> String? {
-        if let demangledNamePtr = _stdlib_demangleImpl(
-            mangledName: symbol,
-            mangledNameLength: UInt(strlen(symbol)),
-            outputBuffer: nil,
-            outputBufferSize: nil,
-            flags: 0
-        ) {
-            let demangledName = String(cString: demangledNamePtr)
-            
-            free(demangledNamePtr)
-            
-            return demangledName
-        }
-        
-        return nil
     }
 }
 
@@ -281,15 +263,6 @@ internal class ThreadLocal {
         }
     }
 }
-
-@_silgen_name("swift_demangle")
-public func _stdlib_demangleImpl(
-    mangledName: UnsafePointer<CChar>?,
-    mangledNameLength: UInt,
-    outputBuffer: UnsafeMutablePointer<CChar>?,
-    outputBufferSize: UnsafeMutablePointer<UInt>?,
-    flags: UInt32
-) -> UnsafeMutablePointer<CChar>?
 
 internal func hook_assertionFailure(
     _ prefix: StaticString, _ message: StaticString,

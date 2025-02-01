@@ -2,7 +2,7 @@
 // Copyright (c) Vatsal Manot
 //
 
-internal import _RuntimeC
+private import _RuntimeC
 import ObjectiveC
 import Swift
 

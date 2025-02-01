@@ -16,3 +16,9 @@ public macro DebugLog() = #externalMacro(
     module: "SwallowMacros",
     type: "DebugLogMacro"
 )
+
+@attached(memberAttribute)
+public macro DebugLog2() = #externalMacro(
+    module: "SwallowMacros",
+    type: "DebugLogMacro"
+)

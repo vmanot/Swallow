@@ -18,3 +18,7 @@ public protocol Initiable: _ThrowingInitiable {
 public protocol AllCaseInitiable {
     static var all: Self { get }
 }
+
+public func _ThrowingInitiable_initialize<T: _ThrowingInitiable>(_ type: T.Type) throws -> T {
+    try type.init()
+}

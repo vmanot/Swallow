@@ -63,8 +63,8 @@ public func _swift_getMetadataKind(_: Any.Type) -> UInt
 @_silgen_name("swift_demangle")
 @_spi(Internal)
 public func _stdlib_demangleImpl(
-    _ mangledName: UnsafePointer<CChar>?,
-    mangledNameLength: Int,
+    mangledName: UnsafePointer<CChar>?,
+    mangledNameLength: UInt,
     outputBuffer: UnsafeMutablePointer<CChar>?,
     outputBufferSize: UnsafeMutablePointer<UInt>?,
     flags: UInt32
@@ -88,29 +88,36 @@ public func _swift_isClassType(
     _ type: Any.Type
 ) -> Bool
 
-public func _stdlib_demangleName(
-    _ mangled: String
-) -> String {
-    // @convention(thin) (Optional<UnsafePointer<Int8>>, UInt, Optional<UnsafeMutablePointer<UInt8>>, Optional<UnsafeMutablePointer<UInt>>, UInt32) -> Optional<UnsafeMutablePointer<Int8>>
-    // @convention(thin) (Optional<UnsafePointer<Int8>>, Int, Optional<UnsafeMutablePointer<Int8>>, Optional<UnsafeMutablePointer<UInt>>, UInt32) -> Optional<UnsafeMutablePointer<Int8>>
-    
-    return mangled.utf8CString.withUnsafeBufferPointer { (buffer: UnsafeBufferPointer<CChar>) in        
-        let result = _stdlib_demangleImpl(
+public func _swift_demangle(
+    mangledName: String
+) -> String? {
+    return mangledName.utf8CString.withUnsafeBufferPointer { (buffer: UnsafeBufferPointer<CChar>) -> String? in
+        let demangled = _stdlib_demangleImpl(
             mangledName: buffer.baseAddress as UnsafePointer<CChar>?,
             mangledNameLength: UInt(buffer.count - 1),
             outputBuffer: nil,
             outputBufferSize: nil,
             flags: UInt32(0)
-        ).map({ String(utf8String: $0, deallocate: true) })
+        )
         
-        guard let result else {
-            runtimeIssue("Failed to demangle type: \(mangled)")
-            
-            return mangled
+        guard let demangled else {
+            return nil
         }
-        
-        return result
+                        
+        return String(utf8String: demangled, deallocate: true)
     }
+}
+
+public func _stdlib_demangleName(
+    _ mangled: String
+) -> String {
+    guard let result = _swift_demangle(mangledName: mangled) else {
+        runtimeIssue("Failed to demangle type: \(mangled)")
+        
+        return mangled
+    }
+    
+    return result
 }
 
 package func _swift_getAllKeyPaths<T>(

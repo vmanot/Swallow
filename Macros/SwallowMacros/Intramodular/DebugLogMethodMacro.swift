@@ -50,6 +50,29 @@ extension DebugLogMethodMacro: BodyMacro {
             newBody.append(contentsOf: rewrittenBody)
             newBody.append("logger.debug(\"Exiting method \(raw: methodName)\")")
             return newBody
+        } else if let declaration = declaration.as(InitializerDeclSyntax.self) {
+            let parameters = declaration.signature.parameterClause.parameters
+            
+            var newBody: [CodeBlockItemSyntax] = [
+                "logger.debug(\"Entering method\")"
+            ]
+            
+            if !parameters.isEmpty {
+                newBody.append("logger.debug(\"Parameters:\")")
+                for param in parameters {
+                    let paramName = param.secondName?.text ?? param.firstName.text
+                    newBody.append("logger.debug(\"\(raw: paramName): \\(\(raw: paramName))\")")
+                }
+            }
+            
+            let rewriter = ReturnStatementRewriter()
+            let rewrittenBody = rewriter.visit(originalBody)
+            
+            newBody.append(contentsOf: rewrittenBody)
+            newBody.append("logger.debug(\"Exiting method\")")
+            
+            return newBody
+            
         } else if let declaration = declaration.as(AccessorDeclSyntax.self) {
             let accessorType = declaration.accessorSpecifier.text
             let variableNameSuffix = variableName.map { " of variable \($0)" } ?? ""
@@ -74,8 +97,9 @@ extension DebugLogMethodMacro {
     class ReturnStatementRewriter: SyntaxRewriter {
         let methodName: String
         
-        init(methodName: String) {
-            self.methodName = methodName
+        init(methodName: String? = nil) {
+            self.methodName = methodName ?? "<unavailable>"
+            
             super.init()
         }
         
@@ -115,4 +139,4 @@ extension DebugLogMethodMacro {
             return processStatements(node)
         }
     }
-}	
+}
