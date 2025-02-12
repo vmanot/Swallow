@@ -7,11 +7,11 @@ import SwiftSyntax
 import SwiftSyntaxMacros
 import SwiftSyntaxUtilities
 
-public struct GenerateDistributedTypeEraser {
+public struct GenerateDistributedTypeEraserMacro {
     
 }
 
-extension GenerateDistributedTypeEraser: PeerMacro {
+extension GenerateDistributedTypeEraserMacro: PeerMacro {
     public static func expansion(
         of node: AttributeSyntax,
         providingPeersOf declaration: some DeclSyntaxProtocol,

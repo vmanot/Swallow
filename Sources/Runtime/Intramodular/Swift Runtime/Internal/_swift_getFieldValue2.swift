@@ -91,7 +91,7 @@ fileprivate func _withUnsafeProperty<T>(
     }
     
     if keys.isEmpty {
-        if subjectType.kind == .class, let result = Mirror(reflecting: instance)._reflectDescendant(at: key) {
+        if subjectType.kind == .class, let result = Mirror(reflecting: instance)._getValue(ofDescendantAtPath: key) {
             return result
         }
     }

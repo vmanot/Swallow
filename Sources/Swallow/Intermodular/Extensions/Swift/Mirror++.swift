@@ -49,12 +49,20 @@ extension Mirror {
             ._map({ (key: $1.label ?? ".\(String(describing: $0))", value: $1.value) })
     }
 
-    public func _reflectDescendant(at path: MirrorPath) -> Mirror? {
+    public func _getMirror(ofDescendantAtPath path: MirrorPath) -> Mirror? {
         guard let descendant = descendant(path) else {
             return nil
         }
         
         return Mirror(reflecting: descendant)
+    }
+    
+    public func _getValue(ofDescendantAtPath path: MirrorPath) -> Any? {
+        guard let result: Any = descendant(path) else {
+            return nil
+        }
+        
+        return result
     }
 
     /// Flattens and destructures a tuple.

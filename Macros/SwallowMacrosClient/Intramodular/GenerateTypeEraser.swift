@@ -20,7 +20,7 @@ public macro GenerateTypeEraser() = #externalMacro(
 @attached(member, names: prefixed(eraseToAny))
 public macro GenerateDistributedTypeEraser() = #externalMacro(
     module: "SwallowMacros",
-    type: "GenerateDistributedTypeEraser"
+    type: "GenerateDistributedTypeEraserMacro"
 )
 
 #if canImport(Distributed)

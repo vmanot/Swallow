@@ -198,7 +198,9 @@ extension InstanceMirror {
             
             let subject: any Any = __fixed_opaqueExistential(subject)
             
-            return _openExistential(subject, do: getValue)
+            let result: Any = _openExistential(subject, do: getValue)
+            
+            return result
         } set {
             guard let field = _fieldDescriptorForKey(key) else {
                 assertionFailure()

@@ -84,13 +84,17 @@ extension OSUnfairLock {
 
 @dynamicMemberLookup
 @propertyWrapper
-public class _OSUnfairLocked<Value>: @unchecked Sendable {
+public final class _OSUnfairLocked<Value>: @unchecked Sendable {
     private var value: Value
     private let lock: OSUnfairLock
     
     public init(wrappedValue: Value) {
         self.value = wrappedValue
         self.lock = OSUnfairLock()
+    }
+    
+    public convenience init(initialState: Value) {
+        self.init(wrappedValue: initialState)
     }
     
     public required convenience init(nilLiteral: ()) where Value: ExpressibleByNilLiteral {
@@ -120,6 +124,12 @@ public class _OSUnfairLocked<Value>: @unchecked Sendable {
         try lock.withCriticalScope {
             try action(&value)
         }
+    }
+    
+    public func withLock<Result>(
+        _ action: (inout Value) throws -> Result
+    ) rethrows -> Result {
+        try withCriticalScope(action)
     }
     
     public subscript<Subject>(
