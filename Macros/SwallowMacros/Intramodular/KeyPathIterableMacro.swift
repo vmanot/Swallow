@@ -36,7 +36,7 @@ public struct KeyPathIterableMacro: ExtensionMacro {
         ) {
             try VariableDeclSyntax("\(raw: isPublic ? "public " : "")static var allKeyPaths: [PartialKeyPath<\(type)>]") {
                 let keyPaths = declaration.memberBlock.members
-                    .compactMap { $0.decl.as(VariableDeclSyntax.self) }
+                    .compactMap({ $0.decl.as(VariableDeclSyntax.self) })
                     .filter { (variableDeclaration: VariableDeclSyntax) -> Bool in
                         if decodedDeclaration.is(ActorDeclSyntax.self) {
                             return variableDeclaration.modifiers.contains(where: { $0.name.text == "nonisolated" })
@@ -44,6 +44,7 @@ public struct KeyPathIterableMacro: ExtensionMacro {
                             return true
                         }
                     }
+                    .filter({ !$0.modifiers.contains(where: { $0.name.trimmedDescription == "static" }) })
                     .compactMap(\.variableName)
                     .map { "\\.\($0)" }
                     .joined(separator: ", ")

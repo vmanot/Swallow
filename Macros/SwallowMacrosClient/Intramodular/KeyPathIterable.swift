@@ -22,20 +22,20 @@ public protocol KeyPathIterable {
     var recursivelyAllAnyKeyPaths: [AnyKeyPath] { get }
 }
 
-public extension KeyPathIterable {
-    static var allAnyKeyPaths: [AnyKeyPath] {
+extension KeyPathIterable {
+    public static var allAnyKeyPaths: [AnyKeyPath] {
         allKeyPaths.map { $0 as AnyKeyPath }
     }
     
-    var allKeyPaths: [PartialKeyPath<Self>] {
+    public var allKeyPaths: [PartialKeyPath<Self>] {
         Self.allKeyPaths
     }
     
-    var allAnyKeyPaths: [AnyKeyPath] {
+    public var allAnyKeyPaths: [AnyKeyPath] {
         allKeyPaths.map { $0 as AnyKeyPath }
     }
     
-    var recursivelyAllKeyPaths: [PartialKeyPath<Self>] {
+    public var recursivelyAllKeyPaths: [PartialKeyPath<Self>] {
         var recursivelyKeyPaths = [PartialKeyPath<Self>]()
         for keyPath in allKeyPaths {
             recursivelyKeyPaths.append(keyPath)
@@ -50,11 +50,30 @@ public extension KeyPathIterable {
         return recursivelyKeyPaths
     }
     
-    var recursivelyAllAnyKeyPaths: [AnyKeyPath] {
+    public var recursivelyAllAnyKeyPaths: [AnyKeyPath] {
         recursivelyAllKeyPaths.map { $0 as AnyKeyPath }
     }
     
-    static var additionalKeyPaths: [PartialKeyPath<Self>] {
+    public static var additionalKeyPaths: [PartialKeyPath<Self>] {
         []
     }
 }
+
+// MARK: - Supplementary
+
+#if canImport(Observation)
+import Observation
+
+@available(macOS 14.0, iOS 17.0, watchOS 10.0, tvOS 17.0, *)
+extension Observable {
+    public func _accessAllKeyPathsIfTypeIsKeyPathIterable() {
+        guard let keyPaths: [AnyKeyPath] = (self as? (any KeyPathIterable)).map({ type(of: $0).allAnyKeyPaths }) else {
+            return
+        }
+        
+        for keyPath in keyPaths {
+            _ = _takeOpaqueExistentialUnoptimized(self[keyPath: keyPath] as Any)
+        }
+    }
+}
+#endif
