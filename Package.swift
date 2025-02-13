@@ -47,7 +47,7 @@ let package = Package(
     dependencies: [
         .package(url: "https://github.com/apple/swift-atomics.git", from: "1.2.0"),
         .package(url: "https://github.com/apple/swift-collections", from: "1.1.0"),
-        .package(url: "https://github.com/apple/swift-syntax.git", from: "600.0.1"),
+        .package(url: "https://github.com/swiftlang/swift-syntax.git", from: "600.0.1"),
     ],
     targets: [
         .target(
@@ -229,7 +229,7 @@ private func patchSwiftSyntaxDependency(in package: Package) {
             return false
         }
         
-        return location.contains("apple/swift-syntax.git")
+        return location.contains("apple/swift-syntax.git") || location.contains("swiftlang/swift-syntax.git")
     }) {
         package.dependencies[swiftSyntaxIndex] = Package.Dependency.package(
             url: "https://github.com/swift-precompiled/swift-syntax",
