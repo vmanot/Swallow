@@ -2,6 +2,7 @@
 // Copyright (c) Vatsal Manot
 //
 
+import Darwin
 import Foundation
 import System
 import Swallow
@@ -731,6 +732,57 @@ extension FileManager {
         at url: URL
     ) throws -> [T] {
         try contentsOfDirectory(at: url).compactMap({ (item: URL) in try? T.init(url: item) })
+    }
+}
+#endif
+
+#if os(macOS)
+extension FileManager {
+    /// Returns a boolean value that indicates whether the path has an extended attribute of the given name.
+    ///
+    /// - Parameters:
+    ///   - name: The name of the extended attribute.
+    ///   - path: The path of a file or directory.
+    ///   - follow: Specify `true` to follow symbolic links.
+    ///
+    /// - Returns: A value indicating whether the item has an extended attribute of the given name.
+    /// - Throws: `POSIXError` if `getxattr` fails.
+    public func hasExtendedAttribute(
+        named name: String,
+        at url: URL,
+        traverseLink follow: Bool
+    ) throws -> Bool {
+        let flags = follow ? 0 : XATTR_NOFOLLOW
+        guard getxattr((url as NSURL).fileSystemRepresentation, name, nil, 0, 0, flags) != -1 else {
+            switch errno {
+                case ENOATTR:
+                    return false
+                default:
+                    throw POSIXError(POSIXErrorCode(rawValue: errno)!)
+            }
+        }
+        return true
+    }
+    
+    /// Removes the extended attribute for the given file or directory.
+    ///
+    /// - Parameters:
+    ///   - name: The name of the extended attribute.
+    ///   - path: The path of a file or directory.
+    ///   - follow: Specify `true` to follow symbolic links.
+    ///
+    /// - Throws: `PosixError` if `removexattr` fails.
+    public func removeExtendedAttribute(
+        named name: String,
+        at url: URL,
+        traverseLink follow: Bool
+    ) throws {
+        let flags = follow ? 0 : XATTR_NOFOLLOW
+        if removexattr((url as NSURL).fileSystemRepresentation, name, flags) == 0 {
+            return
+        }
+        
+        throw POSIXError(POSIXErrorCode(rawValue: errno)!)
     }
 }
 #endif
