@@ -40,8 +40,10 @@ public struct module: CompilerPlugin {
         TestMacro.self,
         TryMacro.self,
         TryAwaitMacro.self,
+        
+        _DeveloperNotesMacro.self,
         _InternalTestMacro.self,
-        SectionMacro.self,
+        _CodesectionMacro.self,
     ]
     
     public init() {

@@ -35,7 +35,7 @@ public struct DeclarationScopeMacro: DeclarationMacro {
         
         let result = DeclSyntax(
             """
-            @RuntimeDiscoverable
+            // @RuntimeDiscoverable
             public enum \(name): _StaticSwift.DeclarationScopedType {
                 public static let _StaticSwift_declarationScope = {
                     _StaticSwift._declarationScope(\(scope))

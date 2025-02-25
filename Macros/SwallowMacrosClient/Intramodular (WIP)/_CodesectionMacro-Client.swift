@@ -7,7 +7,7 @@
 @freestanding(declaration, names: arbitrary)
 public macro codesection(_: () -> Void) = #externalMacro(
     module: "SwallowMacros",
-    type: "SectionMacro"
+    type: "_CodesectionMacro"
 )
 
 /*public struct Foo {
