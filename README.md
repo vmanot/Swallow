@@ -121,3 +121,17 @@ To speed up builds (macOS only for now):
 - Update Swallow to the latest version.
 - Clean your build folder (**Product** -> **Clean Build Folder...**)
 - Build Swallow.
+
+
+## Acknowledgments
+
+<details>
+<summary>swift-case-paths by Point-Free</summary>
+
+- **Link**: [swift-case-paths](https://github.com/pointfreeco/swift-case-paths)
+- **License**: [MIT License](https://github.com/pointfreeco/swift-case-paths/blob/main/LICENSE)
+- **Authors**: Point-Free, Inc.
+- **Notes**:
+     - Partially rewritten and reimplemented for performance and functionality reasons where direct dependency was not feasible.
+ 
+</details>
