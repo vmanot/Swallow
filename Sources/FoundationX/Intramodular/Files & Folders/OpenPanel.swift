@@ -19,6 +19,18 @@ extension OpenPanel {
         public var prompt: String?
         public var validateURL: ((URL) throws -> Void)?
         public var shouldEnableURL: ((URL) -> Bool)?
+        
+        public init(directoryURL: URL? = nil, canChooseFiles: Bool, canChooseDirectories: Bool, canCreateDirectories: Bool, allowsMultipleSelection: Bool, message: String? = nil, prompt: String? = nil, validateURL: ((URL) -> Void)? = nil, shouldEnableURL: ((URL) -> Bool)? = nil) {
+            self.directoryURL = directoryURL
+            self.canChooseFiles = canChooseFiles
+            self.canChooseDirectories = canChooseDirectories
+            self.canCreateDirectories = canCreateDirectories
+            self.allowsMultipleSelection = allowsMultipleSelection
+            self.message = message
+            self.prompt = prompt
+            self.validateURL = validateURL
+            self.shouldEnableURL = shouldEnableURL
+        }
     }
 }
 
@@ -38,6 +50,10 @@ public class OpenPanel: NSObject {
         super.init()
                 
         configure(with: configuration)
+    }
+    
+    public override init() {
+        fatalError("Use init(configuration:) instead.")
     }
     
     private func configure(with config: Configuration) {
