@@ -104,73 +104,40 @@ func _runtimeCast<T, U>(_ value: T, to otherType: U.Type) -> U? {
     }
 }
 
-public enum RuntimeCastError: CustomStringConvertible, LocalizedError {
-    case invalidTypeCast(from: Any.Type, to: Any.Type, value: Any, location: SourceCodeLocation)
-    
-    public var description: String {
-        switch self {
-            case let .invalidTypeCast(sourceType, destinationType, value, location): do {
-                if let value = Optional(_unwrapping: value) {
-                    var description = "Could not cast value \(value) of type '\(sourceType)' to '\(destinationType)'"
-                    
-                    if let file = location.file, file != #file {
-                        description = "\(location): \(description)"
-                    }
-                    
-                    return description
-                } else {
-                    var description = "Could not cast value of type '\(sourceType)' to '\(destinationType)'"
-                    
-                    if let file = location.file, file != #file {
-                        description = "\(location): \(description)"
-                    }
-                    
-                    return description
-                }
-            }
-        }
-    }
-    
-    public var errorDescription: String? {
-        description
-    }
-}
-
 @inlinable
 public func unsafeBitCast<T, U>(_ x: T) -> U {
     return unsafeBitCast(x, to: U.self)
 }
 
-@_optimize(none)
 @inline(never)
 public func __fixed_type<T>(of x: T) -> Any.Type {
     __fixed_type(ofOpaque: x)
 }
 
-@_optimize(none)
 @inline(never)
 private func __fixed_type(ofOpaque x: Any) -> Any.Type {
-    let x = _takeOpaqueExistentialUnoptimized(x)
-    
-    func _swift_type<T>(of value: T) -> T.Type {
+    func __inner_swift_type<T>(of value: T) -> T.Type {
         Swift.type(of: value) as T.Type
     }
+
+    let x = _takeOpaqueExistentialUnoptimized(x)
     
-    let firstAttempt = type(of: _takeOpaqueExistentialUnoptimized(x))
-    let secondAttempt = _openExistential(x, do: _swift_type)
+    let firstAttempt = Swift.type(of: _takeOpaqueExistentialUnoptimized(x))
+    let secondAttempt = _openExistential(x, do: __inner_swift_type)
     
     if firstAttempt != Any.self || firstAttempt != Any.Protocol.self {
         return firstAttempt
     } else {
+        #if swift(<5.10)
         assert(secondAttempt != Any.self)
         assert(secondAttempt != Any.Protocol.self)
+        #endif
         
         return secondAttempt
     }
 }
 
 /// Prevent the compiler from making any optimizations when passing an opaque existential value.
-@_optimize(none)
 @inline(never)
 public func _takeOpaqueExistentialUnoptimized(_ value: Any) -> Any {
     return value
@@ -334,4 +301,38 @@ public func _strictlyUnoptimized_passOpaqueExistential(_ value: Any) -> Any {
     }
 
     return _openExistential(value, do: convert)
+}
+
+// MARK: - Error Handling
+
+public enum RuntimeCastError: CustomStringConvertible, LocalizedError {
+    case invalidTypeCast(from: Any.Type, to: Any.Type, value: Any, location: SourceCodeLocation)
+    
+    public var description: String {
+        switch self {
+            case let .invalidTypeCast(sourceType, destinationType, value, location): do {
+                if let value = Optional(_unwrapping: value) {
+                    var description = "Could not cast value \(value) of type '\(sourceType)' to '\(destinationType)'"
+                    
+                    if let file = location.file, file != #file {
+                        description = "\(location): \(description)"
+                    }
+                    
+                    return description
+                } else {
+                    var description = "Could not cast value of type '\(sourceType)' to '\(destinationType)'"
+                    
+                    if let file = location.file, file != #file {
+                        description = "\(location): \(description)"
+                    }
+                    
+                    return description
+                }
+            }
+        }
+    }
+    
+    public var errorDescription: String? {
+        description
+    }
 }

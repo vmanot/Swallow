@@ -21,12 +21,16 @@ extension Never {
             case unimplemented
             case unknown
             case unsupported
+            case unused
         }
         
         public let _base: _Base
         
         @_transparent
-        public init(_base base: _Base, file: StaticString = #fileID) {
+        public init(
+            _base base: _Base,
+            file: StaticString = #fileID
+        ) {
             self._base = base
             
             runtimeIssue("This code path should never be invoked (reason: \(base.rawValue), file: \(file).")

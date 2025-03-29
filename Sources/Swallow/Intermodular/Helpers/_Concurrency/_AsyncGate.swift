@@ -99,6 +99,28 @@ public final class _AsyncGate: @unchecked Sendable {
         }
     }
     
+    @usableFromInline
+    internal var isOpen: Bool
+    
+    private var suspensions = [Suspension]()
+    
+    @usableFromInline
+    internal let lock = NSRecursiveLock() // Protects all state (i.e. the above two variables).
+    
+    private func lockWithoutTheCompilerBitchingAtUs() {
+        self.lock.lock()
+    }
+    
+    private func unlockWithoutTheCompilerBitchingAtUs() {
+        self.lock.unlock()
+    }
+    
+    deinit {
+        precondition(self.suspensions.isEmpty, "Gate deallocated while some task(s) are suspended waiting for the gate to open.")
+    }
+}
+
+extension _AsyncGate {
     private final class Suspension: @unchecked Sendable {
         enum State {
             /// Initial state. Next is suspended or cancelled.
@@ -122,25 +144,5 @@ public final class _AsyncGate: @unchecked Sendable {
                 continuation.resume()
             }
         }
-    }
-    
-    @usableFromInline
-    internal var isOpen: Bool
-    
-    private var suspensions = [Suspension]()
-    
-    @usableFromInline
-    internal let lock = NSRecursiveLock() // Protects all state (i.e. the above two variables).
-    
-    private func lockWithoutTheCompilerBitchingAtUs() {
-        self.lock.lock()
-    }
-    
-    private func unlockWithoutTheCompilerBitchingAtUs() {
-        self.lock.unlock()
-    }
-    
-    deinit {
-        precondition(self.suspensions.isEmpty, "Gate deallocated while some task(s) are suspended waiting for the gate to open.")
     }
 }

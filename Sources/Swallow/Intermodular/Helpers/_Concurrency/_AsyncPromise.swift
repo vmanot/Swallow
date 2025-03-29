@@ -129,6 +129,30 @@ public final class _AsyncPromise<Success, Failure: Error>: ObservableObject, @un
             }
         }
     }
+    
+    public func _noasync_result() -> Result<Success, Failure> {
+        if let result = lock.withCriticalScope(perform: { _fulfilledValue }) {
+            return result
+        }
+        
+        let semaphore = DispatchSemaphore(value: 0)
+        
+        Task {
+            let result = await self.result()
+            
+            _ = result
+            
+            semaphore.signal()
+        }
+        
+        semaphore.wait()
+        
+        guard let result = lock.withCriticalScope(perform: { _fulfilledValue }) else {
+            fatalError(.illegal)
+        }
+        
+        return result
+    }
 }
 
 // MARK: - Extensions -
