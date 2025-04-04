@@ -8,6 +8,12 @@ import SwiftSyntaxBuilder
 import SwiftSyntaxMacros
 import SwiftSyntaxUtilities
 
+#if compiler(>=6.1)
+typealias GenericArgument = GenericArgumentSyntax.Argument
+#else
+typealias GenericArgument = TypeSyntax
+#endif
+
 public struct OptionSetMacro {
     /// Decodes the arguments to the macro expansion.
     ///
@@ -17,7 +23,7 @@ public struct OptionSetMacro {
         of attribute: AttributeSyntax,
         attachedTo decl: some DeclGroupSyntax,
         in context: some MacroExpansionContext
-    ) -> (StructDeclSyntax, EnumDeclSyntax, TypeSyntax)? {
+    ) -> (StructDeclSyntax, EnumDeclSyntax, GenericArgument)? {
         // Determine the name of the options enum.
         let optionsEnumName: String
         if case let .argumentList(arguments) = attribute.arguments,

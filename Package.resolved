@@ -1,0 +1,33 @@
+{
+  "originHash" : "75cc8b5f581f5324030d1c053b751edcc29e7ce5d5584341e81c8e0a854a8341",
+  "pins" : [
+    {
+      "identity" : "swift-atomics",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/swift-atomics.git",
+      "state" : {
+        "revision" : "cd142fd2f64be2100422d658e7411e39489da985",
+        "version" : "1.2.0"
+      }
+    },
+    {
+      "identity" : "swift-collections",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/swift-collections",
+      "state" : {
+        "revision" : "671108c96644956dddcd89dd59c203dcdb36cec7",
+        "version" : "1.1.4"
+      }
+    },
+    {
+      "identity" : "swift-syntax",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/swiftlang/swift-syntax.git",
+      "state" : {
+        "branch" : "release/6.1",
+        "revision" : "f99ae8aa18f0cf0d53481901f88a0991dc3bd4a2"
+      }
+    }
+  ],
+  "version" : 3
+}

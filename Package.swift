@@ -4,6 +4,16 @@ import CompilerPluginSupport
 import Foundation
 import PackageDescription
 
+var dependencies: [PackageDescription.Package.Dependency] = [
+    .package(url: "https://github.com/apple/swift-atomics.git", from: "1.2.0"),
+    .package(url: "https://github.com/apple/swift-collections", from: "1.1.0"),
+]
+#if compiler(>=6.1)
+dependencies += [.package(url: "https://github.com/swiftlang/swift-syntax.git", branch: "release/6.1")]
+#else
+dependencies += [.package(url: "https://github.com/swiftlang/swift-syntax.git", from: "600.0.1")]
+#endif
+
 let package = Package(
     name: "Swallow",
     platforms: [
@@ -44,11 +54,7 @@ let package = Package(
             ]
         )
     ],
-    dependencies: [
-        .package(url: "https://github.com/apple/swift-atomics.git", from: "1.2.0"),
-        .package(url: "https://github.com/apple/swift-collections", from: "1.1.0"),
-        .package(url: "https://github.com/swiftlang/swift-syntax.git", from: "600.0.1"),
-    ],
+    dependencies: dependencies,
     targets: [
         .target(
             name: "_PythonString",
