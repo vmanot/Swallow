@@ -30,6 +30,7 @@ let package = Package(
                 "_RuntimeC",
                 "_RuntimeKeyPath",
                 "_SwallowSwiftOverlay",
+                "_SwiftRuntimeExports",
                 "SE0270_RangeSet",
                 "Swallow",
                 "Compute",
@@ -56,6 +57,13 @@ let package = Package(
     ],
     dependencies: dependencies,
     targets: [
+        .target(
+            name: "_SwiftRuntimeExports",
+            dependencies: [],
+            swiftSettings: [
+                .unsafeFlags(["-suppress-warnings"])
+            ]
+        ),
         .target(
             name: "_PythonString",
             dependencies: [],
@@ -85,6 +93,7 @@ let package = Package(
                 .product(name: "OrderedCollections", package: "swift-collections"),
                 "_RuntimeC",
                 "_SwallowSwiftOverlay",
+                "_SwiftRuntimeExports",
             ],
             swiftSettings: [
                 .enableExperimentalFeature("AccessLevelOnImport")

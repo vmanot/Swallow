@@ -43,11 +43,6 @@ public func isType(
     return isClass(cls, descendantOf: otherCls)
 }
 
-@_silgen_name("swift_isClassType")
-public func swift_isClassType(
-    _: Any.Type
-) -> Bool
-
 @_transparent
 public func isAnyObject<T>(_ x: T) -> Bool {
     return swift_isClassType(type(of: x))

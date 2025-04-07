@@ -2,7 +2,11 @@
 // Copyright (c) Vatsal Manot
 //
 
-import Darwin
+import Foundation
+import Swift
+
+@_silgen_name("swift_isClassType")
+public func swift_isClassType(_: Any.Type) -> Bool
 
 #if canImport(ObjectiveC)
 @_silgen_name("swift_getInitializedObjCClass")
@@ -88,6 +92,16 @@ public func _swift_isClassType(
     _ type: Any.Type
 ) -> Bool
 
+public func _swift_getSize(
+    of type: Any.Type
+) -> Int {
+    func project<T>(_: T.Type) -> Int {
+        MemoryLayout<T>.size
+    }
+    
+    return _openExistential(type, do: project)
+}
+
 public func _swift_demangle(
     mangledName: String
 ) -> String? {
@@ -103,16 +117,21 @@ public func _swift_demangle(
         guard let demangled else {
             return nil
         }
-                        
-        return String(utf8String: demangled, deallocate: true)
+        
+        let result = String(utf8String: demangled)
+        
+        free(demangled)
+        
+        return result
     }
+    
 }
 
 public func _stdlib_demangleName(
     _ mangled: String
 ) -> String {
     guard let result = _swift_demangle(mangledName: mangled) else {
-        runtimeIssue("Failed to demangle type: \(mangled)")
+        debugPrint("Failed to demangle type: \(mangled)")
         
         return mangled
     }
@@ -138,6 +157,18 @@ package func _swift_getAllKeyPaths<T>(
     return membersToKeyPaths
 }
 
+// MARK: - Auxiliary
+
+public protocol _swift_RelativePointerProtocol {
+    associatedtype Pointee
+    
+    var offset: Int32 { get }
+    
+    func address(from ptr: UnsafeRawPointer) -> UnsafeRawPointer
+    func pointee(from ptr: UnsafeRawPointer) -> Pointee?
+}
+
+@frozen
 public struct _SwiftRuntimeTypeFieldReflectionMetadata: CustomStringConvertible {
     public typealias Deallocate = @convention(c) (UnsafePointer<CChar>?) -> Void
     
@@ -192,15 +223,6 @@ public struct _swift_SignedPointer<Pointee> {
     }
 }
 
-public protocol _swift_RelativePointerProtocol {
-    associatedtype Pointee
-    
-    var offset: Int32 { get }
-    
-    func address(from ptr: UnsafeRawPointer) -> UnsafeRawPointer
-    func pointee(from ptr: UnsafeRawPointer) -> Pointee?
-}
-
 @frozen
 public struct _swift_RelativeDirectPointer<Pointee>: _swift_RelativePointerProtocol {
     public var offset: Int32
@@ -209,7 +231,7 @@ public struct _swift_RelativeDirectPointer<Pointee>: _swift_RelativePointerProto
     public init(offset: Int32) {
         self.offset = offset
     }
-        
+    
     @_transparent
     public func address(
         from pointer: UnsafeRawPointer
@@ -250,7 +272,7 @@ public struct _swift_RelativeIndirectablePointer<Pointee> {
     @_transparent
     public func address(from pointer: UnsafeRawPointer) -> UnsafeRawPointer {
         assert(unsafeBitCast(pointer, to: Optional<UnsafeRawPointer>.self) != nil)
-       
+        
         let dest = pointer + Int(self.offset & ~1)
         
         // If the low bit is set, then this is an indirect address. Otherwise,
@@ -260,5 +282,44 @@ public struct _swift_RelativeIndirectablePointer<Pointee> {
         } else {
             return dest
         }
+    }
+}
+
+// MARK: - Error Handling
+
+public struct SwiftFieldNotFoundError: Error, CustomStringConvertible {
+    public var key: String
+    public var instance: Any.Type
+    
+    public var description: String {
+        "\(key) was not found on instance type \(instance)"
+    }
+    
+    public init(key: String, instance: Any.Type) {
+        self.key = key
+        self.instance = instance
+    }
+}
+
+public struct _SwiftFieldTypeMismatchError: Error, CustomStringConvertible {
+    public var key: String
+    public var expected: Any.Type
+    public var received: Any.Type
+    public var instance: Any.Type
+    
+    public init(
+        key: String,
+        expected: Any.Type,
+        received: Any.Type,
+        instance: Any.Type
+    ) {
+        self.key = key
+        self.expected = expected
+        self.received = received
+        self.instance = instance
+    }
+    
+    public var description: String {
+        "Expected type of \(expected) for key \(key) but recieved \(received) on instance type \(instance)"
     }
 }

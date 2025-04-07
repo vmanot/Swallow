@@ -2,6 +2,7 @@
 // Copyright (c) Vatsal Manot
 //
 
+@_exported import _SwiftRuntimeExports
 private import _RuntimeC
 import ObjectiveC
 import Swift
