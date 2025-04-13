@@ -3,6 +3,7 @@
 //
 
 @_exported import Swallow
+import SwallowMacrosClient
 
 #if DEBUG
 let _isDebugBuild = true

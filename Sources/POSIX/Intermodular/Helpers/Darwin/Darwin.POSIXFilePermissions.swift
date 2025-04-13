@@ -4,6 +4,7 @@
 
 import Darwin
 import Swallow
+import SwallowMacrosClient
 
 public struct POSIXFilePermissionBits: Codable, CustomStringConvertible, OptionSet {
     public static let read = with(rawValue: 4)
@@ -102,7 +103,7 @@ extension POSIXFilePermissions {
                 self = [.userExecutable, .groupExecutable, .otherExecutable]
         
             default:
-                throw _PlaceholderError()
+                #throw
         }
     }
 }

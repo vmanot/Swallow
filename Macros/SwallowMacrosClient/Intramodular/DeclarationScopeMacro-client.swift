@@ -5,7 +5,6 @@
 import Foundation
 import Swallow
 
-
 @freestanding(declaration)
 public macro scope<Scope: _StaticSwift.DeclarationScopeType, Void>(
     _ scope: Scope,

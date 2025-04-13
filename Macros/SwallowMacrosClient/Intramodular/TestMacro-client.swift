@@ -15,3 +15,4 @@ public macro InitializeInlineXCTestCases() = #externalMacro(
     module: "SwallowMacros",
     type: "InitializeInlineXCTestCasesMacro"
 )
+

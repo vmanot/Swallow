@@ -4,6 +4,7 @@
 
 import Darwin
 import Swallow
+import SwallowMacrosClient
 
 public class POSIXIndirect<Primitive>: Initiable {
     public var value: UnsafeMutablePointer<Primitive>?
@@ -18,7 +19,7 @@ public class POSIXIndirect<Primitive>: Initiable {
     
     public func construct() throws {
         guard value == nil else {
-            throw _PlaceholderError()
+            #throw
         }
 
         value = .allocate(capacity: 1)

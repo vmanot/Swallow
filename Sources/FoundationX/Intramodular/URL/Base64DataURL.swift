@@ -5,6 +5,7 @@
 import Diagnostics
 import Foundation
 import Swallow
+import SwallowMacrosClient
 
 public struct Base64DataURL: Hashable, Sendable, URLConvertible {
     public let data: Data
@@ -52,7 +53,7 @@ public struct Base64DataURL: Hashable, Sendable, URLConvertible {
     }
     
     public init(data: Data, mimeType: String) throws {
-        try _tryAssert(!data.isEmpty)
+        try #assert(!data.isEmpty)
         
         self.data = data
         self.mimeType = mimeType

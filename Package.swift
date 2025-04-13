@@ -137,6 +137,7 @@ let package = Package(
             name: "POSIX",
             dependencies: [
                 "Swallow",
+                "SwallowMacrosClient",
             ],
             swiftSettings: []
         ),
@@ -154,7 +155,9 @@ let package = Package(
             dependencies: [
                 "Swallow"
             ],
-            swiftSettings: [.unsafeFlags(["-parse-stdlib"])]
+            swiftSettings: [
+                .unsafeFlags(["-parse-stdlib"])
+            ]
         ),
         .target(
             name: "Runtime",
@@ -167,7 +170,7 @@ let package = Package(
                 "Swallow"
             ],
             swiftSettings: [
-                .enableExperimentalFeature("AccessLevelOnImport")
+                .enableExperimentalFeature("AccessLevelOnImport"),
             ]
         ),
         .macro(
@@ -179,7 +182,8 @@ let package = Package(
                 .product(name: "SwiftCompilerPlugin", package: "swift-syntax", condition: .when(platforms: [.macOS])),
                 .target(name: "SwiftSyntaxUtilities", condition: .when(platforms: [.macOS])),
             ],
-            path: "Macros/SwallowMacros"
+            path: "Macros/SwallowMacros",
+            swiftSettings: []
         ),
         .target(
             name: "SwallowMacrosClient",

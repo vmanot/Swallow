@@ -5,6 +5,7 @@
 import Diagnostics
 import Foundation
 import Swallow
+import SwallowMacrosClient
 import System
 import UniformTypeIdentifiers
 
@@ -68,7 +69,7 @@ extension URL {
     public var _removingPercentEncoding: URL {
         get throws {
             guard let decodedString = self.absoluteString.removingPercentEncoding else {
-                throw _PlaceholderError()
+                #throw
             }
             
             return  try URL(string: decodedString).unwrap()

@@ -12,6 +12,8 @@ public struct module: CompilerPlugin {
     }
     
     public let providingMacros: [Macro.Type] = [
+        // MARK: Swallow
+
         AssociatedObjectMacro.self,
         AddCaseBooleanMacro.self,
         DebugLogMacro.self,
@@ -29,6 +31,7 @@ public struct module: CompilerPlugin {
         ManagedActorMethodMacro.self,
         ManagedActorMethodMacro2.self,
         MemoizedPropertyMacro.self,
+        ModuleMacro.self,
         MetatypeExpressionMacro.self,
         InitializeInlineXCTestCasesMacro.self,
         OnceMacro.self,
@@ -38,8 +41,17 @@ public struct module: CompilerPlugin {
         _StaticProtocolMember.self,
         SingletonMacro.self,
         TestMacro.self,
+
+        // MARK: Diagnostics
+        
+        AssertMacro.self,
+        AssertionFailureMacro.self,
+        ThrowMacro.self,
+        ThrowStringMacro.self,
         TryMacro.self,
         TryAwaitMacro.self,
+        
+        // MARK: WIP
         
         _DeveloperNotesMacro.self,
         _InternalTestMacro.self,

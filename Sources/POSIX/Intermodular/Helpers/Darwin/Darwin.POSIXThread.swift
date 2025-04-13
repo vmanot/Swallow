@@ -5,6 +5,7 @@
 import Darwin
 import Foundation
 import Swallow
+import SwallowMacrosClient
 
 public struct POSIXThread: Initiable, MutableWrapper {
     public typealias Value = pthread_t?
@@ -36,7 +37,7 @@ extension POSIXThread: POSIXSynchronizationPrimitive {
     }
     
     public mutating func construct() throws {
-        throw _PlaceholderError()
+        #throw
     }
     
     public mutating func construct(
@@ -50,7 +51,7 @@ extension POSIXThread: POSIXSynchronizationPrimitive {
     }
     
     public mutating func destruct() throws {
-        throw _PlaceholderError()
+        #throw
     }
 }
 
@@ -72,7 +73,7 @@ extension POSIXThread {
     public func detach() throws {
         try pthread_try({ pthread_detach(try value.unwrap()) })
     }
-        
+    
     public static func exit() throws {
         pthread_exit(nil)
     }

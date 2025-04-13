@@ -25,6 +25,10 @@ extension PropertyWrapper {
     public static var _opaque_WrappedValue: Any.Type {
         WrappedValue.self
     }
+    
+    public var _opaque_PropertyWrapper_wrappedValue: Any {
+        wrappedValue
+    }
 }
 
 extension ParameterlessPropertyWrapper {
