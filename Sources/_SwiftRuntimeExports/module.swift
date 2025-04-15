@@ -9,7 +9,7 @@ import Swift
 public func swift_isClassType(_: Any.Type) -> Bool
 
 @_silgen_name("swift_isClassType")
-public func swift_isClassType(_: Any.Type) -> Bool
+public func _swift_isClassType(_: Any.Type) -> Bool
 
 #if canImport(ObjectiveC)
 @_silgen_name("swift_getInitializedObjCClass")
