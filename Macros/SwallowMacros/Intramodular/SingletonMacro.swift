@@ -9,10 +9,11 @@ import SwiftSyntaxMacros
 import SwiftSyntaxUtilities
 
 /// https://github.com/ShenghaiWang/SwiftMacros/blob/main/Sources/Macros/Singleton.swift
-public struct SingletonMacro: MemberMacro {
-    public static func expansion<Declaration: DeclGroupSyntax, Context: MacroExpansionContext>(
+public struct SingletonMacro: _MemberMacro2 {
+    public static func _expansion<Declaration: DeclGroupSyntax, Context: MacroExpansionContext>(
         of node: AttributeSyntax,
         providingMembersOf declaration: Declaration,
+        conformingTo protocols: [TypeSyntax],
         in context: Context
     ) throws -> [DeclSyntax] {
         guard [SwiftSyntax.SyntaxKind.classDecl, .structDecl].contains(declaration.kind) else {

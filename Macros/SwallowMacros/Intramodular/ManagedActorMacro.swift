@@ -123,10 +123,11 @@ extension ManagedActorMacro: MemberAttributeMacro {
     }
 }
 
-extension ManagedActorMacro: MemberMacro {
-    public static func expansion(
+extension ManagedActorMacro: _MemberMacro2 {
+    public static func _expansion(
         of node: AttributeSyntax,
         providingMembersOf declaration: some DeclGroupSyntax,
+        conformingTo protocols: [TypeSyntax],
         in context: some MacroExpansionContext
     ) throws -> [DeclSyntax] {
         if let declaration: ClassDeclSyntax = declaration.as(ClassDeclSyntax.self) {
@@ -137,7 +138,7 @@ extension ManagedActorMacro: MemberMacro {
             return []
         }
     }
-    
+    // FIXME: (@yume190) new warning
     public static func expansion(
         of node: AttributeSyntax,
         providingMembersOf declaration: ClassDeclSyntax,
