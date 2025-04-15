@@ -83,12 +83,12 @@ extension ManagedActorMacro2: _MemberMacro2 {
             return []
         }
     }
-    
-    // FIXME: (@yume190) new warning
-    public static func _expansion(
+}
+
+extension ManagedActorMacro2 {
+    public static func expansion(
         of node: AttributeSyntax,
         providingMembersOf declaration: ClassDeclSyntax,
-        conformingTo protocols: [TypeSyntax],
         in context: some MacroExpansionContext
     ) throws -> [DeclSyntax] {
         let result: DeclSyntax =

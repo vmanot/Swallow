@@ -138,7 +138,9 @@ extension ManagedActorMacro: _MemberMacro2 {
             return []
         }
     }
-    // FIXME: (@yume190) new warning
+}
+
+extension ManagedActorMacro {
     public static func expansion(
         of node: AttributeSyntax,
         providingMembersOf declaration: ClassDeclSyntax,
