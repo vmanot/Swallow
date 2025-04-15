@@ -45,10 +45,11 @@ extension GenerateTypeEraserMacro: ExtensionMacro {
     }
 }
 
-extension GenerateTypeEraserMacro: MemberMacro {
-    public static func expansion(
+extension GenerateTypeEraserMacro: _MemberMacro2 {
+    public static func _expansion(
         of node: AttributeSyntax,
         providingMembersOf declaration: some DeclGroupSyntax,
+        conformingTo protocols: [TypeSyntax],
         in context: some MacroExpansionContext
     ) throws -> [DeclSyntax] {
         guard let declaration = declaration as? NamedDeclSyntax else {

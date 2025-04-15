@@ -8,13 +8,14 @@ import SwiftSyntaxBuilder
 import SwiftSyntaxMacros
 import SwiftSyntaxUtilities
 
-public struct AddCaseBooleanMacro: MemberMacro {
-    public static func expansion<
+public struct AddCaseBooleanMacro: _MemberMacro2 {
+    public static func _expansion<
         Declaration: DeclGroupSyntax,
         Context: MacroExpansionContext
     >(
         of node: AttributeSyntax,
         providingMembersOf declaration: Declaration,
+        conformingTo protocols: [TypeSyntax],
         in context: Context
     ) throws -> [DeclSyntax] {
         guard let members = declaration

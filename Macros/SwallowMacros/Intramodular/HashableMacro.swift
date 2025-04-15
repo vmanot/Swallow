@@ -9,7 +9,7 @@ import SwiftSyntaxBuilder
 import SwiftSyntaxMacros
 
 // This struct defines a macro to add Hashable conformance to a Swift type.
-public struct HashableMacro: ExtensionMacro, MemberMacro {
+public struct HashableMacro: ExtensionMacro, _MemberMacro2 {
     // Adds Hashable conformance to a type if it isn't explicitly declared.
     public static func expansion(
         of node: AttributeSyntax,
@@ -44,9 +44,10 @@ public struct HashableMacro: ExtensionMacro, MemberMacro {
     }
     
     // Adds the necessary Hashable members (== and hash) to a type.
-    public static func expansion(
+    public static func _expansion(
         of node: AttributeSyntax,
         providingMembersOf declaration: some DeclGroupSyntax,
+        conformingTo protocols: [TypeSyntax],
         in context: some MacroExpansionContext
     ) throws -> [DeclSyntax] {
         

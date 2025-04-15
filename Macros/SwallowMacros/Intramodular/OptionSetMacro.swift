@@ -119,10 +119,11 @@ extension OptionSetMacro: ExtensionMacro {
     }
 }
 
-extension OptionSetMacro: MemberMacro {
-    public static func expansion(
+extension OptionSetMacro: _MemberMacro2 {
+    public static func _expansion(
         of attribute: AttributeSyntax,
         providingMembersOf decl: some DeclGroupSyntax,
+        conformingTo protocols: [TypeSyntax],
         in context: some MacroExpansionContext
     ) throws -> [DeclSyntax] {
         // Decode the expansion arguments.

@@ -19,10 +19,11 @@ struct _StaticProtocolMember {
     }
 }
 
-extension _StaticProtocolMember: MemberMacro {
-    static func expansion(
+extension _StaticProtocolMember: _MemberMacro2 {
+    static func _expansion(
         of node: AttributeSyntax,
         providingMembersOf declaration: some DeclGroupSyntax,
+        conformingTo protocols: [TypeSyntax],
         in context: some MacroExpansionContext
     ) throws -> [DeclSyntax] {
         if declaration is NamedDeclSyntax {
