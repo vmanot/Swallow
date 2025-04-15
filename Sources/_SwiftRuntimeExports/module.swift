@@ -8,6 +8,9 @@ import Swift
 @_silgen_name("swift_isClassType")
 public func swift_isClassType(_: Any.Type) -> Bool
 
+@_silgen_name("swift_isClassType")
+public func swift_isClassType(_: Any.Type) -> Bool
+
 #if canImport(ObjectiveC)
 @_silgen_name("swift_getInitializedObjCClass")
 public func _swift_getInitializedObjCClass(_ c: AnyClass!) -> AnyClass!
@@ -87,10 +90,11 @@ public func _swift_getTypeContextDescriptor(
     _ metadata: UnsafeRawPointer?
 ) -> UnsafeRawPointer?
 
-@_silgen_name("swift_isClassType")
-public func _swift_isClassType(
-    _ type: Any.Type
-) -> Bool
+@_silgen_name("swift_conformsToProtocol")
+public func _swift_conformsToProtocol(
+    _ type: UnsafeRawPointer,
+    _ descriptor: UnsafeRawPointer
+) -> UnsafeRawPointer?
 
 public func _swift_getSize(
     of type: Any.Type
