@@ -102,32 +102,36 @@ public struct HashableMacro: ExtensionMacro, _MemberMacro2 {
     }
     
     // Helper function to get the property names that will be used in Hashable methods
-    private static func getPropertyNames(from declaration: DeclGroupSyntax) -> [TokenSyntax] {
-        let memberList = declaration.memberBlock.members
+    private static func getPropertyNames(
+        from declaration: DeclGroupSyntax
+    ) -> [TokenSyntax] {
+        let memberList: MemberBlockItemListSyntax = declaration.memberBlock.members
         
-        return memberList.flatMap({ member -> [TokenSyntax] in
-            guard let variable = member.decl.as(VariableDeclSyntax.self), !variable.isComputed else {
-                return []
-            }
-            
-            let hasAttribute = variable.attributes.contains(where: { element -> Bool in
-                let attributeName: String? = element.as(AttributeSyntax.self)?.attributeName.as(IdentifierTypeSyntax.self)?.name.text
-                return attributeName != nil
-            })
-            
-            return variable.bindings
-                .compactMap { binding -> TokenSyntax? in
-                    let syntax: TokenSyntax? = binding.pattern.as(IdentifierPatternSyntax.self)?.identifier
-                    return syntax
+        return memberList
+            .compactMap { member -> [TokenSyntax] in
+                guard
+                    let variable = member.decl.as(VariableDeclSyntax.self),
+                    !variable.isComputed,
+                    !variable.modifiers.contains(where: { $0.name.tokenKind == .keyword(.static) })
+                else {
+                    return []
                 }
-                .compactMap { identifier in
-                    if hasAttribute {
-                        return TokenSyntax(stringLiteral: "_" + identifier.trimmed.text)
-                    } else {
-                        return identifier
+                
+                let hasAttribute = variable.attributes.contains { element -> Bool in
+                    element.as(AttributeSyntax.self)?.attributeName.as(IdentifierTypeSyntax.self)?.name.text != nil
+                }
+                
+                return variable.bindings
+                    .compactMap { binding -> TokenSyntax? in
+                        binding.pattern.as(IdentifierPatternSyntax.self)?.identifier
                     }
-                }
-        })
+                    .compactMap { identifier in
+                        hasAttribute
+                        ? TokenSyntax(stringLiteral: "_" + identifier.trimmed.text)
+                        : identifier
+                    }
+            }
+            .flatMap({ $0 })
     }
     
     // Helper function to create the equals (==) function
