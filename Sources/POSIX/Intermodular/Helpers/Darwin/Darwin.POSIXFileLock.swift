@@ -34,9 +34,9 @@ extension POSIXFileLock {
 
     public var owner: POSIXProcessIdentifier {
         get {
-            return .init(value.l_pid)
+            return .init(rawValue: value.l_pid)
         } set {
-            value.l_pid = newValue.value
+            value.l_pid = newValue.rawValue
         }
     }
 

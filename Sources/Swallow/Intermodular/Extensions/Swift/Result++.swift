@@ -54,6 +54,15 @@ extension Result {
     }
 }
 
+extension Result where Failure == Never {
+    @_disfavoredOverload
+    public init(catching body: () async -> Success) async {
+        let success = await body()
+        
+        self = .success(success)
+    }
+}
+
 extension Result where Failure == Error {
     public init(catching body: () async throws -> Success) async {
         do {

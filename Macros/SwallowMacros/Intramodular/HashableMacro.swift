@@ -7,6 +7,7 @@ import Swift
 import SwiftSyntax
 import SwiftSyntaxBuilder
 import SwiftSyntaxMacros
+import SwiftSyntaxUtilities
 
 // This struct defines a macro to add Hashable conformance to a Swift type.
 public struct HashableMacro: ExtensionMacro, _MemberMacro2 {

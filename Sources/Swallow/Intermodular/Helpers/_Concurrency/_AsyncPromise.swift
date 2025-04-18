@@ -54,6 +54,16 @@ public final class _AsyncPromise<Success, Failure: Error>: ObservableObject, @un
     }
     
     public convenience init(
+        _ value: @escaping () async -> Success
+    ) where Failure == Never {
+        self.init()
+        
+        Task {
+            await self.fulfill(with: Result<Success, Never>(catching: { await value() }))
+        }
+    }
+
+    public convenience init(
         _ value: @escaping () async throws -> Success
     ) where Failure == Error {
         self.init()

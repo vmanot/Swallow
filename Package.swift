@@ -9,7 +9,7 @@ var dependencies: [PackageDescription.Package.Dependency] = [
     .package(url: "https://github.com/apple/swift-collections", from: "1.1.0"),
 ]
 #if compiler(>=6.1)
-dependencies += [.package(url: "https://github.com/swiftlang/swift-syntax.git", branch: "release/6.1")]
+dependencies += [.package(url: "https://github.com/swift-precompiled/swift-syntax", branch: "release/6.1")]
 #else
 dependencies += [.package(url: "https://github.com/swiftlang/swift-syntax.git", from: "600.0.1")]
 #endif

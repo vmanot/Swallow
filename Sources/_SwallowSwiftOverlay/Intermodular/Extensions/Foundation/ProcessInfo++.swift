@@ -14,3 +14,4 @@ extension ProcessInfo {
         ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
     }
 }
+
