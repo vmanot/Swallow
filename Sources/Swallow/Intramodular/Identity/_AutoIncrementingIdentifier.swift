@@ -20,8 +20,8 @@ public struct _AutoIncrementingIdentifier<T>: Hashable, Codable, Sendable {
         Hashable2ple((file, Metatype(T.self)))
     }
     
-    public init(
-        file: StaticString = #file
+    private init(
+        _file file: StaticString = #file
     ) {
         // Use the file ID and the type as a unique identifier.
         //
@@ -38,6 +38,19 @@ public struct _AutoIncrementingIdentifier<T>: Hashable, Codable, Sendable {
         }
     }
     
+    public init(
+        file: StaticString = #file,
+        type: T.Type = T.self
+    ) {
+        self.init(_file: file)
+    }
+    
+    public init(
+        file: StaticString = #file
+    ) where T == Int {
+        self.init(file: file, type: Int.self)
+    }
+
     @_transparent
     fileprivate static func nextID(
         key: _AutoIncrementingIdentifierKey

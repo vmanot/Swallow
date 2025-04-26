@@ -15,7 +15,9 @@ public struct POSIXProcessIdentifier: RawRepresentable {
     public init(rawValue: pid_t) {
         self.rawValue = rawValue
     }
-    
+}
+
+extension POSIXProcessIdentifier {
     public func _isZombie() -> Bool {
         var kinfo = kinfo_proc()
         var size: Int = MemoryLayout<kinfo_proc>.stride
@@ -30,3 +32,15 @@ public struct POSIXProcessIdentifier: RawRepresentable {
         return kinfo.kp_proc.p_stat == SZOMB
     }
 }
+
+// MARK: - Supplementary
+
+#if canImport(Cocoa)
+import Cocoa
+
+extension NSRunningApplication {
+    public var processID: POSIXProcessIdentifier {
+        POSIXProcessIdentifier(rawValue: self.processIdentifier)
+    }
+}
+#endif

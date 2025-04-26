@@ -6,3 +6,5 @@
 #import "_init_dyld_image_symbol_iterator.h"
 #import "_Swallow_ExceptionCatcher.h"
 #import "_Swallow_module_init.h"
+#import "objc-internal.h"
+#import "ptrauth_util.h"

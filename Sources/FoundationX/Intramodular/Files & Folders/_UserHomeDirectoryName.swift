@@ -65,7 +65,7 @@ extension _UserHomeDirectoryName {
         }
     }
     
-    var _sandboxedURL: URL! {
+    public var _sandboxedURL: URL! {
         switch self {
             case .home:
                 return URL(fileURLWithPath: NSHomeDirectory())
@@ -88,7 +88,7 @@ extension _UserHomeDirectoryName {
         }
     }
     
-    var _unsandboxedURL: URL! {
+    public var _unsandboxedURL: URL! {
         _sandboxedURL._unsandboxedURL
     }
     

@@ -10,6 +10,7 @@ extension MainActor {
     /// See [stdlib/public/Concurrency/MainActor.swift][1]
     ///
     /// [1]: https://github.com/apple/swift/blob/7afa4cfdc69317559ca6a1b5e0e52cb557ec959b/stdlib/public/Concurrency/MainActor.swift#L119
+    @_transparent
     @_unavailableFromAsync(message: "await the call to the @MainActor closure directly")
     public static func unsafeAssumeIsolated<T>(
         _ operation: @MainActor () throws -> T,
