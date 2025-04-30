@@ -9,7 +9,7 @@ concurrency:
 jobs:
   preternatural-build:
     name: Build (Xcode ${{ matrix.xcode }})
-    runs-on: ghcr.io/cirruslabs/macos-runner:sequoia
+    runs-on: macos-latest
     strategy:
       matrix:
         xcode: ['16.2', '16.3']
