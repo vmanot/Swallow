@@ -3,20 +3,21 @@ on:
   push:
     branches: [ master ]
   workflow_dispatch:
-
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
-
 jobs:
-  build:
-    runs-on: ghcr.io/cirruslabs/macos-runner:sonoma
+  preternatural-build:
+    name: Build (Xcode ${{ matrix.xcode }})
+    runs-on: macos-latest
+    strategy:
+      matrix:
+        xcode: ['16.2']
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
-    
-    - name: Run Preternatural Build (Xcode 16)
-      uses: PreternaturalAI/preternatural-github-actions/preternatural-build@main
-      with:
-        xcode-version: '16'
-        configurations: '["debug"]'
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Run Preternatural Build
+        uses: PreternaturalAI/preternatural-github-actions/preternatural-build@main
+        with:
+          xcode-version: ${{ matrix.xcode }}
+          configurations: '["debug"]'
