@@ -8,6 +8,7 @@
 import SwiftSyntax
 import SwiftSyntaxBuilder
 import SwiftSyntaxMacros
+import SwiftSyntaxUtilities
 
 public struct TransactionKeyMacro: AccessorMacro {
     public static func expansion(
@@ -20,7 +21,7 @@ public struct TransactionKeyMacro: AccessorMacro {
               let binding = varDecl.bindings.first,
               let identifier = binding.pattern.as(IdentifierPatternSyntax.self)?.identifier.text,
               let _ = binding.typeAnnotation?.type else {
-            throw MacroError("@TransactionKey can only be applied to a variable with a type annotation")
+            throw AnyDiagnosticMessage(message: "@TransactionKey can only be applied to a variable with a type annotation")
         }
         
         // Extract default value if present
@@ -60,7 +61,7 @@ extension TransactionKeyMacro: PeerMacro {
               let binding = varDecl.bindings.first,
               let identifier = binding.pattern.as(IdentifierPatternSyntax.self)?.identifier.text,
               let type = binding.typeAnnotation?.type else {
-            throw MacroError("@TransactionKey must be applied to a variable with a type annotation")
+            throw AnyDiagnosticMessage(message: "@TransactionKey must be applied to a variable with a type annotation")
         }
 
         let defaultValueExpr = binding.initializer?.value
@@ -73,13 +74,5 @@ extension TransactionKeyMacro: PeerMacro {
         """
 
         return [DeclSyntax(stringLiteral: keyStruct)]
-    }
-}
-
-struct MacroError: Error, CustomStringConvertible {
-    let description: String
-    
-    init(_ description: String) {
-        self.description = description
     }
 }
