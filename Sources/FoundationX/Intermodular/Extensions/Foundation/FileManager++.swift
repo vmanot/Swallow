@@ -42,9 +42,17 @@ extension FileManager {
     
     /// Returns a Boolean value that indicates whether a file or directory exists at a specified path.
     public func fileOrDirectoryExists(
-        at location: some URLRepresentable
+        at location: some URLResolvable
     ) -> Bool {
-        fileExists(at: location.url)
+        do {
+            return try location.withResolvedURL {
+                fileExists(at: $0)
+            }
+        } catch {
+            runtimeIssue(error)
+            
+            return false
+        }
     }
     
     public func regularFileExists(
@@ -301,16 +309,23 @@ extension FileManager {
 }
 
 extension FileManager {
+    @discardableResult
     public func createDirectory(
         at url: some URLConvertible,
         withIntermediateDirectories: Bool = false,
         attributes: [FileAttributeKey: Any]? = nil
-    ) throws {
-        try createDirectory(
-            at: url.url,
-            withIntermediateDirectories: withIntermediateDirectories,
-            attributes: attributes
-        )
+    ) throws -> Bool {
+        let directoryExists: Bool = fileOrDirectoryExists(at: url)
+        
+        if !directoryExists {
+            try createDirectory(
+                at: url.url,
+                withIntermediateDirectories: withIntermediateDirectories,
+                attributes: attributes
+            )
+        }
+        
+        return !directoryExists
     }
 
     public func createDirectoryIfNecessary(

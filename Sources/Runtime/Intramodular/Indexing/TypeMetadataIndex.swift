@@ -468,3 +468,13 @@ extension TypeMetadata {
         return true
     }
 }
+
+// MARK: - Supplementary
+
+extension _StaticSwift.ModuleInfo {
+    public static var allCases: [Self] {
+        _RuntimeTypeDiscoveryIndex
+            .enumerate(typesConformingTo: _StaticSwift.Module.self, as: Array<any _StaticSwift.Module.Type>.self)
+            .map({ Self(from: $0) })
+    }
+}

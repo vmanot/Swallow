@@ -7,7 +7,7 @@ private import _RuntimeC
 import ObjectiveC
 import Swift
 
-public enum _module: _StaticSwift.module {
+public enum _module: _StaticSwift.Module {
     public static let bundleIdentifier = "com.vmanot.Swallow"
     
     public static func initialize() {

@@ -8,10 +8,13 @@ import SwiftSyntax
 extension PatternBindingSyntax {
     public var setter: AccessorDeclSyntax? {
         get {
-            guard let accessors = accessorBlock?.accessors,
-                  case let .accessors(list) = accessors else {
+            guard
+                let accessors: AccessorBlockSyntax.Accessors = accessorBlock?.accessors,
+                case let .accessors(list) = accessors
+            else {
                 return nil
             }
+            
             return list.first(where: {
                 $0.accessorSpecifier.tokenKind == .keyword(.set)
             })
@@ -138,12 +141,18 @@ extension PatternBindingSyntax {
 
 extension PatternBindingSyntax {
     // NOTE: - getter requires extra steps and should not be used.
-    private mutating func setNewAccessor(kind: TokenKind, newValue: AccessorDeclSyntax?) {
+    private mutating func setNewAccessor(
+        kind: TokenKind,
+        newValue: AccessorDeclSyntax?
+    ) {
         var newAccessor: AccessorBlockSyntax.Accessors
         
         switch accessorBlock?.accessors {
             case let .getter(body):
-                guard let newValue else { return }
+                guard let newValue else {
+                    return
+                }
+                
                 newAccessor = .accessors(
                     AccessorDeclListSyntax {
                         AccessorDeclSyntax(accessorSpecifier: .keyword(.get), body: .init(statements: body))
@@ -164,8 +173,13 @@ extension PatternBindingSyntax {
                     }
                 }
                 newAccessor = .accessors(newList)
-            case .none:
-                guard let newValue else { return }
+            default:
+                assert(accessorBlock?.accessors == nil)
+                
+                guard let newValue else {
+                    return
+                }
+                
                 newAccessor = .accessors(
                     AccessorDeclListSyntax {
                         newValue

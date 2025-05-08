@@ -12,10 +12,6 @@ extension _StaticSwift {
             
         }
     }
-    
-    public protocol module: Hashable {
-        
-    }
 }
 
 extension _StaticSwift.SwiftModule.Name {

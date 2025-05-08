@@ -11,6 +11,12 @@ public protocol URLResolvable {
     ) throws -> R
 }
 
+public protocol GlobalURL: Initiable, URLResolvable {
+    associatedtype URLType: URLConvertible = Foundation.URL
+    
+    static var url: URLType { get throws }
+}
+
 public protocol URLConvertible: URLResolvable {
     var url: URL { get }
 }
@@ -23,6 +29,18 @@ public protocol URLRepresentable: URLConvertible, URLInitiable {
     var url: URL { get }
     
     init?(url: URL)
+}
+
+extension GlobalURL {
+    public func withResolvedURL<R>(
+        perform operation: (URL) throws -> R
+    ) throws -> R {
+        let url: URLType = try Self.url
+        
+        return try url.withResolvedURL {
+            try operation($0)
+        }
+    }
 }
 
 extension URLInitiable {

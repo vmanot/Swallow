@@ -109,6 +109,19 @@ extension Optional {
             throw try error()
         }
     }
+    
+    @_disfavoredOverload
+    @_transparent
+    @inlinable
+    public func unwrapOrThrow(
+        _ error: @autoclosure () throws -> Error?
+    ) throws -> Wrapped {
+        if let wrapped = self {
+            return wrapped
+        } else {
+            throw try error().unwrap()
+        }
+    }
 }
 
 #if DEBUG

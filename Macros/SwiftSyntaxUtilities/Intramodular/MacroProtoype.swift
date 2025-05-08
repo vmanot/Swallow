@@ -25,10 +25,18 @@ public struct RuntimeDiscoverableMacroPrototype: MacroProtoype {
         providingPeersOf declaration: some DeclSyntaxProtocol,
         in context: some MacroExpansionContext
     ) throws -> [DeclSyntax] {
+        try _expansion(providingPeersOf: declaration)
+    }
+    
+    public static func _expansion(
+        providingPeersOf declaration: some DeclSyntaxProtocol,
+    ) throws -> [DeclSyntax] {
         if let declaration = declaration.as(ProtocolDeclSyntax.self) {
+            let name: String = declaration.trimmed.name.text
+
             let syntax = DeclSyntax(
                 """
-                @objc public class \(raw: declaration.name.text)_RuntimeTypeDiscovery: Swallow._RuntimeTypeDiscovery {
+                @objc public class \(raw: name)_RuntimeTypeDiscovery: Swallow._RuntimeTypeDiscovery {
                     override public class var type: Any.Type {
                         (any \(raw: declaration.name.text)).self
                     }
@@ -42,8 +50,8 @@ public struct RuntimeDiscoverableMacroPrototype: MacroProtoype {
             
             return [syntax]
         } else if let declaration = declaration.asProtocol(NamedDeclSyntax.self) {
-            let name = declaration.name.text
-            
+            let name: String = declaration.trimmed.name.text
+
             let syntax = DeclSyntax(
                 """
                 @objc public class \(raw: name)_RuntimeTypeDiscovery: Swallow._RuntimeTypeDiscovery {
@@ -59,7 +67,11 @@ public struct RuntimeDiscoverableMacroPrototype: MacroProtoype {
             )
             
             return [syntax]
-        } else if let declaration = declaration.as(ExtensionDeclSyntax.self)?.trimmed, let name: String = declaration.concreteTypeName {
+        } else if let declaration = declaration.as(ExtensionDeclSyntax.self)?.trimmed {
+            guard let name: String = declaration.concreteTypeName else {
+                throw AnyDiagnosticMessage("Failed to derive the concrete type name.")
+            }
+            
             let syntax = DeclSyntax(
                 """
                 @objc public class \(raw: name)_RuntimeTypeDiscovery: Swallow._RuntimeTypeDiscovery {

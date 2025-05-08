@@ -153,11 +153,13 @@ public func _getSanitizedTypeName(
         name = abbreviatedName
     }
     
-    name = name.replacingOccurrences(
-        of: #"\w+\.([\w.]+)"#,
-        with: "$1",
-        options: .regularExpression
-    )
+    if !qualified {
+        name = name.replacingOccurrences(
+            of: #"\w+\.([\w.]+)"#,
+            with: "$1",
+            options: .regularExpression
+        )
+    }
     
     if genericsAbbreviated {
         name = name.replacingOccurrences(

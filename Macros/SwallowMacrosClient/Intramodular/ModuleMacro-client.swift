@@ -4,8 +4,14 @@
 
 @_exported import Swallow
 
-@freestanding(declaration, names: named(_module))
-public macro module(_: () -> Void) = #externalMacro(
+@freestanding(
+    declaration,
+    names: named(_module), named(_module_RuntimeTypeDiscovery)
+)
+public macro module(
+    uniqueIdentifier: StaticString? = nil,
+    _ body: () -> Void
+) = #externalMacro(
     module: "SwallowMacros",
     type: "ModuleMacro"
 )

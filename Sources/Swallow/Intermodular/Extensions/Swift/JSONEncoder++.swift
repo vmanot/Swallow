@@ -7,6 +7,7 @@ import Swift
 
 extension JSONEncoder {
     public convenience init(
+        outputFormatting: JSONEncoder.OutputFormatting? = nil,
         dateEncodingStrategy: JSONEncoder.DateEncodingStrategy? = nil,
         dataEncodingStrategy: JSONEncoder.DataEncodingStrategy? = nil,
         keyEncodingStrategy: JSONEncoder.KeyEncodingStrategy? = nil,
@@ -14,6 +15,7 @@ extension JSONEncoder {
     ) {
         self.init()
         
+        outputFormatting.map(into: &self.outputFormatting)
         dateEncodingStrategy.map(into: &self.dateEncodingStrategy)
         dataEncodingStrategy.map(into: &self.dataEncodingStrategy)
         keyEncodingStrategy.map(into: &self.keyEncodingStrategy)

@@ -9,9 +9,7 @@ import SwiftSyntaxBuilder
 import SwiftSyntaxMacros
 import SwiftSyntaxUtilities
 
-// This struct defines a macro to add Hashable conformance to a Swift type.
 public struct HashableMacro: ExtensionMacro, _MemberMacro2 {
-    // Adds Hashable conformance to a type if it isn't explicitly declared.
     public static func expansion(
         of node: AttributeSyntax,
         attachedTo declaration: some DeclGroupSyntax,
@@ -19,18 +17,13 @@ public struct HashableMacro: ExtensionMacro, _MemberMacro2 {
         conformingTo protocols: [TypeSyntax],
         in context: some MacroExpansionContext
     ) throws -> [ExtensionDeclSyntax] {
-        
-        // Check if the protocol list contains Hashable
         guard let hashableType = protocols.first else {
-            // If Hashable is already conformed to, do nothing
             return []
         }
         
-        // Ensure that we are only adding Hashable conformance
         assert("\(hashableType.trimmed)" == "Hashable", "Only expected to add Hashable conformance")
         assert(protocols.count == 1, "Only expected to add conformance to a single protocol")
         
-        // Return an extension declaration that adds Hashable conformance
         return [
             ExtensionDeclSyntax(
                 extendedType: type,
@@ -44,7 +37,6 @@ public struct HashableMacro: ExtensionMacro, _MemberMacro2 {
         ]
     }
     
-    // Adds the necessary Hashable members (== and hash) to a type.
     public static func _expansion(
         of node: AttributeSyntax,
         providingMembersOf declaration: some DeclGroupSyntax,
@@ -63,7 +55,8 @@ public struct HashableMacro: ExtensionMacro, _MemberMacro2 {
             namedDeclaration: namedDeclaration,
             baseModifiers: baseModifiers,
             propertyNames: propertyNames
-        )
+        ).formatted()
+        
         let hashFunction = createHashFunction(baseModifiers: baseModifiers, propertyNames: propertyNames)
         
         return [
@@ -135,85 +128,14 @@ public struct HashableMacro: ExtensionMacro, _MemberMacro2 {
             .flatMap({ $0 })
     }
     
-    // Helper function to create the equals (==) function
     private static func createEqualsFunction(
         namedDeclaration: NamedDeclSyntax,
         baseModifiers: DeclModifierListSyntax,
         propertyNames: [TokenSyntax]
     ) -> FunctionDeclSyntax {
-        let equalsFunctionSignature = FunctionSignatureSyntax(
-            parameterClause: FunctionParameterClauseSyntax(
-                parameters: [
-                    FunctionParameterSyntax(
-                        firstName: TokenSyntax.identifier("lhs"),
-                        type: TypeSyntax(stringLiteral: namedDeclaration.name.text),
-                        trailingComma: .commaToken(trailingTrivia: .space)
-                    ),
-                    FunctionParameterSyntax(
-                        firstName: TokenSyntax.identifier("rhs"),
-                        type: TypeSyntax(stringLiteral: namedDeclaration.name.text)
-                    ),
-                ],
-                rightParen: TokenSyntax.rightParenToken(trailingTrivia: .space)
-            ),
-            returnClause: ReturnClauseSyntax(
-                arrow: .arrowToken(trailingTrivia: .space),
-                type: IdentifierTypeSyntax(name: .identifier("Bool")),
-                trailingTrivia: .space
-            )
-        )
-        
-        let equalsBody = CodeBlockSyntax(
-            leftBrace: .leftBraceToken(trailingTrivia: .newline),
-            statements: CodeBlockItemListSyntax(itemsBuilder: {
-                CodeBlockItemSyntax(item: CodeBlockItemSyntax.Item(ReturnStmtSyntax(trailingTrivia: .space)))
-                
-                if propertyNames.isEmpty {
-                    CodeBlockItemSyntax(item: CodeBlockItemSyntax.Item(BooleanLiteralExprSyntax(booleanLiteral: true)))
-                }
-                
-                for (index, propertyToken) in propertyNames.enumerated() {
-                    CodeBlockItemSyntax(item: CodeBlockItemSyntax.Item(
-                        SequenceExprSyntax(elementsBuilder: {
-                            MemberAccessExprSyntax(
-                                base: DeclReferenceExprSyntax(baseName: .identifier("lhs")),
-                                declName: DeclReferenceExprSyntax(baseName: propertyToken)
-                            )
-                        })
-                    ))
-                    
-                    BinaryOperatorExprSyntax(
-                        leadingTrivia: .space,
-                        operator: .binaryOperator("=="),
-                        trailingTrivia: .space
-                    )
-                    
-                    CodeBlockItemSyntax(item: CodeBlockItemSyntax.Item(
-                        SequenceExprSyntax(elementsBuilder: {
-                            MemberAccessExprSyntax(
-                                base: DeclReferenceExprSyntax(baseName: .identifier("rhs")),
-                                declName: DeclReferenceExprSyntax(baseName: propertyToken)
-                            )
-                        })
-                    ))
-                    
-                    if index + 1 != propertyNames.count {
-                        BinaryOperatorExprSyntax(
-                            leadingTrivia: .newline.appending(Trivia.spaces(4)),
-                            operator: .binaryOperator("&&"),
-                            trailingTrivia: .space
-                        )
-                    }
-                }
-            }),
-            rightBrace: .rightBraceToken(leadingTrivia: .newline)
-        )
-        
-        var equalsFunctionModifiers = baseModifiers
-        
-        equalsFunctionModifiers.append(
-            DeclModifierSyntax(name: .keyword(.static, trailingTrivia: .space))
-        )
+        let equalsFunctionSignature = createEqualsFunctionSignature(typeName: namedDeclaration.name.text)
+        let equalsBody = createEqualsFunctionBody(propertyNames: propertyNames)
+        let equalsFunctionModifiers = createFunctionModifiers(baseModifiers: baseModifiers)
         
         let equalsFunction = FunctionDeclSyntax(
             modifiers: equalsFunctionModifiers,
@@ -226,7 +148,115 @@ public struct HashableMacro: ExtensionMacro, _MemberMacro2 {
         return equalsFunction
     }
     
-    // Helper function to create the hash(into:) function
+    private static func createEqualsFunctionSignature(typeName: String) -> FunctionSignatureSyntax {
+        return FunctionSignatureSyntax(
+            parameterClause: FunctionParameterClauseSyntax(
+                parameters: [
+                    FunctionParameterSyntax(
+                        firstName: TokenSyntax.identifier("lhs"),
+                        type: TypeSyntax(stringLiteral: typeName),
+                        trailingComma: .commaToken(trailingTrivia: .space)
+                    ),
+                    FunctionParameterSyntax(
+                        firstName: TokenSyntax.identifier("rhs"),
+                        type: TypeSyntax(stringLiteral: typeName)
+                    ),
+                ],
+                rightParen: TokenSyntax.rightParenToken(trailingTrivia: .space)
+            ),
+            returnClause: ReturnClauseSyntax(
+                arrow: .arrowToken(trailingTrivia: .space),
+                type: IdentifierTypeSyntax(name: .identifier("Bool")),
+                trailingTrivia: .space
+            )
+        )
+    }
+    
+    private static func createEqualsFunctionBody(propertyNames: [TokenSyntax]) -> CodeBlockSyntax {
+        let returnExpr = createEqualityComparisonExpression(propertyNames: propertyNames)
+        
+        return CodeBlockSyntax(
+            leftBrace: .leftBraceToken(trailingTrivia: .newline),
+            statements: CodeBlockItemListSyntax {
+                ReturnStmtSyntax(
+                    returnKeyword: .keyword(.return, trailingTrivia: .space),
+                    expression: returnExpr
+                )
+            },
+            rightBrace: .rightBraceToken(leadingTrivia: .newline)
+        )
+    }
+    
+    private static func createEqualityComparisonExpression(
+        propertyNames: [TokenSyntax]
+    ) -> ExprSyntax {
+        if propertyNames.isEmpty {
+            return ExprSyntax(BooleanLiteralExprSyntax(booleanLiteral: true))
+        }
+        
+        let propertyComparisons = propertyNames.map { createPropertyComparison(propertyName: $0) }
+        
+        return combineExpressionsWithOperator(
+            expressions: propertyComparisons,
+            operator: "&&"
+        )
+    }
+    
+    private static func createPropertyComparison(propertyName: TokenSyntax) -> ExprSyntax {
+        return ExprSyntax(
+            InfixOperatorExprSyntax(
+                leftOperand: MemberAccessExprSyntax(
+                    base: DeclReferenceExprSyntax(baseName: .identifier("lhs")),
+                    declName: DeclReferenceExprSyntax(baseName: propertyName)
+                ),
+                operator: BinaryOperatorExprSyntax(operator: .binaryOperator("==")),
+                rightOperand: MemberAccessExprSyntax(
+                    base: DeclReferenceExprSyntax(baseName: .identifier("rhs")),
+                    declName: DeclReferenceExprSyntax(baseName: propertyName)
+                )
+            )
+        )
+    }
+    
+    private static func combineExpressionsWithOperator(
+        expressions: [ExprSyntax],
+        operator: String
+    ) -> ExprSyntax {
+        guard !expressions.isEmpty else {
+            return ExprSyntax(BooleanLiteralExprSyntax(booleanLiteral: true))
+        }
+        
+        if expressions.count == 1 {
+            return expressions[0]
+        }
+        
+        // Start with the first expression
+        var result: ExprSyntax = expressions[0]
+        
+        for i in 1..<expressions.count {
+            result = ExprSyntax(
+                InfixOperatorExprSyntax(
+                    leftOperand: result,
+                    operator: BinaryOperatorExprSyntax(operator: .binaryOperator(`operator`)),
+                    rightOperand: expressions[i]
+                )
+            )
+        }
+        
+        return result
+    }
+    
+
+    private static func createFunctionModifiers(
+        baseModifiers: DeclModifierListSyntax
+    ) -> DeclModifierListSyntax {
+        var modifiers = baseModifiers
+        modifiers.append(
+            DeclModifierSyntax(name: .keyword(.static, trailingTrivia: .space))
+        )
+        return modifiers
+    }
+
     private static func createHashFunction(
         baseModifiers: DeclModifierListSyntax,
         propertyNames: [TokenSyntax]
@@ -238,8 +268,8 @@ public struct HashableMacro: ExtensionMacro, _MemberMacro2 {
                         firstName: TokenSyntax.identifier("into", trailingTrivia: .space),
                         secondName: TokenSyntax.identifier("hasher"),
                         type: AttributedTypeSyntax(
-                            specifier: .keyword(.inout, trailingTrivia: .space),
-                            baseType: TypeSyntax(stringLiteral: "Hasher")
+                            _specifier: .keyword(.inout, trailingTrivia: .space),
+                            _baseType: TypeSyntax(stringLiteral: "Hasher")
                         )
                     ),
                 ],
