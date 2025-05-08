@@ -16,34 +16,27 @@ public struct TransactionKeyMacro: AccessorMacro {
         providingAccessorsOf declaration: some DeclSyntaxProtocol,
         in context: some MacroExpansionContext
     ) throws -> [AccessorDeclSyntax] {
-        // Ensure we're dealing with a variable declaration
-        guard let varDecl = declaration.as(VariableDeclSyntax.self),
-              let binding = varDecl.bindings.first,
-              let identifier = binding.pattern.as(IdentifierPatternSyntax.self)?.identifier.text,
+        guard let varDecl: VariableDeclSyntax = declaration.as(VariableDeclSyntax.self),
+              let binding: PatternBindingListSyntax.Element = varDecl.bindings.first,
+              let identifier: TokenSyntax = binding.pattern.as(IdentifierPatternSyntax.self)?.identifier,
               let _ = binding.typeAnnotation?.type else {
             throw AnyDiagnosticMessage(message: "@TransactionKey can only be applied to a variable with a type annotation")
         }
+                
+        let keyStructName: String = "TransactionKey_\(identifier.text)"
         
-        // Extract default value if present
-        let defaultValueExpr = binding.initializer?.value
-        
-        // Create the key struct name
-        let keyStructName = "TransactionKey_\(identifier)"
-        
-        // Create getter and setter
-        let getter = """
+        let getter: String = """
         get {
           self[\(keyStructName).self]
         }
         """
         
-        let setter = """
+        let setter: String = """
         set {
           self[\(keyStructName).self] = newValue
         }
         """
         
-        // Create the accessors
         return [
             AccessorDeclSyntax(stringLiteral: getter),
             AccessorDeclSyntax(stringLiteral: setter)
