@@ -29,7 +29,7 @@ public struct RuntimeDiscoverableMacroPrototype: MacroProtoype {
     }
     
     public static func _expansion(
-        providingPeersOf declaration: some DeclSyntaxProtocol,
+        providingPeersOf declaration: some DeclSyntaxProtocol
     ) throws -> [DeclSyntax] {
         if let declaration = declaration.as(ProtocolDeclSyntax.self) {
             let name: String = declaration.trimmed.name.text
