@@ -6,7 +6,7 @@ import SwiftSyntax
 
 extension ClosureCaptureSyntax {
     public init(
-        expression: some ExprSyntaxProtocol,
+        expression: some ExprSyntaxProtocol
     ) {
         let effectiveName: TokenSyntax = {
             if let declRef = expression.as(DeclReferenceExprSyntax.self) {

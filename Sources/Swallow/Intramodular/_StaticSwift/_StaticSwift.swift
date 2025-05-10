@@ -4,6 +4,6 @@
 
 import Swift
 
-public enum _StaticSwift {
+public final class _StaticSwift {
     
 }

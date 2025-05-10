@@ -411,3 +411,25 @@ extension String {
         return result
     }
 }
+
+extension String {
+    public func _asPathStringWithoutFileExtension(
+        _ fileExtension: String
+    ) -> String {
+        if fileExtension.isEmpty || !self.hasSuffix(fileExtension) {
+            return self
+        }
+        
+        return String(self[...index(endIndex, offsetBy: -fileExtension.count)])
+    }
+    
+    public func _asPathStringWithFileExtension(
+        _ fileExtension: String
+    ) -> String {
+        if fileExtension.isEmpty || hasSuffix(fileExtension) {
+            return self
+        }
+        
+        return self + fileExtension
+    }
+}
