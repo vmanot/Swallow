@@ -4,6 +4,7 @@
 
 import SwiftSyntax
 
+#if compiler(>=6.1)
 extension ClosureCaptureSyntax {
     public init(
         expression: some ExprSyntaxProtocol
@@ -28,3 +29,4 @@ extension ClosureCaptureSyntax {
         )
     }
 }
+#endif
