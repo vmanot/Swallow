@@ -1,0 +1,51 @@
+{
+  "originHash" : "40bb6e42387caf69d05bd0fc4a9586869a30b12ac2fd91f013817b6079e40c18",
+  "pins" : [
+    {
+      "identity" : "swift-atomics",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/swift-atomics.git",
+      "state" : {
+        "revision" : "cd142fd2f64be2100422d658e7411e39489da985",
+        "version" : "1.2.0"
+      }
+    },
+    {
+      "identity" : "swift-collections",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/swift-collections",
+      "state" : {
+        "revision" : "c1805596154bb3a265fd91b8ac0c4433b4348fb0",
+        "version" : "1.2.0"
+      }
+    },
+    {
+      "identity" : "swift-foundation",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/swiftlang/swift-foundation",
+      "state" : {
+        "branch" : "release/6.1.1",
+        "revision" : "7d4817bc3786f8b1f0a2f91b11a3d126d9283b15"
+      }
+    },
+    {
+      "identity" : "swift-foundation-icu",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/swift-foundation-icu",
+      "state" : {
+        "branch" : "release/6.1",
+        "revision" : "7e255a994ec26a08214f8fea2fdaf60b296e1f22"
+      }
+    },
+    {
+      "identity" : "swift-syntax",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/swift-precompiled/swift-syntax",
+      "state" : {
+        "branch" : "release/6.1",
+        "revision" : "fc197a24fb2e77609fbe3d94624e36f84d758099"
+      }
+    }
+  ],
+  "version" : 3
+}

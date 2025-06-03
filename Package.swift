@@ -1,4 +1,4 @@
-// swift-tools-version:5.10
+// swift-tools-version:6.1
 
 import CompilerPluginSupport
 import Foundation
@@ -7,6 +7,7 @@ import PackageDescription
 var dependencies: [PackageDescription.Package.Dependency] = [
     .package(url: "https://github.com/apple/swift-atomics.git", from: "1.2.0"),
     .package(url: "https://github.com/apple/swift-collections", from: "1.1.0"),
+    .package(url: "https://github.com/swiftlang/swift-foundation", branch: "release/6.1.1")
 ]
 #if compiler(>=6.1)
 dependencies += [.package(url: "https://github.com/swift-precompiled/swift-syntax", branch: "release/6.1")]
@@ -18,7 +19,7 @@ let package = Package(
     name: "Swallow",
     platforms: [
         .iOS(.v13),
-        .macOS(.v11),
+        .macOS(.v14),
         .tvOS(.v13),
         .watchOS(.v6)
     ],
@@ -40,6 +41,10 @@ let package = Package(
                 "LoremIpsum",
                 "POSIX",
                 "Runtime",
+                "MachOSwift",
+                "MachOToolbox",
+                "_MachOPrivate",
+                "_CommonCryptoPrivate"
             ]
         ),
         .library(
@@ -231,8 +236,49 @@ let package = Package(
             ],
             path: "Tests/Swallow"
         ),
-    ],
-    swiftLanguageVersions: [.v5]
+        .target(
+            name: "MachOSwift",
+            dependencies: [
+                .byName(name: "_MachOPrivate"),
+                .byName(name: "_CommonCryptoPrivate"),
+                .product(name: "FoundationEssentials", package: "swift-foundation")
+            ],
+            swiftSettings: [
+                .enableExperimentalFeature("RawLayout")
+            ]
+        ),
+        .target(
+            name: "MachOToolbox",
+            dependencies: [
+                .byName(name: "_MachOPrivate"),
+                .byName(name: "MachOSwift")
+            ],
+            swiftSettings: [
+                .enableExperimentalFeature("Extern")
+            ]
+        ),
+        .target(
+            name: "_MachOPrivate"
+        ),
+        .target(
+            name: "_CommonCryptoPrivate"
+        ),
+        .testTarget(
+            name: "MachOSwiftTests",
+            dependencies: [
+                "MachOSwift",
+                "MachOToolbox"
+            ],
+            resources: [.copy("../../TestBinaries/")]
+        ),
+        .testTarget(
+            name: "MachOToolboxTests",
+            dependencies: [
+                "MachOToolbox"
+            ],
+            resources: [.copy("../../TestBinaries/")]
+        )
+    ]
 )
 
 // package-manifest-patch:start

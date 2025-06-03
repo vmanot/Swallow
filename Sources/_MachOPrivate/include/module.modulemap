@@ -1,0 +1,4 @@
+module _MachOPrivate {
+    umbrella header "Umbrella.h"
+    export *
+}
