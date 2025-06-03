@@ -14,7 +14,8 @@ extension DyldSharedCache {
             let mappings = UnsafeRawPointer(firstCache)
                 .assumingMemoryBound(to: UInt8.self)
                 .advanced(by: Int(firstCache.pointee.mappingOffset))
-                .withMemoryRebound(to: dyld_cache_mapping_info.self, capacity: 1) { $0 }
+                .raw
+                .assumingMemoryBound(to: dyld_cache_mapping_info.self)
             
             for i in 0..<firstCache.pointee.mappingCount {
                 buffer
@@ -99,7 +100,8 @@ extension DyldSharedCache {
             .assumingMemoryBound(to: UInt8.self)
             .advanced(by: Int(dyldSharedCache.pointee.codeSignatureOffset))
         let sb = codeSignatureRegion
-            .withMemoryRebound(to: CS_SuperBlob.self, capacity: 1) { $0 }
+            .raw
+            .assumingMemoryBound(to: CS_SuperBlob.self)
         if sb.pointee.magic != CSMAGIC_EMBEDDED_SIGNATURE.bigEndian {
             Logger.machOSwift(level: .error, "Error: dyld shared cache code signature magic is incorrect.")
             return false
@@ -166,7 +168,8 @@ extension DyldSharedCache {
             let hashOffset = size_t(UInt32(bigEndian: cd.unsafelyUnwrapped.pointee.hashOffset))
             let hashSlot = cd
                 .unsafelyUnwrapped
-                .withMemoryRebound(to: UInt8.self, capacity: 1) { $0 }
+                .raw
+                .assumingMemoryBound(to: UInt8.self)
                 .advanced(by: hashOffset)
             
             // Skip local symbols for now as those aren't being codesign correctly right now.

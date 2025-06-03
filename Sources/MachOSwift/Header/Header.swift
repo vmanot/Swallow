@@ -179,13 +179,13 @@ public struct Header: ~Copyable {
             startCmds = withUnsafeRawPointer { pointer in
                 pointer
                     .advanced(by: MemoryLayout<mach_header_64>.size)
-                    .withMemoryRebound(to: load_command.self, capacity: 1) { $0 }
+                    .assumingMemoryBound(to: load_command.self)
             }
         } else if magic == MH_MAGIC {
             startCmds = withUnsafeRawPointer { pointer in
                 pointer
                     .advanced(by: MemoryLayout<mach_header>.size)
-                    .withMemoryRebound(to: load_command.self, capacity: 1) { $0 }
+                    .assumingMemoryBound(to: load_command.self)
             }
         } else if hasMachOBigEndianMagic {
             throw "big endian mach-o file"
@@ -203,14 +203,14 @@ public struct Header: ~Copyable {
         
         let cmdsEnd: UnsafePointer<load_command> = UnsafeRawPointer(startCmds)
             .advanced(by: Int(sizeofcmds))
-            .withMemoryRebound(to: load_command.self, capacity: 1) { $0 }
+            .assumingMemoryBound(to: load_command.self)
         
         var cmd = startCmds
         
         for i in 1...ncmds {
             let nextCmd = UnsafeRawPointer(cmd)
                 .advanced(by: Int(cmd.pointee.cmdsize))
-                .withMemoryRebound(to: load_command.self, capacity: 1) { $0 }
+                .assumingMemoryBound(to: load_command.self)
             
             if (UInt(bitPattern: cmd) >= UInt(bitPattern: cmdsEnd)) {
                 throw withHeaderPointer { pointer in

@@ -500,7 +500,9 @@ extension DyldSharedCache {
             pointer
                 .baseAddress
                 .unsafelyUnwrapped
-                .withMemoryRebound(to: dyld_cache_header.self, capacity: 1) { $0.pointee }
+                .raw
+                .assumingMemoryBound(to: dyld_cache_header.self)
+                .pointee
         }
         
         let magic = withUnsafePointer(to: header) { pointer in
@@ -523,7 +525,8 @@ extension DyldSharedCache {
                 .baseAddress
                 .unsafelyUnwrapped
                 .advanced(by: Int(header.mappingOffset))
-                .withMemoryRebound(to: dyld_cache_mapping_info.self, capacity: 1) { $0 }
+                .raw
+                .assumingMemoryBound(to: dyld_cache_mapping_info.self)
             
             return Array<dyld_cache_mapping_info>(unsafeUninitializedCapacity: Int(header.mappingCount)) { buffer, initializedCount in
                 for i in 0..<header.mappingCount {
@@ -585,15 +588,18 @@ extension DyldSharedCache {
         close(cache_fd)
         return buffer!
             .advanced(by: Int(subCacheBufferOffset))
-            .withMemoryRebound(to: DyldSharedCache.self, capacity: 1) { $0 }
+            .raw
+            .assumingMemoryBound(to: DyldSharedCache.self)
     }
 }
 
 extension DyldSharedCache {
     public var magic: UnsafePointer<CChar> {
         let magic = withDyldSharedCachePointer { $0.pointee.magic }
-        return withUnsafePointer(to: magic) {
-            $0.withMemoryRebound(to: CChar.self, capacity: 16) { $0 }
+        return withUnsafePointer(to: magic) { pointer in
+            pointer
+                .raw
+                .assumingMemoryBound(to: CChar.self)
         }
     }
     public var mappingOffset: UInt32 { withDyldSharedCachePointer { $0.pointee.mappingOffset } }
