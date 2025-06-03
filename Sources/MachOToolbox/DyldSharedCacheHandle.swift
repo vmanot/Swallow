@@ -6,7 +6,10 @@ public final class DyldSharedCacheHandle: MapHandle, @unchecked Sendable {
     public let cacheFiles: CacheFiles
     
     override init(_contents contents: UnsafeMutableRawPointer, mapSize: off_t, url: FoundationEssentials.URL) throws {
-        assert(DyldSharedCache.isSharedCache(contents: contents))
+        guard DyldSharedCache.isSharedCache(contents: contents) else {
+            throw Error.notSharedCacheContents
+        }
+        
         self.cacheFiles = try CacheFiles(path: url.path(percentEncoded: false))
         try super.init(_contents: contents, mapSize: mapSize, url: url)
     }
@@ -73,5 +76,23 @@ extension DyldSharedCacheHandle {
         }
         
         return results
+    }
+}
+
+extension DyldSharedCacheHandle {
+    public enum Error: Swift.Error {
+        case notSharedCacheContents
+    }
+}
+
+extension DyldSharedCacheHandle {
+#if canImport(Foundation)
+    public convenience init(url: Foundation.URL) throws {
+        try self.init(_url: url)
+    }
+#endif
+    
+    public convenience init(url: FoundationEssentials.URL) throws {
+        try self.init(_url: url)
     }
 }

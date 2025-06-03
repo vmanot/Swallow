@@ -9,7 +9,7 @@ public final class FatHandle: MapHandle, @unchecked Sendable {
     
     override init(_contents contents: UnsafeMutableRawPointer, mapSize: off_t, url: FoundationEssentials.URL) throws {
         guard MachOSwift.FatFile.isFatFile(contents: contents) else {
-            fatalError("TODO: Error")
+            throw Error.notFATContents
         }
         
         var headers: [UnsafePointer<Header>] = []
@@ -78,12 +78,12 @@ extension FatHandle {
             return nil
         }
         
-//        guard let sliceSize = sliceSize(for: header) else {
-//            assertionFailure()
-//            return nil
-//        }
+        guard let sliceSize = sliceSize(for: header) else {
+            assertionFailure()
+            return nil
+        }
         
-        return header.pointee.importedSymbols(sliceSize: UInt64(header.pointee.fileSize))
+        return header.pointee.importedSymbols(sliceSize: sliceSize)
     }
     
     public func exportedSymbols(for architecture: MachOSwift.Architecture) -> [Symbol]? {
@@ -99,5 +99,23 @@ extension FatHandle {
         }
         
         return header.pointee.exportedSymbols(sliceSize: sliceSize)
+    }
+}
+
+extension FatHandle {
+    public enum Error: Swift.Error {
+        case notFATContents
+    }
+}
+
+extension FatHandle {
+#if canImport(Foundation)
+    public convenience init(url: Foundation.URL) throws {
+        try self.init(_url: url)
+    }
+#endif
+    
+    public convenience init(url: FoundationEssentials.URL) throws {
+        try self.init(_url: url)
     }
 }

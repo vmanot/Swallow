@@ -12,7 +12,7 @@ public struct MapOHandleTests {
     func test_initWithFoundationURL(filename: String) throws {
         let feURL: FoundationEssentials.URL = try #require(testBinaryURL(for: filename))
         let url = Foundation.URL(fileURLWithPath: feURL.path(percentEncoded: false))
-        let handle = try MapHandle(url: url)
+        let handle = try MapHandle(_url: url)
         #expect(handle.mapSize > 0)
     }
 #endif
@@ -20,7 +20,7 @@ public struct MapOHandleTests {
     @Test("MapHandle.init(url:) (FoundationEssentials)", arguments: ["MyScript"])
     func test_initWithFoundationEssentialsURL(filename: String) throws {
         let feURL: FoundationEssentials.URL = try #require(testBinaryURL(for: filename))
-        let handle = try MapHandle(url: feURL)
+        let handle = try MapHandle(_url: feURL)
         #expect(handle.mapSize > 0)
     }
 }

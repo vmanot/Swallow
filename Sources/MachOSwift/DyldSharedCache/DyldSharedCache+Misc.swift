@@ -125,7 +125,10 @@ extension DyldSharedCache {
                 .loadUnaligned(fromByteOffset: indexOffset + MemoryLayout<CS_BlobIndex>.size * Int(i), as: CS_BlobIndex.self)
                 .offset
             if UInt32(bigEndian: type) == CSSLOT_CODEDIRECTORY {
-                cd = unsafeBitCast(codeSignatureRegion.advanced(by: Int(UInt32(bigEndian: offset))), to: UnsafePointer<CS_CodeDirectory>.self)
+                cd = codeSignatureRegion
+                    .advanced(by: Int(UInt32(bigEndian: offset)))
+                    .raw
+                    .assumingMemoryBound(to: CS_CodeDirectory.self)
                 break
             }
         }

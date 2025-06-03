@@ -602,89 +602,252 @@ extension DyldSharedCache {
                 .assumingMemoryBound(to: CChar.self)
         }
     }
+    
+    @_alwaysEmitIntoClient
     public var mappingOffset: UInt32 { withDyldSharedCachePointer { $0.pointee.mappingOffset } }
+    
+    @_alwaysEmitIntoClient
     public var mappingCount: UInt32 { withDyldSharedCachePointer { $0.pointee.mappingCount } }
+    
+    @_alwaysEmitIntoClient
     public var imagesOffsetOld: UInt32 { withDyldSharedCachePointer { $0.pointee.imagesOffsetOld } }
+    
+    @_alwaysEmitIntoClient
     public var imagesCountOld: UInt32 { withDyldSharedCachePointer { $0.pointee.imagesCountOld } }
+    
+    @_alwaysEmitIntoClient
     public var dyldBaseAddress: UInt64 { withDyldSharedCachePointer { $0.pointee.dyldBaseAddress } }
+    
+    @_alwaysEmitIntoClient
     public var codeSignatureOffset: UInt64 { withDyldSharedCachePointer { $0.pointee.codeSignatureOffset } }
+    
+    @_alwaysEmitIntoClient
     public var codeSignatureSize: UInt64 { withDyldSharedCachePointer { $0.pointee.codeSignatureSize } }
+    
+    @_alwaysEmitIntoClient
     public var slideInfoOffsetUnused: UInt64 { withDyldSharedCachePointer { $0.pointee.slideInfoOffsetUnused } }
+    
+    @_alwaysEmitIntoClient
     public var slideInfoSizeUnused: UInt64 { withDyldSharedCachePointer { $0.pointee.slideInfoSizeUnused } }
+    
+    @_alwaysEmitIntoClient
     public var localSymbolsOffset: UInt64 { withDyldSharedCachePointer { $0.pointee.localSymbolsOffset } }
+    
+    @_alwaysEmitIntoClient
     public var localSymbolsSize: UInt64 { withDyldSharedCachePointer { $0.pointee.localSymbolsSize } }
+    
+    @_alwaysEmitIntoClient
     public var uuid: UnsafePointer<UInt8> {
-        withUnsafeRawPointer { $0.advanced(by: MemoryLayout<dyld_cache_header>.offset(of: \.uuid)!).assumingMemoryBound(to: UInt8.self) }
+        withDyldSharedCachePointer { pointer in
+            UnsafeRawPointer(pointer)
+                .advanced(by: MemoryLayout<dyld_cache_header>.offset(of: \.uuid)!).assumingMemoryBound(to: UInt8.self)
+        }
     }
+    
+    @_alwaysEmitIntoClient
     public var cacheType: UInt64 { withDyldSharedCachePointer { $0.pointee.cacheType } }
+    
+    @_alwaysEmitIntoClient
     public var branchPoolsOffset: UInt32 { withDyldSharedCachePointer { $0.pointee.branchPoolsOffset } }
+    
+    @_alwaysEmitIntoClient
     public var branchPoolsCount: UInt32 { withDyldSharedCachePointer { $0.pointee.branchPoolsCount } }
+    
+    @_alwaysEmitIntoClient
     public var dyldInCacheMH: UInt64 { withDyldSharedCachePointer { $0.pointee.dyldInCacheMH } }
+    
+    @_alwaysEmitIntoClient
     public var dyldInCacheEntry: UInt64 { withDyldSharedCachePointer { $0.pointee.dyldInCacheEntry } }
+    
+    @_alwaysEmitIntoClient
     public var imagesTextOffset: UInt64 { withDyldSharedCachePointer { $0.pointee.imagesTextOffset } }
+    
+    @_alwaysEmitIntoClient
     public var imagesTextCount: UInt64 { withDyldSharedCachePointer { $0.pointee.imagesTextCount } }
+    
+    @_alwaysEmitIntoClient
     public var patchInfoAddr: UInt64 { withDyldSharedCachePointer { $0.pointee.patchInfoAddr } }
+    
+    @_alwaysEmitIntoClient
     public var patchInfoSize: UInt64 { withDyldSharedCachePointer { $0.pointee.patchInfoSize } }
+    
+    @_alwaysEmitIntoClient
     public var otherImageGroupAddrUnused: UInt64 { withDyldSharedCachePointer { $0.pointee.otherImageGroupAddrUnused } }
+    
+    @_alwaysEmitIntoClient
     public var otherImageGroupSizeUnused: UInt64 { withDyldSharedCachePointer { $0.pointee.otherImageGroupSizeUnused } }
+    
+    @_alwaysEmitIntoClient
     public var progClosuresAddr: UInt64 { withDyldSharedCachePointer { $0.pointee.progClosuresAddr } }
+    
+    @_alwaysEmitIntoClient
     public var progClosuresSize: UInt64 { withDyldSharedCachePointer { $0.pointee.progClosuresSize } }
+    
+    @_alwaysEmitIntoClient
     public var progClosuresTrieAddr: UInt64 { withDyldSharedCachePointer { $0.pointee.progClosuresTrieAddr } }
+    
+    @_alwaysEmitIntoClient
     public var progClosuresTrieSize: UInt64 { withDyldSharedCachePointer { $0.pointee.progClosuresTrieSize } }
+    
+    @_alwaysEmitIntoClient
     public var platform: UInt32 { withDyldSharedCachePointer { $0.pointee.platform } }
+    
+    @_alwaysEmitIntoClient
     public var formatVersion: UInt32 { withDyldSharedCachePointer { $0.pointee.formatVersion } }
+    
+    @_alwaysEmitIntoClient
     public var dylibsExpectedOnDisk: Bool { withDyldSharedCachePointer { $0.pointee.dylibsExpectedOnDisk != 0 } }
+    
+    @_alwaysEmitIntoClient
     public var simulator: Bool { withDyldSharedCachePointer { $0.pointee.simulator != 0 } }
+    
+    @_alwaysEmitIntoClient
     public var locallyBuiltCache: Bool { withDyldSharedCachePointer { $0.pointee.locallyBuiltCache != 0 } }
+    
+    @_alwaysEmitIntoClient
     public var builtFromChainedFixups: Bool { withDyldSharedCachePointer { $0.pointee.builtFromChainedFixups != 0 } }
+    
+    @_alwaysEmitIntoClient
     public var newFormatTLVs: Bool { withDyldSharedCachePointer { $0.pointee.newFormatTLVs != 0 } }
+    
+    @_alwaysEmitIntoClient
     public var sharedRegionStart: UInt64 { withDyldSharedCachePointer { $0.pointee.sharedRegionStart } }
+    
+    @_alwaysEmitIntoClient
     public var sharedRegionSize: UInt64 { withDyldSharedCachePointer { $0.pointee.sharedRegionSize } }
+    
+    @_alwaysEmitIntoClient
     public var maxSlide: UInt64 { withDyldSharedCachePointer { $0.pointee.maxSlide } }
+    
+    @_alwaysEmitIntoClient
     public var dylibsImageArrayAddr: UInt64 { withDyldSharedCachePointer { $0.pointee.dylibsImageArrayAddr } }
+    
+    @_alwaysEmitIntoClient
     public var dylibsImageArraySize: UInt64 { withDyldSharedCachePointer { $0.pointee.dylibsImageArraySize } }
+    
+    @_alwaysEmitIntoClient
     public var dylibsTrieAddr: UInt64 { withDyldSharedCachePointer { $0.pointee.dylibsTrieAddr } }
+    
+    @_alwaysEmitIntoClient
     public var dylibsTrieSize: UInt64 { withDyldSharedCachePointer { $0.pointee.dylibsTrieSize } }
+    
+    @_alwaysEmitIntoClient
     public var otherImageArrayAddr: UInt64 { withDyldSharedCachePointer { $0.pointee.otherImageArrayAddr } }
+    
+    @_alwaysEmitIntoClient
     public var otherImageArraySize: UInt64 { withDyldSharedCachePointer { $0.pointee.otherImageArraySize } }
+    
+    @_alwaysEmitIntoClient
     public var otherTrieAddr: UInt64 { withDyldSharedCachePointer { $0.pointee.otherTrieAddr } }
+    
+    @_alwaysEmitIntoClient
     public var otherTrieSize: UInt64 { withDyldSharedCachePointer { $0.pointee.otherTrieSize } }
+    
+    @_alwaysEmitIntoClient
     public var mappingWithSlideOffset: UInt32 { withDyldSharedCachePointer { $0.pointee.mappingWithSlideOffset } }
+    
+    @_alwaysEmitIntoClient
     public var mappingWithSlideCount: UInt32 { withDyldSharedCachePointer { $0.pointee.mappingWithSlideCount } }
+    
+    @_alwaysEmitIntoClient
     public var dylibsPBLStateArrayAddrUnused: UInt64 { withDyldSharedCachePointer { $0.pointee.dylibsPBLStateArrayAddrUnused } }
+    
+    @_alwaysEmitIntoClient
     public var dylibsPBLSetAddr: UInt64 { withDyldSharedCachePointer { $0.pointee.dylibsPBLSetAddr } }
+    
+    @_alwaysEmitIntoClient
     public var programsPBLSetPoolAddr: UInt64 { withDyldSharedCachePointer { $0.pointee.programsPBLSetPoolAddr } }
+    
+    @_alwaysEmitIntoClient
     public var programsPBLSetPoolSize: UInt64 { withDyldSharedCachePointer { $0.pointee.programsPBLSetPoolSize } }
+    
+    @_alwaysEmitIntoClient
     public var programTrieAddr: UInt64 { withDyldSharedCachePointer { $0.pointee.programTrieAddr } }
+    
+    @_alwaysEmitIntoClient
     public var programTrieSize: UInt32 { withDyldSharedCachePointer { $0.pointee.programTrieSize } }
+    
+    @_alwaysEmitIntoClient
     public var osVersion: UInt32 { withDyldSharedCachePointer { $0.pointee.osVersion } }
+    
+    @_alwaysEmitIntoClient
     public var altPlatform: UInt32 { withDyldSharedCachePointer { $0.pointee.altPlatform } }
+    
+    @_alwaysEmitIntoClient
     public var altOsVersion: UInt32 { withDyldSharedCachePointer { $0.pointee.altOsVersion } }
+    
+    @_alwaysEmitIntoClient
     public var swiftOptsOffset: UInt64 { withDyldSharedCachePointer { $0.pointee.swiftOptsOffset } }
+    
+    @_alwaysEmitIntoClient
     public var swiftOptsSize: UInt64 { withDyldSharedCachePointer { $0.pointee.swiftOptsSize } }
+    
+    @_alwaysEmitIntoClient
     public var subCacheArrayOffset: UInt32 { withDyldSharedCachePointer { $0.pointee.subCacheArrayOffset } }
+    
+    @_alwaysEmitIntoClient
     public var subCacheArrayCount: UInt32 { withDyldSharedCachePointer { $0.pointee.subCacheArrayCount } }
+    
+    @_alwaysEmitIntoClient
     public var symbolFileUUID: FoundationEssentials.UUID {
         withDyldSharedCachePointer { FoundationEssentials.UUID(uuid: $0.pointee.symbolFileUUID) }
     }
+    
+    @_alwaysEmitIntoClient
     public var rosettaReadOnlyAddr: UInt64 { withDyldSharedCachePointer { $0.pointee.rosettaReadOnlyAddr } }
+    
+    @_alwaysEmitIntoClient
     public var rosettaReadOnlySize: UInt64 { withDyldSharedCachePointer { $0.pointee.rosettaReadOnlySize } }
+    
+    @_alwaysEmitIntoClient
     public var rosettaReadWriteAddr: UInt64 { withDyldSharedCachePointer { $0.pointee.rosettaReadWriteAddr } }
+    
+    @_alwaysEmitIntoClient
     public var rosettaReadWriteSize: UInt64 { withDyldSharedCachePointer { $0.pointee.rosettaReadWriteSize } }
+    
+    @_alwaysEmitIntoClient
     public var imagesOffset: UInt32 { withDyldSharedCachePointer { $0.pointee.imagesOffset } }
+    
+    @_alwaysEmitIntoClient
     public var imagesCount: UInt32 { withDyldSharedCachePointer { $0.pointee.imagesCount } }
+    
+    @_alwaysEmitIntoClient
     public var cacheSubType: UInt32 { withDyldSharedCachePointer { $0.pointee.cacheSubType } }
+    
+    @_alwaysEmitIntoClient
     public var objcOptsOffset: UInt64 { withDyldSharedCachePointer { $0.pointee.objcOptsOffset } }
+    
+    @_alwaysEmitIntoClient
     public var objcOptsSize: UInt64 { withDyldSharedCachePointer { $0.pointee.objcOptsSize } }
+    
+    @_alwaysEmitIntoClient
     public var cacheAtlasOffset: UInt64 { withDyldSharedCachePointer { $0.pointee.cacheAtlasOffset } }
+    
+    @_alwaysEmitIntoClient
     public var cacheAtlasSize: UInt64 { withDyldSharedCachePointer { $0.pointee.cacheAtlasSize } }
+    
+    @_alwaysEmitIntoClient
     public var dynamicDataOffset: UInt64 { withDyldSharedCachePointer { $0.pointee.dynamicDataOffset } }
+    
+    @_alwaysEmitIntoClient
     public var dynamicDataMaxSize: UInt64 { withDyldSharedCachePointer { $0.pointee.dynamicDataMaxSize } }
+    
+    @_alwaysEmitIntoClient
     public var tproMappingsOffset: UInt32 { withDyldSharedCachePointer { $0.pointee.tproMappingsOffset } }
+    
+    @_alwaysEmitIntoClient
     public var tproMappingsCount: UInt32 { withDyldSharedCachePointer { $0.pointee.tproMappingsCount } }
+    
+    @_alwaysEmitIntoClient
     public var functionVariantInfoAddr: UInt64 { withDyldSharedCachePointer { $0.pointee.functionVariantInfoAddr } }
+    
+    @_alwaysEmitIntoClient
     public var functionVariantInfoSize: UInt64 { withDyldSharedCachePointer { $0.pointee.functionVariantInfoSize } }
+    
+    @_alwaysEmitIntoClient
     public var prewarmingDataOffset: UInt64 { withDyldSharedCachePointer { $0.pointee.prewarmingDataOffset } }
+    
+    @_alwaysEmitIntoClient
     public var prewarmingDataSize: UInt64 { withDyldSharedCachePointer { $0.pointee.prewarmingDataSize } }
 }
 

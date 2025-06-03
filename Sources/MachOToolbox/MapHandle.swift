@@ -25,14 +25,14 @@ public class MapHandle: @unchecked Sendable, Equatable {
     private var shoundUnmapOnDeinit = true
     
 #if canImport(Foundation)
-    public convenience init(url: Foundation.URL) throws {
+    convenience init(_url url: Foundation.URL) throws {
         assert(url.startAccessingSecurityScopedResource())
-        try self.init(url: FoundationEssentials.URL(filePath: url.path(percentEncoded: false)))
+        try self.init(_url: FoundationEssentials.URL(filePath: url.path(percentEncoded: false)))
         url.stopAccessingSecurityScopedResource()
     }
 #endif
     
-    public convenience init(url: FoundationEssentials.URL) throws {
+    convenience init(_url url: FoundationEssentials.URL) throws {
         let fd: Int32
 #if canImport(Foundation)
         let fileHandle = try Foundation.FileHandle(forReadingFrom: Foundation.URL(filePath: url.path(percentEncoded: false)))
@@ -109,7 +109,7 @@ extension MapHandle {
 #endif
     
     public static func handle(for url: FoundationEssentials.URL) throws -> MapHandle {
-        let mapHandle = try MapHandle(url: url)
+        let mapHandle = try MapHandle(_url: url)
         mapHandle.shoundUnmapOnDeinit = false
         
         if MachOFile.isMachO(contents: mapHandle.contents) {
@@ -119,7 +119,22 @@ extension MapHandle {
         } else if DyldSharedCache.isSharedCache(contents: mapHandle.contents) {
             return try DyldSharedCacheHandle(_contents: mapHandle.contents, mapSize: mapHandle.mapSize, url: mapHandle.url)
         } else {
-            fatalError("Unsupported file format")
+            throw Error.unspportedFile
         }
+    }
+}
+
+extension MapHandle {
+    public enum Error: Swift.Error {
+        case unspportedFile
+    }
+}
+
+extension MapHandle {
+    public protocol _ExposeURLInitializers: MapHandle {
+#if canImport(Foundation)
+        init(url: Foundation.URL) throws
+#endif
+        init(url: FoundationEssentials.URL) throws
     }
 }
