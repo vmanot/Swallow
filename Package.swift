@@ -1,4 +1,4 @@
-// swift-tools-version:5.10
+// swift-tools-version:6.1
 
 import CompilerPluginSupport
 import Foundation
@@ -61,13 +61,16 @@ let package = Package(
             name: "_SwiftRuntimeExports",
             dependencies: [],
             swiftSettings: [
-                .unsafeFlags(["-suppress-warnings"])
+                .unsafeFlags(["-suppress-warnings"]),
+                .swiftLanguageMode(.v5)
             ]
         ),
         .target(
             name: "_PythonString",
             dependencies: [],
-            swiftSettings: []
+            swiftSettings: [
+                .swiftLanguageMode(.v5)
+            ]
         ),
         .target(
             name: "_SwallowSwiftOverlay",
@@ -76,15 +79,21 @@ let package = Package(
                 .product(name: "OrderedCollections", package: "swift-collections"),
             ],
             path: "Sources/_SwallowSwiftOverlay",
-            swiftSettings: []
+            swiftSettings: [
+                .swiftLanguageMode(.v5)
+            ]
         ),
         .target(
             name: "LoremIpsum",
-            swiftSettings: []
+            swiftSettings: [
+                .swiftLanguageMode(.v5)
+            ]
         ),
         .target(
             name: "SE0270_RangeSet",
-            swiftSettings: []
+            swiftSettings: [
+                .swiftLanguageMode(.v5)
+            ]
         ),
         .target(
             name: "Swallow",
@@ -96,7 +105,8 @@ let package = Package(
                 "_SwiftRuntimeExports",
             ],
             swiftSettings: [
-                .enableExperimentalFeature("AccessLevelOnImport")
+                .enableExperimentalFeature("AccessLevelOnImport"),
+                .swiftLanguageMode(.v5)
             ]
         ),
         .target(
@@ -106,7 +116,9 @@ let package = Package(
                 .product(name: "Collections", package: "swift-collections"),
                 "Swallow"
             ],
-            swiftSettings: []
+            swiftSettings: [
+                .swiftLanguageMode(.v5)
+            ]
         ),
         .target(
             name: "CoreModel",
@@ -115,7 +127,9 @@ let package = Package(
                 .product(name: "Collections", package: "swift-collections"),
                 "Swallow"
             ],
-            swiftSettings: []
+            swiftSettings: [
+                .swiftLanguageMode(.v5)
+            ]
         ),
         .target(
             name: "Diagnostics",
@@ -123,7 +137,9 @@ let package = Package(
                 "Swallow",
                 "SwallowMacrosClient",
             ],
-            swiftSettings: []
+            swiftSettings: [
+                .swiftLanguageMode(.v5)
+            ]
         ),
         .target(
             name: "FoundationX",
@@ -131,7 +147,9 @@ let package = Package(
                 "Diagnostics",
                 "Swallow",
             ],
-            swiftSettings: []
+            swiftSettings: [
+                .swiftLanguageMode(.v5)
+            ]
         ),
         .target(
             name: "POSIX",
@@ -139,7 +157,9 @@ let package = Package(
                 "Swallow",
                 "SwallowMacrosClient",
             ],
-            swiftSettings: []
+            swiftSettings: [
+                .swiftLanguageMode(.v5)
+            ]
         ),
         .target(
             name: "_RuntimeC",
@@ -148,7 +168,9 @@ let package = Package(
             cSettings: [
                 .headerSearchPath("include"),
             ],
-            swiftSettings: []
+            swiftSettings: [
+                .swiftLanguageMode(.v5)
+            ]
         ),
         .target(
             name: "_RuntimeKeyPath",
@@ -156,7 +178,8 @@ let package = Package(
                 "Swallow"
             ],
             swiftSettings: [
-                .unsafeFlags(["-parse-stdlib"])
+                .unsafeFlags(["-parse-stdlib"]),
+                .swiftLanguageMode(.v5)
             ]
         ),
         .target(
@@ -171,6 +194,7 @@ let package = Package(
             ],
             swiftSettings: [
                 .enableExperimentalFeature("AccessLevelOnImport"),
+                .swiftLanguageMode(.v5)
             ]
         ),
         .macro(
@@ -183,7 +207,9 @@ let package = Package(
                 .target(name: "SwiftSyntaxUtilities", condition: .when(platforms: [.macOS])),
             ],
             path: "Macros/SwallowMacros",
-            swiftSettings: []
+            swiftSettings: [
+                .swiftLanguageMode(.v5)
+            ]
         ),
         .target(
             name: "SwallowMacrosClient",
@@ -192,7 +218,9 @@ let package = Package(
                 "Swallow"
             ],
             path: "Macros/SwallowMacrosClient",
-            swiftSettings: []
+            swiftSettings: [
+                .swiftLanguageMode(.v5)
+            ]
         ),
         .target(
             name: "MacroBuilder",
@@ -205,7 +233,10 @@ let package = Package(
                 .product(name: "SwiftParserDiagnostics", package: "swift-syntax", condition: .when(platforms: [.macOS])),
                 .target(name: "SwiftSyntaxUtilities", condition: .when(platforms: [.macOS])),
             ],
-            path: "Macros/MacroBuilder"
+            path: "Macros/MacroBuilder",
+            swiftSettings: [
+                .swiftLanguageMode(.v5)
+            ]
         ),
         .target(
             name: "SwiftSyntaxUtilities",
@@ -217,7 +248,10 @@ let package = Package(
                 .product(name: "SwiftParserDiagnostics", package: "swift-syntax", condition: .when(platforms: [.macOS])),
                 "Swallow",
             ],
-            path: "Macros/SwiftSyntaxUtilities"
+            path: "Macros/SwiftSyntaxUtilities",
+            swiftSettings: [
+                .swiftLanguageMode(.v5)
+            ]
         ),
         .testTarget(
             name: "SwallowTests",
@@ -229,10 +263,12 @@ let package = Package(
                 .product(name: "SwiftSyntaxMacrosTestSupport", package: "swift-syntax", condition: .when(platforms: [.macOS])),
                 .target(name: "SwiftSyntaxUtilities", condition: .when(platforms: [.macOS])),
             ],
-            path: "Tests/Swallow"
+            path: "Tests/Swallow",
+            swiftSettings: [
+                .swiftLanguageMode(.v5)
+            ]
         ),
-    ],
-    swiftLanguageVersions: [.v5]
+    ]
 )
 
 // package-manifest-patch:start
