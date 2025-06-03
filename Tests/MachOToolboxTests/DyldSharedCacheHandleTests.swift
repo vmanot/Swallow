@@ -2,6 +2,8 @@ import Testing
 import FoundationEssentials
 @testable @_spi(MachOToolBoxTests) import MachOToolbox
 
+// Please replace argument path
+
 public struct DyldSharedCacheHandleTests {
     @Test("DyldSharedCacheHandle.init(url:)", arguments: ["/Volumes/Data 1/22F76__iPhone17,2/dyld_shared_cache_arm64e"])
     func test_init(path: String) throws {
