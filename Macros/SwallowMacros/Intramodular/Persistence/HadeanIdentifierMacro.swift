@@ -8,6 +8,7 @@ import SwiftSyntax
 import SwiftSyntaxMacros
 import SwiftSyntaxUtilities
 
+
 struct HadeanIdentifierMacro: ExtensionMacro {
     static func expansion(
         of node: AttributeSyntax,
