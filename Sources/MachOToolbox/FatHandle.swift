@@ -2,7 +2,6 @@ import MachOSwift
 import FoundationEssentials
 
 public final class FatHandle: MapHandle, @unchecked Sendable {
-    @_spi(MachOToolBoxTests)
     public private(set) var headers: [UnsafePointer<Header>]
     
     private let headerToSliceSize: [UnsafePointer<Header>: UInt64]

@@ -1,6 +1,6 @@
 import Testing
 import FoundationEssentials
-@testable @_spi(MachOToolBoxTests) import MachOToolbox
+@testable import MachOToolbox
 
 public struct FatHandleTests {
     @Test("FatHandle.init(url:)", arguments: ["Symbols"])
