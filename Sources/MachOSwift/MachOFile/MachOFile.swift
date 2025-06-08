@@ -92,11 +92,11 @@ public struct MachOFile: ~Copyable {
     }
     
     public func isArch(_ aName: String) -> Bool {
-        Architecture(rawValue: aName) == Architecture(cputype: cputype, cpusubtype: cpusubtype)
+        Architecture(string: aName) == Architecture(cputype: cputype, cpusubtype: cpusubtype)
     }
     
     public var archName: String? {
-        Architecture(cputype: cputype, cpusubtype: cpusubtype)?.rawValue
+        Architecture(cputype: cputype, cpusubtype: cpusubtype).string
     }
     
     public var is64: Bool {
