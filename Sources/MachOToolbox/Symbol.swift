@@ -27,8 +27,16 @@ public struct Symbol: Sendable, Equatable {
     
     public var demangledName: String? {
         guard let name else { return nil }
-        
-        return name.withCString { namePointer in
+        return Symbol.demangledName(for: name)
+    }
+    
+    public var isSwiftSymbol: Bool {
+        guard let name else { return false }
+        return Symbol.isSwiftSymbol(for: name)
+    }
+    
+    public static func demangledName(for name: String) -> String? {
+        name.withCString { namePointer in
             guard let mangledNamePointer = _stdlib_demangleImpl(mangledName: namePointer, mangledNameLength: UInt(name.count), outputBuffer: nil, outputBufferSize: nil, flags: 0) else {
                 return nil
                 
@@ -40,9 +48,7 @@ public struct Symbol: Sendable, Equatable {
         }
     }
     
-    public var isSwiftSymbol: Bool {
-        guard let name else { return false }
-        
+    public static func isSwiftSymbol(for name: String) -> Bool {
         for prefix in swiftSymbolPrefixes {
             if name.hasPrefix(prefix) {
                 return true
