@@ -2,7 +2,7 @@
 
 import Darwin.Mach.machine
 
-public struct Architecture: Equatable, Codable, Sendable {
+public struct Architecture: Hashable, Codable, Sendable {
     @_alwaysEmitIntoClient
     public static var ppc: Architecture { Architecture(cputype: CPU_TYPE_POWERPC, cpusubtype: CPU_SUBTYPE_POWERPC_ALL) }
     @_alwaysEmitIntoClient
