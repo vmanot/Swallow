@@ -99,7 +99,11 @@ extension MachOSwift.MachOFile {
                     results.append(Symbol(name: symbolName ?? "redacted"))
                     return true
                 }
-            assert(result == 0)
+            
+            if result != 0 {
+                Logger.machOToolbox(level: .error, "Unknown error occured!")
+                return []
+            }
             
             return results
         }
@@ -116,7 +120,11 @@ extension MachOSwift.MachOFile {
                     results.append(Symbol(name: symbolName ?? "redacted"))
                     return true
                 }
-            assert(result == 0)
+            
+            if result != 0 {
+                Logger.machOToolbox(level: .error, "Unknown error occured!")
+                return []
+            }
             
             return results
         }
@@ -135,7 +143,11 @@ extension MachOSwift.Header {
                     results.append(Symbol(name: symbolName ?? "redacted"))
                     return true
                 }
-            assert(result == 0)
+            
+            if result != 0 {
+                Logger.machOToolbox(level: .error, "Unknown error occured!")
+                return []
+            }
             
             return results
         }
@@ -152,7 +164,11 @@ extension MachOSwift.Header {
                     results.append(Symbol(name: symbolName ?? "redacted"))
                     return true
                 }
-            assert(result == 0)
+
+            if result != 0 {
+                Logger.machOToolbox(level: .error, "Unknown error occured!")
+                return []
+            }
             
             return results
         }
