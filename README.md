@@ -1,81 +1,85 @@
 # Swallow
 
-A complement to the Swift standard library. This framework contains a suite of essential protocols and types that are missing from the standard library, and attempts to maintain API parity with the latest Swift evolution trends. 
+A complement to the Swift standard library. This framework contains a suite of essential protocols and types that are missing from the standard library, and attempts to maintain API parity with the latest Swift evolution trends.
 
-Swallow is composed of the following modules:
-- `Swallow`
-- `Diagnostics`
-- `FoundationX`
-- `Compute`
-- `POSIX`
-- `Runtime`
+## Targets
 
-Along with the miscellaneous modules:
-- `_LoremIpsum`
-- `SE0270_RangeSet`
+| Target | Type | Purpose |
+|--------|------|---------|
+| **Swallow** | Library | Core utilities, collections, and property wrappers |
+| **SwallowMacros** | Macro | Swift macro implementations |
+| **SwallowMacrosClient** | Library | Client-side macro interface and runtime support |
+| **MacroBuilder** | Library | Utilities for building custom macros |
+| **SwiftSyntaxUtilities** | Library | Extensions and helpers for SwiftSyntax |
+| **FoundationX** | Library | Foundation extensions and file management |
+| **Compute** | Library | Data structures (trees, graphs, collections) |
+| **Runtime** | Library | Type introspection and runtime manipulation |
+| **Diagnostics** | Library | Logging, error handling, and debugging |
+| **CoreModel** | Library | Persistent model abstractions |
+| **POSIX** | Library | POSIX system interfaces |
+| **SE0270_RangeSet** | Library | RangeSet implementation from Swift Evolution |
+| **LoremIpsum** | Library | Lorem ipsum text generation |
+| **_SwiftRuntimeExports** | Library | Swift runtime symbol exports |
+| **_RuntimeC** | Library | C runtime utilities |
+| **_RuntimeKeyPath** | Library | KeyPath runtime utilities |
+| **_SwallowSwiftOverlay** | Library | Swift standard library overlays |
+| **_PythonString** | Library | Python-style string operations |
+
+### Key Features
+
+- **`IdentifierIndexingArray`** — O(1) identifier-based access with array semantics
+- **Swift Macros** — `@Singleton`, `@DebugLog`, `@KeyPathIterable`, `@RuntimeDiscoverable`, `@Memoized`
+- **Runtime Introspection** — `InstanceMirror`, type metadata, dynamic symbol loading
+- **File Management** — Type-safe directory operations and security-scoped access
+- **Data Structures** — Specialized trees, graphs, and collections
+
+## Installation
+
+Add Swallow to your project using Swift Package Manager:
+
+```swift
+dependencies: [
+    .package(url: "https://github.com/vmanot/Swallow.git", branch: "master")
+]
+```
+
+Import the modules you need:
+
+```swift
+import Swallow
+import SwallowMacrosClient
+import FoundationX
+```
 
 ## Usage
+
+*Note: This usage section is incomplete and shows only a few examples of the available functionality.*
 
 ### `IdentifierIndexingArray`
 
 `IdentifierIndexingArray` offers a more robust and efficient way to manage collections of elements where unique identifiers play a crucial role. It simplifies many common tasks and operations, providing both performance benefits and improved code maintainability.
 
-To create an `Identifiable` object to include in the array, simply add `Identifiable` comformance with a unique `id` element to the object. 
 ```swift
-public struct MyIdentifiableObject: Identifiable {
-    public typealias ID = _TypeAssociatedID<Self, UUID>
-
-    // a randomely generated UUID
-    public var id: ID = .random()
-    public var someText: String
-    
-    init(someText: String) {
-        self.someText = someText
-    }
+struct User: Identifiable {
+    let id = UUID()
+    var name: String
 }
-```
 
-`Identifiable` objects can now be stored in the `IdentifierIndexingArray` of specified objects:
-```swift
-var objects: IdentifierIndexingArrayOf<MyIdentifiableObject>
-```
-The full objects struct would look something like this
-```swift
-public struct MyObjects {
-    let myObject1 = MyIdentifiableObject(someText: "1. Hello World!")
-    let myObject2 = MyIdentifiableObject(someText: "2. Hello Earth!")
-    let myObject3 = MyIdentifiableObject(someText: "3. Hello Planet!")
-    
-    var objects: IdentifierIndexingArrayOf<MyIdentifiableObject>
-    
-    init() {
-        objects = [myObject1, myObject2, myObject3]
-    }
-}
-```
-Working with the the `IdentifierIndexingArray` of objects is simple and efficient: 
+var users: IdentifierIndexingArrayOf<User> = [
+    User(name: "Alice"),
+    User(name: "Bob"),
+    User(name: "Charlie")
+]
 
-```swift
-// get direct access to elements by their unique identifiers without having to find an element by iterating through an array
-let myObjectByID = objects.contains(elementIdentifiedBy: myObject1.id)
-        
-// efficient insertion and deletion of elements by their identifier without the need to search through the entire collection.
-let myObject4 = MyIdentifiableObject(someText: "4. Hello Life!")
-objects.append(myObject4)
-objects.remove(myObject3)
+// O(1) access by identifier
+let alice = users[id: aliceID]
 
-// Ensures that each identifier is unique within the collection, automatically handling duplicates if necessary.
-objects.insert(myObject1) // the object will remain as is
+// Efficient updates and navigation
+users.upsert(updatedUser)
+let nextUser = users.element(after: alice)
 
-// Provides custom subscripts and methods for accessing elements before or after a given element, simplifying navigation and manipulation.
-let firstObject = objects[0]
-let afterFirstObject = objects.element(after: myObject1)
-let beforeLastObject = objects.element(before: myObject4)
-
-// Facilitates easy mapping and sorting of elements while preserving the identifier indexing.
-let sortedObjects = objects.sorted { left, right in
-    left.someText.count < right.someText.count
-}
+// Facilitates easy mapping and sorting of elements while preserving the identifier indexing
+let sortedUsers = users.sorted { $0.name < $1.name }
 ```
 
 ### `@Singleton`
@@ -92,8 +96,35 @@ public final class DataStore: ObservableObject {
 let idString = DataStore.shared.id.uuidString
 ```
 
-### _printEnclosedInASCIIBox
-Print out an error in an ASCIIBox for easier debugging: 
+### Runtime Introspection
+
+```swift
+let mirror = try InstanceMirror(reflecting: complexObject)
+
+for (key, value) in mirror.allChildren {
+    print("\(key): \(value)")
+}
+
+// Type-safe field access
+mirror["propertyName"] = newValue
+```
+
+### Enhanced File Operations
+
+```swift
+let documentsDir = CanonicalFileDirectory.appDocuments
+let configFile = try URL(directory: documentsDir, path: "config.json")
+
+// Security-scoped access management
+let bookmark = try configFile.createBookmark()
+try configFile.withSecurityScopedAccess {
+    // Perform file operations
+}
+```
+
+### Debug Utilities
+
+Print out an error in an ASCII box for easier debugging:
 
 ```swift
 do {
@@ -111,6 +142,13 @@ do {
 +------------------------------------------------------------------------------+
 ```
 
+
+## System Requirements
+
+- **Swift** 6.1 or later
+- **iOS** 13.0+ / **macOS** 11.0+ / **tvOS** 13.0+ / **watchOS** 6.0+
+- **Xcode** 16.4+
+
 ## Compilation
 
 `swift-syntax` is the largest dependency of Swallow. At ~36000 LoC, it can add almost **twelve minutes** to release builds on Xcode Cloud.
@@ -122,7 +160,6 @@ To speed up builds (macOS only for now):
 - Clean your build folder (**Product** -> **Clean Build Folder...**)
 - Build Swallow.
 
-
 ## Acknowledgments
 
 <details>
@@ -133,5 +170,5 @@ To speed up builds (macOS only for now):
 - **Authors**: Point-Free, Inc.
 - **Notes**:
      - Partially rewritten and reimplemented for performance and functionality reasons where direct dependency was not feasible.
- 
+
 </details>

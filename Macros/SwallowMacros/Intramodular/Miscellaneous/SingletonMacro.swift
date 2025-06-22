@@ -77,14 +77,3 @@ public struct SingletonMacro: _MemberMacro2 {
         return result
     }
 }
-
-extension TokenKind {
-    fileprivate var keyword: Keyword? {
-        switch self {
-            case let .keyword(keyword):
-                return keyword
-            default:
-                return nil
-        }
-    }
-}
