@@ -61,20 +61,20 @@ extension DynamicLinkEditor.Image {
         }
         
         public mutating func next() -> UnsafeRawSymbol? {
-            guard currentIndex < count else {
-                return nil
-            }
+            var result: UnsafeRawSymbol? = nil
             
-            let result: UnsafeRawSymbol? = UnsafeRawSymbol(
-                nlist: start[currentIndex],
-                strings: symbolStringsPtr,
-                slide: slide
-            )
-            
-            currentIndex += 1
-            
-            guard let result else {
-                return next()
+            while result == nil {
+                guard currentIndex < count else {
+                    return nil
+                }
+                
+                currentIndex += 1
+                
+                result = UnsafeRawSymbol(
+                    nlist: start[currentIndex],
+                    strings: symbolStringsPtr,
+                    slide: slide
+                )
             }
             
             return result
