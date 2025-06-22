@@ -1,0 +1,4 @@
+module _FoundationCShims {
+    umbrella header "Umbrella.h"
+    export *
+}

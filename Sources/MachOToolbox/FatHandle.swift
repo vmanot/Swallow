@@ -1,12 +1,12 @@
 import MachOSwift
-import FoundationEssentials
+import FoundationX
 
 public final class FatHandle: MapHandle, @unchecked Sendable {
     public private(set) var headers: [UnsafePointer<Header>]
     
     private let headerToSliceSize: [UnsafePointer<Header>: UInt64]
     
-    override init(_contents contents: UnsafeMutableRawPointer, mapSize: off_t, url: FoundationEssentials.URL) throws {
+    override init(_contents contents: UnsafeMutableRawPointer, mapSize: off_t, url: FoundationX.URL) throws {
         guard MachOSwift.FatFile.isFatFile(contents: contents) else {
             throw Error.notFATContents
         }
@@ -104,17 +104,5 @@ extension FatHandle {
 extension FatHandle {
     public enum Error: Swift.Error {
         case notFATContents
-    }
-}
-
-extension FatHandle {
-#if canImport(Foundation)
-    public convenience init(url: Foundation.URL) throws {
-        try self.init(_url: url)
-    }
-#endif
-    
-    public convenience init(url: FoundationEssentials.URL) throws {
-        try self.init(_url: url)
     }
 }

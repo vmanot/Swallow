@@ -1,10 +1,10 @@
 import MachOSwift
-import FoundationEssentials
+import FoundationX
 
-public final class MachOHandle: MapHandle, @unchecked Sendable {
+public final class MachOHandle: FoundationX.MapHandle, @unchecked Sendable {
     public let header: UnsafeMutablePointer<MachOFile>
     
-    override init(_contents contents: UnsafeMutableRawPointer, mapSize: off_t, url: FoundationEssentials.URL) throws {
+    override init(_contents contents: UnsafeMutableRawPointer, mapSize: off_t, url: Foundation.URL) throws {
         guard MachOFile.isMachO(contents: contents) else {
             throw Error.notMachOContents
         }
@@ -27,17 +27,5 @@ extension MachOHandle {
 extension MachOHandle {
     public enum Error: Swift.Error {
         case notMachOContents
-    }
-}
-
-extension MachOHandle {
-#if canImport(Foundation)
-    public convenience init(url: Foundation.URL) throws {
-        try self.init(_url: url)
-    }
-#endif
-    
-    public convenience init(url: FoundationEssentials.URL) throws {
-        try self.init(_url: url)
     }
 }

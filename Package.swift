@@ -288,7 +288,8 @@ let package = Package(
             name: "MachOToolbox",
             dependencies: [
                 .byName(name: "_MachOPrivate"),
-                .byName(name: "MachOSwift")
+                .byName(name: "MachOSwift"),
+                .byName(name: "FoundationX")
             ],
             swiftSettings: [
                 .enableExperimentalFeature("Extern")
@@ -299,6 +300,16 @@ let package = Package(
         ),
         .target(
             name: "_CommonCryptoPrivate"
+        ),
+        .target(
+            name: "PropertyList",
+            dependencies: [
+                .byName(name: "FoundationX"),
+                .byName(name: "_FoundationCShims")
+            ]
+        ),
+        .target(
+            name: "_FoundationCShims"
         ),
         .testTarget(
             name: "MachOSwiftTests",

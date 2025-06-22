@@ -1,11 +1,11 @@
-import FoundationEssentials
+import FoundationX
 @_spi(CastUnsafeRawPointer) import MachOSwift
 
 // DyldSharedCacheHandle.contents only contains first dyld cache bytes.
-public final class DyldSharedCacheHandle: MapHandle, @unchecked Sendable {
+public final class DyldSharedCacheHandle: FoundationX.MapHandle, @unchecked Sendable {
     public let cacheFiles: CacheFiles
     
-    override init(_contents contents: UnsafeMutableRawPointer, mapSize: off_t, url: FoundationEssentials.URL) throws {
+    override init(_contents contents: UnsafeMutableRawPointer, mapSize: off_t, url: Foundation.URL) throws {
         guard DyldSharedCache.isSharedCache(contents: contents) else {
             throw Error.notSharedCacheContents
         }
@@ -82,17 +82,5 @@ extension DyldSharedCacheHandle {
 extension DyldSharedCacheHandle {
     public enum Error: Swift.Error {
         case notSharedCacheContents
-    }
-}
-
-extension DyldSharedCacheHandle {
-#if canImport(Foundation)
-    public convenience init(url: Foundation.URL) throws {
-        try self.init(_url: url)
-    }
-#endif
-    
-    public convenience init(url: FoundationEssentials.URL) throws {
-        try self.init(_url: url)
     }
 }
