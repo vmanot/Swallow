@@ -8,13 +8,23 @@ extension Swallow.MapHandle {
         mapHandle.shoundUnmapOnDeinit = false
         
         if MachOHandle.isMachO(contents: mapHandle.contents) {
+            mapHandle.shoundUnmapOnDeinit = false
             return try MachOHandle(_contents: mapHandle.contents, mapSize: mapHandle.mapSize, url: mapHandle.url)
         } else if FatHandle.isFat(contents: mapHandle.contents) {
+            mapHandle.shoundUnmapOnDeinit = false
             return try FatHandle(_contents: mapHandle.contents, mapSize: mapHandle.mapSize, url: mapHandle.url)
         } else if DyldSharedCacheHandle.isDyldSharedCache(contents: mapHandle.contents) {
+            mapHandle.shoundUnmapOnDeinit = false
             return try DyldSharedCacheHandle(_contents: mapHandle.contents, mapSize: mapHandle.mapSize, url: mapHandle.url)
         } else if BinaryPropertyListHandle.isBplist(contents: mapHandle.contents, mapSize: mapHandle.mapSize) {
+            mapHandle.shoundUnmapOnDeinit = false
             return try BinaryPropertyListHandle(_contents: mapHandle.contents, mapSize: mapHandle.mapSize, url: mapHandle.url)
+        } else if XMLPropertyListHandle.isXML(contents: mapHandle.contents, mapSize: mapHandle.mapSize) {
+            mapHandle.shoundUnmapOnDeinit = false
+            return try XMLPropertyListHandle(_contents: mapHandle.contents, mapSize: mapHandle.mapSize, url: mapHandle.url)
+        } else if OpenStepPropertyListHandle.isOpenStep(contents: mapHandle.contents, mapSize: mapHandle.mapSize) {
+            mapHandle.shoundUnmapOnDeinit = false
+            return try OpenStepPropertyListHandle(_contents: mapHandle.contents, mapSize: mapHandle.mapSize, url: mapHandle.url)
         } else {
             throw MachOToolboxError.unspportedFile
         }
