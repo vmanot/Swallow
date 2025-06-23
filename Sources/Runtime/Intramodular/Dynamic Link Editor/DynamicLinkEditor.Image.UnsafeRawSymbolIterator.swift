@@ -68,13 +68,13 @@ extension DynamicLinkEditor.Image {
                     return nil
                 }
                 
-                currentIndex += 1
-                
                 result = UnsafeRawSymbol(
                     nlist: start[currentIndex],
                     strings: symbolStringsPtr,
                     slide: slide
                 )
+                
+                currentIndex += 1
             }
             
             return result
