@@ -1,5 +1,6 @@
 import Testing
 import Foundation
+import Swallow
 @testable @_spi(MachOSwiftTests) import MachOSwift
 import MachOToolbox
 

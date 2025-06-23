@@ -2,7 +2,7 @@ import MachO.dyld
 import _MachOPrivate
 import Darwin.POSIX.sys.stat
 import Darwin.Mach.vm_map
-import FoundationEssentials
+import Foundation
 
 @_rawLayout(like: dyld_cache_header)
 public struct DyldSharedCache: ~Copyable {
@@ -164,21 +164,21 @@ public struct DyldSharedCache: ~Copyable {
         }
     }
     
-    public func getSubCacheUuid(index: UInt8) -> FoundationEssentials.UUID {
+    public func getSubCacheUuid(index: UInt8) -> Foundation.UUID {
         if mappingOffset <= MemoryLayout<dyld_cache_header>.offset(of: \.cacheSubType)! {
             let uuid = withUnsafeRawPointer { pointer in
                 pointer
                     .advanced(by: Int(subCacheArrayOffset))
                     .assumingMemoryBound(to: dyld_subcache_entry_v1.self)[Int(index)].uuid
             }
-            return FoundationEssentials.UUID(uuid: uuid)
+            return Foundation.UUID(uuid: uuid)
         } else {
             let uuid = withUnsafeRawPointer { pointer in
                 pointer
                     .advanced(by: Int(subCacheArrayOffset))
                     .assumingMemoryBound(to: dyld_subcache_entry.self)[Int(index)].uuid
             }
-            return FoundationEssentials.UUID(uuid: uuid)
+            return Foundation.UUID(uuid: uuid)
         }
     }
     
@@ -450,7 +450,7 @@ extension DyldSharedCache {
                     }
                     if isNotEqual {
                         let expectedUUIDString = uuid.uuidString
-                        let foundUUIDString = FoundationEssentials.UUID(uuid: UnsafeRawPointer(subCache.pointee.uuid).assumingMemoryBound(to: uuid_t.self).pointee).uuidString
+                        let foundUUIDString = Foundation.UUID(uuid: UnsafeRawPointer(subCache.pointee.uuid).assumingMemoryBound(to: uuid_t.self).pointee).uuidString
                         throw StringError(format: "Error: SubCache[%i] UUID mismatch.  Expected %@, got %@", i, expectedUUIDString, foundUUIDString)
                     }
                     
@@ -789,8 +789,8 @@ extension DyldSharedCache {
     public var subCacheArrayCount: UInt32 { withDyldSharedCachePointer { $0.pointee.subCacheArrayCount } }
     
     @_alwaysEmitIntoClient
-    public var symbolFileUUID: FoundationEssentials.UUID {
-        withDyldSharedCachePointer { FoundationEssentials.UUID(uuid: $0.pointee.symbolFileUUID) }
+    public var symbolFileUUID: Foundation.UUID {
+        withDyldSharedCachePointer { Foundation.UUID(uuid: $0.pointee.symbolFileUUID) }
     }
     
     @_alwaysEmitIntoClient

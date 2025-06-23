@@ -1,14 +1,7 @@
 import MachO
 import _MachOPrivate
-import FoundationEssentials
-
-#if canImport(Darwin)
+import Foundation
 import Darwin
-#elseif canImport(Glibc)
-import Glibc
-#elseif os(WASI)
-import WASILibc
-#endif
 
 public final class CacheFiles {
     public let caches: [MappedCache]
@@ -35,7 +28,7 @@ public final class CacheFiles {
             baseCacheUnslidAddress: 0,
             buffer: nil,
             isLocalSymbolsCache: false,
-            expectedUUID: FoundationEssentials.UUID(uuid: UUID_NULL)
+            expectedUUID: Foundation.UUID(uuid: UUID_NULL)
         )
         
         var caches = [mappedCache]
@@ -85,7 +78,7 @@ public final class CacheFiles {
         
         // On old caches, the locals come from the same file we are extracting from
         var localSymbolsCachePath = path
-        var localSymbolsUUID = FoundationEssentials.UUID(uuid: UUID_NULL)
+        var localSymbolsUUID = Foundation.UUID(uuid: UUID_NULL)
         if cache.pointee.hasLocalSymbolsInfoFile {
             // On new caches, the locals come from a new subCache file
             if localSymbolsCachePath.hasSuffix(DYLD_SHARED_CACHE_DEVELOPMENT_EXT) {
@@ -118,7 +111,7 @@ extension CacheFiles {
             baseCacheUnslidAddress: UInt64,
             buffer: UnsafePointer<UInt8>?,
             isLocalSymbolsCache: Bool,
-            expectedUUID: FoundationEssentials.UUID
+            expectedUUID: Foundation.UUID
         ) throws {
 #if canImport(Darwin)
             let statbuf = try withUnsafeTemporaryAllocation(of: stat.self, capacity: 1) { pointer in
@@ -167,7 +160,7 @@ extension CacheFiles {
                 }
                 
                 if memcmpResult != 0 {
-                    throw StringError(format: "Error: SubCache UUID mismatch.  Expected %@, got %@", expectedUUID.uuidString, FoundationEssentials.UUID(uuid: header.uuid).uuidString)
+                    throw StringError(format: "Error: SubCache UUID mismatch.  Expected %@, got %@", expectedUUID.uuidString, Foundation.UUID(uuid: header.uuid).uuidString)
                 }
             }
             

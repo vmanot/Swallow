@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>string</key>
+	<string>Hello</string>
+	<key>integer</key>
+	<integer>123</integer>
+	<key>float</key>
+	<real>123.456</real>
+	<key>bool</key>
+	<true/>
+	<key>dictionary</key>
+	<dict>
+		<key>bool</key>
+		<true/>
+		<key>float</key>
+		<real>123.456</real>
+		<key>integer</key>
+		<integer>123</integer>
+		<key>string</key>
+		<string>Hello</string>
+		<key>dictionary</key>
+		<dict>
+			<key>bool</key>
+			<true/>
+			<key>float</key>
+			<real>123.456</real>
+			<key>integer</key>
+			<integer>123</integer>
+			<key>string</key>
+			<string>Hello</string>
+		</dict>
+		<key>array</key>
+		<array>
+			<false/>
+			<string>Bye</string>
+			<integer>456</integer>
+			<real>456.789</real>
+		</array>
+	</dict>
+	<key>array</key>
+	<array>
+		<array>
+			<true/>
+			<string>Hello</string>
+			<integer>123</integer>
+			<real>123.456</real>
+		</array>
+		<false/>
+		<string>Bye</string>
+		<integer>456</integer>
+		<real>456.789</real>
+		<dict>
+			<key>string</key>
+			<string>Hello</string>
+			<key>integer</key>
+			<integer>123</integer>
+			<key>float</key>
+			<real>123.456</real>
+			<key>bool</key>
+			<true/>
+		</dict>
+	</array>
+</dict>
+</plist>

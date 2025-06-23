@@ -1,5 +1,5 @@
 import Testing
-import FoundationEssentials
+import Foundation
 @testable import MachOToolbox
 
 public struct MachOHandleTests {

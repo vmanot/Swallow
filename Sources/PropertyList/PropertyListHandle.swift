@@ -1,5 +1,4 @@
-import FoundationX
+@_spi(Internal) import Swallow
 
 public class PropertyListHandle: MapHandle, @unchecked Sendable {
-    
 }

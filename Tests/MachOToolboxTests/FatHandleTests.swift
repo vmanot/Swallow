@@ -1,5 +1,4 @@
 import Testing
-import FoundationEssentials
 @testable import MachOToolbox
 
 public struct FatHandleTests {

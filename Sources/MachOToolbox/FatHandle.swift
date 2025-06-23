@@ -1,12 +1,17 @@
 import MachOSwift
-import FoundationX
+@_spi(Internal) import Swallow
 
 public final class FatHandle: MapHandle, @unchecked Sendable {
     public private(set) var headers: [UnsafePointer<Header>]
     
     private let headerToSliceSize: [UnsafePointer<Header>: UInt64]
     
-    override init(_contents contents: UnsafeMutableRawPointer, mapSize: off_t, url: FoundationX.URL) throws {
+    package static func isFat(contents: UnsafeRawPointer) -> Bool {
+        FatFile.isFatFile(contents: contents)
+    }
+    
+    @_spi(Internal)
+    public override init(_contents contents: UnsafeMutableRawPointer, mapSize: off_t, url: Foundation.URL) throws {
         guard MachOSwift.FatFile.isFatFile(contents: contents) else {
             throw Error.notFATContents
         }

@@ -2,7 +2,6 @@ import Foundation
 #if canImport(Darwin)
 import Darwin
 #endif
-//import MachOSwift
 
 open class MapHandle: @unchecked Sendable, Equatable {
     public static func == (lhs: MapHandle, rhs: MapHandle) -> Bool {
@@ -65,6 +64,7 @@ open class MapHandle: @unchecked Sendable, Equatable {
         try self.init(_contents: contents, mapSize: st.st_size, url: url)
     }
     
+    @_spi(Internal)
     public init(
         _contents contents: UnsafeMutableRawPointer,
         mapSize: off_t,

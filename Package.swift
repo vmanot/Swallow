@@ -6,8 +6,7 @@ import PackageDescription
 
 var dependencies: [PackageDescription.Package.Dependency] = [
     .package(url: "https://github.com/apple/swift-atomics.git", from: "1.2.0"),
-    .package(url: "https://github.com/apple/swift-collections", from: "1.1.0"),
-    .package(url: "https://github.com/swiftlang/swift-foundation", branch: "release/6.1.1")
+    .package(url: "https://github.com/apple/swift-collections", from: "1.1.0")
 ]
 #if compiler(>=6.1)
 dependencies += [.package(url: "https://github.com/swift-precompiled/swift-syntax", branch: "release/6.1")]
@@ -44,7 +43,9 @@ let package = Package(
                 "MachOSwift",
                 "MachOToolbox",
                 "_MachOPrivate",
-                "_CommonCryptoPrivate"
+                "_CommonCryptoPrivate",
+                "PropertyList",
+                "_FoundationPrivate",
             ]
         ),
         .library(
@@ -151,6 +152,8 @@ let package = Package(
             dependencies: [
                 "Diagnostics",
                 "Swallow",
+                "MachOToolbox",
+                "PropertyList"
             ],
             swiftSettings: [
                 .swiftLanguageMode(.v5)
@@ -277,8 +280,7 @@ let package = Package(
             name: "MachOSwift",
             dependencies: [
                 .byName(name: "_MachOPrivate"),
-                .byName(name: "_CommonCryptoPrivate"),
-                .product(name: "FoundationEssentials", package: "swift-foundation")
+                .byName(name: "_CommonCryptoPrivate")
             ],
             swiftSettings: [
                 .enableExperimentalFeature("RawLayout")
@@ -289,7 +291,7 @@ let package = Package(
             dependencies: [
                 .byName(name: "_MachOPrivate"),
                 .byName(name: "MachOSwift"),
-                .byName(name: "FoundationX")
+                .byName(name: "Swallow")
             ],
             swiftSettings: [
                 .enableExperimentalFeature("Extern")
@@ -304,27 +306,42 @@ let package = Package(
         .target(
             name: "PropertyList",
             dependencies: [
-                .byName(name: "FoundationX"),
-                .byName(name: "_FoundationCShims")
+                .byName(name: "Swallow"),
+                .byName(name: "_FoundationPrivate"),
             ]
         ),
         .target(
-            name: "_FoundationCShims"
+            name: "_FoundationPrivate"
         ),
         .testTarget(
             name: "MachOSwiftTests",
             dependencies: [
-                "MachOSwift",
-                "MachOToolbox"
+                .byName(name: "MachOSwift"),
+                .byName(name: "MachOToolbox"),
+                .byName(name: "_FoundationPrivate"),
+                .target(name: "SwiftSyntaxUtilities", condition: .when(platforms: [.macOS])) // it avoids linker error
             ],
             resources: [.copy("../../TestBinaries/")]
         ),
         .testTarget(
             name: "MachOToolboxTests",
             dependencies: [
-                "MachOToolbox"
+                .byName(name: "MachOToolbox"),
+                .byName(name: "_FoundationPrivate"),
+                .byName(name: "FoundationX"),
+                .target(name: "SwiftSyntaxUtilities", condition: .when(platforms: [.macOS])) // it avoids linker error
             ],
             resources: [.copy("../../TestBinaries/")]
+        ),
+        .testTarget(
+            name: "PropertyListTests",
+            dependencies: [
+                .byName(name: "PropertyList"),
+                .byName(name: "_MachOPrivate"),
+                .byName(name: "_CommonCryptoPrivate"),
+                .target(name: "SwiftSyntaxUtilities", condition: .when(platforms: [.macOS])) // it avoids linker error
+            ],
+            resources: [.copy("../../TestPropertyLists/")]
         )
     ]
 )
