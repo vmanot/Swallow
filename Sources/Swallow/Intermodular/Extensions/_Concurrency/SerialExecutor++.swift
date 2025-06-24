@@ -19,7 +19,7 @@ extension _Concurrency.UnownedSerialExecutor {
             return Swallow.SerialToTaskExecutor(serialExecutor: unsafeBitCast(_executor, to: (any _Concurrency.SerialExecutor).self))
         }
 #elseif swift(>=5.9)
-        return Swallow.SerialToTaskExecutor(serialExecutor: unsafeBitCast(_executor, to: (any SerialExecutor).self))
+        return Swallow.SerialToTaskExecutor(serialExecutor: unsafeBitCast(_executor, to: (any _Concurrency.SerialExecutor).self))
 #else
 #error("Unsupported")
 #endif
