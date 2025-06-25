@@ -1,0 +1,4 @@
+module _FoundationPrivate {
+    umbrella header "Umbrella.h"
+    export *
+}
