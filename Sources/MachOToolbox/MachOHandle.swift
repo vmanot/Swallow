@@ -4,8 +4,12 @@ import MachOSwift
 public final class MachOHandle: MapHandle, @unchecked Sendable {
     public let header: UnsafeMutablePointer<MachOFile>
     
-    package static func isMachO(contents: UnsafeRawPointer) -> Bool {
-        MachOFile.isMachO(contents: contents)
+    package static func isMachO(contents: UnsafeRawPointer, size: off_t) -> Bool {
+        guard size >= MemoryLayout<mach_header>.size else {
+            return false
+        }
+        
+        return MachOFile.isMachO(contents: contents)
     }
     
     @_spi(Internal)

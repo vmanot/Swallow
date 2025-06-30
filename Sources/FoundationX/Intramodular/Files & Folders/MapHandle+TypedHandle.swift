@@ -7,13 +7,13 @@ extension Swallow.MapHandle {
         let mapHandle = try MapHandle(url: url)
         mapHandle.shoundUnmapOnDeinit = false
         
-        if MachOHandle.isMachO(contents: mapHandle.contents) {
+        if MachOHandle.isMachO(contents: mapHandle.contents, size: mapHandle.mapSize) {
             mapHandle.shoundUnmapOnDeinit = false
             return try MachOHandle(_contents: mapHandle.contents, mapSize: mapHandle.mapSize, url: mapHandle.url)
-        } else if FatHandle.isFat(contents: mapHandle.contents) {
+        } else if FatHandle.isFat(contents: mapHandle.contents, size: mapHandle.mapSize) {
             mapHandle.shoundUnmapOnDeinit = false
             return try FatHandle(_contents: mapHandle.contents, mapSize: mapHandle.mapSize, url: mapHandle.url)
-        } else if DyldSharedCacheHandle.isDyldSharedCache(contents: mapHandle.contents) {
+        } else if DyldSharedCacheHandle.isDyldSharedCache(contents: mapHandle.contents, size: mapHandle.mapSize) {
             mapHandle.shoundUnmapOnDeinit = false
             return try DyldSharedCacheHandle(_contents: mapHandle.contents, mapSize: mapHandle.mapSize, url: mapHandle.url)
         } else if BinaryPropertyListHandle.isBplist(contents: mapHandle.contents, mapSize: mapHandle.mapSize) {

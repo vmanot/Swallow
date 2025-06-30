@@ -6,8 +6,12 @@ public final class FatHandle: MapHandle, @unchecked Sendable {
     
     private let headerToSliceSize: [UnsafePointer<Header>: UInt64]
     
-    package static func isFat(contents: UnsafeRawPointer) -> Bool {
-        FatFile.isFatFile(contents: contents)
+    package static func isFat(contents: UnsafeRawPointer, size: off_t) -> Bool {
+        guard size >= MemoryLayout<fat_header>.size else {
+            return false
+        }
+        
+        return FatFile.isFatFile(contents: contents)
     }
     
     @_spi(Internal)

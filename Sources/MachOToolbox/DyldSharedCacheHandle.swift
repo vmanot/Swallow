@@ -1,12 +1,17 @@
 @_spi(Internal) import Swallow
 @_spi(CastUnsafeRawPointer) import MachOSwift
+import _MachOPrivate
 
 // DyldSharedCacheHandle.contents only contains first dyld cache bytes.
 public final class DyldSharedCacheHandle: MapHandle, @unchecked Sendable {
     public let cacheFiles: CacheFiles
     
-    package static func isDyldSharedCache(contents: UnsafeRawPointer) -> Bool {
-        DyldSharedCache.isSharedCache(contents: contents)
+    package static func isDyldSharedCache(contents: UnsafeRawPointer, size: off_t) -> Bool {
+        guard size >= MemoryLayout<dyld_cache_header>.size else {
+            return false
+        }
+        
+        return DyldSharedCache.isSharedCache(contents: contents)
     }
     
     @_spi(Internal)
