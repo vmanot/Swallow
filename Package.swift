@@ -46,6 +46,7 @@ let package = Package(
                 "_CommonCryptoPrivate",
                 "PropertyList",
                 "_FoundationPrivate",
+                "_CoreFoundationPrivate"
             ]
         ),
         .library(
@@ -302,6 +303,9 @@ let package = Package(
         ),
         .target(
             name: "_CommonCryptoPrivate"
+        ),
+        .target(
+            name: "_CoreFoundationPrivate"
         ),
         .target(
             name: "PropertyList",
