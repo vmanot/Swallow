@@ -25,11 +25,15 @@ public final class MachOHandle: MapHandle, @unchecked Sendable {
 
 extension MachOHandle {
     public var importedSymbols: [Symbol] {
-        header.pointee.importedSymbols
+        get throws {
+            try header.pointee.importedSymbols
+        }
     }
     
     public var exportedSymbols: [Symbol] {
-        header.pointee.exportedSymbols
+        get throws {
+            try header.pointee.exportedSymbols
+        }
     }
 }
 

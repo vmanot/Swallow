@@ -13,13 +13,15 @@ public struct MachOHandleTests {
     func test_importedSymbols(filename: String) throws {
         let url = try #require(testBinaryURL(for: filename))
         let file = try MachOHandle(url: url)
-        #expect(!file.importedSymbols.isEmpty)
+        let symbols = try file.importedSymbols.isEmpty
+        #expect(!symbols)
     }
     
     @Test("MachOHandle.exportedSymbols", arguments: ["MyScript"])
     func test_exportedSymbols(filename: String) throws {
         let url = try #require(testBinaryURL(for: filename))
         let file = try MachOHandle(url: url)
-        #expect(!file.exportedSymbols.isEmpty)
+        let symbols = try file.exportedSymbols.isEmpty
+        #expect(!symbols)
     }
 }

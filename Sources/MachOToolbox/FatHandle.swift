@@ -79,7 +79,7 @@ public final class FatHandle: MapHandle, @unchecked Sendable {
 }
 
 extension FatHandle {
-    public func importedSymbols(for architecture: MachOSwift.Architecture) -> [Symbol]? {
+    public func importedSymbols(for architecture: MachOSwift.Architecture) throws -> [Symbol]? {
         guard let header = headers
             .first(where: { $0.pointee.arch == architecture })
         else{
@@ -87,14 +87,13 @@ extension FatHandle {
         }
         
         guard let sliceSize = sliceSize(for: header) else {
-            assertionFailure()
             return nil
         }
         
-        return header.pointee.importedSymbols(sliceSize: sliceSize)
+        return try header.pointee.importedSymbols(sliceSize: sliceSize)
     }
     
-    public func exportedSymbols(for architecture: MachOSwift.Architecture) -> [Symbol]? {
+    public func exportedSymbols(for architecture: MachOSwift.Architecture) throws -> [Symbol]? {
         guard let header = headers
             .first(where: { $0.pointee.arch == architecture })
         else{
@@ -106,7 +105,7 @@ extension FatHandle {
             return nil
         }
         
-        return header.pointee.exportedSymbols(sliceSize: sliceSize)
+        return try header.pointee.exportedSymbols(sliceSize: sliceSize)
     }
 }
 

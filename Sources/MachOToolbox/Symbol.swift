@@ -3,11 +3,11 @@ import MachOSwift
 
 @_extern(c, "swift_demangle")
 fileprivate func _stdlib_demangleImpl(
-  mangledName: UnsafePointer<CChar>?,
-  mangledNameLength: UInt,
-  outputBuffer: UnsafeMutablePointer<CChar>?,
-  outputBufferSize: UnsafeMutablePointer<UInt>?,
-  flags: UInt32
+    mangledName: UnsafePointer<CChar>?,
+    mangledNameLength: UInt,
+    outputBuffer: UnsafeMutablePointer<CChar>?,
+    outputBufferSize: UnsafeMutablePointer<UInt>?,
+    flags: UInt32
 ) -> UnsafeMutablePointer<CChar>?
 
 /*
@@ -15,14 +15,14 @@ fileprivate func _stdlib_demangleImpl(
  */
 fileprivate let swiftSymbolPrefixes = [
     /*Swift 4*/   "_T0",
-    /*Swift 4.x*/ "$S", "_$S",
-    /*Swift 5+*/  "$s", "_$s",
-    /*Swift 5+ Embedded Swift*/  "$e", "_$e",
-    /*Swift 5+ for filenames*/ "@__swiftmacro_",
+                  /*Swift 4.x*/ "$S", "_$S",
+                  /*Swift 5+*/  "$s", "_$s",
+                  /*Swift 5+ Embedded Swift*/  "$e", "_$e",
+                  /*Swift 5+ for filenames*/ "@__swiftmacro_",
 ]
 
 public struct Symbol: Sendable, Equatable {
-//    public let offset: UInt
+    //    public let offset: UInt
     public let name: String?
     
     public var demangledName: String? {
@@ -89,41 +89,85 @@ extension Symbol {
 
 extension MachOSwift.MachOFile {
     public var importedSymbols: [Symbol] {
-        withMachHeaderPointer { pointer in
+        get throws {
+            try withMachHeaderPointer { pointer in
+                var results: [Symbol] = []
+                let result = Symbol
+                    .forEachImportedSymbol(
+                        machHeader: pointer,
+                        mappedSize: Int(mappedSize)
+                    ) { symbolName, libraryPath, weakImport in
+                        results.append(Symbol(name: symbolName ?? "redacted"))
+                        return true
+                    }
+                
+                if result != 0 {
+                    throw SymbolError.unknownError(code: Int(result))
+                }
+                
+                return results
+            }
+        }
+    }
+    
+    public var exportedSymbols: [Symbol] {
+        get throws {
+            try withMachHeaderPointer { pointer in
+                var results: [Symbol] = []
+                let result = Symbol
+                    .forEachExportedSymbol(
+                        machHeader: pointer,
+                        mappedSize: Int(mappedSize)
+                    ) { symbolName, attributes in
+                        results.append(Symbol(name: symbolName ?? "redacted"))
+                        return true
+                    }
+                
+                if result != 0 {
+                    throw SymbolError.unknownError(code: Int(result))
+                }
+                
+                return results
+            }
+        }
+    }
+}
+
+extension MachOSwift.Header {
+    public func importedSymbols(sliceSize: UInt64) throws -> [Symbol] {
+        try withHeaderPointer { pointer in
             var results: [Symbol] = []
             let result = Symbol
                 .forEachImportedSymbol(
                     machHeader: pointer,
-                    mappedSize: Int(mappedSize)
+                    mappedSize: Int(sliceSize)
                 ) { symbolName, libraryPath, weakImport in
                     results.append(Symbol(name: symbolName ?? "redacted"))
                     return true
                 }
             
             if result != 0 {
-                Logger.machOToolbox(level: .error, "Unknown error occured!")
-                return []
+                throw SymbolError.unknownError(code: Int(result))
             }
             
             return results
         }
     }
     
-    public var exportedSymbols: [Symbol] {
-        withMachHeaderPointer { pointer in
+    public func exportedSymbols(sliceSize: UInt64) throws -> [Symbol] {
+        try withHeaderPointer { pointer in
             var results: [Symbol] = []
             let result = Symbol
                 .forEachExportedSymbol(
                     machHeader: pointer,
-                    mappedSize: Int(mappedSize)
+                    mappedSize: Int(sliceSize)
                 ) { symbolName, attributes in
                     results.append(Symbol(name: symbolName ?? "redacted"))
                     return true
                 }
             
             if result != 0 {
-                Logger.machOToolbox(level: .error, "Unknown error occured!")
-                return []
+                throw SymbolError.unknownError(code: Int(result))
             }
             
             return results
@@ -131,46 +175,6 @@ extension MachOSwift.MachOFile {
     }
 }
 
-extension MachOSwift.Header {
-    public func importedSymbols(sliceSize: UInt64) -> [Symbol] {
-        withHeaderPointer { pointer in
-            var results: [Symbol] = []
-            let result = Symbol
-                .forEachImportedSymbol(
-                    machHeader: pointer,
-                    mappedSize: Int(sliceSize)
-                ) { symbolName, libraryPath, weakImport in
-                    results.append(Symbol(name: symbolName ?? "redacted"))
-                    return true
-                }
-            
-            if result != 0 {
-                Logger.machOToolbox(level: .error, "Unknown error occured!")
-                return []
-            }
-            
-            return results
-        }
-    }
-    
-    public func exportedSymbols(sliceSize: UInt64) -> [Symbol] {
-        withHeaderPointer { pointer in
-            var results: [Symbol] = []
-            let result = Symbol
-                .forEachExportedSymbol(
-                    machHeader: pointer,
-                    mappedSize: Int(sliceSize)
-                ) { symbolName, attributes in
-                    results.append(Symbol(name: symbolName ?? "redacted"))
-                    return true
-                }
-
-            if result != 0 {
-                Logger.machOToolbox(level: .error, "Unknown error occured!")
-                return []
-            }
-            
-            return results
-        }
-    }
+fileprivate enum SymbolError: Error {
+    case unknownError(code: Int)
 }
