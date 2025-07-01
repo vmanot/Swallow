@@ -6,7 +6,7 @@ import PackageDescription
 
 var dependencies: [PackageDescription.Package.Dependency] = [
     .package(url: "https://github.com/apple/swift-atomics.git", from: "1.2.0"),
-    .package(url: "https://github.com/apple/swift-collections", from: "1.1.0"),
+    .package(url: "https://github.com/apple/swift-collections", from: "1.1.0")
 ]
 #if compiler(>=6.1)
 dependencies += [.package(url: "https://github.com/swift-precompiled/swift-syntax", branch: "release/6.1")]
@@ -18,7 +18,7 @@ let package = Package(
     name: "Swallow",
     platforms: [
         .iOS(.v13),
-        .macOS(.v11),
+        .macOS(.v14),
         .tvOS(.v13),
         .watchOS(.v6)
     ],
@@ -40,6 +40,13 @@ let package = Package(
                 "LoremIpsum",
                 "POSIX",
                 "Runtime",
+                "MachOSwift",
+                "MachOToolbox",
+                "_MachOPrivate",
+                "_CommonCryptoPrivate",
+                "PropertyList",
+                "_FoundationPrivate",
+                "_CoreFoundationPrivate"
             ]
         ),
         .library(
@@ -146,6 +153,8 @@ let package = Package(
             dependencies: [
                 "Diagnostics",
                 "Swallow",
+                "MachOToolbox",
+                "PropertyList"
             ],
             swiftSettings: [
                 .swiftLanguageMode(.v5)
@@ -268,6 +277,76 @@ let package = Package(
                 .swiftLanguageMode(.v5)
             ]
         ),
+        .target(
+            name: "MachOSwift",
+            dependencies: [
+                .byName(name: "_MachOPrivate"),
+                .byName(name: "_CommonCryptoPrivate")
+            ],
+            swiftSettings: [
+                .enableExperimentalFeature("RawLayout")
+            ]
+        ),
+        .target(
+            name: "MachOToolbox",
+            dependencies: [
+                .byName(name: "_MachOPrivate"),
+                .byName(name: "MachOSwift"),
+                .byName(name: "Swallow")
+            ],
+            swiftSettings: [
+                .enableExperimentalFeature("Extern")
+            ]
+        ),
+        .target(
+            name: "_MachOPrivate"
+        ),
+        .target(
+            name: "_CommonCryptoPrivate"
+        ),
+        .target(
+            name: "_CoreFoundationPrivate"
+        ),
+        .target(
+            name: "PropertyList",
+            dependencies: [
+                .byName(name: "Swallow"),
+                .byName(name: "_FoundationPrivate"),
+            ]
+        ),
+        .target(
+            name: "_FoundationPrivate"
+        ),
+        .testTarget(
+            name: "MachOSwiftTests",
+            dependencies: [
+                .byName(name: "MachOSwift"),
+                .byName(name: "MachOToolbox"),
+                .byName(name: "_FoundationPrivate"),
+                .target(name: "SwiftSyntaxUtilities", condition: .when(platforms: [.macOS])) // it avoids linker error
+            ],
+            resources: [.copy("../../TestBinaries/")]
+        ),
+        .testTarget(
+            name: "MachOToolboxTests",
+            dependencies: [
+                .byName(name: "MachOToolbox"),
+                .byName(name: "_FoundationPrivate"),
+                .byName(name: "FoundationX"),
+                .target(name: "SwiftSyntaxUtilities", condition: .when(platforms: [.macOS])) // it avoids linker error
+            ],
+            resources: [.copy("../../TestBinaries/")]
+        ),
+        .testTarget(
+            name: "PropertyListTests",
+            dependencies: [
+                .byName(name: "PropertyList"),
+                .byName(name: "_MachOPrivate"),
+                .byName(name: "_CommonCryptoPrivate"),
+                .target(name: "SwiftSyntaxUtilities", condition: .when(platforms: [.macOS])) // it avoids linker error
+            ],
+            resources: [.copy("../../TestPropertyLists/")]
+        )
     ]
 )
 

@@ -1,0 +1,4 @@
+module _CommonCryptoPrivate {
+    umbrella header "Umbrella.h"
+    export *
+}
