@@ -3,7 +3,7 @@ import Foundation
 import Swallow
 @testable import MachOToolbox
 
-public struct MapOHandleTests {
+struct MapOHandleTests {
     @Test("MapHandle.init(url:) (Foundation)", arguments: ["MyScript"])
     func test_initWithFoundationURL(filename: String) throws {
         let feURL: Foundation.URL = try #require(testBinaryURL(for: filename))

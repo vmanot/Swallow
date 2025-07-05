@@ -1,7 +1,7 @@
 import Testing
 @testable import MachOToolbox
 
-public struct FatHandleTests {
+struct FatHandleTests {
     @Test("FatHandle.init(url:)", arguments: ["Symbols"])
     func test_init(filename: String) throws {
         let url = try #require(testBinaryURL(for: filename))

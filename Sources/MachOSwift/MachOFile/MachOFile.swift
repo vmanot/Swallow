@@ -148,15 +148,21 @@ public struct MachOFile: ~Copyable {
     
     public func forEachLoadCommand(_ callback: (_ cmd: UnsafePointer<load_command>) -> Bool) {
         withMachHeaderPointer { pointer in
-            let startCmds: UnsafeBufferPointer<load_command>
+            let startCmds: UnsafePointer<load_command>
             if magic == MH_MAGIC_64 {
-                let raw = UnsafeRawPointer(pointer)
+                let raw = pointer
+                    .raw
+                    .assumingMemoryBound(to: CChar.self)
                     .advanced(by: MemoryLayout<mach_header_64>.size)
-                startCmds = unsafeBitCast(raw, to: UnsafeBufferPointer<load_command>.self)
+                    .raw
+                startCmds = raw.assumingMemoryBound(to: load_command.self)
             } else if magic == MH_MAGIC {
-                let raw = UnsafeRawPointer(pointer)
+                let raw =  pointer
+                    .raw
+                    .assumingMemoryBound(to: CChar.self)
                     .advanced(by: MemoryLayout<mach_header>.size)
-                startCmds = unsafeBitCast(raw, to: UnsafeBufferPointer<load_command>.self)
+                    .raw
+                startCmds = raw.assumingMemoryBound(to: load_command.self)
             } else if hasMachOBigEndianMagic {
                 return;  // can't process big endian mach-o
             } else {
@@ -170,20 +176,23 @@ public struct MachOFile: ~Copyable {
                 return
             }
             
-            let cmdsEnd = unsafeBitCast(
-                unsafeBitCast(startCmds, to: UnsafeRawPointer.self)
-                    .advanced(by: Int(sizeofcmds)),
-                to: UnsafeBufferPointer<load_command>.self
-            )
-            let cmdsLast = unsafeBitCast(
-                unsafeBitCast(startCmds, to: UnsafeRawPointer.self)
-                    .advanced(by: Int(sizeofcmds) - MemoryLayout<load_command>.size),
-                to: UnsafeBufferPointer<load_command>.self
-            )
-            var cmd: UnsafePointer<load_command> = startCmds.baseAddress.unsafelyUnwrapped
+            let cmdsEnd = startCmds
+                .raw
+                .assumingMemoryBound(to: CChar.self)
+                .advanced(by: Int(sizeofcmds))
+                .raw
+                .assumingMemoryBound(to: load_command.self)
+            let cmdsLast = startCmds
+                .raw
+                .assumingMemoryBound(to: CChar.self)
+                .advanced(by: Int(sizeofcmds) - MemoryLayout<load_command>.size)
+                .raw
+                .assumingMemoryBound(to: load_command.self)
+            
+            var cmd: UnsafePointer<load_command> = startCmds
             
             for i in 0..<ncmds {
-                if UInt(bitPattern: cmd) > UInt(bitPattern: cmdsLast.baseAddress.unsafelyUnwrapped) {
+                if UInt(bitPattern: cmd) > UInt(bitPattern: cmdsLast) {
                     Logger.machOSwift(level: .error, "malformed load command #%u of %u at %p with mh=%p, extends past sizeofcmds", i, ncmds, cmd, pointer)
                     return
                 }
@@ -199,16 +208,21 @@ public struct MachOFile: ~Copyable {
                     return
                 }
                 
-                let nextCmd = cmd.advanced(by: Int(cmd.pointee.cmdsize))
+                let nextCmd = cmd
+                    .raw
+                    .assumingMemoryBound(to: CChar.self)
+                    .advanced(by: Int(cmd.pointee.cmdsize))
+                    .raw
+                    .assumingMemoryBound(to: load_command.self)
                 
-                if ((UInt(bitPattern: nextCmd) > UInt(bitPattern: cmdsEnd.baseAddress.unsafelyUnwrapped)) || (UInt(bitPattern: nextCmd) < UInt(bitPattern: startCmds.baseAddress.unsafelyUnwrapped))) {
-                    Logger.machOSwift(level: .error, "malformed load command #%u of %u at %p with mh=%p, size (0x%X) is too large, load commands end at %p", i, ncmds, cmd, pointer, cmd.pointee.cmdsize, cmdsEnd.baseAddress.unsafelyUnwrapped)
+                if ((UInt(bitPattern: nextCmd) > UInt(bitPattern: cmdsEnd)) || (UInt(bitPattern: nextCmd) < UInt(bitPattern: startCmds))) {
+                    Logger.machOSwift(level: .error, "malformed load command #%u of %u at %p with mh=%p, size (0x%X) is too large, load commands end at %p", i, ncmds, cmd, pointer, cmd.pointee.cmdsize, cmdsEnd)
                     return
                 }
                 
                 let resume = callback(cmd)
-                guard !resume else { break }
-                cmd = cmd.advanced(by: Int(cmd.pointee.cmdsize))
+                guard resume else { break }
+                cmd = nextCmd
             }
         }
     }

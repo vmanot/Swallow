@@ -4,7 +4,7 @@ import Foundation
 
 // Please replace argument path
 
-public struct DyldSharedCacheHandleTests {
+struct DyldSharedCacheHandleTests {
     @Test("DyldSharedCacheHandle.init(url:)", arguments: ["/Volumes/Data 1/22F76__iPhone17,2/dyld_shared_cache_arm64e"])
     func test_init(path: String) throws {
         let handle = try DyldSharedCacheHandle(url: Foundation.URL(filePath: path))

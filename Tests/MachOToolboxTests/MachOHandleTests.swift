@@ -2,7 +2,7 @@ import Testing
 import Foundation
 @testable import MachOToolbox
 
-public struct MachOHandleTests {
+struct MachOHandleTests {
     @Test("MachOHandle.init(url:)", arguments: ["MyScript"])
     func test_init(filename: String) throws {
         let url = try #require(testBinaryURL(for: filename))
