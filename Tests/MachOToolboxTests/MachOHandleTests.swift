@@ -24,4 +24,12 @@ struct MachOHandleTests {
         let symbols = try file.exportedSymbols.isEmpty
         #expect(!symbols)
     }
+    
+    @Test("MachOHandle.strings", arguments: ["MyScript", "MyScriptObjC"])
+    func test_strings(filename: String) throws {
+        let url = try #require(testBinaryURL(for: filename))
+        let file = try MachOHandle(url: url)
+        let strings = try file.strings
+        #expect(!strings.isEmpty)
+    }
 }

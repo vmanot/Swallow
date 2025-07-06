@@ -307,6 +307,291 @@ public struct Header: ~Copyable {
         }
     }
     
+    public func forEachSection(_ callback: (_ sectionInfo: SectionInfo) -> Bool) {
+        var segmentIndex: UInt16 = 0
+        
+        forEachLoadCommandSafe { cmd in
+            if cmd.pointee.cmd == LC_SEGMENT_64 {
+                let segCmd = cmd.raw.assumingMemoryBound(to: segment_command_64.self)
+                let sectionsStart = segCmd
+                    .raw
+                    .assumingMemoryBound(to: CChar.self)
+                    .advanced(by: MemoryLayout<segment_command_64>.size)
+                    .raw
+                    .assumingMemoryBound(to: section_64.self)
+                let sectionsEnd = sectionsStart
+                    .advanced(by: Int(segCmd.pointee.nsects))
+                
+                do {
+                    var sect = sectionsStart
+                    while UInt(bitPattern: sect) < UInt(bitPattern: sectionsEnd) {
+                        defer { sect = sect.advanced(by: 1) }
+                        
+                        let sectname = sect
+                            .raw
+                            .advanced(by: MemoryLayout<section_64>.offset(of: \.sectname)!)
+                            .withMemoryRebound(to: CChar.self, capacity: 16) { String(cString: $0) }
+                        
+                        let segname = sect
+                            .raw
+                            .advanced(by: MemoryLayout<section_64>.offset(of: \.segname)!)
+                            .withMemoryRebound(to: CChar.self, capacity: 16) { String(cString: $0) }
+                        
+                        let info = SectionInfo(
+                            sectionName: sectname,
+                            segmentName: segname,
+                            segIndex: UInt32(segmentIndex),
+                            segMaxProt: UInt32(segCmd.pointee.maxprot),
+                            segInitProt: UInt32(segCmd.pointee.initprot),
+                            flags: sect.pointee.flags,
+                            alignment: sect.pointee.align,
+                            address: sect.pointee.addr,
+                            size: sect.pointee.size,
+                            fileOffset: sect.pointee.offset,
+                            relocsOffset: sect.pointee.reloff,
+                            relocsCount: sect.pointee.nreloc,
+                            reserved1: sect.pointee.reserved1,
+                            reserved2: sect.pointee.reserved2
+                        )
+                        
+                        let resume = callback(info)
+                        guard resume else { return false }
+                    }
+                }
+                
+                segmentIndex += 1
+            } else if cmd.pointee.cmd == LC_SEGMENT {
+                let segCmd = cmd.raw.assumingMemoryBound(to: segment_command.self)
+                let sectionsStart = segCmd
+                    .raw
+                    .assumingMemoryBound(to: CChar.self)
+                    .advanced(by: MemoryLayout<segment_command>.size)
+                    .raw
+                    .assumingMemoryBound(to: section.self)
+                let sectionsEnd = sectionsStart
+                    .advanced(by: Int(segCmd.pointee.nsects))
+                
+                do {
+                    var sect = sectionsStart
+                    while UInt(bitPattern: sect) < UInt(bitPattern: sectionsEnd) {
+                        defer { sect = sect.advanced(by: 1) }
+                        
+                        let sectname = sect
+                            .raw
+                            .advanced(by: MemoryLayout<section>.offset(of: \.sectname)!)
+                            .withMemoryRebound(to: CChar.self, capacity: 16) { String(cString: $0) }
+                        
+                        let segname = sect
+                            .raw
+                            .advanced(by: MemoryLayout<section>.offset(of: \.segname)!)
+                            .withMemoryRebound(to: CChar.self, capacity: 16) { String(cString: $0) }
+                        
+                        let info = SectionInfo(
+                            sectionName: sectname,
+                            segmentName: segname,
+                            segIndex: UInt32(segmentIndex),
+                            segMaxProt: UInt32(segCmd.pointee.maxprot),
+                            segInitProt: UInt32(segCmd.pointee.initprot),
+                            flags: sect.pointee.flags,
+                            alignment: sect.pointee.align,
+                            address: UInt64(sect.pointee.addr),
+                            size: UInt64(sect.pointee.size),
+                            fileOffset: sect.pointee.offset,
+                            relocsOffset: sect.pointee.reloff,
+                            relocsCount: sect.pointee.nreloc,
+                            reserved1: sect.pointee.reserved1,
+                            reserved2: sect.pointee.reserved2
+                        )
+                        
+                        let resume = callback(info)
+                        guard resume else { return false }
+                    }
+                }
+                
+                segmentIndex += 1
+            }
+            
+            return true
+        }
+    }
+    
+    public func forEachSection(_ callback: (_ segmentInfo: SegmentInfo, _ sectionInfo: SectionInfo) -> Bool) {
+        var segmentIndex: UInt16 = 0
+        
+        forEachLoadCommandSafe { cmd in
+            if cmd.pointee.cmd == LC_SEGMENT_64 {
+                let segCmd = cmd.raw.assumingMemoryBound(to: segment_command_64.self)
+                let sectionsStart = segCmd
+                    .raw
+                    .assumingMemoryBound(to: CChar.self)
+                    .advanced(by: MemoryLayout<segment_command_64>.size)
+                    .raw
+                    .assumingMemoryBound(to: section_64.self)
+                let sectionsEnd = sectionsStart
+                    .advanced(by: Int(segCmd.pointee.nsects))
+                
+                let segname = segCmd
+                    .raw
+                    .advanced(by: MemoryLayout<segment_command_64>.offset(of: \.segname)!)
+                    .withMemoryRebound(to: CChar.self, capacity: 16) { String(cString: $0) }
+                let segInfo = SegmentInfo(
+                    segmentName: segname,
+                    vmaddr: segCmd.pointee.vmaddr,
+                    vmsize: segCmd.pointee.vmsize,
+                    fileOffset: UInt32(segCmd.pointee.fileoff),
+                    fileSize: UInt32(segCmd.pointee.filesize),
+                    flags: segCmd.pointee.flags,
+                    segmentIndex: segmentIndex,
+                    maxProt: UInt8(segCmd.pointee.maxprot),
+                    initProt: UInt8(segCmd.pointee.initprot)
+                )
+                
+                do {
+                    var sect = sectionsStart
+                    while UInt(bitPattern: sect) < UInt(bitPattern: sectionsEnd) {
+                        defer { sect = sect.advanced(by: 1) }
+                        
+                        let sectname = sect
+                            .raw
+                            .advanced(by: MemoryLayout<section_64>.offset(of: \.sectname)!)
+                            .withMemoryRebound(to: CChar.self, capacity: 16) { String(cString: $0) }
+                        
+                        let segname = sect
+                            .raw
+                            .advanced(by: MemoryLayout<section_64>.offset(of: \.segname)!)
+                            .withMemoryRebound(to: CChar.self, capacity: 16) { String(cString: $0) }
+                        
+                        let info = SectionInfo(
+                            sectionName: sectname,
+                            segmentName: segname,
+                            segIndex: UInt32(segmentIndex),
+                            segMaxProt: UInt32(segCmd.pointee.maxprot),
+                            segInitProt: UInt32(segCmd.pointee.initprot),
+                            flags: sect.pointee.flags,
+                            alignment: sect.pointee.align,
+                            address: sect.pointee.addr,
+                            size: sect.pointee.size,
+                            fileOffset: sect.pointee.offset,
+                            relocsOffset: sect.pointee.reloff,
+                            relocsCount: sect.pointee.nreloc,
+                            reserved1: sect.pointee.reserved1,
+                            reserved2: sect.pointee.reserved2
+                        )
+                        
+                        let resume = callback(segInfo, info)
+                        guard resume else { return false }
+                    }
+                }
+                
+                segmentIndex += 1
+            } else if cmd.pointee.cmd == LC_SEGMENT {
+                let segCmd = cmd.raw.assumingMemoryBound(to: segment_command.self)
+                let sectionsStart = segCmd
+                    .raw
+                    .assumingMemoryBound(to: CChar.self)
+                    .advanced(by: MemoryLayout<segment_command>.size)
+                    .raw
+                    .assumingMemoryBound(to: section.self)
+                let sectionsEnd = sectionsStart
+                    .advanced(by: Int(segCmd.pointee.nsects))
+                
+                let segname = segCmd
+                    .raw
+                    .advanced(by: MemoryLayout<segment_command>.offset(of: \.segname)!)
+                    .withMemoryRebound(to: CChar.self, capacity: 16) { String(cString: $0) }
+                let segInfo = SegmentInfo(
+                    segmentName: segname,
+                    vmaddr: UInt64(segCmd.pointee.vmaddr),
+                    vmsize: UInt64(segCmd.pointee.vmsize),
+                    fileOffset: UInt32(segCmd.pointee.fileoff),
+                    fileSize: UInt32(segCmd.pointee.filesize),
+                    flags: segCmd.pointee.flags,
+                    segmentIndex: segmentIndex,
+                    maxProt: UInt8(segCmd.pointee.maxprot),
+                    initProt: UInt8(segCmd.pointee.initprot)
+                )
+                
+                do {
+                    var sect = sectionsStart
+                    while UInt(bitPattern: sect) < UInt(bitPattern: sectionsEnd) {
+                        defer { sect = sect.advanced(by: 1) }
+                        
+                        let sectname = sect
+                            .raw
+                            .advanced(by: MemoryLayout<section>.offset(of: \.sectname)!)
+                            .withMemoryRebound(to: CChar.self, capacity: 16) { String(cString: $0) }
+                        
+                        let segname = sect
+                            .raw
+                            .advanced(by: MemoryLayout<section>.offset(of: \.segname)!)
+                            .withMemoryRebound(to: CChar.self, capacity: 16) { String(cString: $0) }
+                        
+                        let info = SectionInfo(
+                            sectionName: sectname,
+                            segmentName: segname,
+                            segIndex: UInt32(segmentIndex),
+                            segMaxProt: UInt32(segCmd.pointee.maxprot),
+                            segInitProt: UInt32(segCmd.pointee.initprot),
+                            flags: sect.pointee.flags,
+                            alignment: sect.pointee.align,
+                            address: UInt64(sect.pointee.addr),
+                            size: UInt64(sect.pointee.size),
+                            fileOffset: sect.pointee.offset,
+                            relocsOffset: sect.pointee.reloff,
+                            relocsCount: sect.pointee.nreloc,
+                            reserved1: sect.pointee.reserved1,
+                            reserved2: sect.pointee.reserved2
+                        )
+                        
+                        let resume = callback(segInfo, info)
+                        guard resume else { return false }
+                    }
+                }
+                
+                segmentIndex += 1
+            }
+            
+            return true
+        }
+    }
+    
+    // TODO: Span
+    public func findSectionContent(segName: String, sectName: String, useVmOffset: Bool) -> (base: UnsafePointer<UInt8>, length: UInt64)? {
+        var result: (base: UnsafePointer<UInt8>, length: UInt64)? = nil
+        
+        forEachSection { (info: SectionInfo) in
+            if (info.segmentName == segName) && (info.sectionName == sectName) {
+                var sectionContent: UnsafePointer<UInt8>?
+                
+                if useVmOffset {
+                    // dyld loaded image, find section based on vmaddr
+                    withHeaderPointer { ptr in
+                        sectionContent = ptr
+                            .raw
+                            .assumingMemoryBound(to: UInt8.self)
+                            .advanced(by: Int(info.address - preferredLoadAddress))
+                    }
+                } else {
+                    // file mapped image, use file offsets to get content
+                    withHeaderPointer { pointer in
+                        sectionContent = pointer
+                            .raw
+                            .assumingMemoryBound(to: UInt8.self)
+                            .advanced(by: Int(info.fileOffset))
+                    }
+                }
+                
+                result = (sectionContent!, info.size)
+                
+                return false
+            }
+            
+            return true
+        }
+        
+        return result
+    }
+    
     public var hasMachOBigEndianMagic: Bool {
         return (magic == MH_CIGAM) || (magic == MH_CIGAM_64)
     }
@@ -352,6 +637,21 @@ public struct Header: ~Copyable {
             fatalError("malformed mach-o, size smaller than header and load commands")
         }
         return size
+    }
+    
+    public var preferredLoadAddress: UInt64 {
+        var textVmAddr: UInt64 = 0
+        
+        forEachSegment { (infos: SegmentInfo) in
+            if infos.segmentName == "__TEXT" {
+                textVmAddr = infos.vmaddr
+                return false
+            }
+            
+            return true
+        }
+        
+        return textVmAddr
     }
     
     public var headerAndLoadCommandsSize: UInt32 {
@@ -658,6 +958,23 @@ extension Header {
         public var writable: Bool { ((Int32(initProt) & VM_PROT_WRITE) != 0) }
         public var readable: Bool { ((Int32(initProt) & VM_PROT_READ) != 0) }
         public var hasZeroFill: Bool { (initProt == 3) && (fileSize < vmsize) }
+    }
+    
+    public struct SectionInfo {
+        public var sectionName: String
+        public var segmentName: String
+        public var segIndex: UInt32 = 0
+        public var segMaxProt: UInt32 = 0
+        public var segInitProt: UInt32 = 0
+        public var flags: UInt32 = 0
+        public var alignment: UInt32 = 0
+        public var address: UInt64 = 0
+        public var size: UInt64 = 0
+        public var fileOffset: UInt32 = 0
+        public var relocsOffset: UInt32 = 0
+        public var relocsCount: UInt32 = 0
+        public var reserved1: UInt32 = 0
+        public var reserved2: UInt32 = 0
     }
 }
 
