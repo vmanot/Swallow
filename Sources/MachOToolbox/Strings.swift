@@ -75,16 +75,8 @@ extension MachOSwift.MachOFile {
 }
 
 extension FatHandle {
-    public var strings: [String] {
-        get throws {
-            var results: [String] = []
-            
-            for header in self.headers {
-                try results.append(contentsOf: header.pointee.strings(useVmOffset: false))
-            }
-            
-            return results
-        }
+    public func strings(for arch: Architecture) throws -> [String] {
+        try header(for: arch)?.pointee.strings(useVmOffset: false) ?? []
     }
 }
 
