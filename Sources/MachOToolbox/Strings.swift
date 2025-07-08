@@ -41,20 +41,25 @@ extension MachOSwift.Header {
             }
         }
         
-        // not tested
         for data in ustringDataArray {
             let nsData = data as NSData
-            var current = nsData.bytes.assumingMemoryBound(to: CChar.self)
+            var current = nsData.bytes.assumingMemoryBound(to: UInt16.self)
             
             while true {
                 if current.pointee == 0 {
                     break
                 }
+                var length = 0
+                var scanner = current
+                while scanner.pointee != 0 {
+                    length += 1
+                    scanner = scanner.advanced(by: 1)
+                }
                 
-                let string = String(cString: current, encoding: .utf16)!
-                strings.append(string)
+                let str = String(utf16CodeUnits: current, count: length)
+                strings.append(str)
                 
-                current = current.advanced(by: string.utf16.count + 1)
+                current = scanner.advanced(by: 1)
             }
         }
         
