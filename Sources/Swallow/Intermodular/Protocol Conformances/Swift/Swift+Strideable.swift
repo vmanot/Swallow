@@ -4,7 +4,7 @@
 
 import Swift
 
-extension OpaquePointer: Swift.Strideable {
+extension OpaquePointer: Swift.Comparable, Swift.Strideable {
     public typealias Stride = Int
 
     public func distance(to other: OpaquePointer) -> Stride {

@@ -27,6 +27,10 @@ public struct HashableImplOnly<Value: Hashable>: Hashable {
     }
 }
 
+extension HashableImplOnly: Sendable where Value: Sendable {
+    
+}
+
 @frozen
 public struct Hashable2ple<T0: Hashable, T1: Hashable>: Hashable, Wrapper {
     public let value: (T0, T1)
@@ -58,6 +62,10 @@ public struct Hashable2ple<T0: Hashable, T1: Hashable>: Hashable, Wrapper {
     public static func == (lhs: Self, rhs: Self) -> Bool {
         lhs.value.0 == rhs.value.0 && lhs.value.1 == rhs.value.1
     }
+}
+
+extension Hashable2ple: Sendable where T0: Sendable, T1: Sendable {
+    
 }
 
 @frozen

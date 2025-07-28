@@ -30,7 +30,11 @@ extension JSONDecoder {
         nonConformingFloatDecodingStrategy.map(into: &self.nonConformingFloatDecodingStrategy)
     }
     
-    public func decode<T: Decodable>(_ type: T.Type, from data: Data, allowFragments: Bool) throws -> T {
+    public func decode<T: Decodable>(
+        _ type: T.Type,
+        from data: Data,
+        allowFragments: Bool
+    ) throws -> T {
         guard allowFragments else {
             return try decode(type, from: data)
         }
@@ -106,12 +110,12 @@ extension JSONDecoder.DateDecodingStrategy {
 
 // MARK: - Auxiliary
 
-fileprivate extension CodingUserInfoKey {
-    static let fragmentBoxedType = CodingUserInfoKey(rawValue: "fragmentBoxedType")!
+extension CodingUserInfoKey {
+    fileprivate static let fragmentBoxedType = CodingUserInfoKey(rawValue: "fragmentBoxedType")!
 }
 
-fileprivate extension Error {
-    var isFragmentDecodingError: Bool {
+extension Error {
+    fileprivate var isFragmentDecodingError: Bool {
         guard let error = self as? DecodingError, case let DecodingError.dataCorrupted(context) = error else {
             return false
         }

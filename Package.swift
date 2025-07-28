@@ -268,7 +268,8 @@ let package = Package(
                 .swiftLanguageMode(.v5)
             ]
         ),
-    ]
+    ],
+    swiftLanguageModes: [.v5]
 )
 
 // package-manifest-patch:start

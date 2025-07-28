@@ -5,7 +5,7 @@
 import Foundation
 import Swift
 
-extension Foundation.Calendar.Component: Codable, Swift.RawRepresentable {
+extension Foundation.Calendar.Component: Swift.Decodable, Swift.Encodable, Swift.RawRepresentable {
     public var rawValue: String {
         if let _leapMonthRawValue {
             return _leapMonthRawValue
@@ -104,7 +104,7 @@ extension Foundation.Calendar.Component: Codable, Swift.RawRepresentable {
     }
 }
 
-extension URLQueryItem: Codable {
+extension URLQueryItem: Swift.Decodable, Swift.Encodable {
     private struct _CodableRepresentation: Codable {
         let name: String
         let value: String?

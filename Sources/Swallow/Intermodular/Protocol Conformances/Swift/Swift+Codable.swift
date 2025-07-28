@@ -5,7 +5,7 @@
 import Foundation
 import Swift
 
-extension Character: Codable {
+extension Character: Swift.Decodable, Swift.Encodable {
     public func encode(to encoder: Encoder) throws {
         try String(self).encode(to: encoder)
     }
@@ -49,7 +49,7 @@ extension Either: Encodable where LeftValue: Encodable, RightValue: Encodable {
     }
 }
 
-extension UnicodeScalar: Codable {
+extension UnicodeScalar: Swift.Decodable, Swift.Encodable {
     public func encode(to encoder: Encoder) throws {
         var container = encoder.singleValueContainer()
         try container.encode(value)
@@ -63,7 +63,7 @@ extension UnicodeScalar: Codable {
 }
 
 #if !os(visionOS)
-extension Never: Codable {
+extension Never: Swift.Decodable, Swift.Encodable {
     public func encode(to encoder: Encoder) throws {
         fatalError()
     }

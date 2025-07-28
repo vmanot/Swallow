@@ -6,7 +6,7 @@ import Combine
 import Foundation
 import Swallow
 
-public enum _AnySpecializedTopLevelDataCoder: Sendable {
+public enum _AnySpecializedTopLevelDataCoder: @unchecked Sendable {
     case dataCodableType(any DataCodable.Type, strategy: (decoding: any Sendable, encoding: any Sendable))
     case topLevelDataCoder(any TopLevelDataCoder, forType: Codable.Type)
     case custom(Custom)

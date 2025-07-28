@@ -117,7 +117,9 @@ public func _isValueNil(_ value: Any, valueType: Any.Type?) -> Bool {
     return Optional(_unwrapping: value).isNil
 }
 
-public func _isValueNil(_ value: Any?) -> Bool {
+public func _isValueNil(
+    _ value: Any?
+) -> Bool {
     guard let value else {
         return true
     }
@@ -125,15 +127,26 @@ public func _isValueNil(_ value: Any?) -> Bool {
     return _isValueNil(value, valueType: nil)
 }
 
-public func _initializeNilLiteral<T>(ofType type: T.Type) throws -> T {
-    try cast(cast(type, to: (any ExpressibleByNilLiteral.Type).self).init(nilLiteral: ()))
+@_optimize(none)
+@inline(never)
+public func _initializeNilLiteral<T>(
+    ofType type: T.Type
+) throws -> T {
+    let nilLiteralType: any ExpressibleByNilLiteral.Type = try cast(type, to: (any ExpressibleByNilLiteral.Type).self)
+    let nilLiteral: Any = nilLiteralType.init(nilLiteral: ())
+                        
+    return try cast(nilLiteral, to: type)
 }
 
-public func _initializeEmptyArrayLiteral<T>(ofType type: T.Type) throws -> T {
-    try cast(cast(type, to: (any ExpressibleByArrayLiteral.Type).self).init(_emptyArrayLiteral: ()))
+public func _initializeEmptyArrayLiteral<T>(
+    ofType type: T.Type
+) throws -> T {
+    try cast(cast(type, to: (any ExpressibleByArrayLiteral.Type).self).init(_emptyArrayLiteral: ()), to: type)
 }
 
-public func _isTypeOptionalType(_ type: Any.Type) -> Bool {
+public func _isTypeOptionalType(
+    _ type: Any.Type
+) -> Bool {
     type is any OptionalProtocol.Type
 }
 
