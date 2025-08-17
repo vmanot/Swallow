@@ -9,7 +9,7 @@ extension Dl_info: Swallow.Initiable, Swallow.Trivial, Swift.Equatable, @uncheck
     
 }
 
-extension MachErrorCode: Swallow.Initiable, Swallow.Trivial, @unchecked Swift.Sendable {
+extension MachErrorCode: Swallow.Initiable, Swallow.Trivial {
     
 }
 
@@ -45,7 +45,7 @@ extension pthread_rwlockattr_t: Swallow.Initiable, Swallow.Trivial, Swift.Equata
     
 }
 
-extension POSIXErrorCode: Swallow.Initiable, Swallow.Trivial, @unchecked Swift.Sendable {
+extension POSIXErrorCode: Swallow.Initiable, Swallow.Trivial {
     
 }
 
