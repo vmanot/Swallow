@@ -107,7 +107,7 @@ extension PropertyListEncoder {
         
         func encode(to encoder: Encoder) throws {
             var container = encoder.unkeyedContainer()
-            
+                
             try container.encode(wrappedValue)
         }
     }

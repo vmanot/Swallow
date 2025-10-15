@@ -347,7 +347,7 @@ extension FileManager {
         at sourceURL: URL,
         to destinationURL: URL
     ) throws {
-        guard !FileManager.default.fileExists(at: destinationURL) else {
+        guard !self.fileExists(at: destinationURL) else {
             // FIXME: Validate via file hashes
             
             return
@@ -451,7 +451,7 @@ extension FileManager {
         do {
             return try contents(atPath: url.path).unwrap()
         } catch {
-            if FileManager.default.fileExists(at: url) {
+            if self.fileExists(at: url) {
                 let result = try url._accessingSecurityScopedResource {
                     try contents(atPath: url.path).unwrap()
                 }
@@ -670,11 +670,11 @@ extension FileManager {
             return nil
         }
         
-        guard !FileManager.default.fileExists(atPath: url.path, isDirectory: nil) else {
+        guard !self.fileExists(atPath: url.path, isDirectory: nil) else {
             return url
         }
         
-        try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true, attributes: nil)
+        try self.createDirectory(at: url, withIntermediateDirectories: true, attributes: nil)
         
         return url
     }
@@ -685,12 +685,15 @@ import UniformTypeIdentifiers
 
 @available(macOS 11.0, iOS 14.0, watchOS 7.0, tvOS 14.0, *)
 extension FileManager {
+    public func attributesOfItem(at url: URL) throws -> [FileAttributeKey: Any] {
+        try attributesOfItem(atPath: url.path)
+    }
+        
     public func isFileOfType(
         _ types: some Sequence<UTType>,
         at url: URL
     ) throws -> Bool {
         let types = Set(types)
-        
         assert(fileExists(at: url))
         
         guard let existingFileType = UTType(from: url) else {
