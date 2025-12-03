@@ -38,6 +38,7 @@ extension POSIXProcessIdentifier {
 #if canImport(Cocoa)
 import Cocoa
 
+@available(macCatalyst, unavailable)
 extension NSRunningApplication {
     public var processID: POSIXProcessIdentifier {
         POSIXProcessIdentifier(rawValue: self.processIdentifier)

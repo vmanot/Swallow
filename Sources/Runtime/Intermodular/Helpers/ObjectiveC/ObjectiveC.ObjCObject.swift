@@ -32,7 +32,9 @@ extension ObjCObject {
 
 extension ObjCObject {
     @available(*, deprecated, message: "It occurs memory leak when ivar has non-'OCL_Strong' type. Also if value is bigger than sizeof(id), it will occur memory corruption.")
-    public subscript(instanceVariable value: ObjCInstanceVariable) -> Any? {
+    public subscript(
+        instanceVariable value: ObjCInstanceVariable
+    ) -> Any? {
         get {
             return object_getIvar(self, value.value)
         } set {
@@ -41,7 +43,9 @@ extension ObjCObject {
     }
     
     @available(*, deprecated, message: "If value is bigger than sizeof(id), it will occur memory corruption.")
-    public subscript(instanceVariableNamed name: String) -> Any? {
+    public subscript(
+        instanceVariableNamed name: String
+    ) -> Any? {
         get {
             return objCClass[instanceVariableNamed: name].flatMap({ self[instanceVariable: $0] })
         } set {

@@ -35,7 +35,7 @@ protocol OSLoggerProtocol {
 }
 
 @available(macOS 11.0, iOS 14.0, watchOS 7.0, tvOS 14.0, *)
-extension OSLogger: LoggerProtocol, OSLoggerProtocol, @unchecked Sendable {
+extension OSLogger: LoggerProtocol, OSLoggerProtocol {
     public typealias LogLevel = OSLogType
     public typealias LogMessage = OSLogMessage
     
