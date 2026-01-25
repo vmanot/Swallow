@@ -221,4 +221,22 @@ extension FileWrapper {
         
         return results
     }
+    
+    /// Replace the old file wrapper with given file wrapper, in `fileWrappers`, if exists, or add a new file wrapper if not exists.
+    public func updateFileWrapper(
+        _ fileWrapper: FileWrapper,
+        preferredFileName: String,
+        orginalFileName: String? = nil
+    ) throws {
+        guard self.isDirectory else {
+            throw CocoaError(.fileReadCorruptFile)
+        }
+        
+        if let old = self.fileWrappers?[orginalFileName ?? preferredFileName] {
+            self.removeFileWrapper(old)
+        }
+        
+        fileWrapper.preferredFilename = preferredFileName
+        self.addFileWrapper(fileWrapper)
+    }
 }
