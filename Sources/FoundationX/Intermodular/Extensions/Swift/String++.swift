@@ -37,7 +37,8 @@ extension String {
 extension String {
     static public func random(length: UInt, in characterSet: CharacterSet = .alphanumerics) -> String {
         let letters = characterSet.value.map(\.self)
-        return String((0..<length).map { _ in letters.randomElement()! })
+        precondition(!letters.isEmpty, "String.random(length:in:): `characterSet` must not be empty.")
+        return String((0..<length).map { _ in letters[Int.random(in: 0..<letters.count)] })
     }
 }
 
