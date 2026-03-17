@@ -48,5 +48,5 @@ extension ClassDeclSyntax: WithNameSyntax { }
 extension EnumDeclSyntax: WithNameSyntax { }
 extension ProtocolDeclSyntax: WithNameSyntax { }
 extension ActorDeclSyntax: WithNameSyntax { }
-
+extension TypeAliasDeclSyntax: WithNameSyntax { }
 extension FunctionDeclSyntax: WithNameSyntax { }
