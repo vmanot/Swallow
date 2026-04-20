@@ -29,4 +29,39 @@ jobs:
           xcode-version: latest-stable # 16.4
 
       - name: Build All Platforms
-        run: bash scripts/build
+        run: |
+          #!/bin/bash
+          set -e
+
+          TARGET=""
+          PLATFORMS="iOS macOS tvOS watchOS xrOS"
+
+          if [ -z "$TARGET" ]; then
+            TARGET=$(swift package dump-package | python3 -c "import json,sys; print(json.load(sys.stdin)['name'])")
+            if [ -z "$TARGET" ]; then
+              echo "Error: Failed to resolve package name"
+              exit 1
+            fi
+          fi
+
+          build_platform() {
+            local PLATFORM=$1
+            echo "Building $TARGET for $PLATFORM..."
+            if ! xcodebuild -scheme "$TARGET" -derivedDataPath .build -destination "generic/platform=$PLATFORM"; then
+              echo "Failed to build $TARGET for $PLATFORM"
+              return 1
+            fi
+            echo "Successfully built $TARGET for $PLATFORM"
+          }
+
+          echo
+          echo "Building $TARGET for [$PLATFORMS]..."
+
+          for PLATFORM in $PLATFORMS; do
+            if ! build_platform "$PLATFORM"; then
+              exit 1
+            fi
+          done
+
+          echo
+          echo "Building $TARGET completed successfully!"
