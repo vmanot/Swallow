@@ -28,10 +28,13 @@ jobs:
         with:
           xcode-version: latest-stable # 16.4
 
+      - name: Install xcbeautify
+        run: brew install xcbeautify
+
       - name: Build All Platforms
         run: |
           #!/bin/bash
-          set -e
+          set -eo pipefail
 
           TARGET=""
           PLATFORMS="iOS macOS tvOS watchOS xrOS"
@@ -47,7 +50,7 @@ jobs:
           build_platform() {
             local PLATFORM=$1
             echo "Building $TARGET for $PLATFORM..."
-            if ! xcodebuild -scheme "$TARGET" -derivedDataPath .build -destination "generic/platform=$PLATFORM"; then
+            if ! NSUnbufferedIO=YES xcodebuild -scheme "$TARGET" -derivedDataPath .build -destination "generic/platform=$PLATFORM" 2>&1 | xcbeautify --renderer github-actions; then
               echo "Failed to build $TARGET for $PLATFORM"
               return 1
             fi
