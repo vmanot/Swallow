@@ -73,8 +73,6 @@ _objc_isTaggedPointer(const void * _Nullable ptr)
 #else
 #  define OBJC_VM_MAX_ADDRESS  0x00007ffffffffff8ULL
 #endif
-#else
-#  error Unknown platform - please define PAGE_SIZE et al.
 #endif
 
 
@@ -94,12 +92,13 @@ _objc_isTaggedPointer(const void * _Nullable ptr)
 static uintptr_t objc_debug_isa_class_mask() {
     return 0xffff;
 }
-#else
+#elif defined(ISA_MASK)
 static const uintptr_t objc_debug_isa_class_mask() {
     return ISA_MASK & COVERING_MASK(uintptr_t, OBJC_VM_MAX_ADDRESS - 1);
 }
 #endif
 
+#if defined(ISA_MASK)
 static uintptr_t
 _objc_cls(const void * _Nullable ptr)
 {
@@ -116,6 +115,7 @@ _objc_cls(const void * _Nullable ptr)
     }
     return 0;
 }
+#endif
 
 static uintptr_t
 _objc_super(Class _Nonnull cls)

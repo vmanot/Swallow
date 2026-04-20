@@ -211,19 +211,36 @@ extension ProcessInfo._AppDebugInfo {
         let os = switch DTPlatformName {
             case "iphoneos", "iphonesimulator": "ios"
             case "macos": "macos"
+            case "appletvos", "appletvsimulator": "tvos"
+            case "watchos", "watchsimulator": "watchos"
             case "xros", "xrsimulator": "xros"
             default:
 #if os(iOS)
                 "ios"
 #elseif os(macOS)
                 "macos"
+#elseif os(tvOS)
+                "tvos"
+#elseif os(watchOS)
+                "watchos"
 #elseif os(visionOS)
                 "xros"
+#else
+                "unknown"
 #endif
         }
-        let isSimulator = DTPlatformName?.contains("simulator") == true
-        return [estimatedArch, "apple", os + estimatedDeploymentOSVersion!, isSimulator ? "simulator" : nil]
-            .compactMap { $0 }.joined(separator: "-")
+        let isSimulator: Bool = DTPlatformName?.contains("simulator") == true
+        
+        let result: String = [
+            estimatedArch,
+            "apple",
+            os + estimatedDeploymentOSVersion!,
+            isSimulator ? "simulator" : nil
+        ]
+        .compactMap({ $0 })
+        .joined(separator: "-")
+        
+        return result
     }
     
     /// arm64
@@ -232,6 +249,12 @@ extension ProcessInfo._AppDebugInfo {
         "arm64"
 #elseif arch(x86_64)
         "x86_64"
+#elseif arch(arm64_32)
+        "arm64_32"
+#elseif arch(arm)
+        "armv7k"
+#else
+        "unknown"
 #endif
     }
     
