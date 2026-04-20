@@ -107,8 +107,8 @@ extension ProcessInfo {
 @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
 extension ProcessInfo._AppDebugInfo {
     /// `/Users/{username}`
-    public var estimatedHomeDirectoryURL: URL? {
-        (SIMULATOR_HOST_HOME ?? NSHomeDirectory()).map(URL.init(fileURLWithPath:))
+    public var estimatedHomeDirectoryURL: URL? {        
+        return Optional(SIMULATOR_HOST_HOME ?? NSHomeDirectory()).map(URL.init(fileURLWithPath:))
     }
     
     /// `/Users/username/Library/Developer/Xcode/DerivedData/app-abcdefg0123456789/Build/Products/Debug-iphonesimulator`
