@@ -17,27 +17,39 @@ concurrency:
 
 jobs:
   build:
-    runs-on: macos-latest # macos-15
+    runs-on: macos-26
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Setup Xcode
         uses: maxim-lobanov/setup-xcode@v1
         with:
-          xcode-version: latest-stable # 16.4
+          xcode-version: 26.4.1
 
       - name: Install xcbeautify
         run: brew install xcbeautify
+
+      - name: Restore DerivedData Cache
+        uses: actions/cache@v5
+        with:
+          path: .build
+          key: deriveddata-arm64-${{ runner.os }}-xcode-26.4.1-${{ hashFiles('Package.swift', 'Package.resolved') }}
+          restore-keys: |
+            deriveddata-arm64-${{ runner.os }}-xcode-26.4.1-
 
       - name: Build All Platforms
         run: |
           #!/bin/bash
           set -eo pipefail
+          export LLVM_PROFILE_FILE="${RUNNER_TEMP:-/tmp}/Swallow-%p.profraw"
 
           TARGET=""
-          PLATFORMS="iOS macOS tvOS watchOS xrOS"
+          PLATFORMS="macOS iOS macCatalyst tvOS"
+          DERIVED_DATA_PATH=".build"
+
+          xcodebuild -version
 
           if [ -z "$TARGET" ]; then
             TARGET=$(swift package dump-package | python3 -c "import json,sys; print(json.load(sys.stdin)['name'])")
@@ -49,9 +61,14 @@ jobs:
 
           build_platform() {
             local PLATFORM=$1
+            local DESTINATION=$2
+            local LOG_FILE="${RUNNER_TEMP:-/tmp}/xcodebuild-${PLATFORM}.log"
             echo "Building $TARGET for $PLATFORM..."
-            if ! NSUnbufferedIO=YES xcodebuild -scheme "$TARGET" -derivedDataPath .build -destination "generic/platform=$PLATFORM" 2>&1 | xcbeautify --renderer github-actions; then
+            if ! NSUnbufferedIO=YES xcodebuild -scheme "$TARGET" -derivedDataPath "$DERIVED_DATA_PATH" -destination "$DESTINATION" -skipPackagePluginValidation -skipMacroValidation ARCHS=arm64 ONLY_ACTIVE_ARCH=NO 2>&1 | tee "$LOG_FILE" | xcbeautify --renderer github-actions; then
               echo "Failed to build $TARGET for $PLATFORM"
+              echo
+              echo "Last 200 lines from raw xcodebuild log:"
+              tail -n 200 "$LOG_FILE"
               return 1
             fi
             echo "Successfully built $TARGET for $PLATFORM"
@@ -60,11 +77,10 @@ jobs:
           echo
           echo "Building $TARGET for [$PLATFORMS]..."
 
-          for PLATFORM in $PLATFORMS; do
-            if ! build_platform "$PLATFORM"; then
-              exit 1
-            fi
-          done
+          build_platform "macOS" "generic/platform=macOS"
+          build_platform "iOS" "generic/platform=iOS"
+          build_platform "macCatalyst" "generic/platform=macOS,variant=Mac Catalyst"
+          build_platform "tvOS" "generic/platform=tvOS"
 
           echo
           echo "Building $TARGET completed successfully!"
