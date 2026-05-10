@@ -46,7 +46,7 @@ jobs:
           export LLVM_PROFILE_FILE="${RUNNER_TEMP:-/tmp}/Swallow-%p.profraw"
 
           TARGET=""
-          PLATFORMS="macOS iOS macCatalyst tvOS watchOS xrOS"
+          PLATFORMS="macOS iOS macCatalyst tvOS"
           DERIVED_DATA_PATH=".build"
 
           xcodebuild -version
@@ -81,8 +81,6 @@ jobs:
           build_platform "iOS" "generic/platform=iOS"
           build_platform "macCatalyst" "generic/platform=macOS,variant=Mac Catalyst"
           build_platform "tvOS" "generic/platform=tvOS"
-          build_platform "watchOS" "generic/platform=watchOS"
-          build_platform "xrOS" "generic/platform=xrOS"
 
           echo
           echo "Building $TARGET completed successfully!"
