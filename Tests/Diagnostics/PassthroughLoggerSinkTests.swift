@@ -3,7 +3,7 @@
 //
 
 import Combine
-@testable import Diagnostics
+@_spi(Internal) @testable import Diagnostics
 import Foundation
 @_spi(Internal) import Swallow
 import Testing
@@ -357,6 +357,120 @@ final class PassthroughLoggerSinkTests {
         ])
     }
     
+    @Test
+    func intentionallyUnspecifiedSourceHasStableDescription() {
+        #expect(PassthroughLogger.Source.intentionallyUnspecified().description == "<intentionally-unspecified>")
+    }
+    
+    @Test
+    func constructionTimeTextOutputPublishesRootAndChildEntriesOnce() {
+        let output = RecordingTextOutput()
+        let logger = PassthroughLogger(
+            source: .intentionallyUnspecified(),
+            textOutput: .custom(format: .plain) { text in
+                output.append(text)
+            }
+        )
+        let child = logger.childLogger(scopedTo: FunctionLogScope(function: "child"))
+        
+        logger.info("root")
+        child.info("child")
+        
+        #expect(output.lines == ["root", "child"])
+        #expect(logger._dumpToConsole == false)
+    }
+    
+    @Test
+    func diagnosticLoggingEnvironmentTaskLocalScopeIsDetectedAndRestored() {
+        #expect(!_DiagnosticLoggingValues.isEnvironmentActive)
+        
+        _DiagnosticLoggingEnvironment.withEnvironment(.init()) {
+            #expect(_DiagnosticLoggingValues.isEnvironmentActive)
+        }
+        
+        #expect(!_DiagnosticLoggingValues.isEnvironmentActive)
+    }
+    
+    @Test
+    func globalSetOnceOrTaskLocalUsesDefaultNestedTaskLocalAndFixedValues() {
+        let value = _GlobalSetOnceOrTaskLocal<Int>(wrappedValue: 1)
+        
+        #expect(value.wrappedValue == 1)
+        
+        value.withValue(2) {
+            #expect(value.wrappedValue == 2)
+            
+            value.withValue(3) {
+                #expect(value.wrappedValue == 3)
+            }
+            
+            #expect(value.wrappedValue == 2)
+        }
+        
+        #expect(value.wrappedValue == 1)
+        
+        value.fixValue(4)
+        
+        #expect(value.wrappedValue == 4)
+        #expect(value.isValueFixed)
+    }
+    
+    @Test
+    func globalSetOnceOrTaskLocalPreservesOptionalNilOverrides() {
+        let value = _GlobalSetOnceOrTaskLocal<Int?>(wrappedValue: 1)
+        
+        value.withValue(nil) {
+            #expect(value.wrappedValue == nil)
+        }
+        
+        #expect(value.wrappedValue == 1)
+    }
+    
+    @Test
+    func globalSetOnceOrTaskLocalSupportsAsyncOverrides() async {
+        let value = _GlobalSetOnceOrTaskLocal<String>(wrappedValue: "default")
+        
+        await value.withValue("async") {
+            await Task.yield()
+            
+            #expect(value.wrappedValue == "async")
+        }
+        
+        #expect(value.wrappedValue == "default")
+    }
+    
+    @Test
+    func scopePathTextPrefixSupportsLeafAndFullPath() {
+        let sink = RecordingSink()
+        let root = makeLogger(sink: sink)
+        let child = try! root.scoped(to: AnyLogScope(erasing: FunctionLogScope(function: "child")))
+        let grandchild = try! child.scoped(to: AnyLogScope(erasing: FunctionLogScope(function: "grandchild")))
+        let entries = RecordingEntries()
+        
+        _withLogTracking(
+            perform: {
+                self.log("message", using: grandchild)
+            },
+            handler: { entry in
+                entries.append(entry)
+            }
+        )
+        
+        let leaf = LogEntryTextFormat.linePrefixed(
+            prefix: ScopePathLogEntryTextPrefix(selection: .leaf, suffix: ": ")
+        )
+        let fullPath = LogEntryTextFormat.linePrefixed(
+            prefix: ScopePathLogEntryTextPrefix(selection: .fullPath(separator: " / "), suffix: ": ")
+        )
+        
+        #expect(entries.formattedMessages(using: leaf) == [
+            "grandchild: message"
+        ])
+        #expect(entries.formattedMessages(using: fullPath) == [
+            "child / grandchild: message"
+        ])
+    }
+    
     private func makeLogger(
         configuration: PassthroughLogger.Configuration = .init(),
         sink: RecordingSink
@@ -424,6 +538,25 @@ final class PassthroughLoggerSinkTests {
         ) {
             lock.withCriticalScope {
                 entries.append(entry)
+            }
+        }
+    }
+    
+    private final class RecordingTextOutput: @unchecked Sendable {
+        private let lock = OSUnfairLock()
+        private var storage: [String] = []
+        
+        var lines: [String] {
+            lock.withCriticalScope {
+                storage
+            }
+        }
+        
+        func append(
+            _ line: String
+        ) {
+            lock.withCriticalScope {
+                storage.append(line)
             }
         }
     }

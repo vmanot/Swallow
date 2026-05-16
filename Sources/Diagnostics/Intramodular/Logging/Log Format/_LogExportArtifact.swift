@@ -4,6 +4,6 @@
 
 import Swallow
 
-public protocol _LogFormat: Hashable, Sendable {
+public protocol _LogExportArtifact: Hashable, Sendable {
     func _textualDump() throws -> _TextualLogDump
 }

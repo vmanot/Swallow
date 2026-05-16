@@ -259,6 +259,7 @@ let package = Package(
                 "_RuntimeC",
                 "Runtime",
                 "Swallow",
+                "SwallowMacros",
                 "SwallowMacrosClient",
                 .product(name: "SwiftSyntaxMacrosTestSupport", package: "swift-syntax", condition: .when(platforms: [.macOS])),
                 .target(name: "SwiftSyntaxUtilities", condition: .when(platforms: [.macOS])),

@@ -8,6 +8,7 @@ import Swallow
 extension PassthroughLogger {
     public struct Source: CustomStringConvertible {
         public enum Content {
+            case intentionallyUnspecified(SourceCodeLocation)
             case sourceCodeLocation(SourceCodeLocation)
             case logger(any LoggerProtocol, scope: AnyLogScope?)
             case something(Any)
@@ -19,6 +20,8 @@ extension PassthroughLogger {
         
         public var description: String {
             switch content {
+                case .intentionallyUnspecified:
+                    return "<intentionally-unspecified>"
                 case .sourceCodeLocation(let location):
                     return location.description
                 case .logger(let logger, let scope):
@@ -54,6 +57,24 @@ extension PassthroughLogger {
             }
             
             self.content = content
+        }
+        
+        public static func intentionallyUnspecified(
+            file: StaticString = #file,
+            function: StaticString = #function,
+            line: UInt = #line,
+            column: UInt? = #column
+        ) -> Self {
+            Self(
+                content: .intentionallyUnspecified(
+                    SourceCodeLocation(
+                        file: file,
+                        function: function,
+                        line: line,
+                        column: column
+                    )
+                )
+            )
         }
         
         public static func location(_ location: SourceCodeLocation) -> Self {

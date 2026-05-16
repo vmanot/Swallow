@@ -9,7 +9,7 @@ import Swallow
 /// App diagnostics need an artifact they own. OSLogStore is a platform aperture,
 /// not an export contract.
 public protocol _LogExporting {
-    associatedtype Log: _LogFormat
+    associatedtype Log: _LogExportArtifact
     
     func exportLog() async throws -> Log
 }

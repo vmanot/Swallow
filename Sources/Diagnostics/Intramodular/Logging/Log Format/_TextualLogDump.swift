@@ -5,7 +5,7 @@
 import Foundation
 import Swift
 
-public struct _TextualLogDump: _LogFormat {
+public struct _TextualLogDump: _LogExportArtifact {
     public var entries: [Entry]
     
     public init(entries: [Entry]) {

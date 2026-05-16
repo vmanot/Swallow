@@ -82,6 +82,49 @@ public protocol LogEntryIndentationStrategy: LogEntryLinePrefixStrategy {
     
 }
 
+public enum LogEntryScopeTextSelection: Sendable, Hashable {
+    case leaf
+    case fullPath(separator: String)
+}
+
+public struct ScopePathLogEntryTextPrefix: Sendable, Hashable, LogEntryLinePrefixStrategy {
+    public var selection: LogEntryScopeTextSelection
+    public var suffix: String
+    
+    public init(
+        selection: LogEntryScopeTextSelection = .leaf,
+        suffix: String = " "
+    ) {
+        self.selection = selection
+        self.suffix = suffix
+    }
+    
+    public func prefix(
+        for entry: PassthroughLogger.LogEntry
+    ) -> String {
+        let representations = entry.scope.textRepresentations
+        
+        guard !representations.isEmpty else {
+            return ""
+        }
+        
+        let text: String
+        
+        switch selection {
+            case .leaf:
+                text = representations.last!.description
+            case .fullPath(let separator):
+                text = representations.map(\.description).joined(separator: separator)
+        }
+        
+        guard !text.isEmpty else {
+            return ""
+        }
+        
+        return text + suffix
+    }
+}
+
 public struct LinePrefixLogEntryTextTransform: Sendable, LogEntryTextTransform {
     public var prefix: any LogEntryLinePrefixStrategy
     public var prefixesMultilineMessages: Bool

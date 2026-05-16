@@ -33,17 +33,28 @@ final class _PassthroughLoggerGuts: LoggerProtocol, @unchecked Sendable {
     let entryPublisher = PassthroughSubject<LogEntry, Never>()
     
     private let defaultSink: _DefaultPassthroughLogSink
+    private var textOutputCancellable: AnyCancellable?
     
     init(
         source: Source,
         configuration: PassthroughLogger.Configuration = .init(),
-        defaultSink: _DefaultPassthroughLogSink = .default
+        defaultSink: _DefaultPassthroughLogSink = .default,
+        textOutput: PassthroughLogger.ResolvedTextOutput? = nil
     ) {
         self.parent = nil
         self.source = source
         self.scope = .root
         self.configuration = configuration
+        if textOutput != nil {
+            self.configuration._dumpToConsole = false
+        }
         self.defaultSink = defaultSink
+        
+        if let textOutput {
+            self.textOutputCancellable = entryPublisher.sink { entry in
+                textOutput.write(entry)
+            }
+        }
     }
     
     init(parent: _PassthroughLoggerGuts, scope: AnyLogScope) {
@@ -52,6 +63,7 @@ final class _PassthroughLoggerGuts: LoggerProtocol, @unchecked Sendable {
         self.scope = .child(parent: parent.scope, scope: scope)
         self.configuration = parent.configurationSnapshot
         self.defaultSink = parent.defaultSink
+        self.textOutputCancellable = nil
     }
     
     @usableFromInline
@@ -145,7 +157,7 @@ extension _PassthroughLoggerGuts {
 // MARK: - Conformances
 
 extension _PassthroughLoggerGuts: _LogExporting {
-    public func exportLog() async throws -> some _LogFormat {
+    public func exportLog() async throws -> some _LogExportArtifact {
         let entries = lock.withCriticalScope {
             self.entries
         }

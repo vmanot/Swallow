@@ -60,6 +60,23 @@ extension PassthroughLogger {
     ) {
         self.init(base: _PassthroughLoggerGuts(source: source))
     }
+    
+    public convenience init(
+        source: Source,
+        textOutput: ResolvedTextOutput
+    ) {
+        precondition(
+            !_DiagnosticLoggingValues.isEnvironmentActive,
+            "Construction-time text output cannot be installed while a diagnostic logging environment is active."
+        )
+        
+        self.init(
+            base: _PassthroughLoggerGuts(
+                source: source,
+                textOutput: textOutput
+            )
+        )
+    }
      
     public convenience init<T: AnyObject & Logging>(
         source: T
@@ -100,7 +117,7 @@ extension PassthroughLogger {
 // MARK: - Conformances
 
 extension PassthroughLogger: _LogExporting {
-    public func exportLog() async throws -> some _LogFormat {
+    public func exportLog() async throws -> some _LogExportArtifact {
         try await base.exportLog()
     }
 }
@@ -116,6 +133,20 @@ extension PassthroughLogger: ScopedLogger {
         to scope: some LogScope
     ) throws -> PassthroughLogger {
         PassthroughLogger(base: try base.scoped(to: AnyLogScope(_erasing: scope)))
+    }
+}
+
+extension PassthroughLogger {
+    public func childLogger(
+        scopedTo scope: AnyLogScope
+    ) -> PassthroughLogger {
+        try! scoped(to: scope)
+    }
+    
+    public func childLogger(
+        scopedTo scope: some LogScope
+    ) -> PassthroughLogger {
+        childLogger(scopedTo: AnyLogScope(erasing: scope))
     }
 }
 
