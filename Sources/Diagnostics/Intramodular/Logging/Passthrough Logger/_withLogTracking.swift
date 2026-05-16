@@ -6,6 +6,10 @@ import Combine
 import Foundation
 import Swift
 
+/// Runs an operation with task-local log capture.
+///
+/// Scoped tracing for logs. Capture the work while it happens; do not scrape
+/// Apple's store later and hope the useful bits survived.
 public func _withLogTracking<R>(
     perform operation: @escaping () throws -> R,
     handler: @Sendable (PassthroughLogger.LogEntry) -> Void

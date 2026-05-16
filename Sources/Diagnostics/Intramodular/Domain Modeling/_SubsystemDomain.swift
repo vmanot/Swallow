@@ -5,6 +5,17 @@
 import Swallow
 
 /// A domain within a subsystem.
+///
+/// Relevant discussion:
+/// - https://forums.swift.org/t/proposal-draft-nserror-bridging/3157
+///   Swift punted `NSError`'s durable domain/code/userInfo identity to bridging.
+/// - https://forums.swift.org/t/error-to-nserror-conversion/74210
+///   Associated-value errors decay across XPC/NSError into useless output.
+/// - https://forums.swift.org/t/proposal-slg-0003-standardized-error-metadata-via-logger-convenience/84518
+///   Logging is still retrofitting basic error identity.
+///
+/// Domain identity is diagnostic data. It should survive logging, wrapping,
+/// export, and interop instead of dissolving into enum names or prose.
 public protocol _SubsystemDomain: Hashable, Sendable {
     associatedtype Error: Swift.Error = Swift.Error
 }

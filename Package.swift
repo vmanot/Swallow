@@ -138,7 +138,7 @@ let package = Package(
                 "SwallowMacrosClient",
             ],
             swiftSettings: [
-                .swiftLanguageMode(.v5)
+                .swiftLanguageMode(.v6)
             ]
         ),
         .target(
@@ -264,6 +264,17 @@ let package = Package(
                 .target(name: "SwiftSyntaxUtilities", condition: .when(platforms: [.macOS])),
             ],
             path: "Tests/Swallow",
+            swiftSettings: [
+                .swiftLanguageMode(.v5)
+            ]
+        ),
+        .testTarget(
+            name: "DiagnosticsTests",
+            dependencies: [
+                "Diagnostics",
+                "Swallow",
+            ],
+            path: "Tests/Diagnostics",
             swiftSettings: [
                 .swiftLanguageMode(.v5)
             ]

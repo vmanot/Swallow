@@ -42,7 +42,7 @@ public protocol ServerLogLevelProtocol: LogLevelProtocol {
 
 // MARK: - Conformees
 
-public enum AnyLogLevel: String, LogLevelProtocol {
+public enum AnyLogLevel: String, LogLevelProtocol, Sendable {
     case undefined
     case trace
     case debug
@@ -59,7 +59,7 @@ public enum AnyLogLevel: String, LogLevelProtocol {
 }
 
 /// A log-level type suitable for client applications.
-public enum ClientLogLevel: String, ClientLogLevelProtocol, CustomStringConvertible {
+public enum ClientLogLevel: String, ClientLogLevelProtocol, CustomStringConvertible, Sendable {
     case undefined
     case debug
     case info
@@ -79,7 +79,7 @@ public enum ClientLogLevel: String, ClientLogLevelProtocol, CustomStringConverti
 }
 
 /// A log-level type suitable for server applications.
-public enum ServerLogLevel: String, ServerLogLevelProtocol {
+public enum ServerLogLevel: String, ServerLogLevelProtocol, Sendable {
     case trace
     case debug
     case info

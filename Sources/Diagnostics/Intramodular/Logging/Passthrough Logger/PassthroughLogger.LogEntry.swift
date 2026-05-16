@@ -32,6 +32,10 @@ extension PassthroughLogger {
         }
     }
     
+    /// The in-process diagnostic event envelope.
+    ///
+    /// Preserve source, scope, level, message, and future payloads before some
+    /// backend flattens the event into text.
     public struct LogEntry: Hashable {
         public let sourceCodeLocation: SourceCodeLocation?
         public let timestamp: Date

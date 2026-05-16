@@ -13,7 +13,7 @@ extension PassthroughLogger {
         operation: () throws -> Result
     ) throws -> Result {
         let scopedLogger = #try(.optimistic) {
-            try PassthroughLogger().scoped(to: FunctionLogScope(function: function))
+            try self.scoped(to: FunctionLogScope(function: function))
         }
         
         scopedLogger?.log(level: .debug, "[enter]", metadata: nil, file: file, function: function, line: line)
@@ -84,11 +84,15 @@ extension PassthroughLogger {
     }
 }
 
-public struct FunctionLogScope: Hashable, LogScope {
+public struct FunctionLogScope: Hashable, LogScope, LogScopeTextRepresentable {
     public let function: String
     
     public var description: String {
         function.description
+    }
+    
+    public var logScopeTextRepresentation: LogScopeTextRepresentation {
+        LogScopeTextRepresentation(.init(function))
     }
     
     public init(function: String) {

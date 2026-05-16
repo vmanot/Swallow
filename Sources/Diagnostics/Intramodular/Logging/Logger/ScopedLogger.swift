@@ -4,6 +4,10 @@
 
 import Swallow
 
+/// A logger that can derive a child logger for a nested diagnostic context.
+///
+/// Flat log lines throw away call intent. Scopes keep operation context attached
+/// through capture, export, and backend projection.
 public protocol ScopedLogger: LoggerProtocol {
     associatedtype Scope: LogScope
     associatedtype ScopedLogger: LoggerProtocol
@@ -22,6 +26,50 @@ public protocol LogScope: CustomStringConvertible, Hashable {
     
 }
 
+public protocol LogScopeTextRepresentable {
+    var logScopeTextRepresentation: LogScopeTextRepresentation { get }
+}
+
+public struct LogScopeTextRepresentation: Hashable, Sendable, CustomStringConvertible {
+    public struct Segment: Hashable, Sendable, CustomStringConvertible, ExpressibleByStringLiteral {
+        public var text: String
+        
+        public init(
+            _ text: String
+        ) {
+            self.text = text
+        }
+        
+        public init(
+            stringLiteral value: String
+        ) {
+            self.init(value)
+        }
+        
+        public var description: String {
+            text
+        }
+    }
+    
+    public var segments: [Segment]
+    
+    public init(
+        _ segment: Segment
+    ) {
+        self.segments = [segment]
+    }
+    
+    public init(
+        segments: [Segment]
+    ) {
+        self.segments = segments
+    }
+    
+    public var description: String {
+        segments.map(\.description).joined(separator: " ")
+    }
+}
+
 public struct AnyLogScope: _UnwrappableTypeEraser, LogScope {
     public typealias _UnwrappedBaseType = any LogScope
     
@@ -33,6 +81,14 @@ public struct AnyLogScope: _UnwrappableTypeEraser, LogScope {
     
     public var description: String {
         base.description
+    }
+    
+    public var textRepresentation: LogScopeTextRepresentation {
+        if let base = base as? any LogScopeTextRepresentable {
+            return base.logScopeTextRepresentation
+        } else {
+            return LogScopeTextRepresentation(.init(description))
+        }
     }
     
     public init<T: LogScope>(erasing base: T) {

@@ -7,7 +7,7 @@ import Foundation
 import Swallow
 
 extension PassthroughLogger {
-    public struct Configuration: MergeOperatable {
+    public struct Configuration: MergeOperatable, Sendable {
         @TaskLocal static var global = Self()
         
         public var _dumpToConsole: Bool?
@@ -130,9 +130,9 @@ extension PassthroughLogger: TextOutputStream {
 extension PassthroughLogger {
     public var _dumpToConsole: Bool? {
         get {
-            base.configuration._dumpToConsole
+            base._dumpToConsole
         } set {
-            base.configuration._dumpToConsole = newValue
+            base._dumpToConsole = newValue
         }
     }
 }

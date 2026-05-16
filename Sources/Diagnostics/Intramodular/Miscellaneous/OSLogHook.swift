@@ -1,3 +1,4 @@
+import Foundation
 import os.log
 
 @frozen
@@ -88,6 +89,7 @@ public enum OSPrivate_os_log {
 
 // High-level log hook manager
 public class OSLogHook {
+    private let lock = NSLock()
     private var previousHook: os_log_hook_t?
     private let handler: (OSPrivate_os_log.os_log_type_t, OSPrivate_os_log.OSLogMessage) -> Void
     private let level: OSPrivate_os_log.os_log_type_t
@@ -101,7 +103,15 @@ public class OSLogHook {
         self.level = level
         
         self.previousHook = os_log_set_hook(level) { [weak self] level, msg in
-            guard let self = self, self.isActive else { return }
+            guard let self else {
+                return
+            }
+            
+            guard let state = self.stateSnapshot() else {
+                return
+            }
+            
+            let previousHook = state.previousHook
             
             if let msgPtr = msg?.bindMemory(to: os_log_message_s.self, capacity: 1),
                let logMessage = OSPrivate_os_log.OSLogMessage(from: msgPtr) {
@@ -109,13 +119,20 @@ public class OSLogHook {
             }
             
             // Call previous hook if it exists
-            self.previousHook?(level, msg)
+            previousHook?(level, msg)
         }
     }
     
     public func remove() {
-        guard isActive else { return }
-        isActive = false
+        let previousHook: os_log_hook_t? = lock.withLock {
+            guard isActive else {
+                return nil
+            }
+            
+            isActive = false
+            
+            return self.previousHook
+        }
         
         // Restore the previous hook
         if let previousHook = previousHook {
@@ -130,16 +147,37 @@ public class OSLogHook {
     deinit {
         remove()
     }
+    
+    private func stateSnapshot() -> (isActive: Bool, previousHook: os_log_hook_t?)? {
+        lock.withLock {
+            guard isActive else {
+                return nil
+            }
+            
+            return (isActive, previousHook)
+        }
+    }
 }
 
-var hook: OSLogHook?
+private final class _OSLogHookStorage: @unchecked Sendable {
+    private let lock = NSLock()
+    private var hook: OSLogHook?
+    
+    func setHook(_ hook: OSLogHook?) {
+        lock.withLock {
+            self.hook = hook
+        }
+    }
+}
+
+private let osLogHookStorage = _OSLogHookStorage()
 
 func hookNSHostingViewWarningExample() {
-    hook = OSLogHook(level: OSPrivate_os_log.OSLogType.debug) { level, logMessage in
+    osLogHookStorage.setHook(OSLogHook(level: OSPrivate_os_log.OSLogType.debug) { level, logMessage in
         if logMessage.message.contains("NSHostingView is being laid out reentrantly") {
             print("gotchya!")
         }
         
         print(logMessage.message)
-    }
+    })
 }

@@ -14,7 +14,13 @@ public protocol Logging {
 
 // MARK: - Implementation
 
-private var logger_objcAssociationKey: UInt = 0
+private final class _LoggerObjCAssociationKey: @unchecked Sendable {
+    static let shared = _LoggerObjCAssociationKey()
+    
+    var pointer: UnsafeRawPointer {
+        UnsafeRawPointer(Unmanaged.passUnretained(self).toOpaque())
+    }
+}
 
 extension Logging {
     public static var logger: PassthroughLogger {
@@ -34,7 +40,9 @@ extension Logging {
 
 extension Logging where Self: AnyObject {
     fileprivate var _defaultLogger: PassthroughLogger {
-        if let result = objc_getAssociatedObject(self, &logger_objcAssociationKey) as? PassthroughLogger {
+        let associationKey = _LoggerObjCAssociationKey.shared.pointer
+        
+        if let result = objc_getAssociatedObject(self, associationKey) as? PassthroughLogger {
             return result
         } else {
             objc_sync_enter(self)
@@ -43,9 +51,13 @@ extension Logging where Self: AnyObject {
                 objc_sync_exit(self)
             }
             
+            if let result = objc_getAssociatedObject(self, associationKey) as? PassthroughLogger {
+                return result
+            }
+            
             let result = PassthroughLogger(source: .object(self))
             
-            objc_setAssociatedObject(self, &logger_objcAssociationKey, result, .OBJC_ASSOCIATION_RETAIN)
+            objc_setAssociatedObject(self, associationKey, result, .OBJC_ASSOCIATION_RETAIN)
             
             return result
         }
