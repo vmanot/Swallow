@@ -36,6 +36,7 @@ let package = Package(
                 "Compute",
                 "CoreModel",
                 "Diagnostics",
+                "_ErrorXModule",
                 "FoundationX",
                 "LoremIpsum",
                 "POSIX",
@@ -46,6 +47,18 @@ let package = Package(
             name: "SwallowMacrosClient",
             targets: [
                 "SwallowMacrosClient"
+            ]
+        ),
+        .library(
+            name: "_ErrorXModule",
+            targets: [
+                "_ErrorXModule"
+            ]
+        ),
+        .library(
+            name: "_ErrorXMacrosClientModule",
+            targets: [
+                "_ErrorXMacrosClientModule"
             ]
         ),
         .library(
@@ -132,8 +145,43 @@ let package = Package(
             ]
         ),
         .target(
+            name: "_ErrorXModule",
+            dependencies: [
+                "_ErrorXMacrosModule",
+                "Swallow",
+            ],
+            swiftSettings: [
+                .swiftLanguageMode(.v6)
+            ]
+        ),
+        .macro(
+            name: "_ErrorXMacrosModule",
+            dependencies: [
+                .product(name: "SwiftSyntax", package: "swift-syntax", condition: .when(platforms: [.macOS])),
+                .product(name: "SwiftSyntaxMacros", package: "swift-syntax", condition: .when(platforms: [.macOS])),
+                .product(name: "SwiftParserDiagnostics", package: "swift-syntax", condition: .when(platforms: [.macOS])),
+                .product(name: "SwiftCompilerPlugin", package: "swift-syntax", condition: .when(platforms: [.macOS])),
+                .target(name: "SwiftSyntaxUtilities", condition: .when(platforms: [.macOS])),
+            ],
+            path: "Macros/_ErrorXMacrosModule",
+            swiftSettings: [
+                .swiftLanguageMode(.v6)
+            ]
+        ),
+        .target(
+            name: "_ErrorXMacrosClientModule",
+            dependencies: [
+                "_ErrorXModule",
+            ],
+            path: "Macros/_ErrorXMacrosClientModule",
+            swiftSettings: [
+                .swiftLanguageMode(.v6)
+            ]
+        ),
+        .target(
             name: "Diagnostics",
             dependencies: [
+                "_ErrorXModule",
                 "Swallow",
                 "SwallowMacrosClient",
             ],
@@ -280,6 +328,19 @@ let package = Package(
                 .swiftLanguageMode(.v5)
             ]
         ),
+        .testTarget(
+            name: "_ErrorXModuleTests",
+            dependencies: [
+                "_ErrorXModule",
+                "Swallow",
+                .product(name: "SwiftSyntaxMacrosTestSupport", package: "swift-syntax", condition: .when(platforms: [.macOS])),
+                .target(name: "SwiftSyntaxUtilities", condition: .when(platforms: [.macOS])),
+            ],
+            path: "Tests/_ErrorXModule",
+            swiftSettings: [
+                .swiftLanguageMode(.v6)
+            ]
+        ),
     ],
     swiftLanguageModes: [.v5]
 )
@@ -296,7 +357,7 @@ private func patchSwiftSyntaxDependency(in package: Package) {
         guard case .sourceControl(_, let location, _) = dependency.kind else {
             return false
         }
-        
+
         return location.contains("apple/swift-syntax.git") || location.contains("swiftlang/swift-syntax.git")
     }) {
         package.dependencies[swiftSyntaxIndex] = Package.Dependency.package(

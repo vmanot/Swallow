@@ -4,7 +4,9 @@
 
 import Swallow
 
-/// A domain within a subsystem.
+/// Legacy substrate used by macro-generated error domains.
+///
+/// Do not author conformances directly; use `@ErrorDomain`.
 ///
 /// Relevant discussion:
 /// - https://forums.swift.org/t/proposal-draft-nserror-bridging/3157
@@ -20,34 +22,58 @@ public protocol _SubsystemDomain: Hashable, Sendable {
     associatedtype Error: Swift.Error = Swift.Error
 }
 
-public struct _SubsystemDomainErrorTrait: _ErrorTrait {
+/// Exportable stable subsystem domain identifier.
+public struct _SubsystemDomainIdentifier: Hashable, Sendable, CustomStringConvertible, ExpressibleByStringLiteral, RawRepresentable, RawValueConvertible, StringRepresentable {
+    public var rawValue: String
+
+    public var description: String {
+        rawValue
+    }
+
+    public init(rawValue: String) {
+        self.rawValue = rawValue
+    }
+
+    public init(stringLiteral value: String) {
+        self.init(rawValue: value)
+    }
+}
+
+/// Legacy export identity hook for macro-generated error domains.
+///
+/// Do not author conformances directly; use `@ErrorDomain`.
+public protocol _SubsystemDomainIdentifiable {
+    var subsystemDomainIdentifier: _SubsystemDomainIdentifier { get }
+}
+
+/// Trait that attaches subsystem domain information.
+public struct _ErrorDomainTrait: _ErrorTrait {
     @_HashableExistential
     public private(set) var domain: any _SubsystemDomain
-    @_HashableExistential
-    public private(set) var error: (any _ErrorX)?
-    
+    public private(set) var error: AnyError?
+
     public init<D: _SubsystemDomain>(
         _ domain: D
     ) {
         self.domain = domain
     }
-    
+
     public init<D: _SubsystemDomain>(
         _ domain: D,
         error: D.Error
     ) where D.Error: _ErrorX {
         self.domain = domain
-        self.error = error
+        self.error = AnyError(erasing: error)
     }
 }
 
-extension _ErrorTrait where Self == _SubsystemDomainErrorTrait {
+extension _ErrorTrait where Self == _ErrorDomainTrait {
     public static func domain<D: _SubsystemDomain>(
         _ domain: D
     ) -> Self {
         Self.init(domain)
     }
-    
+
     public static func domain<D: _SubsystemDomain>(
         _ domain: D,
         error: D.Error

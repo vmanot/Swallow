@@ -17,7 +17,7 @@ public struct AssertionFailureMacro: ExpressionMacro {
             try { assertionFailure(); #throw; }()
             """
         ).trimmed
-        
+
         return result.trimmed
     }
 }
@@ -30,19 +30,19 @@ public struct ThrowMacro: ExpressionMacro {
         if node.arguments.isEmpty {
             return "try { throw _PlaceholderError()}()"
         }
-        
+
         guard node.arguments.count == 1 else {
             throw AnyDiagnosticMessage(message: "#throw can only take one argument.", severity: .error)
         }
-        
+
         let argument: LabeledExprListSyntax.Element = try node.arguments.toCollectionOfOne().value
-        
+
         let result = ExprSyntax(
             """
-            try { throw TracedError(\(argument)) }()
+            try { throw DiagnosticTracedError(\(argument)) }()
             """
         ).trimmed
-        
+
         return result.trimmed
     }
 }
@@ -55,15 +55,15 @@ public struct ThrowStringMacro: ExpressionMacro {
         guard node.arguments.count == 1 else {
             throw AnyDiagnosticMessage(message: "#throw can only take one argument.", severity: .error)
         }
-        
+
         let argument: LabeledExprListSyntax.Element = try node.arguments.toCollectionOfOne().value
-        
+
         let result = ExprSyntax(
             """
-            throw TracedError(\(argument))
+            throw DiagnosticTracedError(\(argument))
             """
         )
-        
+
         return result
     }
 }

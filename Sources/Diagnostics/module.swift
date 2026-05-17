@@ -3,6 +3,7 @@
 //
 
 @_exported import Swallow
+@_exported import _ErrorXModule
 import SwallowMacrosClient
 
 #if DEBUG
@@ -12,5 +13,5 @@ let _isDebugBuild = false
 #endif
 
 public enum _module {
-    
+
 }
