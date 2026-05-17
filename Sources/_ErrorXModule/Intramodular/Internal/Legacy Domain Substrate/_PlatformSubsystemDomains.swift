@@ -141,3 +141,14 @@ public enum _PlatformSubsystemDomains {
         public typealias ErrorCode = Error.Code
     }
 }
+
+@available(
+    *,
+    deprecated,
+    message: "Define package-local domains with @ErrorDomain and @ErrorCodeCatalog instead."
+)
+extension _SubsystemDomain where Self == _PlatformSubsystemDomains.Networking {
+    public static var networking: Self {
+        Self()
+    }
+}
