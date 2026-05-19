@@ -79,6 +79,20 @@ public struct _NSErrorExportRepresentation {
             }
         }
 
+        let projectedFailureDiagnosticLabelOccurrences = report.projectedFailureDiagnosticLabelOccurrences(using: contextProjectionPolicy)
+
+        if !projectedFailureDiagnosticLabelOccurrences.isEmpty {
+            userInfo[_NSErrorExportRepresentation.failureDiagnosticLabelOccurrencesKey] = projectedFailureDiagnosticLabelOccurrences.map { (occurrence: _ErrorReport.FailureDiagnosticLabelOccurrence) in
+                [
+                    "path": occurrence.path,
+                    "relationRoles": occurrence.relationRoles.map(\.description),
+                    "subject": occurrence.label.subject.description,
+                    "message": occurrence.label.message as Any,
+                    "privacy": "\(occurrence.label.privacy)"
+                ] as [String: Any]
+            }
+        }
+
         if let projectedCode {
             userInfo[_NSErrorExportRepresentation.errorCodeIntegerKey] = projectedCode
         }
@@ -142,6 +156,7 @@ extension _NSErrorExportRepresentation {
     public static let identitiesKey = "_ErrorX.identities"
     public static let failureIdentityOccurrencesKey = "_ErrorX.failureIdentityOccurrences"
     public static let failureContextOccurrencesKey = "_ErrorX.failureContextOccurrences"
+    public static let failureDiagnosticLabelOccurrencesKey = "_ErrorX.failureDiagnosticLabelOccurrences"
 
     public var nsError: NSError {
         NSError(

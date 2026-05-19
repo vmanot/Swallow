@@ -75,7 +75,7 @@ public struct _ErrorModelMacro: MemberMacro, ExtensionMacro {
             conformances.append("_ErrorX")
         }
 
-        if !configuration.allowsUnmodeledCases, !declaration._errorXInherits("Hashable"), !declaration._errorXInherits("Swift.Hashable") {
+        if configuration.synthesizesHashable, !configuration.allowsUnmodeledCases, !declaration._errorXInherits("Hashable"), !declaration._errorXInherits("Swift.Hashable") {
             conformances.append("Hashable")
         }
 
@@ -303,16 +303,16 @@ public struct _ErrorModelMacro: MemberMacro, ExtensionMacro {
                             switch error {
         """
 
-        if item.contexts.isEmpty {
+        if item.contexts.isEmpty && item.contextPacks.isEmpty {
             result += """
 
                                 case \(item.pattern):
                                     return []
         """
-        } else {
+        } else if item.contextPacks.isEmpty {
             result += """
 
-                                case \(item.boundPattern(binding: Set(item.contexts.map(\.boundName)))):
+                                case \(item.boundPattern(binding: item.contextBindingNames)):
                                     return [
         """
 
@@ -329,6 +329,39 @@ public struct _ErrorModelMacro: MemberMacro, ExtensionMacro {
             result += """
 
                                     ]
+        """
+        } else {
+            result += """
+
+                                case \(item.boundPattern(binding: item.contextBindingNames)):
+                                    var _errorX_contextBindings: [_ErrorContextBinding] = [
+        """
+
+            for context in item.contexts {
+                result += "\n                            .init(key: \(context.keyExpression), value: \(context.boundName)"
+
+                if let privacyExpression = context.privacyExpression {
+                    result += ", privacy: \(privacyExpression)"
+                }
+
+                result += "),"
+            }
+
+            result += """
+
+                                    ]
+        """
+
+            for pack in item.contextPacks {
+                result += """
+
+                                    _errorX_contextBindings += \(pack.boundName).errorOccurrenceContextBindings
+        """
+            }
+
+            result += """
+
+                                    return _errorX_contextBindings
         """
         }
 
@@ -554,11 +587,11 @@ public struct _ErrorModelMacro: MemberMacro, ExtensionMacro {
         """
 
         for item in cases {
-            if item.contexts.isEmpty {
+            if item.contexts.isEmpty && item.contextPacks.isEmpty {
                 result += "\n        case \(item.pattern):\n"
                 result += "            return []"
-            } else {
-                result += "\n        case \(item.boundPattern(binding: Set(item.contexts.map(\.boundName)))):\n"
+            } else if item.contextPacks.isEmpty {
+                result += "\n        case \(item.boundPattern(binding: item.contextBindingNames)):\n"
                 result += "            return ["
 
                 for context in item.contexts {
@@ -572,6 +605,27 @@ public struct _ErrorModelMacro: MemberMacro, ExtensionMacro {
                 }
 
                 result += "\n            ]"
+            } else {
+                result += "\n        case \(item.boundPattern(binding: item.contextBindingNames)):\n"
+                result += "            var _errorX_contextBindings: [_ErrorContextBinding] = ["
+
+                for context in item.contexts {
+                    result += "\n                .init(key: \(context.keyExpression), value: \(context.boundName)"
+
+                    if let privacyExpression = context.privacyExpression {
+                        result += ", privacy: \(privacyExpression)"
+                    }
+
+                    result += "),"
+                }
+
+                result += "\n            ]"
+
+                for pack in item.contextPacks {
+                    result += "\n            _errorX_contextBindings += \(pack.boundName).errorOccurrenceContextBindings"
+                }
+
+                result += "\n            return _errorX_contextBindings"
             }
         }
 
@@ -643,6 +697,7 @@ private struct ErrorModelCase {
     var code: ErrorCodeAttribute
     var parameters: [ErrorModelParameter]
     var contexts: [ErrorContextAttribute]
+    var contextPacks: [ErrorContextPackAttribute]
     var presentation: ErrorPresentationAttribute
     var recoveries: [ErrorRecoveryAttribute]
     var cause: ErrorCauseAttribute?
@@ -667,6 +722,10 @@ private struct ErrorModelCase {
             parameter.bindingPattern(isBound: boundNames.contains(parameter.bindingName))
         }.joined(separator: ", ") + ")"
     }
+
+    var contextBindingNames: Set<String> {
+        Set(contexts.map(\.boundName) + contextPacks.map(\.boundName))
+    }
 }
 
 private enum ErrorModelDomain {
@@ -686,6 +745,7 @@ private enum ErrorModelDomain {
 private struct ErrorModelConfiguration {
     var domain: ErrorModelDomain
     var allowsUnmodeledCases: Bool
+    var synthesizesHashable: Bool
 }
 
 private struct ErrorModelParameter {
@@ -752,6 +812,11 @@ private struct ErrorContextAttribute {
     var keyExpression: String
     var parameter: String?
     var privacyExpression: String?
+    var boundName: String
+}
+
+private struct ErrorContextPackAttribute {
+    var parameter: String?
     var boundName: String
 }
 
@@ -893,6 +958,7 @@ extension EnumDeclSyntax {
             }
 
             let contexts = try enumCase._errorContextAttributes(parameters: parameters)
+            let contextPacks = try enumCase._errorContextPackAttributes(parameters: parameters)
             let presentation = try enumCase._errorPresentationAttribute(errorCasePresentation: code.presentation)
             let recoveries = try enumCase._errorRecoveryAttributes()
             let cause = try enumCase._errorCauseAttribute(parameters: parameters)
@@ -905,6 +971,7 @@ extension EnumDeclSyntax {
                     code: code,
                     parameters: parameters,
                     contexts: contexts,
+                    contextPacks: contextPacks,
                     presentation: presentation,
                     recoveries: recoveries,
                     cause: cause,
@@ -1031,6 +1098,36 @@ extension EnumCaseDeclSyntax {
         }
     }
 
+    fileprivate func _errorContextPackAttributes(
+        parameters: [ErrorModelParameter]
+    ) throws -> [ErrorContextPackAttribute] {
+        let attributes = attributes(named: "ErrorContextPack") + attributes(named: "_ErrorContextPack")
+
+        return try attributes.map { attribute in
+            let parameter = try attribute.stringLiteralArgument(labeled: "parameter")
+            let selectedParameter: ErrorModelParameter
+
+            if parameters.count == 1, parameter == nil {
+                selectedParameter = parameters[0]
+            } else {
+                guard let parameter else {
+                    throw AnyDiagnosticMessage(message: "@ErrorContextPack requires 'parameter:' when a case has zero or multiple associated values.")
+                }
+
+                guard let match = parameters.first(where: { $0.matches(parameter) }) else {
+                    throw AnyDiagnosticMessage(message: "@ErrorContextPack parameter '\(parameter)' does not match an associated value label or local name. Available parameters: \(parameters._errorXAvailableParameterList).")
+                }
+
+                selectedParameter = match
+            }
+
+            return ErrorContextPackAttribute(
+                parameter: parameter,
+                boundName: selectedParameter.bindingName
+            )
+        }
+    }
+
     fileprivate func _errorPresentationAttribute(
         errorCasePresentation: ErrorPresentationAttribute
     ) throws -> ErrorPresentationAttribute {
@@ -1132,6 +1229,8 @@ extension EnumCaseDeclSyntax {
         let names: Set<String> = [
             "ErrorContext",
             "_ErrorContext",
+            "ErrorContextPack",
+            "_ErrorContextPack",
             "ErrorSummary",
             "ErrorReason",
             "ErrorHelp",
@@ -1190,6 +1289,10 @@ extension AttributeSyntax {
             .first(labeled: "allowUnmodeledCases")?
             .expression
             .trimmedDescription == "true"
+        let synthesizesHashable = labeledArguments?
+            .first(labeled: "hashable")?
+            .expression
+            .trimmedDescription != "false"
         let domain: ErrorModelDomain
 
         if expression.is(StringLiteralExprSyntax.self), let literal = try expression.decodeLiteral()?.value as? String {
@@ -1206,7 +1309,8 @@ extension AttributeSyntax {
 
         return .init(
             domain: domain,
-            allowsUnmodeledCases: allowsUnmodeledCases
+            allowsUnmodeledCases: allowsUnmodeledCases,
+            synthesizesHashable: synthesizesHashable
         )
     }
 }

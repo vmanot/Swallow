@@ -92,6 +92,12 @@ extension _ErrorFailureTopology {
         var relationRoles: [_ErrorFailureRelationRole]
         var context: _ErrorContextBinding
     }
+
+    struct DiagnosticLabelOccurrence: Sendable {
+        var path: Path
+        var relationRoles: [_ErrorFailureRelationRole]
+        var label: _ErrorDiagnosticLabel
+    }
 }
 
 extension _ErrorFailureTopology {
@@ -131,6 +137,73 @@ extension _ErrorFailureTopology {
         )
 
         return result
+    }
+
+    func diagnosticLabelOccurrences() -> [DiagnosticLabelOccurrence] {
+        var result: [DiagnosticLabelOccurrence] = []
+        var visitedClassErrors: Set<ObjectIdentifier> = []
+
+        _collectDiagnosticLabelOccurrences(
+            in: root,
+            path: .init(),
+            relationRoles: [],
+            depth: 0,
+            visitedClassErrors: &visitedClassErrors,
+            result: &result
+        )
+
+        return result
+    }
+
+    private func _collectDiagnosticLabelOccurrences(
+        in node: Node,
+        path: Path,
+        relationRoles: [_ErrorFailureRelationRole],
+        depth: Int,
+        visitedClassErrors: inout Set<ObjectIdentifier>,
+        result: inout [DiagnosticLabelOccurrence]
+    ) {
+        guard depth < Self.maximumDepth else {
+            return
+        }
+
+        switch node {
+            case .error(let error):
+                let base = error.base._errorXBase
+
+                if let objectIdentifier = _classObjectIdentifier(of: base) {
+                    guard visitedClassErrors.insert(objectIdentifier).inserted else {
+                        return
+                    }
+                }
+
+                guard let error = base as? any _ErrorDiagnosticLabelsRepresentable else {
+                    return
+                }
+
+                result.append(
+                    contentsOf: error.errorDiagnosticLabels.map { (label: _ErrorDiagnosticLabel) in
+                        .init(
+                            path: path,
+                            relationRoles: relationRoles,
+                            label: label
+                        )
+                    }
+                )
+            case .relation(let relation):
+                let currentRoles = relationRoles + [relation.role]
+
+                for (index, child) in relation.children.enumerated() {
+                    _collectDiagnosticLabelOccurrences(
+                        in: child,
+                        path: path.appending(index),
+                        relationRoles: currentRoles,
+                        depth: depth + 1,
+                        visitedClassErrors: &visitedClassErrors,
+                        result: &result
+                    )
+                }
+        }
     }
 
     private func _collectContextOccurrences(

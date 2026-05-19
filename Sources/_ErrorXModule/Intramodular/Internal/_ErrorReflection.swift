@@ -126,6 +126,32 @@ extension _ErrorContextBinding: CustomReflectable {
     }
 }
 
+extension _ErrorDiagnosticSubject: CustomReflectable {
+    public var customMirror: Mirror {
+        Mirror(
+            self,
+            children: [
+                "description": description,
+            ],
+            displayStyle: .enum
+        )
+    }
+}
+
+extension _ErrorDiagnosticLabel: CustomReflectable {
+    public var customMirror: Mirror {
+        Mirror(
+            self,
+            children: [
+                "subject": subject,
+                "message": message as Any,
+                "privacy": privacy,
+            ],
+            displayStyle: .struct
+        )
+    }
+}
+
 extension _ErrorTraits: CustomReflectable {
     public var customMirror: Mirror {
         Mirror(
@@ -243,6 +269,20 @@ extension _ErrorReport.FailureContextOccurrence: CustomReflectable {
     }
 }
 
+extension _ErrorReport.FailureDiagnosticLabelOccurrence: CustomReflectable {
+    public var customMirror: Mirror {
+        Mirror(
+            self,
+            children: [
+                "path": path,
+                "relationRoles": relationRoles,
+                "label": label,
+            ],
+            displayStyle: .struct
+        )
+    }
+}
+
 extension _ErrorReport: CustomReflectable {
     public var customMirror: Mirror {
         Mirror(
@@ -258,6 +298,8 @@ extension _ErrorReport: CustomReflectable {
                 "identityOccurrences": identityOccurrences,
                 "failureIdentityOccurrences": failureIdentityOccurrences,
                 "failureContextOccurrences": failureContextOccurrences,
+                "failureDiagnosticLabelOccurrences": failureDiagnosticLabelOccurrences,
+                "diagnosticLabels": diagnosticLabels,
                 "traits": traits,
                 "presentation": presentation as Any,
                 "recoverySuggestions": recoverySuggestions,

@@ -119,6 +119,15 @@ extension _ErrorReport {
             })
         }
 
+        let projectedLabels = projectedDiagnosticLabels(using: contextProjectionPolicy)
+
+        if !projectedLabels.isEmpty {
+            lines.append("Labels:")
+            lines.append(contentsOf: projectedLabels.map { label in
+                "- \(label.description)"
+            })
+        }
+
         if chain.elements.count > 1 {
             lines.append("Cause chain:")
             lines.append(contentsOf: chain.elements.enumerated().map { index, element in

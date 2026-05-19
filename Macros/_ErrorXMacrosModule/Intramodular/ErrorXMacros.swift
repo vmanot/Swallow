@@ -341,6 +341,16 @@ public struct _ErrorContextKeyMacro: AccessorMacro {
     }
 }
 
+public struct _ErrorContextPackMacro: PeerMacro {
+    public static func expansion(
+        of node: AttributeSyntax,
+        providingPeersOf declaration: some DeclSyntaxProtocol,
+        in context: some MacroExpansionContext
+    ) throws -> [DeclSyntax] {
+        []
+    }
+}
+
 public struct _ErrorScenarioMacro: AccessorMacro {
     public static func expansion(
         of node: AttributeSyntax,

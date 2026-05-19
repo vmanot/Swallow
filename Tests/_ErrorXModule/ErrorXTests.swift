@@ -118,6 +118,8 @@ struct ErrorXTests {
             "identityOccurrences",
             "failureIdentityOccurrences",
             "failureContextOccurrences",
+            "failureDiagnosticLabelOccurrences",
+            "diagnosticLabels",
             "traits",
             "presentation",
             "recoverySuggestions",
@@ -422,6 +424,58 @@ struct ErrorXTests {
     }
 
     @Test
+    func errorModelCanOptOutOfHashableSynthesisForRuntimeErrors() {
+        let error: RuntimeBackedModeledError = .executionFailed(
+            underlying: RuntimeBackedUnderlyingError()
+        )
+        let report: _ErrorReport = _ErrorReporting.report(error)
+
+        #expect(report.identity?.code == "runtime.execution_failed")
+        #expect(report.presentation?.summary == "Runtime execution failed")
+    }
+
+    @Test
+    func errorContextPackSplicesReusableOccurrenceContext() {
+        let snapshot: CommandLineInvocationSnapshot = .init(
+            toolName: "swiftc",
+            sourceKind: "modeledInvocation",
+            commandLine: "swiftc -typecheck Sources/main.swift",
+            exitStatus: 1
+        )
+        let error: CommandLineModeledError = .invocationFailed(snapshot: snapshot)
+        let report: _ErrorReport = _ErrorReporting.report(error)
+
+        #expect(report.contextValue(for: CommandLineErrorDiagnostics.Context.toolName) == .string("swiftc"))
+        #expect(report.contextValue(for: CommandLineErrorDiagnostics.Context.sourceKind) == .string("modeledInvocation"))
+        #expect(report.contextValue(for: CommandLineErrorDiagnostics.Context.exitStatus) == .int(1))
+        #expect(report.contextValue(for: CommandLineErrorDiagnostics.Context.commandLine) == .string("swiftc -typecheck Sources/main.swift"))
+        #expect(report.projectedContextValue(for: CommandLineErrorDiagnostics.Context.commandLine) == nil)
+    }
+
+    @Test
+    func diagnosticLabelsArePreservedAndProjectedWithPrivacy() throws {
+        let error: CommandLineModeledError = .invalidArguments(
+            labelMessage: "missing value for -sdk"
+        )
+        let report: _ErrorReport = _ErrorReporting.report(error)
+        let detailed: _ErrorDiagnosticDescription = report._diagnosticDescription(detailLevel: .detailed)
+        let nsError: _NSErrorExportRepresentation = .init(report)
+
+        #expect(report.diagnosticLabels.map(\.subject.description) == ["argument[1]"])
+        #expect(report.diagnosticLabels(for: .commandLineArgument(index: 1)).map(\.message) == ["missing value for -sdk"])
+        #expect(report.failureDiagnosticLabelOccurrences.first?.path == [])
+        #expect(detailed.description.contains("Labels:"))
+        #expect(detailed.description.contains("argument[1]: missing value for -sdk"))
+
+        let exportedLabels: [[String: Any]] = try #require(
+            nsError.userInfo[_NSErrorExportRepresentation.failureDiagnosticLabelOccurrencesKey] as? [[String: Any]]
+        )
+
+        #expect(exportedLabels.first?["subject"] as? String == "argument[1]")
+        #expect(exportedLabels.first?["message"] as? String == "missing value for -sdk")
+    }
+
+    @Test
     func errorScenarioMacroWorksWithReportConvenience() {
         let report = PaymentError.timeout._errorReport(scenario: MacroCheckoutScenario.submitFailed)
 
@@ -492,6 +546,79 @@ private enum MacroWrappedPaymentError: Hashable, Swift.Error, _ErrorX {
 private enum LegacyModeledError: Hashable, Swift.Error, _ErrorX {
     @ErrorCode("legacy.failed")
     case failed
+}
+
+@ErrorModel("dev.vmanot.tests.runtime-backed", hashable: false)
+private enum RuntimeBackedModeledError {
+    @ErrorCase("runtime.execution_failed", summary: "Runtime execution failed")
+    case executionFailed(underlying: any Swift.Error)
+}
+
+private struct RuntimeBackedUnderlyingError: Swift.Error {
+
+}
+
+@ErrorDomain("dev.vmanot.tests.command-line")
+private enum CommandLineErrorDiagnostics {
+    @ErrorCodeCatalog
+    enum Codes: String {
+        case invocationFailed = "command.invocation_failed"
+        case invalidArguments = "command.invalid_arguments"
+    }
+
+    enum Context {
+        @ErrorContextKey("tool.name", privacy: .public)
+        static var toolName: _TypedErrorContextKey<String>
+
+        @ErrorContextKey("execution.source_kind", privacy: .public)
+        static var sourceKind: _TypedErrorContextKey<String>
+
+        @ErrorContextKey("command.line", privacy: .private)
+        static var commandLine: _TypedErrorContextKey<String>
+
+        @ErrorContextKey("process.exit_status", privacy: .public)
+        static var exitStatus: _TypedErrorContextKey<Int>
+    }
+}
+
+private struct CommandLineInvocationSnapshot: Hashable, Sendable, _ErrorOccurrenceContextRepresentable {
+    var toolName: String
+    var sourceKind: String
+    var commandLine: String
+    var exitStatus: Int
+
+    var errorOccurrenceContextBindings: [_ErrorContextBinding] {
+        [
+            _ErrorContextBinding(key: CommandLineErrorDiagnostics.Context.toolName, value: toolName),
+            _ErrorContextBinding(key: CommandLineErrorDiagnostics.Context.sourceKind, value: sourceKind),
+            _ErrorContextBinding(key: CommandLineErrorDiagnostics.Context.commandLine, value: commandLine),
+            _ErrorContextBinding(key: CommandLineErrorDiagnostics.Context.exitStatus, value: exitStatus)
+        ]
+    }
+}
+
+@ErrorModel(domain: CommandLineErrorDiagnostics.self)
+private enum CommandLineModeledError: Hashable, Swift.Error, _ErrorX, _ErrorDiagnosticLabelsRepresentable {
+    @ErrorCase(CommandLineErrorDiagnostics.Codes.invocationFailed, summary: "Command invocation failed")
+    @ErrorContextPack(parameter: "snapshot")
+    case invocationFailed(snapshot: CommandLineInvocationSnapshot)
+
+    @ErrorCase(CommandLineErrorDiagnostics.Codes.invalidArguments, summary: "Command arguments are invalid")
+    case invalidArguments(labelMessage: String)
+
+    var errorDiagnosticLabels: [_ErrorDiagnosticLabel] {
+        switch self {
+            case .invalidArguments(let labelMessage):
+                return [
+                    _ErrorDiagnosticLabel(
+                        subject: .commandLineArgument(index: 1),
+                        message: labelMessage
+                    )
+                ]
+            case .invocationFailed:
+                return []
+        }
+    }
 }
 
 @ErrorDomain("dev.vmanot.tests.payments")

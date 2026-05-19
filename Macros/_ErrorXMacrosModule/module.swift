@@ -13,6 +13,7 @@ public struct module: CompilerPlugin {
         _ErrorCodeCatalogMacro.self,
         _ErrorContextKeyMacro.self,
         _ErrorContextMacro.self,
+        _ErrorContextPackMacro.self,
         _ErrorDomainMacro.self,
         _ErrorModelMacro.self,
         _ErrorPresentationMacro.self,

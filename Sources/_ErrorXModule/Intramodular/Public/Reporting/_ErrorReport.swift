@@ -61,6 +61,23 @@ public struct _ErrorReport: Sendable {
         }
     }
 
+    /// Diagnostic label found at a position in the composed failure tree.
+    public struct FailureDiagnosticLabelOccurrence: Hashable, Sendable {
+        public var path: [Int]
+        public var relationRoles: [_ErrorFailureRelationRole]
+        public var label: _ErrorDiagnosticLabel
+
+        public init(
+            path: [Int],
+            relationRoles: [_ErrorFailureRelationRole],
+            label: _ErrorDiagnosticLabel
+        ) {
+            self.path = path
+            self.relationRoles = relationRoles
+            self.label = label
+        }
+    }
+
     public var root: AnyError
     public var chain: _ErrorChain
     public var failureTree: _ErrorFailureTree
@@ -69,6 +86,8 @@ public struct _ErrorReport: Sendable {
     public var identityOccurrences: [IdentityOccurrence]
     public var failureIdentityOccurrences: [FailureIdentityOccurrence]
     public var failureContextOccurrences: [FailureContextOccurrence]
+    public var failureDiagnosticLabelOccurrences: [FailureDiagnosticLabelOccurrence]
+    public var diagnosticLabels: [_ErrorDiagnosticLabel]
     public var traits: _ErrorTraits
     public var presentation: _ErrorPresentation?
     public var recoverySuggestions: [_ErrorRecoverySuggestion]
@@ -82,6 +101,8 @@ public struct _ErrorReport: Sendable {
         identityOccurrences: [IdentityOccurrence] = [],
         failureIdentityOccurrences: [FailureIdentityOccurrence] = [],
         failureContextOccurrences: [FailureContextOccurrence] = [],
+        failureDiagnosticLabelOccurrences: [FailureDiagnosticLabelOccurrence] = [],
+        diagnosticLabels: [_ErrorDiagnosticLabel] = [],
         traits: _ErrorTraits,
         presentation: _ErrorPresentation?,
         recoverySuggestions: [_ErrorRecoverySuggestion],
@@ -105,6 +126,12 @@ public struct _ErrorReport: Sendable {
         self.failureContextOccurrences = failureContextOccurrences.isEmpty
             ? topology.contextOccurrences().map(FailureContextOccurrence.init)
             : failureContextOccurrences
+        self.failureDiagnosticLabelOccurrences = failureDiagnosticLabelOccurrences.isEmpty
+            ? topology.diagnosticLabelOccurrences().map(FailureDiagnosticLabelOccurrence.init)
+            : failureDiagnosticLabelOccurrences
+        self.diagnosticLabels = diagnosticLabels.isEmpty
+            ? self.failureDiagnosticLabelOccurrences.map(\.label)
+            : diagnosticLabels
         self.traits = traits
         self.presentation = presentation
         self.recoverySuggestions = recoverySuggestions
@@ -238,6 +265,28 @@ extension _ErrorReport {
         }
     }
 
+    public func diagnosticLabels(
+        in role: _ErrorFailureRelationRole
+    ) -> [_ErrorDiagnosticLabel] {
+        failureDiagnosticLabelOccurrences(in: role).map(\.label)
+    }
+
+    public func diagnosticLabels(
+        for subject: _ErrorDiagnosticSubject
+    ) -> [_ErrorDiagnosticLabel] {
+        diagnosticLabels.filter { (label: _ErrorDiagnosticLabel) in
+            label.subject == subject
+        }
+    }
+
+    public func failureDiagnosticLabelOccurrences(
+        in role: _ErrorFailureRelationRole
+    ) -> [FailureDiagnosticLabelOccurrence] {
+        failureDiagnosticLabelOccurrences.filter { (occurrence: FailureDiagnosticLabelOccurrence) in
+            occurrence.relationRoles.contains(role)
+        }
+    }
+
     public func failures<Failure: Error>(
         of type: Failure.Type
     ) -> [Failure] {
@@ -281,6 +330,30 @@ extension _ErrorReport {
                 path: occurrence.path,
                 relationRoles: occurrence.relationRoles,
                 context: context
+            )
+        }
+    }
+
+    public func projectedDiagnosticLabels(
+        using policy: _ErrorContextBinding.ProjectionPolicy = .publicOnly
+    ) -> [_ErrorDiagnosticLabel] {
+        diagnosticLabels.compactMap { (label: _ErrorDiagnosticLabel) in
+            label.projected(using: policy)
+        }
+    }
+
+    public func projectedFailureDiagnosticLabelOccurrences(
+        using policy: _ErrorContextBinding.ProjectionPolicy = .publicOnly
+    ) -> [FailureDiagnosticLabelOccurrence] {
+        failureDiagnosticLabelOccurrences.compactMap { (occurrence: FailureDiagnosticLabelOccurrence) in
+            guard let label = occurrence.label.projected(using: policy) else {
+                return nil
+            }
+
+            return FailureDiagnosticLabelOccurrence(
+                path: occurrence.path,
+                relationRoles: occurrence.relationRoles,
+                label: label
             )
         }
     }
@@ -653,6 +726,18 @@ extension _ErrorReport.FailureContextOccurrence {
             path: occurrence.path.indices,
             relationRoles: occurrence.relationRoles,
             context: occurrence.context
+        )
+    }
+}
+
+extension _ErrorReport.FailureDiagnosticLabelOccurrence {
+    fileprivate init(
+        _ occurrence: _ErrorFailureTopology.DiagnosticLabelOccurrence
+    ) {
+        self.init(
+            path: occurrence.path.indices,
+            relationRoles: occurrence.relationRoles,
+            label: occurrence.label
         )
     }
 }

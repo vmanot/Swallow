@@ -88,7 +88,8 @@ public macro ErrorScenario(
 @attached(extension, conformances: Error, Hashable, _ErrorX, _ErrorDescribed, _ErrorCodeRepresentable, _ErrorContextRepresentable, _ErrorFailureTreeRepresentable)
 public macro ErrorModel(
     _ stableDomainIdentifier: StaticString,
-    allowUnmodeledCases: Bool = false
+    allowUnmodeledCases: Bool = false,
+    hashable: Bool = true
 ) = #externalMacro(
     module: "_ErrorXMacrosModule",
     type: "_ErrorModelMacro"
@@ -98,7 +99,8 @@ public macro ErrorModel(
 @attached(extension, conformances: Error, Hashable, _ErrorX, _ErrorDescribed, _ErrorCodeRepresentable, _ErrorContextRepresentable, _ErrorFailureTreeRepresentable)
 public macro ErrorModel<Domain>(
     domain: Domain.Type,
-    allowUnmodeledCases: Bool = false
+    allowUnmodeledCases: Bool = false,
+    hashable: Bool = true
 ) = #externalMacro(
     module: "_ErrorXMacrosModule",
     type: "_ErrorModelMacro"
@@ -112,6 +114,14 @@ public macro ErrorContext<Value>(
 ) = #externalMacro(
     module: "_ErrorXMacrosModule",
     type: "_ErrorContextMacro"
+)
+
+@attached(peer)
+public macro ErrorContextPack(
+    parameter: StaticString? = nil
+) = #externalMacro(
+    module: "_ErrorXMacrosModule",
+    type: "_ErrorContextPackMacro"
 )
 
 @attached(peer)
@@ -249,7 +259,8 @@ public macro _ErrorContextKey(
 @attached(extension, conformances: Error, Hashable, _ErrorX, _ErrorDescribed, _ErrorCodeRepresentable, _ErrorContextRepresentable, _ErrorFailureTreeRepresentable)
 public macro _ErrorModel(
     _ stableDomainIdentifier: StaticString,
-    allowUnmodeledCases: Bool = false
+    allowUnmodeledCases: Bool = false,
+    hashable: Bool = true
 ) = #externalMacro(
     module: "_ErrorXMacrosModule",
     type: "_ErrorModelMacro"
@@ -259,7 +270,8 @@ public macro _ErrorModel(
 @attached(extension, conformances: Error, Hashable, _ErrorX, _ErrorDescribed, _ErrorCodeRepresentable, _ErrorContextRepresentable, _ErrorFailureTreeRepresentable)
 public macro _ErrorModel<Domain>(
     domain: Domain.Type,
-    allowUnmodeledCases: Bool = false
+    allowUnmodeledCases: Bool = false,
+    hashable: Bool = true
 ) = #externalMacro(
     module: "_ErrorXMacrosModule",
     type: "_ErrorModelMacro"
@@ -273,6 +285,14 @@ public macro _ErrorContext<Value>(
 ) = #externalMacro(
     module: "_ErrorXMacrosModule",
     type: "_ErrorContextMacro"
+)
+
+@attached(peer)
+public macro _ErrorContextPack(
+    parameter: StaticString? = nil
+) = #externalMacro(
+    module: "_ErrorXMacrosModule",
+    type: "_ErrorContextPackMacro"
 )
 
 @available(*, deprecated, renamed: "_ErrorTraits", message: "Use _ErrorTraits from _ErrorXModule.")
