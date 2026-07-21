@@ -25,14 +25,14 @@ extension ManagedActorMacro: ExtensionMacro {
     ) throws -> ExprSyntax {
         var _managedActorInitializationOptionsExpr: String = "[]"
         
-        if let arguments = node.labeledArguments, !arguments.isEmpty {
+        if let arguments = node.argumentList, !arguments.isEmpty {
             _managedActorInitializationOptionsExpr = "["
             
             for argument in arguments.map({ $0.expression.trimmedDescription }) {
                 if argument == ".serializedExecution" {
                     _managedActorInitializationOptionsExpr.append(argument + ", ")
                 } else {
-                    throw AnyDiagnosticMessage(message: "Unrecognized argument: \(argument)")
+                    throw MacroExpansionDiagnosticMessage(message: "Unrecognized argument: \(argument)")
                 }
             }
             
@@ -51,7 +51,7 @@ extension ManagedActorMacro: ExtensionMacro {
         conformingTo protocols: [TypeSyntax],
         in context: some MacroExpansionContext
     ) throws -> [ExtensionDeclSyntax] {
-        guard let declaration: ClassDeclSyntax = declaration._namedDecl?.as(ClassDeclSyntax.self) else {
+        guard let declaration = declaration.as(ClassDeclSyntax.self) else {
             return []
         }
         
@@ -123,8 +123,8 @@ extension ManagedActorMacro: MemberAttributeMacro {
     }
 }
 
-extension ManagedActorMacro: _MemberMacro2 {
-    public static func _expansion(
+extension ManagedActorMacro: _MemberMacroConformanceListCompatibility {
+    public static func _expansionProvidingMembers(
         of node: AttributeSyntax,
         providingMembersOf declaration: some DeclGroupSyntax,
         conformingTo protocols: [TypeSyntax],
@@ -159,7 +159,7 @@ extension ManagedActorMacro {
         providingMembersOf declaration: ExtensionDeclSyntax,
         in context: some MacroExpansionContext
     ) throws -> [DeclSyntax] {
-        let accessLevel: AccessLevelModifier = declaration.accessLevel
+        let accessLevel: AccessLevelModifier = declaration.modifiers.explicitDeclarationAccessLevelOrInternalFallback
         let accessModifierRaw: String
         
         if accessLevel == .public {
@@ -170,7 +170,7 @@ extension ManagedActorMacro {
             accessModifierRaw = ""
         }
 
-        return try declaration.memberFunctions
+        return try declaration.directFunctionDeclarations
             .distinct(by: { $0.name.trimmedDescription })
             .compactMap { (function: FunctionDeclSyntax) -> DeclSyntax in
                 let name: String = function.name.trimmedDescription
@@ -240,13 +240,13 @@ extension ManagedActorMacro: PeerMacro {
         }
     }
     
-    private static func synthesizeMethodListInterface<S: AccessLevelSyntax & DeclSyntaxProtocol & DeclGroupSyntax>(
+    private static func synthesizeMethodListInterface<S: DeclGroupSyntax>(
         named synthesizedName: String,
         for declaration: S
     ) throws -> DeclSyntax {
         let className: String
         
-        if let name = (declaration as? _NamedDeclSyntax)?.name {
+        if let name = declaration.asProtocol(NamedDeclSyntax.self)?.name {
             className = name.trimmedDescription
         } else if let extendedType = (declaration as? ExtensionDeclSyntax)?.extendedType {
             className = extendedType.trimmedDescription
@@ -256,7 +256,7 @@ extension ManagedActorMacro: PeerMacro {
         
         let functions: [FunctionDeclSyntax] = declaration.memberBlock.members.compactMap({ $0.decl.as(FunctionDeclSyntax.self) })
         
-        let accessLevel: AccessLevelModifier = declaration.accessLevel
+        let accessLevel: AccessLevelModifier = declaration.modifiers.explicitDeclarationAccessLevelOrInternalFallback
         let accessModifierRaw: String
         
         if accessLevel == .public {
@@ -282,11 +282,11 @@ extension ManagedActorMacro: PeerMacro {
                     let name: String = function.name.trimmedDescription
                     let formattedName: String = function._formattedManagedActorMethodName
                     
-                    return MemberBlockItemSyntax {
-                        """
+                    let member: DeclSyntax = """
                         \(raw: accessModifierRaw) let \(raw: formattedName) = \(raw: className)._ManagedActorMethod_\(raw: name)()
                         """
-                    }
+
+                    return MemberBlockItemSyntax(decl: member)
                 }
         )
         

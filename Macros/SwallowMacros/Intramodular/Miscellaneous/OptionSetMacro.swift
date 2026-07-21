@@ -27,7 +27,7 @@ public struct OptionSetMacro {
         // Determine the name of the options enum.
         let optionsEnumName: String
         if case let .argumentList(arguments) = attribute.arguments,
-           let optionEnumNameArg = arguments.first(labeled: optionsEnumNameArgumentLabel)
+           let optionEnumNameArg = arguments.arguments(labeled: optionsEnumNameArgumentLabel).first
         {
             // We have a options name; make sure it is a string literal.
             guard let stringLiteral = optionEnumNameArg.expression.as(StringLiteralExprSyntax.self),
@@ -119,8 +119,8 @@ extension OptionSetMacro: ExtensionMacro {
     }
 }
 
-extension OptionSetMacro: _MemberMacro2 {
-    public static func _expansion(
+extension OptionSetMacro: _MemberMacroConformanceListCompatibility {
+    public static func _expansionProvidingMembers(
         of attribute: AttributeSyntax,
         providingMembersOf decl: some DeclGroupSyntax,
         conformingTo protocols: [TypeSyntax],
@@ -142,21 +142,20 @@ extension OptionSetMacro: _MemberMacro2 {
             return Array(caseDecl.elements)
         }
         
-        // Dig out the access control keyword we need.
-        let access = decl.modifiers.first(where: \.isNeededAccessLevelModifier)
+        let access: String = decl.modifiers.explicitDeclarationAccessLevelOrInternalFallback.protocolWitnessAccessModifierSource
         
         let staticVars = caseElements.map { (element) -> DeclSyntax in
       """
-      \(access) static let \(element.name): Self =
+      \(raw: access)static let \(element.name): Self =
         Self(rawValue: 1 << \(optionsEnum.name).\(element.name).rawValue)
       """
         }
         
         return [
-            "\(access)typealias RawValue = \(rawType)",
-            "\(access)var rawValue: RawValue",
-            "\(access)init() { self.rawValue = 0 }",
-            "\(access)init(rawValue: RawValue) { self.rawValue = rawValue }",
+            "\(raw: access)typealias RawValue = \(rawType)",
+            "\(raw: access)var rawValue: RawValue",
+            "\(raw: access)init() { self.rawValue = 0 }",
+            "\(raw: access)init(rawValue: RawValue) { self.rawValue = rawValue }",
         ] + staticVars
     }
 }

@@ -19,8 +19,8 @@ struct _StaticProtocolMember {
     }
 }
 
-extension _StaticProtocolMember: _MemberMacro2 {
-    static func _expansion(
+extension _StaticProtocolMember: _MemberMacroConformanceListCompatibility {
+    static func _expansionProvidingMembers(
         of node: AttributeSyntax,
         providingMembersOf declaration: some DeclGroupSyntax,
         conformingTo protocols: [TypeSyntax],
@@ -30,7 +30,7 @@ extension _StaticProtocolMember: _MemberMacro2 {
             return []
         }
         
-        let arguments = try node.labeledArguments!.decode(Arguments.self)
+        let arguments = try node.argumentList.unwrap().decode(Arguments.self)
         
         return [
             """
@@ -51,7 +51,7 @@ extension _StaticProtocolMember: ExtensionMacro {
         conformingTo protocols: [TypeSyntax],
         in context: some MacroExpansionContext
     ) throws -> [ExtensionDeclSyntax] {
-        let arguments = try node.labeledArguments!.decode(Arguments.self)
+        let arguments = try node.argumentList.unwrap().decode(Arguments.self)
         
         assert(!arguments.type.isEmpty)
         

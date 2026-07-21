@@ -5,11 +5,13 @@
 import SwiftSyntax
 
 extension MemberBlockSyntax {
-    public func adding(
-        member: DeclSyntax
-    ) throws -> MemberBlockSyntax {
+    /// Returns this block with the declaration appended as a member.
+    public func appending(
+        _ declaration: DeclSyntax
+    ) -> Self {
         var result = self
-        result.members = try members.adding(member: member)
+        result.members = members.appending(declaration)
+
         return result
     }
 }

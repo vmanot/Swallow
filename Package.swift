@@ -293,12 +293,26 @@ let package = Package(
                 .product(name: "SwiftSyntax", package: "swift-syntax"),
                 .product(name: "SwiftSyntaxBuilder", package: "swift-syntax"),
                 .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
+                .product(name: "SwiftParser", package: "swift-syntax"),
                 .product(name: "SwiftParserDiagnostics", package: "swift-syntax"),
                 "Swallow",
             ],
             path: "Macros/SwiftSyntaxUtilities",
             swiftSettings: [
                 .swiftLanguageMode(.v5)
+            ]
+        ),
+        .testTarget(
+            name: "SwiftSyntaxUtilitiesTests",
+            dependencies: [
+                "SwiftSyntaxUtilities",
+                .product(name: "SwiftParser", package: "swift-syntax"),
+                .product(name: "SwiftSyntax", package: "swift-syntax"),
+                .product(name: "SwiftSyntaxBuilder", package: "swift-syntax"),
+            ],
+            path: "Tests/SwiftSyntaxUtilities",
+            swiftSettings: [
+                .swiftLanguageMode(.v6)
             ]
         ),
         .testTarget(

@@ -15,21 +15,22 @@ public struct DeclarationScopeMacro: DeclarationMacro {
         let name: TokenSyntax = context.makeUniqueName("_DeclarationScopedType")
         
         guard let scope = node.arguments.first else {
-            throw AnyDiagnosticMessage(message: "#scope requires a specified declaration scope")
+            throw MacroExpansionDiagnosticMessage(message: "#scope requires a specified declaration scope")
         }
         
         guard let trailingClosure = node.trailingClosure else {
-            throw AnyDiagnosticMessage(message: "#scope only works with a trailing closure")
+            throw MacroExpansionDiagnosticMessage(message: "#scope only works with a trailing closure")
         }
         
         let statements: CodeBlockItemListSyntax = trailingClosure.statements
-        let modifiedStatements: CodeBlockItemListSyntax = CodeBlockItemListSyntax(
+        let modifiedStatements = CodeBlockItemListSyntax(
             try statements.map { item -> CodeBlockItemSyntax in
-                try item.map(\.item) {
-                    try $0.modifyingDeclarationIfPresent {
-                        $0 = try modifyDeclaration($0, under: name)
-                    }
+                var result = item
+                result.item = try item.item.modifyingDeclarationIfPresent {
+                    $0 = try modifyDeclaration($0, under: name)
                 }
+
+                return result
             }
         )
         
@@ -53,7 +54,7 @@ public struct DeclarationScopeMacro: DeclarationMacro {
         _ decl: T,
         under anonymousDecl: TokenSyntax
     ) throws -> T {
-        guard var decl = decl.asProtocol(DeclSyntaxWithMemberBlock.self) else {
+        guard var decl = decl.asProtocol(DeclGroupSyntax.self) else {
             return decl
         }
         
@@ -63,7 +64,7 @@ public struct DeclarationScopeMacro: DeclarationMacro {
         }()
         """
         
-        decl.memberBlock = try decl.memberBlock.adding(member: conformance)
+        decl.memberBlock = decl.memberBlock.appending(conformance)
         
         return try T(decl).unwrap()
     }

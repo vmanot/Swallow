@@ -17,9 +17,11 @@ extension MemoizedPropertyMacro: AccessorMacro {
             return []
         }
 
-        guard let variableName: String = declaration.variableName else {
-            throw AnyDiagnosticMessage(stringLiteral: "A variable name is required.")
+        guard let binding = declaration.soleIdentifierBinding else {
+            throw MacroExpansionDiagnosticMessage(stringLiteral: "@Memoized requires one variable with an identifier pattern.")
         }
+
+        let variableName = binding.identifier.text
 
         let memoizedVariableName = "_memoized_\(variableName)"
         
@@ -46,12 +48,14 @@ public struct MemoizedPropertyMacro: PeerMacro {
         
         let arguments = try node.arguments.unwrap()
         
-        guard let variableName: String = declaration.variableName else {
-            throw AnyDiagnosticMessage(stringLiteral: "A variable name is required.")
+        guard let binding = declaration.soleIdentifierBinding else {
+            throw MacroExpansionDiagnosticMessage(stringLiteral: "@Memoized requires one variable with an identifier pattern.")
         }
+
+        let variableName = binding.identifier.text
         
-        guard declaration.type != nil else {
-            throw AnyDiagnosticMessage(stringLiteral: "A variable type is required.")
+        guard binding.explicitType != nil else {
+            throw MacroExpansionDiagnosticMessage(stringLiteral: "A variable type is required.")
         }
         
         let result: DeclSyntax

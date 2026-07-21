@@ -5,14 +5,13 @@
 import SwiftSyntax
 
 extension MemberBlockItemListSyntax {
-    public func adding(
-        member: DeclSyntax
-    ) throws -> MemberBlockItemListSyntax {
-        var _result = Array(self)
-        let newItem = MemberBlockItemSyntax(decl: member)
-        
-        _result.append(newItem)
-        
-        return MemberBlockItemListSyntax(_result)
+    /// Returns this list with the declaration appended as a member.
+    public func appending(
+        _ declaration: DeclSyntax
+    ) -> Self {
+        var result = self
+        result.append(MemberBlockItemSyntax(decl: declaration))
+
+        return result
     }
 }

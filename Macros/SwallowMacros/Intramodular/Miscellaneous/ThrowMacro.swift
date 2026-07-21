@@ -32,7 +32,7 @@ public struct ThrowMacro: ExpressionMacro {
         }
 
         guard node.arguments.count == 1 else {
-            throw AnyDiagnosticMessage(message: "#throw can only take one argument.", severity: .error)
+            throw MacroExpansionDiagnosticMessage(message: "#throw can only take one argument.", severity: .error)
         }
 
         let argument: LabeledExprListSyntax.Element = try node.arguments.toCollectionOfOne().value
@@ -53,7 +53,7 @@ public struct ThrowStringMacro: ExpressionMacro {
         in context: some SwiftSyntaxMacros.MacroExpansionContext
     ) throws -> SwiftSyntax.ExprSyntax {
         guard node.arguments.count == 1 else {
-            throw AnyDiagnosticMessage(message: "#throw can only take one argument.", severity: .error)
+            throw MacroExpansionDiagnosticMessage(message: "#throw can only take one argument.", severity: .error)
         }
 
         let argument: LabeledExprListSyntax.Element = try node.arguments.toCollectionOfOne().value

@@ -44,10 +44,10 @@ public struct ManagedActorMethodMacro: PeerMacro {
         in parent: (any DeclGroupSyntax)?,
         forwarding declaration: FunctionDeclSyntax
     ) throws -> DeclSyntax {
-        let concreteTypeName: String = try parent?.concreteTypeName.unwrap() ?? "\(name).OwnerType"
+        let concreteTypeReferenceSource: String = try parent?.concreteTypeReferenceSource.unwrap() ?? "\(name).OwnerType"
         var declaration: FunctionDeclSyntax = declaration
         
-        declaration.accessLevel = .public
+        declaration.setExplicitAccessLevel(.public)
         
         let keyPathKeyName: String = declaration._formattedManagedActorMethodName
         let keyPathExpr: TokenSyntax
@@ -63,19 +63,20 @@ public struct ManagedActorMethodMacro: PeerMacro {
                 named: "callAsFunction",
                 caller: "self.caller"
             )
-            .mappingBody { body in
+            .mappingBodyStatements { body in
                 """
-                \(declaration.makeCallExpressionEffectSpecifiersPrefix) caller._performInnerBodyOfMethod(\(keyPathExpr)) {
+                \(raw: declaration.forwardingCallEffectPrefixSource)caller._performInnerBodyOfMethod(\(keyPathExpr)) {
                     \(body)
                 }
                 """
             }
         
-        callAsFunctionDecl.attributes.removeAll(where: { $0.trimmedDescription.contains("@ManagedActorMethod") })
+        callAsFunctionDecl.attributes.removeAllAttributes(withUnqualifiedName: "ManagedActorMethod")
+        callAsFunctionDecl = callAsFunctionDecl.trimmed
                         
         let result = DeclSyntax(
             """
-            public final class \(name): _PartialManagedActorMethodTrampoline<\(raw: concreteTypeName)>, _ManagedActorMethodTrampolineProtocol {
+            public final class \(name): _PartialManagedActorMethodTrampoline<\(raw: concreteTypeReferenceSource)>, _ManagedActorMethodTrampolineProtocol {
                 public typealias OwnerType = _ManagedActorSelfType
                         
                 public static var name: _ManagedActorMethodName {

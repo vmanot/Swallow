@@ -9,7 +9,7 @@ import SwiftSyntaxBuilder
 import SwiftSyntaxMacros
 import SwiftSyntaxUtilities
 
-public struct HashableMacro: ExtensionMacro, _MemberMacro2 {
+public struct HashableMacro: ExtensionMacro, _MemberMacroConformanceListCompatibility {
     public static func expansion(
         of node: AttributeSyntax,
         attachedTo declaration: some DeclGroupSyntax,
@@ -37,7 +37,7 @@ public struct HashableMacro: ExtensionMacro, _MemberMacro2 {
         ]
     }
     
-    public static func _expansion(
+    public static func _expansionProvidingMembers(
         of node: AttributeSyntax,
         providingMembersOf declaration: some DeclGroupSyntax,
         conformingTo protocols: [TypeSyntax],
@@ -105,7 +105,7 @@ public struct HashableMacro: ExtensionMacro, _MemberMacro2 {
             .compactMap { member -> [TokenSyntax] in
                 guard
                     let variable = member.decl.as(VariableDeclSyntax.self),
-                    !variable.isComputed,
+                    variable.hasOnlySyntacticallyStoredBindings,
                     !variable.modifiers.contains(where: { $0.name.tokenKind == .keyword(.static) })
                 else {
                     return []
@@ -268,8 +268,8 @@ public struct HashableMacro: ExtensionMacro, _MemberMacro2 {
                         firstName: TokenSyntax.identifier("into", trailingTrivia: .space),
                         secondName: TokenSyntax.identifier("hasher"),
                         type: AttributedTypeSyntax(
-                            _specifier: .keyword(.inout, trailingTrivia: .space),
-                            _baseType: TypeSyntax(stringLiteral: "Hasher")
+                            singleSpecifier: .keyword(.inout, trailingTrivia: .space),
+                            baseType: TypeSyntax(stringLiteral: "Hasher")
                         )
                     ),
                 ],

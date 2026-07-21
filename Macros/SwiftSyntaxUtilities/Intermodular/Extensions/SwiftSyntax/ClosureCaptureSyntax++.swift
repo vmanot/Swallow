@@ -6,26 +6,28 @@ import SwiftSyntax
 
 #if compiler(>=6.1)
 extension ClosureCaptureSyntax {
+    /// Creates a shorthand closure capture such as `[self]` or `[value]`.
     public init(
-        expression: some ExprSyntaxProtocol
+        capturing name: TokenSyntax
     ) {
-        let effectiveName: TokenSyntax = {
-            if let declRef = expression.as(DeclReferenceExprSyntax.self) {
-                return declRef.baseName
-            }
-            
-            assertionFailure()
-            
-            return .identifier("_capture")
-        }()
-        
         self.init(
             leadingTrivia: nil,
             specifier: nil,
-            name: effectiveName,
+            name: name,
             initializer: nil,
             trailingComma: nil,
             trailingTrivia: nil
+        )
+    }
+}
+#else
+extension ClosureCaptureSyntax {
+    /// Creates a shorthand closure capture such as `[self]` or `[value]`.
+    public init(
+        capturing name: TokenSyntax
+    ) {
+        self.init(
+            expression: DeclReferenceExprSyntax(baseName: name)
         )
     }
 }

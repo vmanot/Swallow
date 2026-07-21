@@ -2,12 +2,11 @@
 // Copyright (c) Vatsal Manot
 //
 
-import Swallow
 import SwiftSyntax
 
 extension LabeledExprSyntax {
-    public var labelText: String? {
-        label?.trimmed.text
+    /// The semantic argument label, without source escaping such as backticks.
+    public var labelName: String? {
+        label?.identifierValue
     }
 }
-

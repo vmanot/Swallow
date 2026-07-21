@@ -2,151 +2,75 @@
 // Copyright (c) Vatsal Manot
 //
 
-import Swallow
 import SwiftSyntax
 
-private let autoSynthesizingProtocolTypes: Set<String> = [
-    "Equatable",
-    "Swift.Equatable",
-    "Hashable",
-    "Swift.Hashable",
-    "Codable",
-    "Swift.Codable",
-    "Encodable",
-    "Swift.Encodable",
-    "Decodable",
-    "Swift.Decodable",
-]
-
 extension DeclGroupSyntax {
-    /// The name of the concrete type represented by this `DeclGroupSyntax`.
-    /// This excludes protocols, which return nil.
-    public var concreteTypeName: String? {
+    /// Source for the concrete type declared or extended by this declaration.
+    ///
+    /// Protocol declarations return `nil`. Nominal declarations return their
+    /// local source name; extensions return the complete extended-type source.
+    public var concreteTypeReferenceSource: String? {
         switch self.kind {
             case .actorDecl, .classDecl, .enumDecl, .structDecl:
-                return self.asProtocol(NamedDeclSyntax.self)?.name.text
+                return self.asProtocol(NamedDeclSyntax.self)?.name.trimmedDescription
             case .extensionDecl:
                 return self.as(ExtensionDeclSyntax.self)?.extendedType.trimmedDescription
             default:
-                // New types of decls are not presumed to be valid.
                 return nil
         }
     }
-}
 
-extension DeclGroupSyntax {
-    public func collectAutoSynthesizingProtocolConformance() -> [InheritedTypeSyntax] {
-        guard let structDecl = self.as(StructDeclSyntax.self) else {
-            return []
-        }
-        
-        guard let inheritedTypes = structDecl.inheritanceClause?.inheritedTypes else {
-            return []
-        }
-        
-        return inheritedTypes.filter { each in
-            if let ident = each.type.identifier {
-                if autoSynthesizingProtocolTypes.contains(ident) {
-                    return true
-                }
-            }
+    /// Whether an inherited type has the given final, unqualified name.
+    ///
+    /// This is syntactic matching only; it does not resolve type aliases or
+    /// distinguish same-named declarations from different modules.
+    public func inheritsType(
+        withTerminalName name: String
+    ) -> Bool {
+        inheritanceClause?.inheritedTypes.contains { inheritedType in
+            inheritedType.type.terminalTypeName == name
+        } ?? false
+    }
+
+    /// Whether an inherited type is spelled as the direct name path.
+    ///
+    /// For example, `["Swift", "Error"]` matches `Swift.Error` but not an
+    /// unqualified `Error` or a dynamically resolved type alias. Generic
+    /// arguments on path components are deliberately ignored.
+    public func inheritsDirectType(
+        named nameComponents: [String]
+    ) -> Bool {
+        guard !nameComponents.isEmpty else {
             return false
         }
+
+        return inheritanceClause?.inheritedTypes.contains { inheritedType in
+            inheritedType.type.directTypeReferenceNameComponents == nameComponents
+        } ?? false
     }
-    
-    public func collectExplicitInitializerDecls() -> [InitializerDeclSyntax] {
-        return memberBlock.members.compactMap { eachItem in
-            eachItem.decl.as(InitializerDeclSyntax.self)
+
+    public func inheritsAnyDirectType(
+        named candidateNameComponents: [[String]]
+    ) -> Bool {
+        candidateNameComponents.contains { nameComponents in
+            inheritsDirectType(named: nameComponents)
         }
     }
-    
-    public func collectAdoptableVarDecls(
-        where predicate: (VariableDeclSyntax) -> Bool
-    ) -> [VariableDeclSyntax] {
-        return memberBlock.members.compactMap {
-            eachItem -> VariableDeclSyntax? in
-            guard let varDecl = eachItem.decl.as(VariableDeclSyntax.self),
-                  predicate(varDecl) else {
-                return nil
-            }
-            return varDecl.trimmed
+
+    /// Function declarations directly contained in this declaration's member block.
+    public var directFunctionDeclarations: [FunctionDeclSyntax] {
+        memberBlock.members.compactMap { member in
+            member.decl.as(FunctionDeclSyntax.self)
         }
     }
-    
-    public func collectStoredVarDecls() -> [VariableDeclSyntax] {
-        return memberBlock.members.compactMap { eachItem in
-            guard let varDecl = eachItem.decl.as(VariableDeclSyntax.self),
-                  varDecl.bindings.allSatisfy(\.isStored) else {
-                return nil
-            }
-            return varDecl.trimmed
+
+    /// Whether the member block directly contains an initializer declaration.
+    ///
+    /// Initializers nested in conditional-compilation declarations are not
+    /// direct members and therefore do not satisfy this query.
+    public var hasDirectInitializerDeclaration: Bool {
+        memberBlock.members.contains { member in
+            member.decl.is(InitializerDeclSyntax.self)
         }
-    }
-    
-    public func classifiedAdoptableVarDecls(
-        where predicate: (VariableDeclSyntax) -> Bool
-    ) -> (
-        validWithInitializer: [VariableDeclSyntax],
-        validWithTypeAnnoation: [VariableDeclSyntax],
-        invalid: [VariableDeclSyntax]
-    ) {
-        let adoptableVarDecls = collectAdoptableVarDecls(where: predicate)
-        
-        let validVarDeclsAndBindings = adoptableVarDecls.map { varDecl in
-            if let singleBinding = varDecl.singleBinding {
-                return (varDecl: varDecl, singleBinding: singleBinding)
-            } else {
-                return nil
-            }
-        }.compactMap({$0})
-        
-        let hasInitializer = validVarDeclsAndBindings
-            .filter(\.singleBinding.hasInitializer).map(\.varDecl)
-        let hasTypeAnnoation = validVarDeclsAndBindings
-            .filter(\.singleBinding.hasNoInitializer).map(\.varDecl)
-        let invalid = adoptableVarDecls.filter(\.hasMultipleBindings)
-        
-        return (hasInitializer, hasTypeAnnoation, invalid)
-    }
-    
-    public func hasMemberStruct(equivalentTo other: StructDeclSyntax) -> Bool {
-        for member in memberBlock.members {
-            if let `struct` = member.decl.as(StructDeclSyntax.self) {
-                if `struct`.isEquivalent(to: other) {
-                    return true
-                }
-            }
-        }
-        
-        return false
-    }
-     
-    public var hasInit: Bool {
-        for member in memberBlock.members {
-            if member.decl.is(InitializerDeclSyntax.self) {
-                return true
-            }
-        }
-        
-        return false
-    }
-    
-    public func hasMemberInit(equivalentTo other: InitializerDeclSyntax) -> Bool {
-        for member in memberBlock.members {
-            if let `init` = member.decl.as(InitializerDeclSyntax.self) {
-                if `init`.isEquivalent(to: other) {
-                    return true
-                }
-            }
-        }
-        
-        return false
-    }
-        
-    public func addIfNeeded<Declaration: DeclSyntaxProtocol>(
-        _ decl: Declaration?,
-        to declarations: inout [DeclSyntax]
-    ) {
-        addIfNeeded(DeclSyntax(decl), to: &declarations)
     }
 }

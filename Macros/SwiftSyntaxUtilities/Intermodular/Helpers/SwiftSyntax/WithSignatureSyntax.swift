@@ -1,26 +1,21 @@
 //
-//  WithSignatureSyntax.swift
-//  crowbar
-//
-//  Created by Yanan Li on 2025/5/23.
+// Copyright (c) Vatsal Manot
 //
 
 import SwiftSyntax
 
-// MARK: - WithSignatureSyntax
-
+/// A callable declaration syntax node represented by a function signature.
 public protocol WithSignatureSyntax: SyntaxProtocol {
-    var signature: FunctionSignatureSyntax {
-        get
-        set
-    }
+    var signature: FunctionSignatureSyntax { get set }
 }
 
 extension WithSignatureSyntax {
-    /// Without this function, the `with` function defined on `SyntaxProtocol`
-    /// does not work on existentials of this protocol type.
+    /// Returns a copy with the selected child replaced when used as an existential.
     @_disfavoredOverload
-    public func with<T>(_ keyPath: WritableKeyPath<WithSignatureSyntax, T>, _ newChild: T) -> WithSignatureSyntax {
+    public func with<T>(
+        _ keyPath: WritableKeyPath<WithSignatureSyntax, T>,
+        _ newChild: T
+    ) -> WithSignatureSyntax {
         var copy: WithSignatureSyntax = self
         copy[keyPath: keyPath] = newChild
         return copy
@@ -28,23 +23,20 @@ extension WithSignatureSyntax {
 }
 
 extension SyntaxProtocol {
-    /// Check whether the non-type erased version of this syntax node conforms to
-    /// `WithSignatureSyntax`.
-    /// Note that this will incur an existential conversion.
+    /// Whether this node's concrete syntax type has a function signature.
     public func isProtocol(_: WithSignatureSyntax.Protocol) -> Bool {
-        return self.asProtocol(WithSignatureSyntax.self) != nil
+        asProtocol(WithSignatureSyntax.self) != nil
     }
-    
-    /// Return the non-type erased version of this syntax node if it conforms to
-    /// `WithSignatureSyntax`. Otherwise return `nil`.
-    /// Note that this will incur an existential conversion.
+
+    /// Returns this node as a function-signature-bearing syntax node when supported.
     public func asProtocol(_: WithSignatureSyntax.Protocol) -> WithSignatureSyntax? {
-        return Syntax(self).asProtocol(SyntaxProtocol.self) as? WithSignatureSyntax
+        Syntax(self).asProtocol(SyntaxProtocol.self) as? WithSignatureSyntax
     }
 }
 
-extension InitializerDeclSyntax: WithSignatureSyntax { }
 extension FunctionDeclSyntax: WithSignatureSyntax { }
+extension InitializerDeclSyntax: WithSignatureSyntax { }
+
 extension SubscriptDeclSyntax: WithSignatureSyntax {
     public var signature: FunctionSignatureSyntax {
         get {
@@ -53,9 +45,12 @@ extension SubscriptDeclSyntax: WithSignatureSyntax {
                 returnClause: returnClause
             )
         }
-        set(signature) {
-            parameterClause = signature.parameterClause
-            returnClause = signature.returnClause!
+        set {
+            parameterClause = newValue.parameterClause
+
+            if let returnClause = newValue.returnClause {
+                self.returnClause = returnClause
+            }
         }
     }
 }

@@ -5,7 +5,8 @@
 import SwiftSyntax
 
 extension CodeBlockItemSyntax.Item {
-    public var _declSyntax: DeclSyntax? {
+    /// The declaration carried by this code-block item, if it is a declaration.
+    public var declaration: DeclSyntax? {
         guard case let .decl(declSyntax) = self else {
             return nil
         }

@@ -18,7 +18,7 @@ extension GenerateDistributedTypeEraserMacro: PeerMacro {
         in context: some MacroExpansionContext
     ) throws -> [DeclSyntax] {
         guard let declaration = declaration.as(ProtocolDeclSyntax.self) else {
-            let error = AnyDiagnosticMessage(.unsupported)
+            let error = MacroExpansionDiagnosticMessage(.unsupported)
             
             let fixit = FixIt.replace(
                 message: error,
@@ -39,15 +39,26 @@ extension GenerateDistributedTypeEraserMacro: PeerMacro {
         let memberDeclarations: [DeclSyntax] = members.map(\.decl)
         let baseVariableName: String = protocolName.text.lowercased()
         
-        let comformanceDeclarations = memberDeclarations
+        let comformanceDeclarations = try memberDeclarations
             .flatMap { decl -> [String] in
                 if let funcDecl = decl.as(FunctionDeclSyntax.self) {
-                    let parameters: FunctionParameterListSyntax = funcDecl.parameterList
-                    let inputTypes: String = parameters
-                        .map { "_ \($0.name.text): \($0.type.description)" }
+                    let parameters: FunctionParameterListSyntax = funcDecl.parameters
+                    let localParameterNames: [TokenSyntax] = try parameters.map { parameter in
+                        guard let localName = parameter.localParameterName else {
+                            throw MacroExpansionDiagnosticMessage(
+                                message: "Type-erased protocol requirements cannot contain an unnamed '_' parameter.",
+                                domain: "com.vmanot.SwallowMacros",
+                                id: "unnamedTypeEraserParameter"
+                            )
+                        }
+
+                        return localName
+                    }
+                    let inputTypes: String = zip(parameters, localParameterNames)
+                        .map { parameter, localName in "_ \(localName.text): \(parameter.type.description)" }
                         .joined(separator: ", ")
-                    let inputParameters: String = parameters
-                        .map { $0.name.text }
+                    let inputParameters: String = localParameterNames
+                        .map(\.text)
                         .joined(separator: ", ")
                     let returnType: String = funcDecl.explicitReturnType?.trimmedDescription ?? "Void"
                     
@@ -57,9 +68,11 @@ extension GenerateDistributedTypeEraserMacro: PeerMacro {
                     ]
                 } else if let varDecl = decl.as(VariableDeclSyntax.self) {
                     var declarations: [String] = []
-                    for (name, type) in zip(varDecl.names, varDecl.explicitlyDeclaredTypes) {
-                        declarations.append("private var _\(name): \(type)")
-                        declarations.append("var \(name): \(type) { _\(name) }")
+                    for binding in varDecl.identifierBindings {
+                        let type: TypeSyntax = binding.explicitType ?? "_"
+
+                        declarations.append("private var _\(binding.identifier): \(type)")
+                        declarations.append("var \(binding.identifier): \(type) { _\(binding.identifier) }")
                     }
                     return declarations
                 }
@@ -72,7 +85,7 @@ extension GenerateDistributedTypeEraserMacro: PeerMacro {
                     return ["_\(functionDecl.name) = \(baseVariableName).\(functionDecl.name)"]
                 } else if let variableDecl = decl.as(VariableDeclSyntax.self) {
                     var declarations: [String] = []
-                    for name in variableDecl.names {
+                    for name in variableDecl.identifierPatternIdentifiers {
                         declarations.append(
                             "_\(name) = \(baseVariableName).\(name)"
                         )
@@ -105,5 +118,3 @@ extension GenerateDistributedTypeEraserMacro: PeerMacro {
         return [DeclSyntax(structDecl)]
     }
 }
-
-

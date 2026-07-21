@@ -18,7 +18,9 @@ public struct ModuleMacro: DeclarationMacro {
         in context: some SwiftSyntaxMacros.MacroExpansionContext
     ) throws -> [SwiftSyntax.DeclSyntax] {
         let arguments: Arguments = try node.arguments.decode(Arguments.self)
-        let uniqueIdentifier: ExprSyntax = arguments.uniqueIdentifier.map({ ExprSyntax("\"\(raw: $0)\"")  }) ?? ExprSyntax("nil")
+        let uniqueIdentifier: ExprSyntax = arguments.uniqueIdentifier.map {
+            ExprSyntax(stringLiteral: $0.swiftStringLiteralSource)
+        } ?? ExprSyntax("nil")
         
         let result: DeclSyntax =
         """
@@ -31,6 +33,6 @@ public struct ModuleMacro: DeclarationMacro {
         }
         """
         
-        return try [result] + RuntimeDiscoverableMacroPrototype._expansion(providingPeersOf: result)
+        return try [result] + RuntimeDiscoverableMacroExpansion.peerDeclarations(for: result, in: context)
     }
 }

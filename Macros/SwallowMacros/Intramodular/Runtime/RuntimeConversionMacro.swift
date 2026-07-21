@@ -16,20 +16,22 @@ public struct RuntimeConversionMacro: PeerMacro {
         in context: some MacroExpansionContext
     ) throws -> [DeclSyntax] {
         guard var declaration = declaration.as(FunctionDeclSyntax.self) else {
-            throw AnyDiagnosticMessage()
+            throw MacroExpansionDiagnosticMessage(
+                message: "@RuntimeConversion can only be attached to a function declaration.",
+                domain: "com.vmanot.SwallowMacros",
+                id: "runtimeConversionRequiresFunction"
+            )
         }
         
         let name: TokenSyntax = context.makeUniqueName("_\(String(describing: RuntimeConversionMacro.self))")
-        let callArgumentList: [String] = declaration.signature.parameterClause.parameters._toCallArgumentList()
+        let callArguments = try declaration.parameters.forwardingCallArguments()
                 
         let newBody: ExprSyntax =
         """
-        \(raw: declaration.name)(\(raw: callArgumentList.joined(separator: ", ")))
+        \(raw: declaration.name)(\(callArguments))
         """
         
-        declaration.attributes.removeAll(AttributeSyntax.self) {
-            $0.attributeName.description == "RuntimeConversion"
-        }
+        declaration.attributes.removeAllAttributes(withUnqualifiedName: "RuntimeConversion")
         
         declaration.name = "__convert"
         declaration.body = CodeBlockSyntax(
@@ -50,21 +52,5 @@ public struct RuntimeConversionMacro: PeerMacro {
         )
         
         return [result]
-    }
-}
-
-extension FunctionParameterListSyntax {
-    fileprivate func _toCallArgumentList() -> [String] {
-        self.map { param in
-            let argName = param.secondName ?? param.firstName
-            
-            let paramName = param.firstName
-            
-            if paramName.text != "_" {
-                return "\(paramName.text): \(argName.text)"
-            }
-            
-            return "\(argName.text)"
-        }
     }
 }

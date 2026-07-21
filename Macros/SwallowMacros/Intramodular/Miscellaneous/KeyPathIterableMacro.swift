@@ -16,7 +16,7 @@ public struct KeyPathIterableMacro: ExtensionMacro {
         conformingTo protocols: [TypeSyntax],
         in context: some MacroExpansionContext
     ) throws -> [ExtensionDeclSyntax] {
-        guard let decodedDeclaration = decodeExpansion(of: node, attachedTo: declaration, in: context) else {
+        guard validateAttachedDeclaration(of: node, declaration: declaration, in: context) else {
             return []
         }
         
@@ -38,14 +38,15 @@ public struct KeyPathIterableMacro: ExtensionMacro {
                 let keyPaths = declaration.memberBlock.members
                     .compactMap({ $0.decl.as(VariableDeclSyntax.self) })
                     .filter { (variableDeclaration: VariableDeclSyntax) -> Bool in
-                        if decodedDeclaration.is(ActorDeclSyntax.self) {
+                        if declaration.is(ActorDeclSyntax.self) {
                             return variableDeclaration.modifiers.contains(where: { $0.name.text == "nonisolated" })
                         } else {
                             return true
                         }
                     }
                     .filter({ !$0.modifiers.contains(where: { $0.name.trimmedDescription == "static" }) })
-                    .compactMap(\.variableName)
+                    .flatMap(\.identifierPatternIdentifiers)
+                    .map(\.text)
                     .map { "\\.\($0)" }
                     .joined(separator: ", ")
                 
@@ -60,24 +61,21 @@ public struct KeyPathIterableMacro: ExtensionMacro {
 // MARK: - Auxiliary
 
 extension KeyPathIterableMacro {
-    fileprivate static func decodeExpansion(
+    fileprivate static func validateAttachedDeclaration(
         of attribute: AttributeSyntax,
-        attachedTo declaration: some DeclGroupSyntax,
+        declaration: some DeclGroupSyntax,
         in context: some MacroExpansionContext
-    ) -> (any _NamespaceSyntax)? {
-        if let structDecl = declaration.as(StructDeclSyntax.self) {
-            return structDecl
-        } else if let enumDecl = declaration.as(EnumDeclSyntax.self) {
-            return enumDecl
-        } else if let classDecl = declaration.as(ClassDeclSyntax.self) {
-            return classDecl
-        } else if let actorDecl = declaration.as(ActorDeclSyntax.self) {
-            return actorDecl
-        } else {
-            context.diagnose(DiagnosticMessage.requiresStructEnumClassActor.diagnose(at: attribute))
-          
-            return nil
+    ) -> Bool {
+        if declaration.is(StructDeclSyntax.self)
+            || declaration.is(EnumDeclSyntax.self)
+            || declaration.is(ClassDeclSyntax.self)
+            || declaration.is(ActorDeclSyntax.self) {
+            return true
         }
+
+        context.diagnose(DiagnosticMessage.requiresStructEnumClassActor.diagnose(at: attribute))
+
+        return false
     }
 }
 

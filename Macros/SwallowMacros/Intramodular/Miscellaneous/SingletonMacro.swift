@@ -9,15 +9,15 @@ import SwiftSyntaxMacros
 import SwiftSyntaxUtilities
 
 /// https://github.com/ShenghaiWang/SwiftMacros/blob/main/Sources/Macros/Singleton.swift
-public struct SingletonMacro: _MemberMacro2 {
-    public static func _expansion<Declaration: DeclGroupSyntax, Context: MacroExpansionContext>(
+public struct SingletonMacro: _MemberMacroConformanceListCompatibility {
+    public static func _expansionProvidingMembers<Declaration: DeclGroupSyntax, Context: MacroExpansionContext>(
         of node: AttributeSyntax,
         providingMembersOf declaration: Declaration,
         conformingTo protocols: [TypeSyntax],
         in context: Context
     ) throws -> [DeclSyntax] {
         guard [SwiftSyntax.SyntaxKind.classDecl, .structDecl].contains(declaration.kind) else {
-            throw AnyDiagnosticMessage("Can only be applied to a struct or class")
+            throw MacroExpansionDiagnosticMessage("Can only be applied to a struct or class")
         }
         
         let identifier = (declaration as? StructDeclSyntax)?.name ?? (declaration as? ClassDeclSyntax)?.name ?? ""
@@ -70,7 +70,7 @@ public struct SingletonMacro: _MemberMacro2 {
             DeclSyntax(shared)
         ]
         
-        if !declaration.hasInit {
+        if !declaration.hasDirectInitializerDeclaration {
             result.insert(DeclSyntax(initializer), at: 0)
         }
         

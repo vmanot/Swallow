@@ -14,10 +14,6 @@ public struct RuntimeDiscoverableMacro: PeerMacro {
         providingPeersOf declaration: some DeclSyntaxProtocol,
         in context: some MacroExpansionContext
     ) throws -> [DeclSyntax] {
-        try RuntimeDiscoverableMacroPrototype.expansion(
-            of: node,
-            providingPeersOf: declaration,
-            in: context
-        )
+        try RuntimeDiscoverableMacroExpansion.peerDeclarations(for: declaration, in: context)
     }
 }

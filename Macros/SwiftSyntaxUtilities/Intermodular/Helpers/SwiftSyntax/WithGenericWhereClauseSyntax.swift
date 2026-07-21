@@ -1,26 +1,21 @@
 //
-//  WithGenericWhereClauseSyntax.swift
-//  crowbar
-//
-//  Created by Yanan Li on 2025/1/17.
+// Copyright (c) Vatsal Manot
 //
 
 import SwiftSyntax
 
-// MARK: - WithGenericWhereClauseSyntax
-
+/// A declaration syntax node that can carry a generic `where` clause.
 public protocol WithGenericWhereClauseSyntax: SyntaxProtocol {
-    var genericWhereClause: GenericWhereClauseSyntax? {
-        get
-        set
-    }
+    var genericWhereClause: GenericWhereClauseSyntax? { get set }
 }
 
 extension WithGenericWhereClauseSyntax {
-    /// Without this function, the `with` function defined on `SyntaxProtocol`
-    /// does not work on existentials of this protocol type.
+    /// Returns a copy with the selected child replaced when used as an existential.
     @_disfavoredOverload
-    public func with<T>(_ keyPath: WritableKeyPath<WithGenericWhereClauseSyntax, T>, _ newChild: T) -> WithGenericWhereClauseSyntax {
+    public func with<T>(
+        _ keyPath: WritableKeyPath<WithGenericWhereClauseSyntax, T>,
+        _ newChild: T
+    ) -> WithGenericWhereClauseSyntax {
         var copy: WithGenericWhereClauseSyntax = self
         copy[keyPath: keyPath] = newChild
         return copy
@@ -28,23 +23,21 @@ extension WithGenericWhereClauseSyntax {
 }
 
 extension SyntaxProtocol {
-    /// Check whether the non-type erased version of this syntax node conforms to
-    /// `WithGenericWhereClauseSyntax`.
-    /// Note that this will incur an existential conversion.
+    /// Whether this node's concrete syntax type carries a generic `where` clause.
     public func isProtocol(_: WithGenericWhereClauseSyntax.Protocol) -> Bool {
-        return self.asProtocol(WithGenericWhereClauseSyntax.self) != nil
+        asProtocol(WithGenericWhereClauseSyntax.self) != nil
     }
-    
-    /// Return the non-type erased version of this syntax node if it conforms to
-    /// `WithGenericWhereClauseSyntax`. Otherwise return `nil`.
-    /// Note that this will incur an existential conversion.
-    public func asProtocol(_: WithGenericWhereClauseSyntax.Protocol) -> WithGenericWhereClauseSyntax? {
-        return Syntax(self).asProtocol(SyntaxProtocol.self) as? WithGenericWhereClauseSyntax
+
+    /// Returns this node as a generic-where-bearing syntax node when supported.
+    public func asProtocol(
+        _: WithGenericWhereClauseSyntax.Protocol
+    ) -> WithGenericWhereClauseSyntax? {
+        Syntax(self).asProtocol(SyntaxProtocol.self) as? WithGenericWhereClauseSyntax
     }
 }
 
-extension StructDeclSyntax: WithGenericWhereClauseSyntax { }
-extension ClassDeclSyntax: WithGenericWhereClauseSyntax { }
 extension ActorDeclSyntax: WithGenericWhereClauseSyntax { }
-extension ProtocolDeclSyntax: WithGenericWhereClauseSyntax { }
 extension AssociatedTypeDeclSyntax: WithGenericWhereClauseSyntax { }
+extension ClassDeclSyntax: WithGenericWhereClauseSyntax { }
+extension ProtocolDeclSyntax: WithGenericWhereClauseSyntax { }
+extension StructDeclSyntax: WithGenericWhereClauseSyntax { }

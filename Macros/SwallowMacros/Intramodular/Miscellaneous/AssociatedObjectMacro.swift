@@ -41,7 +41,7 @@ extension AssociatedObjectMacro: PeerMacro {
         }
         
         let defaultValue = binding.initializer?.value
-        let type: TypeSyntax? = binding.typeAnnotation?.type ?? defaultValue?.inferredType
+        let type: TypeSyntax? = binding.typeAnnotation?.type ?? defaultValue?.inferredLiteralType
         
         guard let type else {
             //  Explicit specification of type is required
@@ -73,7 +73,7 @@ extension AssociatedObjectMacro: PeerMacro {
             DeclSyntax(keyDecl)
         ]
         
-        if type.isOptional && defaultValue != nil {
+        if type.isDirectOptionalTypeSyntax && defaultValue != nil {
             let flagName = "__associated_\(identifier.trimmed)IsSet"
             let flagDecl = VariableDeclSyntax(
                 attributes: [
@@ -148,7 +148,7 @@ extension AssociatedObjectMacro: AccessorMacro {
         if let specifiedType = binding.typeAnnotation?.type {
             //  TypeAnnotation
             type = specifiedType
-        } else if let inferredType = defaultValue?.inferredType {
+        } else if let inferredType = defaultValue?.inferredLiteralType {
             //  infer type of defaultValue
             type = inferredType
         } else {
@@ -170,7 +170,7 @@ extension AssociatedObjectMacro: AccessorMacro {
         }
         
         // Initial value required if type is optional
-        if defaultValue == nil && !type.isOptional {
+        if defaultValue == nil && !type.isDirectOptionalTypeSyntax {
             context.diagnose(AssociatedObjectMacroDiagnostic.requiresInitialValue.diagnose(at: declaration))
             return []
         }
@@ -236,7 +236,7 @@ extension AssociatedObjectMacro {
         return AccessorDeclSyntax(
             accessorSpecifier: .keyword(.get),
             body: CodeBlockSyntax {
-                if let defaultValue, type.isOptional {
+                if let defaultValue, type.isDirectOptionalTypeSyntax {
                     """
                     if !self.__associated_\(identifier.trimmed)IsSet {
                         let value: \(type.trimmed) = \(defaultValue.trimmed)
@@ -386,11 +386,7 @@ extension AssociatedObjectMacro {
                         value: ClosureExprSyntax(
                             signature: .init(
                                 capture: .init() {
-                                    ClosureCaptureSyntax(
-                                        expression: DeclReferenceExprSyntax(
-                                            baseName: .keyword(.`self`)
-                                        )
-                                    )
+                                    ClosureCaptureSyntax(capturing: .keyword(.`self`))
                                 },
                                 parameterClause: .init(ClosureShorthandParameterListSyntax() {
                                     ClosureShorthandParameterSyntax(name: newValue)
@@ -444,11 +440,7 @@ extension AssociatedObjectMacro {
                         value: ClosureExprSyntax(
                             signature: .init(
                                 capture: .init() {
-                                    ClosureCaptureSyntax(
-                                        expression: DeclReferenceExprSyntax(
-                                            baseName: .keyword(.`self`)
-                                        )
-                                    )
+                                    ClosureCaptureSyntax(capturing: .keyword(.`self`))
                                 },
                                 parameterClause: .init(ClosureShorthandParameterListSyntax() {
                                     ClosureShorthandParameterSyntax(name: oldValue)

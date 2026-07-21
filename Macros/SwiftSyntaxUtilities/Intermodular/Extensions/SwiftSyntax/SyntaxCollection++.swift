@@ -29,6 +29,7 @@ extension SyntaxCollection {
         }
     }
 
+    /// Removes matching elements and returns them in their original source order.
     @discardableResult
     public mutating func removeAll(
         where shouldBeRemoved: (Element) throws -> Bool
@@ -46,8 +47,12 @@ extension SyntaxCollection {
             return result
         }
 
+        for index in indicesToRemove {
+            result.append(self[index])
+        }
+
         for index in indicesToRemove.reversed() {
-            result.append(self.remove(at: index))
+            self.remove(at: index)
         }
         
         return result

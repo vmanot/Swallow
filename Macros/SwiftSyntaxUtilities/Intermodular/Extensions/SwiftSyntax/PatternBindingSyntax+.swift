@@ -2,10 +2,59 @@
 // Copyright (c) Vatsal Manot
 //
 
-import Swallow
 import SwiftSyntax
 
 extension PatternBindingSyntax {
+    /// What this binding's accessor syntax proves about property storage.
+    public enum SyntacticPropertyStorage: Hashable, Sendable {
+        case stored
+        case accessorBacked
+        case mixedOrMalformedAccessors
+    }
+
+    /// Classifies storage solely from this binding's accessor syntax.
+    ///
+    /// No accessor block and unique observer-only blocks are stored. Getter
+    /// bodies and non-observer accessor lists are accessor-backed. Empty lists,
+    /// duplicate observers, and mixed observer/non-observer lists cannot be
+    /// classified without accepting malformed source as a valid storage form.
+    public var syntacticPropertyStorage: SyntacticPropertyStorage {
+        switch accessorBlock?.accessors {
+            case nil:
+                return .stored
+            case .getter:
+                return .accessorBacked
+            case .accessors(let accessors):
+                guard !accessors.isEmpty else {
+                    return .mixedOrMalformedAccessors
+                }
+
+                let observerSpecifiers = accessors.compactMap { accessor -> Keyword? in
+                    switch accessor.accessorSpecifier.tokenKind {
+                        case .keyword(.willSet):
+                            return .willSet
+                        case .keyword(.didSet):
+                            return .didSet
+                        default:
+                            return nil
+                    }
+                }
+
+                guard !observerSpecifiers.isEmpty else {
+                    return .accessorBacked
+                }
+
+                guard observerSpecifiers.count == accessors.count,
+                      Set(observerSpecifiers).count == observerSpecifiers.count else {
+                    return .mixedOrMalformedAccessors
+                }
+
+                return .stored
+            @unknown default:
+                return .mixedOrMalformedAccessors
+        }
+    }
+
     public var setter: AccessorDeclSyntax? {
         get {
             guard
@@ -21,8 +70,7 @@ extension PatternBindingSyntax {
         }
         
         set {
-            // NOTE: Be careful that setter cannot be implemented without a getter.
-            setNewAccessor(kind: .keyword(.set), newValue: newValue)
+            setNewAccessor(specifier: .set, newValue: newValue)
         }
     }
     
@@ -37,10 +85,16 @@ extension PatternBindingSyntax {
                     return AccessorDeclSyntax(accessorSpecifier: .keyword(.get), body: .init(statements: body))
                 case .none:
                     return nil
-                case .some(_):
-                    return nil // FIXME
+                @unknown default:
+                    return nil
             }
         } set {
+            let newValue = newValue.map { accessor in
+                var accessor = accessor
+                accessor.accessorSpecifier = .keyword(.get)
+
+                return accessor
+            }
             let newAccessors: AccessorBlockSyntax.Accessors
             
             switch accessorBlock?.accessors {
@@ -65,7 +119,7 @@ extension PatternBindingSyntax {
                         accessor.accessorSpecifier.tokenKind == .keyword(.get)
                     })
                     if let accessor,
-                       let index = list.index(of: accessor) {
+                       let index = list.firstIndex(of: accessor) {
                         if let newValue {
                             newList[index] = newValue
                         } else {
@@ -75,34 +129,14 @@ extension PatternBindingSyntax {
                         newList.append(newValue)
                     }
                     newAccessors = .accessors(newList)
-                case .some(_):
-                    assertionFailure() // FIXME
-                    
+                @unknown default:
                     return
             }
-            
-            if accessorBlock == nil {
-                accessorBlock = .init(accessors: newAccessors)
-            } else {
-                accessorBlock = accessorBlock?.with(\.accessors, newAccessors)
-            }
+
+            replaceAccessors(with: newAccessors)
         }
     }
     
-    public var isGetOnly: Bool {
-        if initializer != nil {
-            return false
-        }
-        if let accessors = accessorBlock?.accessors,
-           case let .accessors(list) = accessors,
-           list.contains(where: { $0.accessorSpecifier.tokenKind == .keyword(.set) }) {
-            return false
-        }
-        if accessorBlock == nil && initializer == nil {
-            return false
-        }
-        return true
-    }
 }
 
 extension PatternBindingSyntax {
@@ -117,8 +151,7 @@ extension PatternBindingSyntax {
             return nil
         }
         set {
-            // NOTE: Be careful that willSet cannot be implemented without a setter.
-            setNewAccessor(kind: .keyword(.willSet), newValue: newValue)
+            setNewAccessor(specifier: .willSet, newValue: newValue)
         }
     }
     
@@ -133,19 +166,23 @@ extension PatternBindingSyntax {
             return nil
         }
         set {
-            // NOTE: Be careful that didSet cannot be implemented without a setter.
-            setNewAccessor(kind: .keyword(.willSet), newValue: newValue)
+            setNewAccessor(specifier: .didSet, newValue: newValue)
         }
     }
 }
 
 extension PatternBindingSyntax {
-    // NOTE: - getter requires extra steps and should not be used.
     private mutating func setNewAccessor(
-        kind: TokenKind,
+        specifier: Keyword,
         newValue: AccessorDeclSyntax?
     ) {
-        var newAccessor: AccessorBlockSyntax.Accessors
+        let newValue = newValue.map { accessor in
+            var accessor = accessor
+            accessor.accessorSpecifier = .keyword(specifier)
+
+            return accessor
+        }
+        let newAccessors: AccessorBlockSyntax.Accessors
         
         switch accessorBlock?.accessors {
             case let .getter(body):
@@ -153,7 +190,7 @@ extension PatternBindingSyntax {
                     return
                 }
                 
-                newAccessor = .accessors(
+                newAccessors = .accessors(
                     AccessorDeclListSyntax {
                         AccessorDeclSyntax(accessorSpecifier: .keyword(.get), body: .init(statements: body))
                         newValue
@@ -162,35 +199,49 @@ extension PatternBindingSyntax {
             case let .accessors(list):
                 var newList = list
                 let accessor = list.first(where: { accessor in
-                    accessor.accessorSpecifier.tokenKind == kind
+                    accessor.accessorSpecifier.tokenKind == .keyword(specifier)
                 })
                 if let accessor,
-                   let index = list.index(of: accessor) {
+                   let index = list.firstIndex(of: accessor) {
                     if let newValue {
                         newList[index] = newValue
                     } else {
                         newList.remove(at: index)
                     }
+                } else if let newValue {
+                    newList.append(newValue)
                 }
-                newAccessor = .accessors(newList)
-            default:
-                assert(accessorBlock?.accessors == nil)
-                
+                newAccessors = .accessors(newList)
+            case nil:
                 guard let newValue else {
                     return
                 }
                 
-                newAccessor = .accessors(
+                newAccessors = .accessors(
                     AccessorDeclListSyntax {
                         newValue
                     }
                 )
+            @unknown default:
+                return
         }
-        
+
+        replaceAccessors(with: newAccessors)
+    }
+
+    private mutating func replaceAccessors(
+        with newAccessors: AccessorBlockSyntax.Accessors
+    ) {
+        if case .accessors(let list) = newAccessors, list.isEmpty {
+            accessorBlock = nil
+
+            return
+        }
+
         if accessorBlock == nil {
-            accessorBlock = .init(accessors: newAccessor)
+            accessorBlock = .init(accessors: newAccessors)
         } else {
-            accessorBlock = accessorBlock?.with(\.accessors, newAccessor)
+            accessorBlock = accessorBlock?.with(\.accessors, newAccessors)
         }
     }
 }

@@ -8,8 +8,8 @@ import SwiftSyntaxBuilder
 import SwiftSyntaxMacros
 import SwiftSyntaxUtilities
 
-public struct AddCaseBooleanMacro: _MemberMacro2 {
-    public static func _expansion<
+public struct AddCaseBooleanMacro: _MemberMacroConformanceListCompatibility {
+    public static func _expansionProvidingMembers<
         Declaration: DeclGroupSyntax,
         Context: MacroExpansionContext
     >(
@@ -23,7 +23,7 @@ public struct AddCaseBooleanMacro: _MemberMacro2 {
             .memberBlock.members
             .compactMap({ $0.decl.as(EnumCaseDeclSyntax.self)?.elements })
         else {
-            throw AnyDiagnosticMessage(
+            throw MacroExpansionDiagnosticMessage(
                 "@AddCaseBoolean only works on enum that have associated value case"
             )
         }

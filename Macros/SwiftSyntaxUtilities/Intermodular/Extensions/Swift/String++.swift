@@ -5,36 +5,12 @@
 //  Created by Yanan Li on 2026/1/25.
 //
 
-import Foundation
+import SwiftSyntax
+import SwiftSyntaxBuilder
 
 extension String {
-    public var swiftIdentifierToken: String {
-        if isValidSwiftIdentifier(for: .variableName) {
-            return self
-        } else {
-            return "`\(self)`"
-        }
-    }
-
-    public var swiftStringLiteralExpression: String {
-        debugDescription
-    }
-
-    public var swiftFinalMemberName: String? {
-        split(separator: ".").last.map(String.init)
-    }
-
-    public var swiftMemberBaseExpression: String? {
-        guard let finalMemberName = swiftFinalMemberName else {
-            return nil
-        }
-
-        let suffix = ".\(finalMemberName)"
-
-        guard hasSuffix(suffix) else {
-            return nil
-        }
-
-        return String(dropLast(suffix.count))
+    /// Source text for a non-interpolated Swift string literal with this value.
+    public var swiftStringLiteralSource: String {
+        StringLiteralExprSyntax(content: self).trimmedDescription
     }
 }

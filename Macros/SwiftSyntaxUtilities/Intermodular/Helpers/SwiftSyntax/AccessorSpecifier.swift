@@ -1,22 +1,20 @@
 //
-//  AccessorSpecifier.swift
-//  crowbar
-//
-//  Created by Yanan Li on 2025/8/3.
+// Copyright (c) Vatsal Manot
 //
 
 import SwiftSyntax
 
-public enum AccessorSpecifier: String, CaseIterable {
+/// A Swift property accessor specifier supported by ordinary mutable properties.
+public enum AccessorSpecifier: String, CaseIterable, Hashable, Sendable {
     case `get`
     case `set`
-    
+
     public var keyword: Keyword {
         switch self {
-        case .get:
-            return .get
-        case .set:
-            return .set
+            case .get:
+                return .get
+            case .set:
+                return .set
         }
     }
 }

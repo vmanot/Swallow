@@ -45,8 +45,8 @@ extension GenerateTypeEraserMacro: ExtensionMacro {
     }
 }
 
-extension GenerateTypeEraserMacro: _MemberMacro2 {
-    public static func _expansion(
+extension GenerateTypeEraserMacro: _MemberMacroConformanceListCompatibility {
+    public static func _expansionProvidingMembers(
         of node: AttributeSyntax,
         providingMembersOf declaration: some DeclGroupSyntax,
         conformingTo protocols: [TypeSyntax],
@@ -75,7 +75,7 @@ extension GenerateTypeEraserMacro: PeerMacro {
         in context: some MacroExpansionContext
     ) throws -> [DeclSyntax] {
         guard let declaration = declaration.as(ProtocolDeclSyntax.self) else {
-            let error = AnyDiagnosticMessage(.unsupported)
+            let error = MacroExpansionDiagnosticMessage(.unsupported)
             
             let fixit = FixIt.replace(
                 message: error,
@@ -126,36 +126,39 @@ extension GenerateTypeEraserMacro: PeerMacro {
         memberDeclarations: [DeclSyntax],
         providingPeerOf declaration: ProtocolDeclSyntax
     ) throws -> StructDeclSyntax {
-        let conformanceDeclarations = memberDeclarations
-            .compactMap { (decl: DeclSyntax) -> String? in
+        let conformanceDeclarations: [String] = try memberDeclarations
+            .flatMap { (decl: DeclSyntax) -> [String] in
                 if let funcDecl = decl.as(FunctionDeclSyntax.self) {
                     
-                    let parameters = funcDecl.parameterList
-                    let callArgumentListExpr: String = funcDecl._makeRawCallArgumentListTuple().trimmed.description
+                    let parameters = funcDecl.parameters
+                    let callArguments = try funcDecl.parameters.forwardingCallArguments()
+                    let callArgumentListExpr = "(\(callArguments.trimmedDescription))"
 
-                    let asyncKeyword = funcDecl.isAsync ? "async " : ""
-                    let awaitKeyword = funcDecl.isAsync ? "await" : ""
-                    let throwsKeyword = funcDecl.isThrowing ? "throws" : ""
-                    let tryKeyword = funcDecl.isThrowing ? "try" : ""
+                    let asyncKeyword = funcDecl.hasAsyncSpecifier ? "async " : ""
+                    let awaitKeyword = funcDecl.hasAsyncSpecifier ? "await" : ""
+                    let throwsClauseSource = funcDecl.signature.effectSpecifiers?.throwsClause?.trimmedDescription ?? ""
+                    let tryKeyword = funcDecl.hasThrowsOrRethrowsSpecifier ? "try" : ""
                     let returnType = funcDecl.explicitReturnType?.description ?? "Void"
                     
-                    return  """
-                    public func \(funcDecl.name)(\(parameters)) \(asyncKeyword)\(throwsKeyword) -> \(returnType) {
+                    return ["""
+                    public func \(funcDecl.name)(\(parameters)) \(asyncKeyword)\(throwsClauseSource) -> \(returnType) {
                         return \(tryKeyword) \(awaitKeyword) base.\(funcDecl.name)\(callArgumentListExpr) 
                     };
                     
-                    """
+                    """]
                 } else if let varDecl = decl.as(VariableDeclSyntax.self) {
-                    for (name, type) in zip(varDecl.names, varDecl.explicitlyDeclaredTypes) {
+                    return varDecl.identifierBindings.map { binding in
+                        let type: TypeSyntax = binding.explicitType ?? "_"
+
                         return """
-                        public var \(name): \(type) { 
-                            base.\(name) 
+                        public var \(binding.identifier): \(type) {
+                            base.\(binding.identifier)
                         };
                         """
                     }
                 }
                 
-                return nil
+                return []
             }
         
         let result = try StructDeclSyntax("public struct Any\(protocolName): \(protocolName), SwallowMacrosClient._DistributedTypeErasable") {
@@ -196,41 +199,42 @@ extension GenerateTypeEraserMacro: PeerMacro {
         actorSystemType: String?,
         in context: MacroExpansionContext
     ) throws -> ActorDeclSyntax {
-        let conformanceDeclarations: [String] = memberDeclarations
+        let conformanceDeclarations: [String] = try memberDeclarations
             .flatMap { (decl: DeclSyntax) -> [String] in
                 if let funcDecl = decl.as(FunctionDeclSyntax.self) {
                     
-                    let parameters = funcDecl.parameterList
-                    let callArgumentListExpr: String = funcDecl._makeRawCallArgumentListTuple().trimmed.description
+                    let parameters = funcDecl.parameters
+                    let callArguments = try funcDecl.parameters.forwardingCallArguments()
+                    let callArgumentListExpr = "(\(callArguments.trimmedDescription))"
                     
-                    let asyncKeyword = funcDecl.isAsync ? "async " : ""
-                    let awaitKeyword = funcDecl.isAsync ? "await" : ""
-                    let throwsKeyword = funcDecl.isThrowing ? "throws" : ""
-                    let tryKeyword = funcDecl.isThrowing ? "try" : ""
+                    let asyncKeyword = funcDecl.hasAsyncSpecifier ? "async " : ""
+                    let awaitKeyword = funcDecl.hasAsyncSpecifier ? "await" : ""
+                    let throwsClauseSource = funcDecl.signature.effectSpecifiers?.throwsClause?.trimmedDescription ?? ""
+                    let tryKeyword = funcDecl.hasThrowsOrRethrowsSpecifier ? "try" : ""
                     let returnType = funcDecl.explicitReturnType?.description ?? "Void"
                     
                     return [
                         """
-                        public distributed dynamic func _\(funcDecl.name)(\(parameters)) \(asyncKeyword)\(throwsKeyword) -> \(returnType) {
+                        public distributed dynamic func _\(funcDecl.name)(\(parameters)) \(asyncKeyword)\(throwsClauseSource) -> \(returnType) {
                             return \(tryKeyword) \(awaitKeyword) self.base.\(funcDecl.name)\(callArgumentListExpr) 
                         };
                         """,
                         """
                         @inline(never)
-                        public dynamic nonisolated func \(funcDecl.name)(\(parameters)) \(asyncKeyword)\(throwsKeyword) -> \(returnType) {
+                        public dynamic nonisolated func \(funcDecl.name)(\(parameters)) \(asyncKeyword)\(throwsClauseSource) -> \(returnType) {
                             return try await self._\(funcDecl.name)\(callArgumentListExpr) 
                         };
                         """
                     ]
                 } else if let varDecl = decl.as(VariableDeclSyntax.self) {
-                    for (name, type) in zip(varDecl.names, varDecl.explicitlyDeclaredTypes) {
-                        return [
-                            """
-                            public distributed var \(name): \(type) { 
-                                base.\(name) 
-                            };
-                            """
-                        ]
+                    return varDecl.identifierBindings.map { binding in
+                        let type: TypeSyntax = binding.explicitType ?? "_"
+
+                        return """
+                        public distributed var \(binding.identifier): \(type) {
+                            base.\(binding.identifier)
+                        };
+                        """
                     }
                 }
                 

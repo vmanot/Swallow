@@ -6,21 +6,21 @@ import Swift
 import SwiftSyntax
 
 extension TupleTypeElementListSyntax {
-    init(_ types: [TypeSyntax]) {
+    public init(_ types: [TypeSyntax]) {
         self = types.tupleTypeElementList
     }
 }
 
 fileprivate extension Sequence where Element == TypeSyntax {
     var tupleTypeElements: [TupleTypeElementSyntax] {
-        var elements = self.map {
+        let types = Array(self)
+
+        return types.enumerated().map { index, type in
             TupleTypeElementSyntax(
-                type: $0,
-                trailingComma: .commaToken()
+                type: type,
+                trailingComma: index == types.indices.last ? nil : .commaToken(trailingTrivia: .space)
             )
         }
-        elements[elements.count - 1].trailingComma = nil
-        return elements
     }
 
     var tupleTypeElementList: TupleTypeElementListSyntax {

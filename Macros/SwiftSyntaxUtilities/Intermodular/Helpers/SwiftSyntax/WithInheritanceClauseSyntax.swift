@@ -1,26 +1,21 @@
 //
-//  WithInheritanceClauseSyntax.swift
-//  crowbar
-//
-//  Created by Yanan Li on 2025/5/15.
+// Copyright (c) Vatsal Manot
 //
 
 import SwiftSyntax
 
-// MARK: - WithInheritanceClauseSyntax
-
+/// A declaration syntax node that can carry inherited types or conformances.
 public protocol WithInheritanceClauseSyntax: SyntaxProtocol {
-    var inheritanceClause: InheritanceClauseSyntax? {
-        get
-        set
-    }
+    var inheritanceClause: InheritanceClauseSyntax? { get set }
 }
 
 extension WithInheritanceClauseSyntax {
-    /// Without this function, the `with` function defined on `SyntaxProtocol`
-    /// does not work on existentials of this protocol type.
+    /// Returns a copy with the selected child replaced when used as an existential.
     @_disfavoredOverload
-    public func with<T>(_ keyPath: WritableKeyPath<WithInheritanceClauseSyntax, T>, _ newChild: T) -> WithInheritanceClauseSyntax {
+    public func with<T>(
+        _ keyPath: WritableKeyPath<WithInheritanceClauseSyntax, T>,
+        _ newChild: T
+    ) -> WithInheritanceClauseSyntax {
         var copy: WithInheritanceClauseSyntax = self
         copy[keyPath: keyPath] = newChild
         return copy
@@ -28,23 +23,23 @@ extension WithInheritanceClauseSyntax {
 }
 
 extension SyntaxProtocol {
-    /// Check whether the non-type erased version of this syntax node conforms to
-    /// `WithInheritanceClauseSyntax`.
-    /// Note that this will incur an existential conversion.
+    /// Whether this node's concrete syntax type carries an inheritance clause.
     public func isProtocol(_: WithInheritanceClauseSyntax.Protocol) -> Bool {
-        return self.asProtocol(WithInheritanceClauseSyntax.self) != nil
+        asProtocol(WithInheritanceClauseSyntax.self) != nil
     }
-    
-    /// Return the non-type erased version of this syntax node if it conforms to
-    /// `WithInheritanceClauseSyntax`. Otherwise return `nil`.
-    /// Note that this will incur an existential conversion.
-    public func asProtocol(_: WithInheritanceClauseSyntax.Protocol) -> WithInheritanceClauseSyntax? {
-        return Syntax(self).asProtocol(SyntaxProtocol.self) as? WithInheritanceClauseSyntax
+
+    /// Returns this node as an inheritance-clause-bearing syntax node when supported.
+    public func asProtocol(
+        _: WithInheritanceClauseSyntax.Protocol
+    ) -> WithInheritanceClauseSyntax? {
+        Syntax(self).asProtocol(SyntaxProtocol.self) as? WithInheritanceClauseSyntax
     }
 }
 
-extension StructDeclSyntax: WithInheritanceClauseSyntax { }
-extension ClassDeclSyntax: WithInheritanceClauseSyntax { }
 extension ActorDeclSyntax: WithInheritanceClauseSyntax { }
-extension ProtocolDeclSyntax: WithInheritanceClauseSyntax { }
 extension AssociatedTypeDeclSyntax: WithInheritanceClauseSyntax { }
+extension ClassDeclSyntax: WithInheritanceClauseSyntax { }
+extension EnumDeclSyntax: WithInheritanceClauseSyntax { }
+extension ExtensionDeclSyntax: WithInheritanceClauseSyntax { }
+extension ProtocolDeclSyntax: WithInheritanceClauseSyntax { }
+extension StructDeclSyntax: WithInheritanceClauseSyntax { }

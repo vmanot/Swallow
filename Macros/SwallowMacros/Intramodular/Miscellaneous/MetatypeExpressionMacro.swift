@@ -17,7 +17,7 @@ public struct MetatypeExpressionMacro: DeclarationMacro, ExpressionMacro {
         let type: String = try expr.as(TupleExprSyntax.self).unwrap().typeExpressionTypeName
         
         /* guard let typeExpr: SomeOrAnyTypeSyntax = (expr.as(TypeSyntax.self)?.as(SomeOrAnyTypeSyntax.self) else {
-         throw AnyDiagnosticMessage("This only works with type expressions.")
+         throw MacroExpansionDiagnosticMessage("This only works with type expressions.")
          }
          
          let typeExprStr = typeExpr.ty.trimmedDescription*/
@@ -35,7 +35,7 @@ public struct MetatypeExpressionMacro: DeclarationMacro, ExpressionMacro {
         let type: String = try expr.as(TupleExprSyntax.self).unwrap().typeExpressionTypeName
         
         /* guard let typeExpr: SomeOrAnyTypeSyntax = (expr.as(TypeSyntax.self)?.as(SomeOrAnyTypeSyntax.self) else {
-         throw AnyDiagnosticMessage("This only works with type expressions.")
+         throw MacroExpansionDiagnosticMessage("This only works with type expressions.")
          }
          
          let typeExprStr = typeExpr.ty.trimmedDescription*/

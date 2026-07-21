@@ -119,8 +119,7 @@ final class ManagedActorMacroExpansionTests: XCTestCase {
                         super.init()
                     }
 
-                     public
-                        func callAsFunction()  {
+                    public func callAsFunction()  {
                         caller._performInnerBodyOfMethod(\\.dollarFunc) {
                                 self.caller.dollarFunc$()
                             }
@@ -146,9 +145,7 @@ final class ManagedActorMacroExpansionTests: XCTestCase {
                         super.init()
                     }
 
-                     public
-
-                        func callAsFunction()  {
+                    public func callAsFunction()  {
                         caller._performInnerBodyOfMethod(\\.regularFunc) {
                                 self.caller.regularFunc()
                             }

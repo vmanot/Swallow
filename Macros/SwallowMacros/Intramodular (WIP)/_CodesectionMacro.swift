@@ -25,13 +25,13 @@ public struct _CodesectionMacro: DeclarationMacro {
 
                             syntax = DeclSyntax(_syntax)
                         }
-                    })._declSyntax {
+                    }).declaration {
                         return syntax
                     }
                     
                     let type = String(describing: Swift.type(of: $0))
 
-                    throw AnyDiagnosticMessage(message: type + String(describing: $0))
+                    throw MacroExpansionDiagnosticMessage(message: type + String(describing: $0))
                 }
             })
         }
@@ -39,7 +39,7 @@ public struct _CodesectionMacro: DeclarationMacro {
         if let node = node.as(MemberBlockItemListSyntax.self) {
             return Array(node).map({ DeclSyntax($0.decl) })
         } else {
-            throw AnyDiagnosticMessage(message: String(describing: node))
+            throw MacroExpansionDiagnosticMessage(message: String(describing: node))
         }
     }
 }

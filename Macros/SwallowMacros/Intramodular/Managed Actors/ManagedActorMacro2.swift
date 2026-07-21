@@ -16,14 +16,14 @@ extension ManagedActorMacro2: ExtensionMacro {
     ) throws -> ExprSyntax {
         var _managedActorInitializationOptionsExpr: String = "[]"
         
-        if let arguments = node.labeledArguments, !arguments.isEmpty {
+        if let arguments = node.argumentList, !arguments.isEmpty {
             _managedActorInitializationOptionsExpr = "["
             
             for argument in arguments.map({ $0.expression.trimmedDescription }) {
                 if argument == ".serializedExecution" {
                     _managedActorInitializationOptionsExpr.append(argument + ", ")
                 } else {
-                    throw AnyDiagnosticMessage(message: "Unrecognized argument: \(argument)")
+                    throw MacroExpansionDiagnosticMessage(message: "Unrecognized argument: \(argument)")
                 }
             }
             
@@ -42,7 +42,7 @@ extension ManagedActorMacro2: ExtensionMacro {
         conformingTo protocols: [TypeSyntax],
         in context: some MacroExpansionContext
     ) throws -> [ExtensionDeclSyntax] {
-        guard let _ = declaration._namedDecl?.as(ClassDeclSyntax.self) else {
+        guard declaration.is(ClassDeclSyntax.self) else {
             return []
         }
         
@@ -70,8 +70,8 @@ extension ManagedActorMacro2: ExtensionMacro {
     }
 }
 
-extension ManagedActorMacro2: _MemberMacro2 {
-    public static func _expansion(
+extension ManagedActorMacro2: _MemberMacroConformanceListCompatibility {
+    public static func _expansionProvidingMembers(
         of node: AttributeSyntax,
         providingMembersOf declaration: some DeclGroupSyntax,
         conformingTo protocols: [TypeSyntax],
