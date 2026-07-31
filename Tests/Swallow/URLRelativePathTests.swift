@@ -9,7 +9,10 @@ struct URLRelativePathTests {
         let baseURL = URL(filePath: "/tmp/package", directoryHint: .isDirectory)
         let fileURL = baseURL.appending(path: "Sources/Library/File.swift")
 
-        #expect(try fileURL.path(relativeTo: baseURL).path == "Sources/Library/File.swift")
+        #expect(
+            try fileURL.path(relativeTo: baseURL)
+                == URL.RelativePath(path: "Sources/Library/File.swift")
+        )
     }
 
     @Test

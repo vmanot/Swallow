@@ -51,6 +51,14 @@ extension URL {
         public init(components: [URL.PathComponent]) {
             self.components = components
         }
+
+        public init(path: String) {
+            self.init(
+                components: path.split(separator: "/").map {
+                    URL.PathComponent(String($0))
+                }
+            )
+        }
         
         public func appending(_ component: URL.PathComponent) -> Self {
             .init(components: components.appending(component))
