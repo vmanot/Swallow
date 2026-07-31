@@ -100,24 +100,45 @@ extension URL {
     public func path(
         relativeTo baseURL: URL
     ) throws -> RelativePath {
-        guard baseURL.scheme != nil, self.scheme != nil else {
+        guard let baseScheme = baseURL.scheme, let scheme else {
             throw URLError(.badURL)
         }
         
-        guard baseURL.host == self.host else {
+        guard baseScheme == scheme,
+              baseURL.host == host,
+              baseURL.port == port,
+              baseURL.user == user,
+              baseURL.password == password else {
             throw URLError(.badURL)
         }
-        
-        guard self.absoluteString.hasPrefix(baseURL.absoluteString) else {
-            throw URLError(.badURL)
+
+        let standardizedBaseURL: URL
+        let standardizedDestinationURL: URL
+        if isFileURL, baseURL.isFileURL {
+            standardizedBaseURL = baseURL.standardizedFileURL
+            standardizedDestinationURL = standardizedFileURL
+        } else {
+            standardizedBaseURL = baseURL.standardized
+            standardizedDestinationURL = standardized
         }
-        
-        let relativeString = self.absoluteString.replacingOccurrences(of: baseURL.absoluteString, with: "")
-        let trimmedString = relativeString.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
-        
-        let components = trimmedString.components(separatedBy: "/")
-        
-        return RelativePath(components: components.map({ URL.PathComponent(rawValue: $0) }))
+
+        let baseComponents: [String] = standardizedBaseURL.pathComponents
+        let destinationComponents: [String] = standardizedDestinationURL.pathComponents
+        let sharedComponentCount: Int = zip(baseComponents, destinationComponents)
+            .prefix { (baseComponent: String, destinationComponent: String) -> Bool in
+                baseComponent == destinationComponent
+            }
+            .count
+        let components: [URL.PathComponent] =
+            Array(
+                repeating: URL.PathComponent(".."),
+                count: baseComponents.count - sharedComponentCount
+            )
+            + Array(destinationComponents[sharedComponentCount...]).map {
+                (component: String) -> URL.PathComponent in URL.PathComponent(component)
+            }
+
+        return RelativePath(components: components)
     }
 }
 
