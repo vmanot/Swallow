@@ -30,4 +30,20 @@ struct URLRelativePathTests {
 
         #expect(try fileURL.path(relativeTo: baseURL).path == "../package-cache/File.swift")
     }
+
+    @Test
+    func pathComponentHonorsExplicitFileAndDirectoryHints() throws {
+        let rootURL = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        let existingDirectoryURL = rootURL.appendingPathComponent("Headers", isDirectory: true)
+        try FileManager.default.createDirectory(at: existingDirectoryURL, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: rootURL) }
+
+        #expect(!rootURL.appending(.file("Headers")).hasDirectoryPath)
+        #expect(rootURL.appending(.directory("Headers")).hasDirectoryPath)
+
+        var mutableURL: URL = rootURL
+        mutableURL.append(.file("Headers"))
+        #expect(!mutableURL.hasDirectoryPath)
+    }
 }

@@ -70,7 +70,11 @@ extension URL {
     }
     
     public mutating func append(_ component: PathComponent) {
-        appendPathComponent(component.rawValue)
+        if let isDirectory = component.isDirectory {
+            appendPathComponent(component.rawValue, isDirectory: isDirectory)
+        } else {
+            appendPathComponent(component.rawValue)
+        }
     }
     
     @_disfavoredOverload
@@ -79,7 +83,11 @@ extension URL {
     }
     
     public func appending(_ component: PathComponent) -> Self {
-        appendingPathComponent(component.rawValue)
+        var result: Self = self
+
+        result.append(component)
+
+        return result
     }
     
     @_disfavoredOverload
