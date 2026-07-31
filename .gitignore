@@ -1,6 +1,10 @@
 .DS_Store
-.swiftpm/
-.swiftpm/*
+**/.swiftpm/
+!/.swiftpm/
+/.swiftpm/*
+!/.swiftpm/configuration/
+/.swiftpm/configuration/*
+!/.swiftpm/configuration/mirrors.json
 /*.xcodeproj
 /.build
 /Packages

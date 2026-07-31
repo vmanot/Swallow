@@ -1,7 +1,6 @@
 // swift-tools-version:6.1
 
 import CompilerPluginSupport
-import Foundation
 import PackageDescription
 
 var dependencies: [PackageDescription.Package.Dependency] = [
@@ -9,7 +8,7 @@ var dependencies: [PackageDescription.Package.Dependency] = [
     .package(url: "https://github.com/apple/swift-collections", from: "1.1.0"),
 ]
 #if compiler(>=6.1)
-dependencies += [.package(url: "https://github.com/swift-precompiled/swift-syntax", branch: "release/6.1")]
+dependencies += [.package(url: "https://github.com/swiftlang/swift-syntax.git", from: "601.0.0")]
 #else
 dependencies += [.package(url: "https://github.com/swiftlang/swift-syntax.git", from: "600.0.1")]
 #endif
@@ -358,26 +357,3 @@ let package = Package(
     ],
     swiftLanguageModes: [.v5]
 )
-
-// package-manifest-patch:start
-#if arch(arm64) && os(macOS)
-if ProcessInfo.processInfo.environment["FUCK_SWIFT_SYNTAX"] != nil {
-    patchSwiftSyntaxDependency(in: package)
-}
-#endif
-
-private func patchSwiftSyntaxDependency(in package: Package) {
-    if let swiftSyntaxIndex = package.dependencies.firstIndex(where: { (dependency: Package.Dependency) in
-        guard case .sourceControl(_, let location, _) = dependency.kind else {
-            return false
-        }
-
-        return location.contains("apple/swift-syntax.git") || location.contains("swiftlang/swift-syntax.git")
-    }) {
-        package.dependencies[swiftSyntaxIndex] = Package.Dependency.package(
-            url: "https://github.com/swift-precompiled/swift-syntax",
-            from: "600.0.0"
-        )
-    }
-}
-// package-manifest-patch:end

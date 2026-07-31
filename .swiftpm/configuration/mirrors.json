@@ -1,0 +1,9 @@
+{
+  "object": [
+    {
+      "mirror": "https://github.com/swift-precompiled/swift-syntax",
+      "original": "https://github.com/swiftlang/swift-syntax.git"
+    }
+  ],
+  "version": 1
+}

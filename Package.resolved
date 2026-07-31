@@ -24,8 +24,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/swift-precompiled/swift-syntax",
       "state" : {
-        "branch" : "release/6.1",
-        "revision" : "fc197a24fb2e77609fbe3d94624e36f84d758099"
+        "revision" : "fc197a24fb2e77609fbe3d94624e36f84d758099",
+        "version" : "601.0.1"
       }
     }
   ],

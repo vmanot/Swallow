@@ -5,7 +5,6 @@
 import Runtime
 import Swallow
 import XCTest
-import SwiftUI
 
 final class TypeMetadataTests: XCTestCase {
     func testCovarianceCheck() throws {
@@ -16,9 +15,6 @@ final class TypeMetadataTests: XCTestCase {
         let array: [Int] = [1, 2, 3]
         
         XCTAssert(TypeMetadata.of(array).conforms(to: (any Sequence).self))
-        
-        
-        print(TypeMetadata.of(Image.self)._allTopLevelKeyPathsByNameInDeclarationOrder)
     }
     
     func testKeyPaths() throws {
