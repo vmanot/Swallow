@@ -400,13 +400,21 @@ extension MachOFormat {
     }
 }
 
-extension MachOFormat.Segment.Name: CustomStringConvertible {
+extension MachOFormat.Segment.Name: CustomStringConvertible, LosslessStringConvertible {
+    public init?(_ description: String) {
+        self.init(rawValue: description)
+    }
+
     public var description: String {
         rawValue
     }
 }
 
-extension MachOFormat.Section.Name: CustomStringConvertible {
+extension MachOFormat.Section.Name: CustomStringConvertible, LosslessStringConvertible {
+    public init?(_ description: String) {
+        self.init(rawValue: description)
+    }
+
     public var description: String {
         rawValue
     }

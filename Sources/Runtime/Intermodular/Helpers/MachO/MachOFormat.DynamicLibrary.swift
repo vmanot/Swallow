@@ -66,7 +66,7 @@ extension MachOFormat {
         }
 
         @frozen
-        public struct Options: OptionSet, Hashable, Sendable {
+        public struct Flags: OptionSet, Hashable, Sendable {
             public let rawValue: UInt32
 
             public init(rawValue: UInt32) {
@@ -79,7 +79,7 @@ extension MachOFormat {
             public static let delayedInitialization = Self(rawValue: UInt32(DYLIB_USE_DELAYED_INIT))
         }
 
-        public enum Encoding: Hashable, Sendable {
+        public enum LoadCommandEncoding: Hashable, Sendable {
             case dylibCommand
             case dylibUseCommand
         }
@@ -89,8 +89,8 @@ extension MachOFormat {
         public let currentVersion: Version
         public let compatibilityVersion: Version
         public let timestamp: Timestamp?
-        public let options: Options
-        public let encoding: Encoding
+        public let flags: Flags
+        public let loadCommandEncoding: LoadCommandEncoding
 
         public var isIdentifier: Bool {
             loadCommandKind == .dynamicLibraryIdentifier
@@ -107,9 +107,9 @@ extension MachOFormat {
                 return nil
             }
 
-            let encoding: Encoding
+            let loadCommandEncoding: LoadCommandEncoding
             let timestamp: Timestamp?
-            var options: Options
+            var flags: Flags
             let minimumNameOffset: Int
 
             if markerOrTimestamp == UInt32(DYLIB_USE_MARKER),
@@ -120,24 +120,24 @@ extension MachOFormat {
                     return nil
                 }
 
-                encoding = .dylibUseCommand
+                loadCommandEncoding = .dylibUseCommand
                 timestamp = nil
-                options = Options(rawValue: rawOptions)
+                flags = Flags(rawValue: rawOptions)
                 minimumNameOffset = MemoryLayout<dylib_use_command>.size
             } else {
-                encoding = .dylibCommand
+                loadCommandEncoding = .dylibCommand
                 timestamp = Timestamp(rawValue: markerOrTimestamp)
-                options = []
+                flags = []
                 minimumNameOffset = MemoryLayout<dylib_command>.size
             }
 
             switch command.kind {
                 case .loadWeakDynamicLibrary:
-                    options.insert(.weakLink)
+                    flags.insert(.weakLink)
                 case .reexportDynamicLibrary:
-                    options.insert(.reexport)
+                    flags.insert(.reexport)
                 case .loadUpwardDynamicLibrary:
-                    options.insert(.upward)
+                    flags.insert(.upward)
                 default:
                     break
             }
@@ -155,13 +155,17 @@ extension MachOFormat {
             self.currentVersion = Version(rawValue: currentVersion)
             self.compatibilityVersion = Version(rawValue: compatibilityVersion)
             self.timestamp = timestamp
-            self.options = options
-            self.encoding = encoding
+            self.flags = flags
+            self.loadCommandEncoding = loadCommandEncoding
         }
     }
 }
 
-extension MachOFormat.DynamicLibrary.InstallName: CustomStringConvertible {
+extension MachOFormat.DynamicLibrary.InstallName: CustomStringConvertible, LosslessStringConvertible {
+    public init?(_ description: String) {
+        self.init(rawValue: description)
+    }
+
     public var description: String {
         rawValue
     }

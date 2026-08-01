@@ -30,8 +30,11 @@ extension MachOFormat {
             rawValue = UInt32(major) << 16 | UInt32(minor) << 8 | UInt32(patch)
         }
 
-        public init?(_ value: String) {
-            let components: [Substring] = value.split(separator: ".", omittingEmptySubsequences: false)
+        public init?(_ description: String) {
+            let components: [Substring] = description.split(
+                separator: ".",
+                omittingEmptySubsequences: false
+            )
 
             guard (1...3).contains(components.count),
                   components.allSatisfy({ !$0.isEmpty }),
@@ -55,7 +58,13 @@ extension MachOFormat {
     public struct SourceVersion: RawRepresentable, Hashable, Comparable, Codable, Sendable {
         public let rawValue: UInt64
 
-        public var components: (UInt32, UInt16, UInt16, UInt16, UInt16) {
+        public var components: (
+            a: UInt32,
+            b: UInt16,
+            c: UInt16,
+            d: UInt16,
+            e: UInt16
+        ) {
             (
                 UInt32(truncatingIfNeeded: rawValue >> 40),
                 UInt16(truncatingIfNeeded: rawValue >> 30) & 0x03ff,
@@ -70,11 +79,11 @@ extension MachOFormat {
         }
 
         public init?(
-            _ a: UInt32,
-            _ b: UInt16 = 0,
-            _ c: UInt16 = 0,
-            _ d: UInt16 = 0,
-            _ e: UInt16 = 0
+            a: UInt32,
+            b: UInt16 = 0,
+            c: UInt16 = 0,
+            d: UInt16 = 0,
+            e: UInt16 = 0
         ) {
             guard a < 1 << 24, b < 1 << 10, c < 1 << 10, d < 1 << 10, e < 1 << 10 else {
                 return nil
@@ -129,48 +138,48 @@ extension MachOFormat {
         public static let visionOSExclaveKit = Self(rawValue: UInt32(PLATFORM_VISIONOS_EXCLAVEKIT))
     }
 
-    public struct BuildTool: Hashable, Sendable {
-        @frozen
-        public struct Kind: RawRepresentable, Hashable, Codable, Sendable {
-            public let rawValue: UInt32
+    public struct BuildVersion: Hashable, Sendable {
+        public struct Tool: Hashable, Sendable {
+            @frozen
+            public struct Kind: RawRepresentable, Hashable, Codable, Sendable {
+                public let rawValue: UInt32
 
-            public init(rawValue: UInt32) {
-                self.rawValue = rawValue
+                public init(rawValue: UInt32) {
+                    self.rawValue = rawValue
+                }
+
+                public static let clang = Self(rawValue: UInt32(TOOL_CLANG))
+                public static let swift = Self(rawValue: UInt32(TOOL_SWIFT))
+                public static let ld = Self(rawValue: UInt32(TOOL_LD))
+                public static let lld = Self(rawValue: UInt32(TOOL_LLD))
+                public static let metal = Self(rawValue: UInt32(TOOL_METAL))
+                public static let airLLD = Self(rawValue: UInt32(TOOL_AIRLLD))
+                public static let airNT = Self(rawValue: UInt32(TOOL_AIRNT))
+                public static let airNTPlugin = Self(rawValue: UInt32(TOOL_AIRNT_PLUGIN))
+                public static let airPack = Self(rawValue: UInt32(TOOL_AIRPACK))
+                public static let gpuArchiver = Self(rawValue: UInt32(TOOL_GPUARCHIVER))
+                public static let metalFramework = Self(rawValue: UInt32(TOOL_METAL_FRAMEWORK))
             }
 
-            public static let clang = Self(rawValue: UInt32(TOOL_CLANG))
-            public static let swift = Self(rawValue: UInt32(TOOL_SWIFT))
-            public static let ld = Self(rawValue: UInt32(TOOL_LD))
-            public static let lld = Self(rawValue: UInt32(TOOL_LLD))
-            public static let metal = Self(rawValue: UInt32(TOOL_METAL))
-            public static let airLLD = Self(rawValue: UInt32(TOOL_AIRLLD))
-            public static let airNT = Self(rawValue: UInt32(TOOL_AIRNT))
-            public static let airNTPlugin = Self(rawValue: UInt32(TOOL_AIRNT_PLUGIN))
-            public static let airPack = Self(rawValue: UInt32(TOOL_AIRPACK))
-            public static let gpuArchiver = Self(rawValue: UInt32(TOOL_GPUARCHIVER))
-            public static let metalFramework = Self(rawValue: UInt32(TOOL_METAL_FRAMEWORK))
+            public let kind: Kind
+            public let version: Version
+
+            public init(kind: Kind, version: Version) {
+                self.kind = kind
+                self.version = version
+            }
         }
 
-        public let kind: Kind
-        public let version: Version
-
-        public init(kind: Kind, version: Version) {
-            self.kind = kind
-            self.version = version
-        }
-    }
-
-    public struct BuildVersion: Hashable, Sendable {
         public let platform: Platform
         public let minimumOperatingSystemVersion: Version
         public let sdkVersion: Version
-        public let tools: [BuildTool]
+        public let tools: [Tool]
 
         public init(
             platform: Platform,
             minimumOperatingSystemVersion: Version,
             sdkVersion: Version,
-            tools: [BuildTool] = []
+            tools: [Tool] = []
         ) {
             self.platform = platform
             self.minimumOperatingSystemVersion = minimumOperatingSystemVersion
@@ -180,7 +189,7 @@ extension MachOFormat {
     }
 }
 
-extension MachOFormat.Version: CustomStringConvertible {
+extension MachOFormat.Version: CustomStringConvertible, LosslessStringConvertible {
     public var description: String {
         patch == 0 ? "\(major).\(minor)" : "\(major).\(minor).\(patch)"
     }
@@ -250,7 +259,7 @@ extension MachOFormat.Platform: CustomStringConvertible {
     ]
 }
 
-extension MachOFormat.BuildTool.Kind: CustomStringConvertible {
+extension MachOFormat.BuildVersion.Tool.Kind: CustomStringConvertible {
     public var description: String {
         Self.names[rawValue] ?? "unknown(\(rawValue))"
     }

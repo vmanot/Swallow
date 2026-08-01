@@ -8,8 +8,15 @@ import ObjectiveC
 import Swallow
 
 extension DynamicLinkEditor {
-    static var _imageCount: UInt32 {
+    private static var imageCount: UInt32 {
         _dyld_image_count()
+    }
+
+    /// A current snapshot of the images loaded into this process.
+    public static var loadedImages: [Image] {
+        (0..<imageCount).compactMap { index in
+            Image(index: Image.Index(rawValue: index))
+        }
     }
 
     public struct Image: Hashable, Identifiable, @unchecked Sendable, URLInitiable {
@@ -25,10 +32,13 @@ extension DynamicLinkEditor {
             }
         }
 
-        public typealias ID = URL
+        public struct ID: Hashable, Sendable {
+            fileprivate let index: Index
+            fileprivate let headerAddress: UInt
+        }
 
         public var isValid: Bool {
-            index.rawValue < DynamicLinkEditor._imageCount
+            index.rawValue < DynamicLinkEditor.imageCount
                 && _dyld_get_image_header(index.rawValue) == rawHeader
         }
 
@@ -36,13 +46,22 @@ extension DynamicLinkEditor {
         public let fileURL: URL
         public let header: MachOFormat.Header
         public let slide: MachOFormat.VirtualMemorySlide
+        private let _rawHeader: UnsafePointer<mach_header>
 
         public var id: ID {
-            fileURL
+            ID(index: index, headerAddress: UInt(bitPattern: rawHeader))
+        }
+
+        public static func == (lhs: Self, rhs: Self) -> Bool {
+            lhs.id == rhs.id
+        }
+
+        public func hash(into hasher: inout Hasher) {
+            hasher.combine(id)
         }
 
         public init?(index: Index) {
-            guard index.rawValue < DynamicLinkEditor._imageCount,
+            guard index.rawValue < DynamicLinkEditor.imageCount,
                   let imageName = _dyld_get_image_name(index.rawValue),
                   let rawHeader = _dyld_get_image_header(index.rawValue),
                   let header = try? MachOFormat.Header(rawHeader)
@@ -56,6 +75,7 @@ extension DynamicLinkEditor {
             self.slide = MachOFormat.VirtualMemorySlide(
                 rawValue: _dyld_get_image_vmaddr_slide(index.rawValue)
             )
+            self._rawHeader = rawHeader
         }
 
         @_transparent
@@ -69,7 +89,7 @@ extension DynamicLinkEditor {
 
         public init?(url: URL) {
             let resolvedURL = url.standardizedFileURL.resolvingSymlinksInPath()
-            guard let image = Self.allCases.first(where: {
+            guard let image = DynamicLinkEditor.loadedImages.first(where: {
                 $0.fileURL.standardizedFileURL.resolvingSymlinksInPath() == resolvedURL
             }) else {
                 return nil
@@ -79,17 +99,7 @@ extension DynamicLinkEditor {
         }
 
         var rawHeader: UnsafePointer<mach_header> {
-            header.baseAddress.assumingMemoryBound(to: mach_header.self)
-        }
-    }
-}
-
-extension DynamicLinkEditor.Image: CaseIterable {
-    /// The images currently loaded in this process. This is intentionally not cached;
-    /// dyld can add images after the first query.
-    public static var allCases: [Self] {
-        (0..<DynamicLinkEditor._imageCount).compactMap { index in
-            Self(index: Index(rawValue: index))
+            _rawHeader
         }
     }
 }
@@ -103,7 +113,7 @@ extension DynamicLinkEditor.Image: CustomStringConvertible {
 // MARK: - Image filtering
 
 extension DynamicLinkEditor.Image {
-    public enum _ImagePathFilter: String, CaseIterable {
+    enum ImagePathFilter: String, CaseIterable {
         static let appleFramework: Set<Self> = [
             .coreSimulator,
             .xcode,
@@ -148,12 +158,12 @@ extension DynamicLinkEditor.Image {
         }
     }
 
-    func _matches(_ filter: _ImagePathFilter) -> Bool {
+    func matches(_ filter: ImagePathFilter) -> Bool {
         filter.matches(self)
     }
 
     @_transparent
-    func _matches(_ filters: Set<_ImagePathFilter>) -> Bool {
+    func matches(_ filters: Set<ImagePathFilter>) -> Bool {
         filters.contains { $0.matches(self) }
     }
 }
@@ -253,7 +263,7 @@ extension DynamicLinkEditor.Image {
     /// Direct dependencies that are currently loaded into this process.
     public var loadedDependencies: Set<Self> {
         get throws {
-            let loadedImages = Self.allCases
+            let loadedImages = DynamicLinkEditor.loadedImages
             return Set(try dependencies.compactMap { dependency in
                 try loadedImages.first { try $0.isLoaded(as: dependency.installName) }
             })

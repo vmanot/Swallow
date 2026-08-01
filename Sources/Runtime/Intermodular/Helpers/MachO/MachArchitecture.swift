@@ -23,8 +23,8 @@ extension MachOFormat {
             self.rawValue = rawValue
         }
 
-        public init?(_ rawValue: String) {
-            self.init(rawValue: rawValue)
+        public init?(_ description: String) {
+            self.init(rawValue: description)
         }
 
         public init?(_ cpu: CPU) {
@@ -67,7 +67,7 @@ extension MachOFormat {
     }
 }
 
-extension MachOFormat.Architecture: CustomStringConvertible, Named {
+extension MachOFormat.Architecture: CustomStringConvertible, LosslessStringConvertible, Named {
     public var description: String {
         rawValue
     }

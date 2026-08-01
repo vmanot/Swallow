@@ -43,19 +43,12 @@ extension MachOFormat {
     }
 
     public struct MinimumVersion: Hashable, Sendable {
-        public enum Platform: Hashable, Sendable {
-            case macOS
-            case iOS
-            case tvOS
-            case watchOS
-        }
-
-        public let platform: Platform
+        public let platform: MachOFormat.Platform
         public let minimumOperatingSystemVersion: Version
         public let sdkVersion: Version
 
         public init(
-            platform: Platform,
+            platform: MachOFormat.Platform,
             minimumOperatingSystemVersion: Version,
             sdkVersion: Version
         ) {
@@ -66,13 +59,21 @@ extension MachOFormat {
     }
 }
 
-extension MachOFormat.RunPath: CustomStringConvertible {
+extension MachOFormat.RunPath: CustomStringConvertible, LosslessStringConvertible {
+    public init?(_ description: String) {
+        self.init(rawValue: description)
+    }
+
     public var description: String {
         rawValue
     }
 }
 
-extension MachOFormat.TargetTriple: CustomStringConvertible {
+extension MachOFormat.TargetTriple: CustomStringConvertible, LosslessStringConvertible {
+    public init?(_ description: String) {
+        self.init(rawValue: description)
+    }
+
     public var description: String {
         rawValue
     }
@@ -122,7 +123,7 @@ extension MachOFormat.LoadCommand {
     }
 
     public var minimumVersion: MachOFormat.MinimumVersion? {
-        let platform: MachOFormat.MinimumVersion.Platform
+        let platform: MachOFormat.Platform
         switch kind {
             case .minimumMacOSVersion:
                 platform = .macOS

@@ -150,17 +150,6 @@ public final class DynamicLibraryLoader {
     }
 }
 
-extension DynamicLibraryLoader {
-    @frozen
-    public struct SymbolAddress: Hashable, @unchecked Sendable {
-        public let rawValue: UnsafeRawPointer
-        
-        public func unsafeBitCast<T>(to type: T.Type) -> T {
-            Swift.unsafeBitCast(rawValue, to: T.self)
-        }
-    }
-}
-
 // MARK: - Auxiliary
 
 extension DynamicLibraryLoader {
@@ -194,7 +183,7 @@ extension DynamicLibraryLoader {
         
         public func address(
             forSymbolWithName symbolName: String
-        ) throws -> DynamicLibraryLoader.SymbolAddress {
+        ) throws -> DynamicLinkEditor.SymbolAddress {
             guard let symbolAddress = dlsym(rawValue, symbolName) else {
                 throw DynamicLibraryLoader.Error(
                     kind: .symbolLookupFailed,
@@ -203,7 +192,7 @@ extension DynamicLibraryLoader {
                 )
             }
             
-            return SymbolAddress(rawValue: symbolAddress)
+            return DynamicLinkEditor.SymbolAddress(rawValue: symbolAddress)
         }
     }
 }

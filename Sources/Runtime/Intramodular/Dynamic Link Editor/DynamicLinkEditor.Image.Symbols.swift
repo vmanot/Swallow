@@ -5,22 +5,24 @@
 import MachO
 
 extension DynamicLinkEditor.Image {
-    public struct LoadedSymbol: CustomDebugStringConvertible, Hashable, Sendable {
-        public let metadata: MachOFormat.Symbol
-        public let address: DynamicLibraryLoader.SymbolAddress?
+    public struct Symbol: CustomStringConvertible, Hashable, Sendable {
+        public let machOSymbol: MachOFormat.Symbol
+        public let address: DynamicLinkEditor.SymbolAddress?
 
-        public var debugDescription: String {
-            metadata.name.rawValue
+        public var description: String {
+            machOSymbol.name.rawValue
         }
 
-        init(metadata: MachOFormat.Symbol, slide: MachOFormat.VirtualMemorySlide) {
-            self.metadata = metadata
+        init(_ machOSymbol: MachOFormat.Symbol, slide: MachOFormat.VirtualMemorySlide) {
+            self.machOSymbol = machOSymbol
 
             let resolvedAddress: MachOFormat.VirtualMemoryAddress?
-            if let virtualMemoryAddress = metadata.virtualMemoryAddress {
+            if let virtualMemoryAddress = machOSymbol.virtualMemoryAddress {
                 resolvedAddress = slide.applying(to: virtualMemoryAddress)
-            } else if metadata.kind == .absolute {
-                resolvedAddress = MachOFormat.VirtualMemoryAddress(rawValue: metadata.value.rawValue)
+            } else if machOSymbol.kind == .absolute {
+                resolvedAddress = MachOFormat.VirtualMemoryAddress(
+                    rawValue: machOSymbol.value.rawValue
+                )
             } else {
                 resolvedAddress = nil
             }
@@ -28,49 +30,42 @@ extension DynamicLinkEditor.Image {
             address = resolvedAddress
                 .flatMap { UInt(exactly: $0.rawValue) }
                 .flatMap(UnsafeRawPointer.init(bitPattern:))
-                .map(DynamicLibraryLoader.SymbolAddress.init)
+                .map(DynamicLinkEditor.SymbolAddress.init)
         }
     }
 
-    public struct SymbolIterator: Sequence, IteratorProtocol, Sendable {
-        private let symbols: [LoadedSymbol]
-        private var index = 0
-
-        init?(image: DynamicLinkEditor.Image) throws {
-            guard image.header.magic == .machO64 else {
-                return nil
+    public var symbols: [Symbol] {
+        get throws {
+            guard header.magic == .machO64 else {
+                return []
             }
 
-            let loadCommands = try image.loadCommands
+            let loadCommands = try loadCommands
             guard let symbolTable = try loadCommands.symbolTables.first,
                   let linkEdit = try loadCommands.segments.first(where: { $0.name == .linkEdit }),
                   let linkEditEndOffset = linkEdit.fileRegion.endOffset,
                   let stringTableByteCount = Int(exactly: symbolTable.stringTableRegion.size.rawValue)
             else {
-                return nil
+                return []
             }
 
             let (symbolTableByteCount, symbolTableSizeOverflow) = UInt64(symbolTable.symbolCount)
-                .multipliedReportingOverflow(
-                    by: UInt64(MemoryLayout<nlist_64>.stride)
-                )
+                .multipliedReportingOverflow(by: UInt64(MemoryLayout<nlist_64>.stride))
             let (symbolTableEndOffset, symbolTableEndOverflow) = symbolTable.symbolTableOffset.rawValue
                 .addingReportingOverflow(symbolTableByteCount)
-            guard let stringTableEndOffset = symbolTable.stringTableRegion.endOffset else {
-                return nil
-            }
-            guard !symbolTableSizeOverflow,
+            guard let stringTableEndOffset = symbolTable.stringTableRegion.endOffset,
+                  !symbolTableSizeOverflow,
                   !symbolTableEndOverflow,
                   let symbolTableStorageByteCount = Int(exactly: symbolTableByteCount),
                   symbolTable.symbolTableOffset >= linkEdit.fileRegion.offset,
                   symbolTable.stringTableRegion.offset >= linkEdit.fileRegion.offset,
                   symbolTableEndOffset <= linkEditEndOffset.rawValue,
                   stringTableEndOffset <= linkEditEndOffset,
-                  let slidVirtualMemoryAddress = image.slide.applying(
+                  let slidVirtualMemoryAddress = slide.applying(
                     to: linkEdit.virtualMemoryRegion.address
                   )
             else {
-                return nil
+                return []
             }
 
             let (linkEditAddress, fileOffsetOverflow) = slidVirtualMemoryAddress.rawValue
@@ -89,7 +84,7 @@ extension DynamicLinkEditor.Image {
                   let symbolTablePointer = UnsafeRawPointer(bitPattern: symbolTableBitPattern),
                   let stringTablePointer = UnsafeRawPointer(bitPattern: stringTableBitPattern)
             else {
-                return nil
+                return []
             }
 
             let stringTable = UnsafeRawBufferPointer(
@@ -100,7 +95,8 @@ extension DynamicLinkEditor.Image {
                 start: symbolTablePointer,
                 count: symbolTableStorageByteCount
             )
-            self.symbols = try (0..<symbolTable.symbolCount).compactMap { index in
+
+            return try (0..<symbolTable.symbolCount).compactMap { index in
                 let entry = symbolTableStorage.loadUnaligned(
                     fromByteOffset: index * MemoryLayout<nlist_64>.stride,
                     as: nlist_64.self
@@ -108,31 +104,9 @@ extension DynamicLinkEditor.Image {
                 guard let symbol = MachOFormat.Symbol(entry, stringTable: stringTable) else {
                     throw MachOFormat.DecodingError.malformedSymbol(index: index)
                 }
-                guard !symbol.isDebugging else {
-                    return nil
-                }
 
-                return LoadedSymbol(metadata: symbol, slide: image.slide)
+                return symbol.isDebugging ? nil : Symbol(symbol, slide: slide)
             }
-        }
-
-        public mutating func next() -> LoadedSymbol? {
-            guard index < symbols.endIndex else {
-                return nil
-            }
-
-            defer { index += 1 }
-            return symbols[index]
-        }
-    }
-
-    public var symbols: [LoadedSymbol] {
-        get throws {
-            guard let iterator = try SymbolIterator(image: self) else {
-                return []
-            }
-
-            return Array(iterator)
         }
     }
 }

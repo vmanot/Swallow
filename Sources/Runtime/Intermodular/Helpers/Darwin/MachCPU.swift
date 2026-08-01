@@ -11,19 +11,6 @@ extension MachOFormat {
     /// The CPU type and subtype stored in a Mach-O header.
     public struct CPU: Hashable, Sendable {
         @frozen
-        public struct PointerAuthenticationABI: RawRepresentable, Hashable, Sendable {
-            public let rawValue: UInt8
-
-            public init?(rawValue: UInt8) {
-                guard rawValue < 1 << 4 else {
-                    return nil
-                }
-
-                self.rawValue = rawValue
-            }
-        }
-
-        @frozen
         public struct Kind: RawRepresentable, Hashable, Sendable {
             public enum ABI: Hashable, Sendable {
                 case bits32
@@ -56,6 +43,19 @@ extension MachOFormat {
 
         @frozen
         public struct Subtype: RawRepresentable, Hashable, Sendable {
+            @frozen
+            public struct PointerAuthenticationABIVersion: RawRepresentable, Hashable, Sendable {
+                public let rawValue: UInt8
+
+                public init?(rawValue: UInt8) {
+                    guard rawValue < 1 << 4 else {
+                        return nil
+                    }
+
+                    self.rawValue = rawValue
+                }
+            }
+
             public let rawValue: cpu_subtype_t
 
             public init(rawValue: cpu_subtype_t) {
@@ -108,11 +108,11 @@ extension MachOFormat {
         /// Whether the subtype's context-dependent high capability bit denotes `CPU_SUBTYPE_LIB64`.
         public var uses64BitLibraries: Bool {
             subtype.capabilityBits & UInt32(truncatingIfNeeded: CPU_SUBTYPE_LIB64) != 0
-                && pointerAuthenticationABI == nil
+                && pointerAuthenticationABIVersion == nil
         }
 
         /// The arm64e pointer-authentication ABI version encoded in the subtype capability bits.
-        public var pointerAuthenticationABI: PointerAuthenticationABI? {
+        public var pointerAuthenticationABIVersion: Subtype.PointerAuthenticationABIVersion? {
             let baseSubtype = UInt32(bitPattern: subtype.base.rawValue)
             guard kind == .arm64,
                   baseSubtype == UInt32(bitPattern: CPU_SUBTYPE_ARM64E),
@@ -127,7 +127,7 @@ extension MachOFormat {
                         & UInt32(truncatingIfNeeded: CPU_SUBTYPE_ARM64_PTR_AUTH_MASK)
                 ) >> 24
             )
-            return PointerAuthenticationABI(rawValue: version)
+            return Subtype.PointerAuthenticationABIVersion(rawValue: version)
         }
     }
 }

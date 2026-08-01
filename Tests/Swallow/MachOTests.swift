@@ -11,7 +11,7 @@ import Testing
 struct MachOTests {
     @Test
     func parsesCurrentExecutableLoadCommands() throws {
-        let image = try #require(DynamicLinkEditor.Image.allCases.first)
+        let image = try #require(DynamicLinkEditor.loadedImages.first)
         let loadCommands = try image.loadCommands
 
         #expect(image.header.magic == .machO64)
@@ -70,7 +70,7 @@ struct MachOTests {
         #expect(typedHeader.cpu.kind == .arm64)
         #expect(loadCommands.first?.kind == .loadWeakDynamicLibrary)
         #expect(loadCommands.first?.kind.requiresDynamicLinkerSupport == true)
-        #expect(dependency.encoding == .dylibUseCommand)
+        #expect(dependency.loadCommandEncoding == .dylibUseCommand)
         #expect(dependency.installName.rawValue == installName)
         #expect(
             dependency.installName.reference
@@ -80,12 +80,10 @@ struct MachOTests {
         #expect(dependency.currentVersion == MachOFormat.Version(major: 2, minor: 1))
         #expect(dependency.compatibilityVersion == MachOFormat.Version(major: 2))
         #expect(dependency.timestamp == nil)
-        #expect(dependency.options.contains([.weakLink, .reexport, .delayedInitialization]))
+        #expect(dependency.flags.contains([.weakLink, .reexport, .delayedInitialization]))
 
         command.pointee.cmdsize = 0
-        #expect(throws: MachOFormat.DecodingError.self) {
-            _ = try typedHeader.loadCommands()
-        }
+        #expect(try typedHeader.loadCommands().first?.kind == .loadWeakDynamicLibrary)
 
         command.pointee.cmdsize = UInt32(commandByteCount)
         header.pointee.ncmds = .max
@@ -168,8 +166,12 @@ struct MachOTests {
         section.pointee.flags = UInt32(truncatingIfNeeded: S_SYMBOL_STUBS)
         section.pointee.reserved1 = 7
         section.pointee.reserved2 = 12
+        let indirectHeader = try MachOFormat.Header(
+            baseAddress: UnsafeRawPointer(storage),
+            availableByteCount: headerByteCount + commandByteCount
+        )
         let indirectSection = try #require(
-            try typedHeader.loadCommands().segments.first?.sections.first
+            try indirectHeader.loadCommands().segments.first?.sections.first
         )
         #expect(indirectSection.kind == .symbolStubs)
         #expect(indirectSection.indirectSymbols?.startIndex == 7)
@@ -203,11 +205,11 @@ struct MachOTests {
 
         entry.n_un.n_strx = 0
         entry.n_type = UInt8(N_SLINE)
-        let debuggingEntry = try #require(stringTable.withUnsafeBytes { bytes in
+        let debuggingSymbol = try #require(stringTable.withUnsafeBytes { bytes in
             MachOFormat.Symbol(entry, stringTable: bytes)
         })
-        #expect(debuggingEntry.name.rawValue.isEmpty)
-        #expect(debuggingEntry.classification == .debugging(.sourceLine))
+        #expect(debuggingSymbol.name.rawValue.isEmpty)
+        #expect(debuggingSymbol.classification == .debugging(.sourceLine))
 
         entry.n_un.n_strx = 1
         entry.n_type = UInt8(N_UNDF | N_EXT)
@@ -245,7 +247,7 @@ struct MachOTests {
             )
         )
         #expect(arm64eCPU.subtype.base.rawValue == CPU_SUBTYPE_ARM64E)
-        #expect(arm64eCPU.pointerAuthenticationABI?.rawValue == 3)
+        #expect(arm64eCPU.pointerAuthenticationABIVersion?.rawValue == 3)
         #expect(!arm64eCPU.uses64BitLibraries)
 
         let version = try #require(MachOFormat.Version("27.1.4"))
@@ -253,7 +255,9 @@ struct MachOTests {
         #expect(version.description == "27.1.4")
         #expect(MachOFormat.Version("27.256") == nil)
 
-        let sourceVersion = try #require(MachOFormat.SourceVersion(1, 2, 3, 4, 5))
+        let sourceVersion = try #require(
+            MachOFormat.SourceVersion(a: 1, b: 2, c: 3, d: 4, e: 5)
+        )
         #expect(sourceVersion.components == (1, 2, 3, 4, 5))
         #expect(sourceVersion.description == "1.2.3.4.5")
 

@@ -54,7 +54,7 @@ extension MachOFormat {
         }
 
         @frozen
-        public struct DebuggingEntry: RawRepresentable, Hashable, Sendable {
+        public struct DebuggingKind: RawRepresentable, Hashable, Sendable {
             public let rawValue: UInt8
 
             public init(rawValue: UInt8) {
@@ -88,7 +88,7 @@ extension MachOFormat {
 
         public enum Classification: Hashable, Sendable {
             case regular(kind: Kind, visibility: Visibility)
-            case debugging(DebuggingEntry)
+            case debugging(DebuggingKind)
         }
 
         @frozen
@@ -144,7 +144,7 @@ extension MachOFormat {
                 rawValue & UInt16(N_WEAK_REF) != 0
             }
 
-            public var hasWeakDefinitionOrReferenceToWeakFlag: Bool {
+            public var isWeakDefinitionOrReference: Bool {
                 rawValue & UInt16(N_WEAK_DEF) != 0
             }
 
@@ -201,16 +201,16 @@ extension MachOFormat {
             return visibility
         }
 
-        public var debuggingEntry: DebuggingEntry? {
-            guard case .debugging(let entry) = classification else {
+        public var debuggingKind: DebuggingKind? {
+            guard case .debugging(let kind) = classification else {
                 return nil
             }
 
-            return entry
+            return kind
         }
 
         public var isDebugging: Bool {
-            debuggingEntry != nil
+            debuggingKind != nil
         }
 
         public var isCommon: Bool {
@@ -239,11 +239,11 @@ extension MachOFormat {
         }
 
         public var isWeakDefinition: Bool {
-            kind == .definedInSection && descriptor.hasWeakDefinitionOrReferenceToWeakFlag
+            kind == .definedInSection && descriptor.isWeakDefinitionOrReference
         }
 
         public var isReferenceToWeakSymbol: Bool {
-            kind == .undefined && descriptor.hasWeakDefinitionOrReferenceToWeakFlag
+            kind == .undefined && descriptor.isWeakDefinitionOrReference
         }
 
         public init?(_ entry: nlist, stringTable: UnsafeRawBufferPointer) {
@@ -284,7 +284,7 @@ extension MachOFormat {
 
             self.name = name
             if rawType & UInt8(N_STAB) != 0 {
-                self.classification = .debugging(DebuggingEntry(rawValue: rawType))
+                self.classification = .debugging(DebuggingKind(rawValue: rawType))
             } else {
                 let visibility: Visibility = rawType & UInt8(N_PEXT) != 0
                     ? .privateExternal
@@ -301,7 +301,11 @@ extension MachOFormat {
     }
 }
 
-extension MachOFormat.Symbol.Name: CustomStringConvertible {
+extension MachOFormat.Symbol.Name: CustomStringConvertible, LosslessStringConvertible {
+    public init?(_ description: String) {
+        self.init(rawValue: description)
+    }
+
     public var description: String {
         rawValue
     }

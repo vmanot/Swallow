@@ -6,27 +6,27 @@ import MachO
 import Swift
 
 extension DynamicLinkEditor.Image {
-    public struct SwiftSymbol: Hashable {
-        public let base: LoadedSymbol
-        public let address: DynamicLibraryLoader.SymbolAddress
+    public struct SwiftSymbol: Hashable, Sendable {
+        public let symbol: Symbol
+        public let address: DynamicLinkEditor.SymbolAddress
                 
         public var mangledName: String {
-            base.metadata.name.rawValue
+            symbol.machOSymbol.name.rawValue
         }
 
         public var demangledName: String {
             _stdlib_demangleName(mangledName)
         }
                 
-        init?(symbol: LoadedSymbol) {
-            guard symbol.metadata.kind == .definedInSection,
-                  symbol.metadata.name.rawValue.hasPrefix("_$s"),
-                  let address: DynamicLibraryLoader.SymbolAddress = symbol.address
+        init?(_ symbol: Symbol) {
+            guard symbol.machOSymbol.kind == .definedInSection,
+                  symbol.machOSymbol.name.rawValue.hasPrefix("_$s"),
+                  let address: DynamicLinkEditor.SymbolAddress = symbol.address
             else {
                 return nil
             }
                     
-            self.base = symbol
+            self.symbol = symbol
             self.address = address
         }
     }

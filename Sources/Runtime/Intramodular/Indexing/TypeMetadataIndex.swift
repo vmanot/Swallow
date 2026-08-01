@@ -133,10 +133,10 @@ extension TypeMetadataIndex {
         
         private lazy var appleFrameworkObjCClasses: Set<TypeMetadata> = {
             if #available(macOS 13.0, iOS 16.0, tvOS 16.0, watchOS 9.0, *) {
-                return DynamicLinkEditor.Image.allCases
-                    .filter({ $0._matches(DynamicLinkEditor.Image._ImagePathFilter.appleFramework) })
+                return DynamicLinkEditor.loadedImages
+                    .filter { $0.matches(DynamicLinkEditor.Image.ImagePathFilter.appleFramework) }
                     ._flatMapToSet {
-                        return objc_enumerateClasses(fromImage: .machHeader($0.header.baseAddress)).map({ TypeMetadata($0) })
+                        return objc_enumerateClasses(fromImage: .machHeader($0.rawHeader)).map({ TypeMetadata($0) })
                     }
             } else {
                 return objCClasses.filter { cls in
@@ -144,17 +144,17 @@ extension TypeMetadataIndex {
                         return false
                     }
                     
-                    return image._matches(DynamicLinkEditor.Image._ImagePathFilter.appleFramework)
+                    return image.matches(DynamicLinkEditor.Image.ImagePathFilter.appleFramework)
                 }
             }
         }()
         
         private lazy var bundledObjCClasses: Set<TypeMetadata> = {
             if #available(macOS 13.0, iOS 16.0, tvOS 16.0, watchOS 9.0, *) {
-                return DynamicLinkEditor.Image.allCases
-                    .filter({ !$0._matches(DynamicLinkEditor.Image._ImagePathFilter.appleFramework) })
+                return DynamicLinkEditor.loadedImages
+                    .filter { !$0.matches(DynamicLinkEditor.Image.ImagePathFilter.appleFramework) }
                     ._flatMapToSet {
-                        return objc_enumerateClasses(fromImage: .machHeader($0.header.baseAddress)).map({ TypeMetadata($0) })
+                        return objc_enumerateClasses(fromImage: .machHeader($0.rawHeader)).map({ TypeMetadata($0) })
                     }
             } else {
                 return objCClasses
@@ -167,8 +167,8 @@ extension TypeMetadataIndex {
             
             allSwiftTypes.formUnion(allRuntimeDiscoveredTypes)
             
-            let imagesToSearch: [DynamicLinkEditor.Image] = DynamicLinkEditor.Image.allCases.filter {
-                !$0._matches(DynamicLinkEditor.Image._ImagePathFilter.appleFramework)
+            let imagesToSearch: [DynamicLinkEditor.Image] = DynamicLinkEditor.loadedImages.filter {
+                !$0.matches(DynamicLinkEditor.Image.ImagePathFilter.appleFramework)
             }
             
             func index(_ type: TypeMetadata) {

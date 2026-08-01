@@ -20,10 +20,8 @@ extension MachOFormat {
         case malformedSymbol(index: Int)
     }
 
-    /// A non-owning view of a Mach-O header and its adjacent load-command storage.
-    /// The caller must keep the underlying bytes alive while using the header or
-    /// decoding its load commands. Decoded `LoadCommands` own their storage.
-    public struct Header: Hashable, @unchecked Sendable {
+    /// An owning snapshot of a Mach-O header and its adjacent load-command storage.
+    public struct Header: Hashable, Sendable {
         @frozen
         public struct Magic: RawRepresentable, Hashable, Sendable {
             public let rawValue: UInt32
@@ -122,7 +120,7 @@ extension MachOFormat {
         public let loadCommandsByteCount: ByteCount
         public let flags: Flags
 
-        let baseAddress: UnsafeRawPointer
+        fileprivate let storage: [UInt8]
 
         public var architecture: Architecture? {
             cpu.architecture
@@ -198,7 +196,6 @@ extension MachOFormat {
             }
             let commandCount = Int(rawCommandCount)
 
-            self.baseAddress = baseAddress
             self.magic = magic
             self.cpu = CPU(
                 type: decode(baseAddress.loadUnaligned(fromByteOffset: 4, as: cpu_type_t.self)),
@@ -211,6 +208,9 @@ extension MachOFormat {
             self.loadCommandsByteCount = ByteCount(rawValue: UInt64(commandsByteCount))
             self.flags = Flags(
                 rawValue: decode(baseAddress.loadUnaligned(fromByteOffset: 24, as: UInt32.self))
+            )
+            self.storage = Array(
+                UnsafeRawBufferPointer(start: baseAddress, count: declaredEndOffset)
             )
         }
 
@@ -439,7 +439,7 @@ extension MachOFormat {
             }
             let count = Int(toolCount)
 
-            let tools: [BuildTool] = (0..<count).compactMap { index in
+            let tools: [BuildVersion.Tool] = (0..<count).compactMap { index in
                 let offset = MemoryLayout<build_version_command>.size
                     + index * MemoryLayout<build_tool_version>.size
                 guard let kind: UInt32 = uint32(at: offset),
@@ -448,8 +448,8 @@ extension MachOFormat {
                     return nil
                 }
 
-                return BuildTool(
-                    kind: BuildTool.Kind(rawValue: kind),
+                return BuildVersion.Tool(
+                    kind: BuildVersion.Tool.Kind(rawValue: kind),
                     version: Version(rawValue: version)
                 )
             }
@@ -761,73 +761,78 @@ extension MachOFormat {
         }
 
         init(header: Header) throws {
-            let commandsStartOffset = header.storageByteCount
-            let declaredEndOffset = commandsStartOffset
-                + Int(header.loadCommandsByteCount.rawValue)
-            let requiredAlignment = header.magic.is64Bit ? 8 : 4
-            var commands: [LoadCommand] = []
-            commands.reserveCapacity(header.loadCommandCount)
-            var offset = commandsStartOffset
-
-            for index in 0..<header.loadCommandCount {
-                guard offset <= declaredEndOffset - MemoryLayout<load_command>.size else {
-                    throw DecodingError.truncatedLoadCommand(index: index)
+            self.commands = try header.storage.withUnsafeBytes { storage in
+                guard let baseAddress = storage.baseAddress else {
+                    return []
                 }
 
-                let commandAddress = header.baseAddress.advanced(by: offset)
-                let rawKind = commandAddress.loadUnaligned(as: UInt32.self)
-                let encodedByteCount = commandAddress.loadUnaligned(
-                    fromByteOffset: MemoryLayout<UInt32>.size,
-                    as: UInt32.self
-                )
-                let kind = header.magic.isByteSwapped ? rawKind.byteSwapped : rawKind
-                let rawByteCount = header.magic.isByteSwapped
-                    ? encodedByteCount.byteSwapped
-                    : encodedByteCount
+                let commandsStartOffset = header.storageByteCount
+                let declaredEndOffset = storage.count
+                let requiredAlignment = header.magic.is64Bit ? 8 : 4
+                var commands: [LoadCommand] = []
+                commands.reserveCapacity(header.loadCommandCount)
+                var offset = commandsStartOffset
 
-                guard rawByteCount >= UInt32(MemoryLayout<load_command>.size),
-                      rawByteCount.isMultiple(of: UInt32(requiredAlignment)),
-                      let byteCount = Int(exactly: rawByteCount)
-                else {
-                    throw DecodingError.invalidLoadCommandSize(
-                        index: index,
-                        byteCount: ByteCount(rawByteCount),
-                        requiredAlignment: requiredAlignment
+                for index in 0..<header.loadCommandCount {
+                    guard offset <= declaredEndOffset - MemoryLayout<load_command>.size else {
+                        throw DecodingError.truncatedLoadCommand(index: index)
+                    }
+
+                    let commandAddress = baseAddress.advanced(by: offset)
+                    let rawKind = commandAddress.loadUnaligned(as: UInt32.self)
+                    let encodedByteCount = commandAddress.loadUnaligned(
+                        fromByteOffset: MemoryLayout<UInt32>.size,
+                        as: UInt32.self
                     )
+                    let kind = header.magic.isByteSwapped ? rawKind.byteSwapped : rawKind
+                    let rawByteCount = header.magic.isByteSwapped
+                        ? encodedByteCount.byteSwapped
+                        : encodedByteCount
+
+                    guard rawByteCount >= UInt32(MemoryLayout<load_command>.size),
+                          rawByteCount.isMultiple(of: UInt32(requiredAlignment)),
+                          let byteCount = Int(exactly: rawByteCount)
+                    else {
+                        throw DecodingError.invalidLoadCommandSize(
+                            index: index,
+                            byteCount: ByteCount(rawByteCount),
+                            requiredAlignment: requiredAlignment
+                        )
+                    }
+
+                    let (endOffset, endOffsetOverflow) = offset.addingReportingOverflow(byteCount)
+                    guard !endOffsetOverflow else {
+                        throw DecodingError.loadCommandOffsetOverflow(index: index)
+                    }
+                    guard endOffset <= declaredEndOffset else {
+                        throw DecodingError.loadCommandExceedsDeclaredRegion(
+                            index: index,
+                            endOffset: endOffset,
+                            declaredEndOffset: declaredEndOffset
+                        )
+                    }
+
+                    commands.append(
+                        LoadCommand(
+                            kind: LoadCommand.Kind(rawValue: kind),
+                            storage: Array(
+                                UnsafeRawBufferPointer(start: commandAddress, count: byteCount)
+                            ),
+                            isByteSwapped: header.magic.isByteSwapped
+                        )
+                    )
+                    offset = endOffset
                 }
 
-                let (endOffset, endOffsetOverflow) = offset.addingReportingOverflow(byteCount)
-                guard !endOffsetOverflow else {
-                    throw DecodingError.loadCommandOffsetOverflow(index: index)
-                }
-                guard endOffset <= declaredEndOffset else {
-                    throw DecodingError.loadCommandExceedsDeclaredRegion(
-                        index: index,
-                        endOffset: endOffset,
+                guard offset == declaredEndOffset else {
+                    throw DecodingError.unconsumedLoadCommandBytes(
+                        endOffset: offset,
                         declaredEndOffset: declaredEndOffset
                     )
                 }
 
-                commands.append(
-                    LoadCommand(
-                        kind: LoadCommand.Kind(rawValue: kind),
-                        storage: Array(
-                            UnsafeRawBufferPointer(start: commandAddress, count: byteCount)
-                        ),
-                        isByteSwapped: header.magic.isByteSwapped
-                    )
-                )
-                offset = endOffset
+                return commands
             }
-
-            guard offset == declaredEndOffset else {
-                throw DecodingError.unconsumedLoadCommandBytes(
-                    endOffset: offset,
-                    declaredEndOffset: declaredEndOffset
-                )
-            }
-
-            self.commands = commands
         }
     }
 }
