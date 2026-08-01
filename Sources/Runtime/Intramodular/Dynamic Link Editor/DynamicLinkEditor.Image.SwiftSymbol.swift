@@ -7,35 +7,34 @@ import Swift
 
 extension DynamicLinkEditor.Image {
     public struct SwiftSymbol: Hashable {
-        public let base: UnsafeRawSymbol
+        public let base: LoadedSymbol
+        public let address: DynamicLibraryLoader.SymbolAddress
                 
-        public var address: DynamicLibraryLoader.SymbolAddress {
-            base.address
-        }
-        
         public var mangledName: String {
-            base.name
+            base.metadata.name.rawValue
         }
 
         public var demangledName: String {
             _stdlib_demangleName(mangledName)
         }
                 
-        init?(symbol: UnsafeRawSymbol) {
-            guard symbol.type == .definedInSection, symbol.name.hasPrefix("_$s") else {
+        init?(symbol: LoadedSymbol) {
+            guard symbol.metadata.kind == .definedInSection,
+                  symbol.metadata.name.rawValue.hasPrefix("_$s"),
+                  let address: DynamicLibraryLoader.SymbolAddress = symbol.address
+            else {
                 return nil
             }
                     
             self.base = symbol
+            self.address = address
         }
     }
     
     public var swiftSymbols: [SwiftSymbol] {
-        let result = self._rawSymbolIterator?.compactMap {
-            SwiftSymbol(symbol: $0)
-        } ?? []
-        
-        return result
+        get throws {
+            try symbols.compactMap(SwiftSymbol.init)
+        }
     }
 }
 

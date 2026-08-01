@@ -7,128 +7,104 @@ import MachO
 import ObjectiveC
 import Swallow
 
-#if !os(watchOS)
-public typealias _mach_header_type = mach_header_64
-#else
-public typealias _mach_header_type = mach_header_64
-#endif
-
 extension DynamicLinkEditor {
-    public static var _totalImageCount: UInt32 {
-        return _dyld_image_count()
+    static var _imageCount: UInt32 {
+        _dyld_image_count()
     }
 
-    @frozen
     public struct Image: Hashable, Identifiable, @unchecked Sendable, URLInitiable {
-        public static var _allAddedCases = IdentifierIndexingArrayOf<Self>()
-        
-        public var isValid: Bool {
-            index < DynamicLinkEditor._totalImageCount
+        public struct Index: RawRepresentable, Hashable, Comparable, Sendable {
+            public let rawValue: UInt32
+
+            public init(rawValue: UInt32) {
+                self.rawValue = rawValue
+            }
+
+            public static func < (lhs: Self, rhs: Self) -> Bool {
+                lhs.rawValue < rhs.rawValue
+            }
         }
 
-        public let index: UInt32
-        public let name: String
-        public let header: UnsafePointer<mach_header>
-        public let slide: Int
-        
-        public struct ID: Hashable, Sendable {
-            let rawValue: String
+        public typealias ID = URL
+
+        public var isValid: Bool {
+            index.rawValue < DynamicLinkEditor._imageCount
+                && _dyld_get_image_header(index.rawValue) == rawHeader
         }
-        
+
+        public let index: Index
+        public let fileURL: URL
+        public let header: MachOFormat.Header
+        public let slide: MachOFormat.VirtualMemorySlide
+
         public var id: ID {
-            .init(rawValue: name)
+            fileURL
         }
-        
-        public init(
-            index: UInt32,
-            slide: Int? = nil,
-            name: String? = nil,
-            header: UnsafePointer<mach_header>?
-        ) {
-            self.index = index
-            self.name = name ?? String(cString: _dyld_get_image_name(index))
-            self.header = header ?? _dyld_get_image_header(index)
-            self.slide = slide ?? _dyld_get_image_vmaddr_slide(index)
-            
-            Self._allAddedCases.update(self)
-            
-            assert(isValid)
-        }
-        
-        @_transparent
-        public init<T: BinaryInteger>(
-            index: T
-        ) {
-            self.init(index: numericCast(index), slide: nil, name: nil, header: nil)
-        }
-        
-        public init?(url: URL) {
-            guard let image = Self.allCases.first(where: { $0.name == url.path }) else {
+
+        public init?(index: Index) {
+            guard index.rawValue < DynamicLinkEditor._imageCount,
+                  let imageName = _dyld_get_image_name(index.rawValue),
+                  let rawHeader = _dyld_get_image_header(index.rawValue),
+                  let header = try? MachOFormat.Header(rawHeader)
+            else {
                 return nil
             }
-            
+
+            self.index = index
+            self.fileURL = URL(fileURLWithPath: String(cString: imageName))
+            self.header = header
+            self.slide = MachOFormat.VirtualMemorySlide(
+                rawValue: _dyld_get_image_vmaddr_slide(index.rawValue)
+            )
+        }
+
+        @_transparent
+        public init?<Value: BinaryInteger>(index: Value) {
+            guard let rawValue = UInt32(exactly: index) else {
+                return nil
+            }
+
+            self.init(index: Index(rawValue: rawValue))
+        }
+
+        public init?(url: URL) {
+            let resolvedURL = url.standardizedFileURL.resolvingSymlinksInPath()
+            guard let image = Self.allCases.first(where: {
+                $0.fileURL.standardizedFileURL.resolvingSymlinksInPath() == resolvedURL
+            }) else {
+                return nil
+            }
+
             self = image
         }
-    }
-}
 
-extension DynamicLinkEditor.Image {
-    @usableFromInline
-    static var _imagesByName: [String: DynamicLinkEditor.Image] = {
-        Self.allCases.groupFirstOnly(by: \.name)
-    }()
-    
-    @_transparent
-    public init?(name: String) {
-        guard let image = Self._imagesByName[name] ?? Self.allCases.first(where: { $0.name == name }) else {
-            return nil
+        var rawHeader: UnsafePointer<mach_header> {
+            header.baseAddress.assumingMemoryBound(to: mach_header.self)
         }
-        
-        self = image
     }
 }
-
-// MARK: - Conformances
 
 extension DynamicLinkEditor.Image: CaseIterable {
-    public static let allCases: [Self] = {
-        DynamicLinkEditor.Image._allCases()
-    }()
-    
-    public static func _allCases() -> [DynamicLinkEditor.Image] {
-        let images: UInt32 = _dyld_image_count()
-        var result: [DynamicLinkEditor.Image] = []
-        
-        for index in 0..<images {
-            let name = String(cString: _dyld_get_image_name(index))
-            let header = _dyld_get_image_header(index)!
-            
-            let image = DynamicLinkEditor.Image(
-                index: index,
-                name: name,
-                header: header
-            )
-            
-            result.append(image)
+    /// The images currently loaded in this process. This is intentionally not cached;
+    /// dyld can add images after the first query.
+    public static var allCases: [Self] {
+        (0..<DynamicLinkEditor._imageCount).compactMap { index in
+            Self(index: Index(rawValue: index))
         }
-        
-        return result
     }
 }
 
 extension DynamicLinkEditor.Image: CustomStringConvertible {
     public var description: String {
-        name
+        fileURL.path
     }
 }
 
-// MARK: - Auxiliary
+// MARK: - Image filtering
 
 extension DynamicLinkEditor.Image {
     public enum _ImagePathFilter: String, CaseIterable {
-        private static var matchesByName: [Hashable2ple<Self, String>: Bool] = [:]
-        
-        static let appleFramework: Set<_ImagePathFilter> = [
+        static let appleFramework: Set<Self> = [
             .coreSimulator,
             .xcode,
             .developerApplications,
@@ -144,9 +120,8 @@ extension DynamicLinkEditor.Image {
             .systemExtensions,
             .systemLibraries,
             .userLibraries,
-            .xcode
         ]
-        
+
         case coreSimulator = "/Library/Developer/CoreSimulator"
         case xcode = "/Applications/Xcode.app"
         case developerApplications = "/Developer/Applications"
@@ -154,9 +129,7 @@ extension DynamicLinkEditor.Image {
         case developerPrivateFrameworks = "/Developer/Library/PrivateFrameworks"
         case developerPlatforms = "/Developer/Platforms"
         case developerTools = "/Developer/Tools"
-
         case preboot = "/private/preboot"
-
         case systemFrameworks = "/System/Library/Frameworks"
         case systemPrivateFrameworks = "/System/Library/PrivateFrameworks"
         case systemCoreServices = "/System/Library/CoreServices"
@@ -164,7 +137,6 @@ extension DynamicLinkEditor.Image {
         case systemExtensions = "/System/Library/Extensions"
         case systemLibraries = "/System/Library/Libraries"
         case systemKernelExtensions = "/System/Library/Extensions/Kernels"
-
         case userLibraries = "/usr/lib"
         case userLocalBin = "/usr/local/bin"
         case userLocalLib = "/usr/local/lib"
@@ -172,27 +144,21 @@ extension DynamicLinkEditor.Image {
         case userSbin = "/usr/sbin"
 
         func matches(_ image: DynamicLinkEditor.Image) -> Bool {
-            Self.matchesByName[Hashable2ple((self, image.name))].unwrapOrInitializeInPlace { () -> Bool in
-                return image.name.hasPrefix(self.rawValue)
-            }
+            URL(fileURLWithPath: rawValue, isDirectory: true).isAncestor(of: image.fileURL)
         }
     }
-}
 
-extension DynamicLinkEditor.Image {
     func _matches(_ filter: _ImagePathFilter) -> Bool {
         filter.matches(self)
     }
-    
+
     @_transparent
     func _matches(_ filters: Set<_ImagePathFilter>) -> Bool {
-        _memoize(uniquingWith: (self.name, filters)) {
-            filters.contains(where: { $0.matches(self) })
-        }
+        filters.contains { $0.matches(self) }
     }
 }
 
-// MARK: - Supplementary
+// MARK: - Objective-C images
 
 extension DynamicLinkEditor.Image {
     public var allObjCTypes: [ObjCClass] {
@@ -201,125 +167,96 @@ extension DynamicLinkEditor.Image {
 }
 
 extension ObjCClass {
-    private static var _dyldImageNameCache: [ObjectIdentifier: String] = [:]
-    
-    public var _dyldImageName: String? {
-        try? ObjCClass._dyldImageNameCache[ObjectIdentifier(self.base)].unwrapOrInitializeInPlace { () -> String? in
-            guard let name = class_getImageName(value) else {
-                return nil
-            }
-            
-            return String(cString: name)
-        }
-    }
-    
-    @_transparent
     public var dyldImage: DynamicLinkEditor.Image? {
-        _dyldImageName.map({ DynamicLinkEditor.Image(name: $0)! })
+        guard let imageName = class_getImageName(value) else {
+            return nil
+        }
+
+        return DynamicLinkEditor.Image(
+            url: URL(fileURLWithPath: String(cString: imageName))
+        )
     }
 }
 
 extension ObjCClass {
-    public static var _classesByImage: [DynamicLinkEditor.Image.ID: [ObjCClass]] = [:]
-    
+    @_OSUnfairLocked
+    private static var classesByImage: [DynamicLinkEditor.Image.ID: [ObjCClass]] = [:]
+
     public static func allCases(in image: DynamicLinkEditor.Image) -> [ObjCClass] {
-        Self._classesByImage[image.id].unwrapOrInitializeInPlace {
-            _allCases(in: image)
+        Self.$classesByImage.withCriticalScope { classesByImage in
+            if let classes = classesByImage[image.id] {
+                return classes
+            }
+
+            let classes = _allCases(in: image)
+            classesByImage[image.id] = classes
+            return classes
         }
     }
-    
+
     private static func _allCases(in image: DynamicLinkEditor.Image) -> [ObjCClass] {
-        var outCount: UInt32 = 0
-        let classNames = objc_copyClassNamesForImage(image.name, &outCount)!
-        
-        var result: [ObjCClass] = Array(capacity: Int(outCount))
-        
-        for i in 0..<Int(outCount) {
-            let className = classNames[i]
-            let aClass: AnyClass = objc_getClass(className) as! AnyClass
-            
-            result.append(ObjCClass(aClass))
+        var count: UInt32 = 0
+        guard let classNames = objc_copyClassNamesForImage(
+            image.fileURL.path,
+            &count
+        ) else {
+            return []
         }
-        
-        return result
-    }
-}
+        defer { free(classNames) }
 
-extension DynamicLinkEditor.Image {
-    public struct Dependency {
-        public let name: String
-        public let compatibilityVersion: UInt32
-        public let currentVersion: UInt32
-        public let timestamp: UInt32
-    }
-    
-    public var dependencies: [Dependency] {
-        var deps: [Dependency] = []
-        var curCmd = UnsafeMutablePointer<load_command>(OpaquePointer(header))
-        
-        // Move past the header to the first load command
-        curCmd = UnsafeMutableRawPointer(mutating: header).advanced(by: MemoryLayout<mach_header_64>.size)
-            .assumingMemoryBound(to: load_command.self)
-        
-        // Iterate through all load commands
-        for _ in 0..<header.pointee.ncmds {
-            if curCmd.pointee.cmd == LC_LOAD_DYLIB || curCmd.pointee.cmd == LC_LOAD_WEAK_DYLIB {
-                let dylibCmd = UnsafeMutableRawPointer(curCmd)
-                    .assumingMemoryBound(to: dylib_command.self)
-                
-                // Get the string offset from the dylib command
-                let stringOffset = Int(dylibCmd.pointee.dylib.name.offset)
-                
-                // Calculate the address of the string
-                let stringPtr = UnsafeMutableRawPointer(dylibCmd)
-                    .advanced(by: stringOffset)
-                    .assumingMemoryBound(to: CChar.self)
-                
-                let name = String(cString: stringPtr)
-                let dependency = Dependency(
-                    name: name,
-                    compatibilityVersion: dylibCmd.pointee.dylib.compatibility_version,
-                    currentVersion: dylibCmd.pointee.dylib.current_version,
-                    timestamp: dylibCmd.pointee.dylib.timestamp
-                )
-                
-                deps.append(dependency)
-            }
-            
-            // Move to the next command
-            curCmd = UnsafeMutableRawPointer(curCmd)
-                .advanced(by: Int(curCmd.pointee.cmdsize))
-                .assumingMemoryBound(to: load_command.self)
-        }
-        
-        return deps
-    }
-    
-    public func depends(on other: DynamicLinkEditor.Image) -> Bool {
-        // Get the dependencies and check if any match the other image's name
-        // Note: We compare the last path component since full paths might differ
-        let otherName = (other.name as NSString).lastPathComponent
-        return dependencies.contains { dependency in
-            let depName = (dependency.name as NSString).lastPathComponent
-            return depName == otherName
+        return (0..<Int(count)).compactMap { index in
+            (objc_getClass(classNames[index]) as? AnyClass).map(ObjCClass.init)
         }
     }
 }
 
-// Example usage:
+// MARK: - Load commands
+
 extension DynamicLinkEditor.Image {
-    public var allDependencies: Set<DynamicLinkEditor.Image> {
-        var result: Set<DynamicLinkEditor.Image> = []
-        
-        for dependency in dependencies {
-            let depName = (dependency.name as NSString).lastPathComponent
-            if let depImage = DynamicLinkEditor.Image.allCases.first(where: {
-                ($0.name as NSString).lastPathComponent == depName
-            }) {
-                result.insert(depImage)
-            }
+    public var loadCommands: MachOFormat.LoadCommands {
+        get throws {
+            try header.loadCommands()
         }
-        
-        return result
+    }
+
+    public var dependencies: [MachOFormat.DynamicLibrary] {
+        get throws {
+            try loadCommands.dynamicLibraries.filter { !$0.isIdentifier }
+        }
+    }
+
+    public var dynamicLibraryInstallName: MachOFormat.DynamicLibrary.InstallName? {
+        get throws {
+            try loadCommands.dynamicLibraries.first { $0.isIdentifier }?.installName
+        }
+    }
+
+    public func isLoaded(as installName: MachOFormat.DynamicLibrary.InstallName) throws -> Bool {
+        if try dynamicLibraryInstallName == installName {
+            return true
+        }
+
+        guard case .absolute(let installURL) = installName.reference else {
+            return false
+        }
+
+        return fileURL.standardizedFileURL.resolvingSymlinksInPath()
+            == installURL.standardizedFileURL.resolvingSymlinksInPath()
+    }
+
+    public func depends(on other: Self) throws -> Bool {
+        return try dependencies.contains { dependency in
+            try other.isLoaded(as: dependency.installName)
+        }
+    }
+
+    /// Direct dependencies that are currently loaded into this process.
+    public var loadedDependencies: Set<Self> {
+        get throws {
+            let loadedImages = Self.allCases
+            return Set(try dependencies.compactMap { dependency in
+                try loadedImages.first { try $0.isLoaded(as: dependency.installName) }
+            })
+        }
     }
 }

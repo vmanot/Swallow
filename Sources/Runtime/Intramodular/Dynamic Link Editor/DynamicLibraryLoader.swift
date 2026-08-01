@@ -50,12 +50,12 @@ public final class DynamicLibraryLoader {
     
     @discardableResult
     public static func load(at libraryURL: URL, flags: LoadFlags) throws -> DynamicLibraryLoader.Handle {
-        try DynamicLibraryLoader(library: libraryURL).open()
+        try DynamicLibraryLoader(library: libraryURL).open(flags: flags)
     }
     
     @discardableResult
     public static func load(atPath libraryPath: String, flags: LoadFlags) throws -> DynamicLibraryLoader.Handle {
-        try DynamicLibraryLoader(libraryPath: libraryPath).open()
+        try DynamicLibraryLoader(libraryPath: libraryPath).open(flags: flags)
     }
     
     @discardableResult
@@ -76,8 +76,6 @@ public final class DynamicLibraryLoader {
         
         let (executablePath, _) = try self.executablePath(for: libraryPath)
         
-        let index = DynamicLinkEditor._totalImageCount
-
         guard let rawHandle: UnsafeMutableRawPointer = dlopen(executablePath.cString(using: .utf8), flags.rawValue) else {
             throw Error(
                 kind: .openFailed,
@@ -85,10 +83,19 @@ public final class DynamicLibraryLoader {
                 additionalInfo: nil
             )
         }
-        
+
+        guard let image = DynamicLinkEditor.Image(
+            url: URL(fileURLWithPath: executablePath)
+        ) else {
+            dlclose(rawHandle)
+            throw Error(
+                kind: .loadedImageNotFound,
+                libraryPath: executablePath,
+                additionalInfo: nil
+            )
+        }
+
         self.rawHandle = rawHandle
-        
-        let image = DynamicLinkEditor.Image(index: index)
         
         let result = Handle(rawValue: rawHandle, image: image)
         
@@ -127,7 +134,7 @@ public final class DynamicLibraryLoader {
     
     private static func releaseHandle(
         for libraryPath: String,
-        handle: UnsafeMutableRawPointer
+        handle rawHandle: UnsafeMutableRawPointer
     ) {
         guard let handle: Handle = DynamicLibraryLoader.handleCache[libraryPath] else {
             return
@@ -136,8 +143,8 @@ public final class DynamicLibraryLoader {
         handle.refCount -= 1
         
         if handle.refCount == 0 {
-            dlclose(handle.rawValue)
-            
+            dlclose(rawHandle)
+            handle.invalidate()
             DynamicLibraryLoader.handleCache[libraryPath] = nil
         }
     }
@@ -158,13 +165,7 @@ extension DynamicLibraryLoader {
 
 extension DynamicLibraryLoader {
     @objc public class Handle: NSObject {
-        fileprivate var refCount: Int = 1 {
-            didSet {
-                if refCount == 0 {
-                    invalidate()
-                }
-            }
-        }
+        fileprivate var refCount: Int = 1
         
         public fileprivate(set) var _rawValue: UnsafeMutableRawPointer?
         
@@ -186,7 +187,7 @@ extension DynamicLibraryLoader {
             self.image = image
         }
         
-        private func invalidate() {
+        fileprivate func invalidate() {
             image = nil
             _rawValue = nil
         }
@@ -197,7 +198,7 @@ extension DynamicLibraryLoader {
             guard let symbolAddress = dlsym(rawValue, symbolName) else {
                 throw DynamicLibraryLoader.Error(
                     kind: .symbolLookupFailed,
-                    libraryPath: try image.unwrap().name,
+                    libraryPath: try image.unwrap().fileURL.path,
                     additionalInfo: symbolName
                 )
             }
@@ -216,6 +217,7 @@ extension DynamicLibraryLoader {
             case bundleNotLoaded
             case executablePathNotFound
             case openFailed
+            case loadedImageNotFound
             case symbolLookupFailed
         }
         
@@ -233,6 +235,8 @@ extension DynamicLibraryLoader {
                     return "Executable path not found: \(libraryPath)"
                 case .openFailed:
                     return "dlopen failed for library: \(libraryPath), error: \(additionalInfo ?? "")"
+                case .loadedImageNotFound:
+                    return "Loaded dynamic library image not found: \(libraryPath)"
                 case .symbolLookupFailed:
                     return "dlsym failed for library: \(libraryPath), symbol: \(additionalInfo ?? ""), error: \(dlError())"
             }

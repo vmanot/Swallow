@@ -136,7 +136,7 @@ extension TypeMetadataIndex {
                 return DynamicLinkEditor.Image.allCases
                     .filter({ $0._matches(DynamicLinkEditor.Image._ImagePathFilter.appleFramework) })
                     ._flatMapToSet {
-                        return objc_enumerateClasses(fromImage: .machHeader($0.header)).map({ TypeMetadata($0) })
+                        return objc_enumerateClasses(fromImage: .machHeader($0.header.baseAddress)).map({ TypeMetadata($0) })
                     }
             } else {
                 return objCClasses.filter { cls in
@@ -154,7 +154,7 @@ extension TypeMetadataIndex {
                 return DynamicLinkEditor.Image.allCases
                     .filter({ !$0._matches(DynamicLinkEditor.Image._ImagePathFilter.appleFramework) })
                     ._flatMapToSet {
-                        return objc_enumerateClasses(fromImage: .machHeader($0.header)).map({ TypeMetadata($0) })
+                        return objc_enumerateClasses(fromImage: .machHeader($0.header.baseAddress)).map({ TypeMetadata($0) })
                     }
             } else {
                 return objCClasses

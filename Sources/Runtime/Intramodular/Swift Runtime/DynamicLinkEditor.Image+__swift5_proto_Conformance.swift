@@ -8,9 +8,7 @@ import Swallow
 
 extension DynamicLinkEditor.Image {
     func _parseSwiftProtocolConformances() -> [__swift5_proto_Conformance] {
-        guard let header = UnsafeRawPointer(self.header) else {
-            return []
-        }
+        let header = UnsafeRawPointer(rawHeader)
         
         var size: UInt = 0
         let section = header.withMemoryRebound(to: mach_header_64.self, capacity: 1) { pointer in
@@ -39,7 +37,7 @@ extension DynamicLinkEditor.Image {
         var result = [TypeMetadata: _swift_TypeConformanceList]()
         
         var sectionSize: UInt = 0
-        let rawHeaderPointer = UnsafeRawPointer(self.header)
+        let rawHeaderPointer = UnsafeRawPointer(rawHeader)
         
         let sectionStart = UnsafeRawPointer(
             getsectiondata(

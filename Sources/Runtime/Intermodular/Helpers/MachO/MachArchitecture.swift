@@ -2,63 +2,116 @@
 // Copyright (c) Vatsal Manot
 //
 
-#if os(iOS) || os(macOS) || os(tvOS) || os(watchOS)
+#if os(iOS) || os(macOS) || os(tvOS) || os(visionOS) || os(watchOS)
 
-import Darwin
 import MachO
+import MachO.dyld.utils
 import Swallow
 
-public struct MachArchitecture: MutableWrapper, Trivial {
-    public typealias Value = NXArchInfo
-    
-    public var value: Value
+extension MachOFormat {
+    /// The canonical name of a Mach-O architecture.
+    ///
+    /// Architecture names are an open set so new toolchains remain representable.
+    @frozen
+    public struct Architecture: RawRepresentable, Hashable, Sendable {
+        public let rawValue: String
 
-    public init(_ value: Value) {
-        self.value = value
-    }
-}
-
-extension MachArchitecture {
-    public static var current: MachArchitecture {
-        return .init(NXGetLocalArchInfo().pointee)
-    }
-}
-
-// MARK: - Conformances
-
-extension MachArchitecture: CaseIterable {
-    public static var allCases: UnsafeBufferPointer<MachArchitecture> {
-        var count: Int = 0
-        
-        guard var start = NXGetAllArchInfos() else {
-            return .init(start: nil, count: 0)
+        public init?(rawValue: String) {
+            guard !rawValue.isEmpty, !rawValue.utf8.contains(0) else {
+                return nil
+            }
+            self.rawValue = rawValue
         }
-        
-        while start.pointee != NXArchInfo.null && start.pointee.name != nil {
-            count += 1
-            start += 1
+
+        public init?(_ rawValue: String) {
+            self.init(rawValue: rawValue)
         }
-        
-        return .init(start: NXGetAllArchInfos().assumingMemoryBound(to: MachArchitecture.self), count: count)
+
+        public init?(_ cpu: CPU) {
+            guard let name: UnsafePointer<CChar> = Self.name(
+                forCPUType: cpu.kind.rawValue,
+                subtype: cpu.subtype.rawValue
+            ) else {
+                return nil
+            }
+
+            self.init(rawValue: String(cString: name))
+        }
+
+        public static let arm64 = Self(rawValue: "arm64")!
+        public static let arm64_32 = Self(rawValue: "arm64_32")!
+        public static let arm64e = Self(rawValue: "arm64e")!
+        public static let armv7 = Self(rawValue: "armv7")!
+        public static let armv7k = Self(rawValue: "armv7k")!
+        public static let armv7s = Self(rawValue: "armv7s")!
+        public static let i386 = Self(rawValue: "i386")!
+        public static let x86_64 = Self(rawValue: "x86_64")!
+        public static let x86_64h = Self(rawValue: "x86_64h")!
+
+        public static var current: Self? {
+            currentArchitectureName().flatMap { Self(rawValue: String(cString: $0)) }
+        }
+
+        public var cpu: CPU? {
+            var type: cpu_type_t = 0
+            var subtype: cpu_subtype_t = 0
+
+            guard rawValue.withCString({ name in
+                Self.cpuType(forArchitectureName: name, type: &type, subtype: &subtype)
+            }) else {
+                return nil
+            }
+
+            return CPU(type: type, subtype: subtype)
+        }
     }
 }
 
-extension MachArchitecture: CustomStringConvertible {
+extension MachOFormat.Architecture: CustomStringConvertible, Named {
     public var description: String {
-        return .init(utf8String: value.description)
+        rawValue
     }
-}
 
-extension MachArchitecture: Hashable {
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(name)
-        hasher.combine(MachCPU(self))
-    }
-}
-
-extension MachArchitecture: Named {
     public var name: String {
-        return .init(utf8String: value.name)
+        rawValue
+    }
+}
+
+extension MachOFormat.Architecture {
+    private static func currentArchitectureName() -> UnsafePointer<CChar>? {
+        if #available(macOS 13.0, iOS 16.0, tvOS 16.0, watchOS 8.0, *) {
+            let header: UnsafePointer<mach_header>? = nil
+            return macho_arch_name_for_mach_header(header)
+        } else {
+            return NXGetLocalArchInfo()?.pointee.name
+        }
+    }
+
+    private static func cpuType(
+        forArchitectureName name: UnsafePointer<CChar>,
+        type: inout cpu_type_t,
+        subtype: inout cpu_subtype_t
+    ) -> Bool {
+        if #available(macOS 13.0, iOS 16.0, tvOS 16.0, watchOS 8.0, *) {
+            return macho_cpu_type_for_arch_name(name, &type, &subtype)
+        } else if let architecture = NXGetArchInfoFromName(name) {
+            type = architecture.pointee.cputype
+            subtype = architecture.pointee.cpusubtype
+            return true
+        } else {
+            return false
+        }
+    }
+
+    private static func name(
+        forCPUType type: cpu_type_t,
+        subtype: cpu_subtype_t
+    ) -> UnsafePointer<CChar>? {
+        if #available(macOS 13.0, iOS 16.0, tvOS 16.0, watchOS 8.0, *) {
+            return macho_arch_name_for_cpu_type(type, subtype)
+        } else {
+            return NXGetArchInfoFromCpuType(type, subtype)?.pointee.name
+        }
     }
 }
 
