@@ -9,7 +9,7 @@ extension DynamicLinkEditor.Image {
     public struct SwiftSymbol: Hashable, Sendable {
         public let symbol: Symbol
         public let address: DynamicLinkEditor.SymbolAddress
-                
+
         public var mangledName: String {
             symbol.machOSymbol.name.rawValue
         }
@@ -17,7 +17,7 @@ extension DynamicLinkEditor.Image {
         public var demangledName: String {
             _stdlib_demangleName(mangledName)
         }
-                
+
         init?(_ symbol: Symbol) {
             guard symbol.machOSymbol.kind == .definedInSection,
                   symbol.machOSymbol.name.rawValue.hasPrefix("_$s"),
@@ -25,12 +25,12 @@ extension DynamicLinkEditor.Image {
             else {
                 return nil
             }
-                    
+
             self.symbol = symbol
             self.address = address
         }
     }
-    
+
     public var swiftSymbols: [SwiftSymbol] {
         get throws {
             try symbols.compactMap(SwiftSymbol.init)

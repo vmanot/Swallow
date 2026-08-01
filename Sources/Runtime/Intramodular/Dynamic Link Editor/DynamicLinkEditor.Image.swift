@@ -20,6 +20,7 @@ extension DynamicLinkEditor {
     }
 
     public struct Image: Hashable, Identifiable, @unchecked Sendable, URLInitiable {
+        @frozen
         public struct Index: RawRepresentable, Hashable, Comparable, Sendable {
             public let rawValue: UInt32
 
@@ -225,7 +226,7 @@ extension ObjCClass {
 extension DynamicLinkEditor.Image {
     public var loadCommands: MachOFormat.LoadCommands {
         get throws {
-            try header.loadCommands()
+            try header.loadCommands
         }
     }
 

@@ -37,16 +37,18 @@ extension DynamicLinkEditor.Image {
     public var symbols: [Symbol] {
         get throws {
             guard header.magic == .machO64 else {
-                return []
+                throw MachOFormat.DecodingError.unsupportedMagic(header.magic)
             }
 
             let loadCommands = try loadCommands
-            guard let symbolTable = try loadCommands.symbolTables.first,
-                  let linkEdit = try loadCommands.segments.first(where: { $0.name == .linkEdit }),
+            guard let symbolTable = try loadCommands.symbolTables.first else {
+                return []
+            }
+            guard let linkEdit = try loadCommands.segments.first(where: { $0.name == .linkEdit }),
                   let linkEditEndOffset = linkEdit.fileRegion.endOffset,
                   let stringTableByteCount = Int(exactly: symbolTable.stringTableRegion.size.rawValue)
             else {
-                return []
+                throw MachOFormat.DecodingError.malformedSymbolTable
             }
 
             let (symbolTableByteCount, symbolTableSizeOverflow) = UInt64(symbolTable.symbolCount)
@@ -65,7 +67,7 @@ extension DynamicLinkEditor.Image {
                     to: linkEdit.virtualMemoryRegion.address
                   )
             else {
-                return []
+                throw MachOFormat.DecodingError.malformedSymbolTable
             }
 
             let (linkEditAddress, fileOffsetOverflow) = slidVirtualMemoryAddress.rawValue
@@ -84,7 +86,7 @@ extension DynamicLinkEditor.Image {
                   let symbolTablePointer = UnsafeRawPointer(bitPattern: symbolTableBitPattern),
                   let stringTablePointer = UnsafeRawPointer(bitPattern: stringTableBitPattern)
             else {
-                return []
+                throw MachOFormat.DecodingError.malformedSymbolTable
             }
 
             let stringTable = UnsafeRawBufferPointer(

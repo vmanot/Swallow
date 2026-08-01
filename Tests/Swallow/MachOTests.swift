@@ -64,7 +64,7 @@ struct MachOTests {
             baseAddress: UnsafeRawPointer(storage),
             availableByteCount: headerByteCount + commandByteCount
         )
-        let loadCommands = try typedHeader.loadCommands()
+        let loadCommands = try typedHeader.loadCommands
         let dependency = try #require(try loadCommands.dynamicLibraries.first)
 
         #expect(typedHeader.cpu.kind == .arm64)
@@ -83,7 +83,7 @@ struct MachOTests {
         #expect(dependency.flags.contains([.weakLink, .reexport, .delayedInitialization]))
 
         command.pointee.cmdsize = 0
-        #expect(try typedHeader.loadCommands().first?.kind == .loadWeakDynamicLibrary)
+        #expect(try typedHeader.loadCommands.first?.kind == .loadWeakDynamicLibrary)
 
         command.pointee.cmdsize = UInt32(commandByteCount)
         header.pointee.ncmds = .max
@@ -150,7 +150,7 @@ struct MachOTests {
             baseAddress: UnsafeRawPointer(storage),
             availableByteCount: headerByteCount + commandByteCount
         )
-        let segment = try #require(try typedHeader.loadCommands().segments.first)
+        let segment = try #require(try typedHeader.loadCommands.segments.first)
         let typedSection = try #require(segment.sections.first)
 
         #expect(segment.name == .text)
@@ -171,7 +171,7 @@ struct MachOTests {
             availableByteCount: headerByteCount + commandByteCount
         )
         let indirectSection = try #require(
-            try indirectHeader.loadCommands().segments.first?.sections.first
+            try indirectHeader.loadCommands.segments.first?.sections.first
         )
         #expect(indirectSection.kind == .symbolStubs)
         #expect(indirectSection.indirectSymbols?.startIndex == 7)

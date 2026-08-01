@@ -7,9 +7,10 @@ import FoundationX
 import Swallow
 
 public final class DynamicLibraryLoader {
-    public struct LoadFlags: OptionSet {
+    @frozen
+    public struct LoadFlags: OptionSet, Hashable, Sendable {
         public typealias RawValue = Int32
-        public var rawValue: RawValue
+        public let rawValue: RawValue
         
         public init(rawValue: RawValue) {
             self.rawValue = rawValue
@@ -74,13 +75,14 @@ public final class DynamicLibraryLoader {
             return handle
         }
         
-        let (executablePath, _) = try self.executablePath(for: libraryPath)
-        
-        guard let rawHandle: UnsafeMutableRawPointer = dlopen(executablePath.cString(using: .utf8), flags.rawValue) else {
+        let executablePath = try executablePath(for: libraryPath)
+
+        dlerror()
+        guard let rawHandle = executablePath.withCString({ dlopen($0, flags.rawValue) }) else {
             throw Error(
                 kind: .openFailed,
                 libraryPath: executablePath,
-                additionalInfo: nil
+                dynamicLinkerMessage: Error.currentDynamicLinkerMessage
             )
         }
 
@@ -90,8 +92,7 @@ public final class DynamicLibraryLoader {
             dlclose(rawHandle)
             throw Error(
                 kind: .loadedImageNotFound,
-                libraryPath: executablePath,
-                additionalInfo: nil
+                libraryPath: executablePath
             )
         }
 
@@ -114,22 +115,22 @@ public final class DynamicLibraryLoader {
         self.rawHandle = nil
     }
     
-    private func executablePath(
-        for libraryPath: String
-    ) throws -> (String, isBundle: Bool) {
-        if libraryPath.hasSuffix(".dylib") {
-            return (libraryPath, false)
-        } else {
-            guard let bundle = Bundle(path: libraryPath), bundle.load() else {
-                throw Error(kind: .bundleNotLoaded, libraryPath: libraryPath, additionalInfo: nil)
-            }
-            
-            guard let exePath = bundle.executablePath else {
-                throw Error(kind: .executablePathNotFound, libraryPath: libraryPath, additionalInfo: nil)
-            }
-            
-            return (exePath, true)
+    private func executablePath(for libraryPath: String) throws -> String {
+        var isDirectory = ObjCBool(false)
+        guard FileManager.default.fileExists(atPath: libraryPath, isDirectory: &isDirectory),
+              isDirectory.boolValue
+        else {
+            return libraryPath
         }
+
+        guard let bundle = Bundle(path: libraryPath) else {
+            throw Error(kind: .invalidBundle, libraryPath: libraryPath)
+        }
+        guard let executablePath = bundle.executablePath else {
+            throw Error(kind: .executablePathNotFound, libraryPath: libraryPath)
+        }
+
+        return executablePath
     }
     
     private static func releaseHandle(
@@ -167,13 +168,16 @@ extension DynamicLibraryLoader {
         }
         
         public fileprivate(set) var image: DynamicLinkEditor.Image?
-        
+
+        private let libraryPath: String
+
         fileprivate init(
             rawValue: UnsafeMutableRawPointer,
             image: DynamicLinkEditor.Image
         ) {
             self._rawValue = rawValue
             self.image = image
+            self.libraryPath = image.fileURL.path
         }
         
         fileprivate func invalidate() {
@@ -181,14 +185,20 @@ extension DynamicLibraryLoader {
             _rawValue = nil
         }
         
-        public func address(
-            forSymbolWithName symbolName: String
-        ) throws -> DynamicLinkEditor.SymbolAddress {
-            guard let symbolAddress = dlsym(rawValue, symbolName) else {
+        public func address(forSymbolNamed symbolName: String) throws -> DynamicLinkEditor.SymbolAddress {
+            guard let rawValue, image != nil else {
+                throw DynamicLibraryLoader.Error(kind: .notOpened, libraryPath: libraryPath)
+            }
+
+            dlerror()
+            let symbolAddress = symbolName.withCString { dlsym(rawValue, $0) }
+            let dynamicLinkerMessage = DynamicLibraryLoader.Error.currentDynamicLinkerMessage
+            guard let symbolAddress, dynamicLinkerMessage == nil else {
                 throw DynamicLibraryLoader.Error(
                     kind: .symbolLookupFailed,
-                    libraryPath: try image.unwrap().fileURL.path,
-                    additionalInfo: symbolName
+                    libraryPath: libraryPath,
+                    symbolName: symbolName,
+                    dynamicLinkerMessage: dynamicLinkerMessage
                 )
             }
             
@@ -200,43 +210,53 @@ extension DynamicLibraryLoader {
 // MARK: - Error Handling
 
 extension DynamicLibraryLoader {
-    public struct Error: CustomStringConvertible, Swift.Error {
-        public enum Kind {
+    public struct Error: CustomStringConvertible, Hashable, Swift.Error, Sendable {
+        public enum Kind: Hashable, Sendable {
             case notOpened
-            case bundleNotLoaded
+            case invalidBundle
             case executablePathNotFound
             case openFailed
             case loadedImageNotFound
             case symbolLookupFailed
         }
-        
+
         public let kind: Kind
         public let libraryPath: String
-        public let additionalInfo: String?
-        
+        public let symbolName: String?
+        public let dynamicLinkerMessage: String?
+
+        init(
+            kind: Kind,
+            libraryPath: String,
+            symbolName: String? = nil,
+            dynamicLinkerMessage: String? = nil
+        ) {
+            self.kind = kind
+            self.libraryPath = libraryPath
+            self.symbolName = symbolName
+            self.dynamicLinkerMessage = dynamicLinkerMessage
+        }
+
         public var description: String {
             switch kind {
                 case .notOpened:
-                    return "Library not opened: \(libraryPath)"
-                case .bundleNotLoaded:
-                    return "Bundle not loaded: \(libraryPath)"
+                    return "Dynamic library is not open: \(libraryPath)"
+                case .invalidBundle:
+                    return "Invalid bundle: \(libraryPath)"
                 case .executablePathNotFound:
-                    return "Executable path not found: \(libraryPath)"
+                    return "Bundle has no executable: \(libraryPath)"
                 case .openFailed:
-                    return "dlopen failed for library: \(libraryPath), error: \(additionalInfo ?? "")"
+                    return "dlopen failed for \(libraryPath): \(dynamicLinkerMessage ?? "unknown error")"
                 case .loadedImageNotFound:
                     return "Loaded dynamic library image not found: \(libraryPath)"
                 case .symbolLookupFailed:
-                    return "dlsym failed for library: \(libraryPath), symbol: \(additionalInfo ?? ""), error: \(dlError())"
+                    return "dlsym failed for \(symbolName ?? "unknown symbol") in \(libraryPath): "
+                        + (dynamicLinkerMessage ?? "unknown error")
             }
         }
-        
-        private func dlError() -> String {
-            if let errorMessageCStr = dlerror() {
-                return String(cString: errorMessageCStr)
-            } else {
-                return "dlerror returned nil"
-            }
+
+        static var currentDynamicLinkerMessage: String? {
+            dlerror().map { String(cString: $0) }
         }
     }
 }

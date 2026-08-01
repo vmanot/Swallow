@@ -17,6 +17,7 @@ extension MachOFormat {
         case loadCommandExceedsDeclaredRegion(index: Int, endOffset: Int, declaredEndOffset: Int)
         case unconsumedLoadCommandBytes(endOffset: Int, declaredEndOffset: Int)
         case malformedLoadCommand(kind: LoadCommand.Kind)
+        case malformedSymbolTable
         case malformedSymbol(index: Int)
     }
 
@@ -134,6 +135,10 @@ extension MachOFormat {
             magic.is64Bit ? MemoryLayout<mach_header_64>.size : MemoryLayout<mach_header>.size
         }
 
+        /// Copies a header and its declared load-command region from `baseAddress`.
+        ///
+        /// When `availableByteCount` is omitted, the caller must guarantee that the
+        /// complete region declared by the header is readable.
         public init(
             baseAddress: UnsafeRawPointer,
             availableByteCount: Int? = nil
@@ -224,9 +229,11 @@ extension MachOFormat {
             )
         }
 
-        /// Decodes an owning snapshot of the header's load commands.
-        public func loadCommands() throws -> LoadCommands {
-            try LoadCommands(header: self)
+        /// An owning decoded snapshot of the header's load commands.
+        public var loadCommands: LoadCommands {
+            get throws {
+                try LoadCommands(header: self)
+            }
         }
     }
 
@@ -643,7 +650,11 @@ extension MachOFormat {
         }
 
         func bytes(at offset: Int, count: Int) -> ArraySlice<UInt8>? {
-            guard offset >= 0, count >= 0, offset <= storageByteCount - count else {
+            guard offset >= 0,
+                  count >= 0,
+                  count <= storageByteCount,
+                  offset <= storageByteCount - count
+            else {
                 return nil
             }
 
@@ -688,7 +699,7 @@ extension MachOFormat {
     }
 
     public struct LoadCommands: RandomAccessCollection, Hashable, Sendable {
-        public typealias Index = Array<LoadCommand>.Index
+        public typealias Index = Int
 
         private let commands: [LoadCommand]
 
