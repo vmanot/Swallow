@@ -100,7 +100,7 @@ extension DynamicLinkEditor {
         }
 
         /// Borrows the Mach header backing this loaded image for C interoperability.
-        public func withUnsafeMachHeader<Result>(
+        public func withUnsafeMachOHeader<Result>(
             _ body: (UnsafePointer<mach_header>) throws -> Result
         ) rethrows -> Result {
             try body(rawHeader)
