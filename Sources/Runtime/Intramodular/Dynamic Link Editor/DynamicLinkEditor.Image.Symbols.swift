@@ -9,6 +9,12 @@ extension DynamicLinkEditor.Image {
         public let machOSymbol: MachOFormat.Symbol
         public let address: DynamicLinkEditor.SymbolAddress?
 
+        /// The name accepted by `dlsym`, without Mach-O's leading C symbol underscore.
+        public var dynamicLinkerName: String {
+            let name = machOSymbol.name.rawValue
+            return name.first == "_" ? String(name.dropFirst()) : name
+        }
+
         public var description: String {
             machOSymbol.name.rawValue
         }
