@@ -35,7 +35,7 @@ let package = Package(
                 "Compute",
                 "CoreModel",
                 "Diagnostics",
-                "_ErrorXModule",
+                "ErrorX",
                 "FoundationX",
                 "LoremIpsum",
                 "POSIX",
@@ -49,15 +49,9 @@ let package = Package(
             ]
         ),
         .library(
-            name: "_ErrorXModule",
+            name: "ErrorX",
             targets: [
-                "_ErrorXModule"
-            ]
-        ),
-        .library(
-            name: "_ErrorXMacrosClientModule",
-            targets: [
-                "_ErrorXMacrosClientModule"
+                "ErrorX"
             ]
         ),
         .library(
@@ -144,17 +138,18 @@ let package = Package(
             ]
         ),
         .target(
-            name: "_ErrorXModule",
+            name: "ErrorX",
             dependencies: [
-                "_ErrorXMacrosModule",
+                "ErrorXMacros",
                 "Swallow",
             ],
+            path: "Sources/ErrorX",
             swiftSettings: [
                 .swiftLanguageMode(.v6)
             ]
         ),
         .macro(
-            name: "_ErrorXMacrosModule",
+            name: "ErrorXMacros",
             dependencies: [
                 .product(name: "SwiftSyntax", package: "swift-syntax"),
                 .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
@@ -162,17 +157,7 @@ let package = Package(
                 .product(name: "SwiftCompilerPlugin", package: "swift-syntax"),
                 "SwiftSyntaxUtilities",
             ],
-            path: "Macros/_ErrorXMacrosModule",
-            swiftSettings: [
-                .swiftLanguageMode(.v6)
-            ]
-        ),
-        .target(
-            name: "_ErrorXMacrosClientModule",
-            dependencies: [
-                "_ErrorXModule",
-            ],
-            path: "Macros/_ErrorXMacrosClientModule",
+            path: "Macros/ErrorXMacros",
             swiftSettings: [
                 .swiftLanguageMode(.v6)
             ]
@@ -180,7 +165,7 @@ let package = Package(
         .target(
             name: "Diagnostics",
             dependencies: [
-                "_ErrorXModule",
+                "ErrorX",
                 "Swallow",
                 "SwallowMacrosClient",
             ],
@@ -342,9 +327,10 @@ let package = Package(
             ]
         ),
         .testTarget(
-            name: "_ErrorXModuleTests",
+            name: "ErrorXTests",
             dependencies: [
-                "_ErrorXModule",
+                "ErrorX",
+                "ErrorXMacros",
                 "Swallow",
                 .product(name: "SwiftSyntaxMacrosTestSupport", package: "swift-syntax"),
                 "SwiftSyntaxUtilities",

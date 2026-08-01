@@ -3,7 +3,7 @@
 //
 
 @_exported import Swallow
-@_exported import _ErrorXModule
+@_exported import ErrorX
 import SwallowMacrosClient
 
 #if DEBUG

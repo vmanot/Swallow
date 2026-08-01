@@ -3,7 +3,7 @@
 //
 
 import Swallow
-import _ErrorXModule
+import ErrorX
 
 /// Diagnostics-owned wrapper used by `#throw(error)` to preserve the thrown base error.
 @frozen
@@ -67,12 +67,8 @@ public struct DiagnosticTracedError: CustomStringConvertible, CustomDebugStringC
     }
 }
 
-extension DiagnosticTracedError: _ErrorBaseRepresentable {
-
-}
-
-extension DiagnosticTracedError: _ErrorCauseRepresentable {
-    public var underlyingError: (any Error)? {
+extension DiagnosticTracedError: TransparentError {
+    public var wrappedError: any Error {
         base
     }
 }
