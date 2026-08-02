@@ -59,6 +59,12 @@ let package = Package(
             targets: [
                 "MacroBuilder"
             ]
+        ),
+        .library(
+            name: "SwiftSyntaxUtilities",
+            targets: [
+                "SwiftSyntaxUtilities"
+            ]
         )
     ],
     dependencies: dependencies,
