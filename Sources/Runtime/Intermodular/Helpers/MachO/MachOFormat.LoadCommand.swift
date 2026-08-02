@@ -703,6 +703,7 @@ extension MachOFormat {
     }
 
     public struct LoadCommands: RandomAccessCollection, Hashable, Sendable {
+        public typealias Element = LoadCommand
         public typealias Index = Int
 
         private let commands: [LoadCommand]
