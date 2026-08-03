@@ -3,19 +3,9 @@
 import CompilerPluginSupport
 import PackageDescription
 
-let atomicsDependency: Package.Dependency
-let collectionsDependency: Package.Dependency
-#if compiler(>=6.3.2)
-atomicsDependency = .package(url: "https://github.com/swift-precompiled/swift-atomics.git", from: "1.2.0")
-collectionsDependency = .package(url: "https://github.com/swift-precompiled/swift-collections.git", from: "1.1.0")
-#else
-atomicsDependency = .package(url: "https://github.com/apple/swift-atomics.git", from: "1.2.0")
-collectionsDependency = .package(url: "https://github.com/apple/swift-collections", from: "1.1.0")
-#endif
-
 var dependencies: [PackageDescription.Package.Dependency] = [
-    atomicsDependency,
-    collectionsDependency,
+    .package(url: "https://github.com/apple/swift-atomics.git", from: "1.2.0"),
+    .package(url: "https://github.com/apple/swift-collections", from: "1.1.0"),
 ]
 // SwiftSyntax macro binaries are coupled to the compiler's plugin protocol.
 // Keep this package source-backed so changing Xcode versions cannot leave a
