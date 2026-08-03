@@ -35,7 +35,7 @@ public struct SingletonMacro: _MemberMacroConformanceListCompatibility {
         
         let initializer = try InitializerDeclSyntax("private \(raw: override)init()") {}
         
-        let selfToken: TokenSyntax = "\(raw: identifier.text)()"
+        let selfToken: TokenSyntax = "\(raw: identifier.text)"
         let initShared = FunctionCallExprSyntax(callee: DeclReferenceExprSyntax(baseName: selfToken)) {}
         let sharedInitializer = InitializerClauseSyntax(
             equal: .equalToken(trailingTrivia: .space),
