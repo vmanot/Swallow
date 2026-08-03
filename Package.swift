@@ -7,16 +7,10 @@ var dependencies: [PackageDescription.Package.Dependency] = [
     .package(url: "https://github.com/apple/swift-atomics.git", from: "1.2.0"),
     .package(url: "https://github.com/apple/swift-collections", from: "1.1.0"),
 ]
-#if compiler(>=6.4)
-// Macro implementation binaries are coupled to the Swift compiler's plugin
-// protocol. Build SwiftSyntax from source until a precompiled distribution
-// built for this compiler is selected explicitly.
+// SwiftSyntax macro binaries are coupled to the compiler's plugin protocol.
+// Keep this package source-backed so changing Xcode versions cannot leave a
+// stale precompiled plugin in the resolved graph.
 dependencies += [.package(url: "https://github.com/swiftlang/swift-syntax.git", from: "603.0.0")]
-#elseif compiler(>=6.1)
-dependencies += [.package(url: "https://github.com/swift-precompiled/swift-syntax.git", from: "601.0.0")]
-#else
-dependencies += [.package(url: "https://github.com/swiftlang/swift-syntax.git", from: "600.0.1")]
-#endif
 
 let package = Package(
     name: "Swallow",
