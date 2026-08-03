@@ -324,11 +324,11 @@ extension MachOFormat {
             public static let functionVariants = Self(rawValue: LC_FUNCTION_VARIANTS)
             public static let functionVariantFixups = Self(rawValue: LC_FUNCTION_VARIANT_FIXUPS)
             public static let targetTriple = Self(rawValue: LC_TARGET_TRIPLE)
-#if compiler(>=6.2)
-            public static let lazyLoadDynamicLibraryInfo = Self(rawValue: LC_LAZY_LOAD_DYLIB_INFO)
-#else
+            // `LC_LAZY_LOAD_DYLIB_INFO` was added to Apple's Mach-O headers
+            // after the command itself was introduced. The numeric command
+            // value is stable, while compiler-version checks are insufficient:
+            // Xcode 26.4 ships a Swift 6.3 compiler with older SDK headers.
             public static let lazyLoadDynamicLibraryInfo = Self(rawValue: UInt32(0x3A))
-#endif
 
             public var requiresDynamicLinkerSupport: Bool {
                 rawValue & 0x8000_0000 != 0
