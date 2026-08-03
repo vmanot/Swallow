@@ -8,7 +8,7 @@ var dependencies: [PackageDescription.Package.Dependency] = [
     .package(url: "https://github.com/apple/swift-collections", from: "1.1.0"),
 ]
 #if compiler(>=6.1)
-dependencies += [.package(url: "https://github.com/swiftlang/swift-syntax.git", from: "601.0.0")]
+dependencies += [.package(url: "https://github.com/swift-precompiled/swift-syntax.git", from: "601.0.0")]
 #else
 dependencies += [.package(url: "https://github.com/swiftlang/swift-syntax.git", from: "600.0.1")]
 #endif
@@ -326,6 +326,7 @@ let package = Package(
             dependencies: [
                 "Diagnostics",
                 "Swallow",
+                "SwiftSyntaxUtilities",
             ],
             path: "Tests/Diagnostics",
             swiftSettings: [
