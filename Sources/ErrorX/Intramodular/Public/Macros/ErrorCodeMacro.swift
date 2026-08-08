@@ -2,12 +2,22 @@
 // Copyright (c) Vatsal Manot
 //
 
-// A presentation argument may carry `\(...)` placeholders naming the case's
-// associated values. Swift type-checks these attribute arguments, so the
-// placeholders have to sit inside an *inert* literal — write a raw literal,
-// `#"Cannot copy sources for \(module)."#` — and `@ErrorModel` rewrites each
-// placeholder onto the matching associated value when it synthesizes the
-// per-case message.
+// A presentation argument may carry placeholders naming the case's
+// associated values. Write them in braces:
+//
+//     @ErrorCode(message: "Cannot copy sources for {module}.")
+//     case unavailableModuleSourceDirectory(module: String)
+//
+// `@ErrorModel` rewrites each placeholder onto the matching associated value
+// when it synthesizes the per-case message. `{{` and `}}` produce literal
+// braces; `{0}` references an unlabeled value by position; `{url.path}`
+// follows a name with an accessor chain.
+//
+// For an arbitrary expression, the interpolation spelling is also accepted
+// inside a *raw* literal, where Swift leaves `\(` inert instead of
+// type-checking it against the attribute's scope:
+//
+//     @ErrorCode(message: #"Cannot copy \(url.path(percentEncoded: false))."#)
 
 /// Assigns a stable code and optional presentation to an error case.
 @attached(peer)

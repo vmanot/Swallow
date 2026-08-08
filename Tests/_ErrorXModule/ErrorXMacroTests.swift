@@ -548,4 +548,142 @@ final class ErrorXMacroTests: XCTestCase {
     )
   }
 
+  func testBracePlaceholderInPlainLiteralMatchesRealInterpolation() {
+    // `{module}` needs no raw literal: a plain literal carries it inertly.
+    assertMacroExpansion(
+      ##"""
+      @ErrorModel(domain: "com.example.publish")
+      enum Failure {
+          @ErrorCode("sources.unavailable", message: "Cannot copy sources for {module}.")
+          case unavailableModuleSourceDirectory(module: String)
+      }
+      """##,
+      expandedSource: ##"""
+        enum Failure {
+            @ErrorCode("sources.unavailable", message: "Cannot copy sources for {module}.")
+            case unavailableModuleSourceDirectory(module: String)
+
+            enum Code: ErrorCode, CaseIterable {
+                static var domain: String {
+                    "com.example.publish"
+                }
+                case unavailableModuleSourceDirectory
+
+                var identifier: String {
+                    switch self {
+                        case .unavailableModuleSourceDirectory:
+                            return "sources.unavailable"
+                    }
+                }
+
+                static var allCases: [Self] {
+                    [
+                        Self.unavailableModuleSourceDirectory,
+                    ]
+                }
+            }
+
+            static var _errorDescriptor: _ErrorDescriptor<Self> {
+                _ErrorDescriptor { error in
+                    switch error {
+                        case .unavailableModuleSourceDirectory(let _errorX_0_module):
+                                return _ResolvedErrorDescriptor(
+                                    code: AnyErrorCode(Code.unavailableModuleSourceDirectory),
+                                            presentation: ErrorPresentation(message: "Cannot copy sources for \(_errorX_0_module).")
+                                )
+                    }
+                }
+            }
+        }
+
+        extension Failure: Swift.Error, _ModeledError {
+
+        }
+        """##,
+      macros: ["ErrorModel": ErrorModelMacro.self]
+    )
+  }
+
+  func testBraceEscapePositionalIndexAndAccessorChain() {
+    assertMacroExpansion(
+      ##"""
+      @ErrorModel(domain: "com.example.publish")
+      enum Failure {
+          @ErrorCode("archive.failed", message: "Archive {{failed}} for {0} at {url.path}.")
+          case archiveFailure(String, url: URL)
+      }
+      """##,
+      expandedSource: ##"""
+        enum Failure {
+            @ErrorCode("archive.failed", message: "Archive {{failed}} for {0} at {url.path}.")
+            case archiveFailure(String, url: URL)
+
+            enum Code: ErrorCode, CaseIterable {
+                static var domain: String {
+                    "com.example.publish"
+                }
+                case archiveFailure
+
+                var identifier: String {
+                    switch self {
+                        case .archiveFailure:
+                            return "archive.failed"
+                    }
+                }
+
+                static var allCases: [Self] {
+                    [
+                        Self.archiveFailure,
+                    ]
+                }
+            }
+
+            static var _errorDescriptor: _ErrorDescriptor<Self> {
+                _ErrorDescriptor { error in
+                    switch error {
+                        case .archiveFailure(let _errorX_0_value0, let _errorX_1_url):
+                                return _ResolvedErrorDescriptor(
+                                    code: AnyErrorCode(Code.archiveFailure),
+                                            presentation: ErrorPresentation(message: "Archive {failed} for \(_errorX_0_value0) at \(_errorX_1_url.path).")
+                                )
+                    }
+                }
+            }
+        }
+
+        extension Failure: Swift.Error, _ModeledError {
+
+        }
+        """##,
+      macros: ["ErrorModel": ErrorModelMacro.self]
+    )
+  }
+
+  func testUnterminatedBracePlaceholderIsRejected() {
+    assertMacroExpansion(
+      ##"""
+      @ErrorModel(domain: "com.example.publish")
+      enum Failure {
+          @ErrorCode(message: "Cannot copy sources for {module.")
+          case unavailableModuleSourceDirectory(module: String)
+      }
+      """##,
+      expandedSource: ##"""
+        enum Failure {
+            @ErrorCode(message: "Cannot copy sources for {module.")
+            case unavailableModuleSourceDirectory(module: String)
+        }
+        """##,
+      diagnostics: [
+        DiagnosticSpec(
+          message:
+            "@ErrorCode 'message:' has an unterminated '{' placeholder. Write '{{' for a literal brace.",
+          line: 1,
+          column: 1
+        )
+      ],
+      macros: ["ErrorModel": ErrorModelMacro.self]
+    )
+  }
+
 }
