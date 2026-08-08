@@ -132,6 +132,11 @@ extension ErrorPresentationTemplate {
           let expressionSource = interpolated.expression.trimmedDescription
 
           try appendPlaceholder(expressionSource, display: "\\(\(expressionSource))")
+        @unknown default:
+          throw ErrorXMacroDiagnostic.error(
+            .invalidPresentation,
+            "@ErrorCode '\(label):' contains an unsupported string-literal segment."
+          )
         }
       }
     } else {
