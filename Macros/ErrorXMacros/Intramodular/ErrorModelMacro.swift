@@ -21,7 +21,7 @@ public struct ErrorModelMacro: MemberMacro, ExtensionMacro {
 
     let access = enumDeclaration.modifiers.explicitDeclarationAccessLevelOrInternalFallback
       .protocolWitnessAccessModifierSource
-    let model = try _validatedModel(from: node, enumDeclaration: enumDeclaration)
+    let model = try _validatedModel(from: node, enumDeclaration: enumDeclaration, in: context)
     let declarations: [DeclSyntax] = [
       DeclSyntax(stringLiteral: _codeDeclaration(access: access, definition: model.codeDefinition)),
       DeclSyntax(
@@ -48,7 +48,7 @@ public struct ErrorModelMacro: MemberMacro, ExtensionMacro {
     }
 
     do {
-      _ = try _validatedModel(from: node, enumDeclaration: enumDeclaration)
+      _ = try _validatedModel(from: node, enumDeclaration: enumDeclaration, in: context)
     } catch {
       // The member role owns diagnostics. Avoid emitting a conformance
       // extension when member synthesis has already failed.
@@ -85,7 +85,8 @@ public struct ErrorModelMacro: MemberMacro, ExtensionMacro {
 
   private static func _validatedModel(
     from node: AttributeSyntax,
-    enumDeclaration: EnumDeclSyntax
+    enumDeclaration: EnumDeclSyntax,
+    in context: some MacroExpansionContext
   ) throws -> ModelDefinition {
     let options = try node._errorModelOptions()
     let modeledCases = try enumDeclaration._errorModelCases(
@@ -97,9 +98,47 @@ public struct ErrorModelMacro: MemberMacro, ExtensionMacro {
       isExhaustive: modeledCases.isExhaustive,
       codeDefinition: CodeDefinition(
         cases: modeledCases.cases,
-        domain: options.domain
+        domain: options.domain,
+        derivedDomain: _derivedDomain(of: enumDeclaration, in: context)
       )
     )
+  }
+
+  /// The domain used when a model authors neither `domain:` nor `catalog:`.
+  ///
+  /// This qualifies the enum's declared name with its module and file base
+  /// name, so several same-named nested error enums in one module — the common
+  /// `private enum Error` shape — still occupy distinct domains. Pass `domain:`
+  /// explicitly when the domain has to survive renaming the file.
+  private static func _derivedDomain(
+    of enumDeclaration: EnumDeclSyntax,
+    in context: some MacroExpansionContext
+  ) -> String {
+    let typeName =
+      enumDeclaration.name.identifierValue
+      ?? enumDeclaration.name.trimmedDescription
+
+    guard
+      let fileID = context.location(of: enumDeclaration)?.file.representedStringLiteralValue
+    else {
+      return typeName
+    }
+
+    let pathComponents = fileID.split(separator: "/")
+
+    guard let module = pathComponents.first, pathComponents.count > 1 else {
+      return typeName
+    }
+
+    var result = [String(module)]
+
+    if let fileBaseName = pathComponents[pathComponents.count - 1].split(separator: ".").first {
+      result.append(String(fileBaseName))
+    }
+
+    result.append(typeName)
+
+    return result.joined(separator: ".")
   }
 
   private static func _codeDeclaration(
@@ -283,13 +322,13 @@ public struct ErrorModelMacro: MemberMacro, ExtensionMacro {
   private static func _presentationExpression(
     _ presentation: PresentationAttributes
   ) -> String? {
-    let fields: [(String, String?)] = [
+    let fields: [(String, ErrorPresentationTemplate?)] = [
       ("message", presentation.message),
       ("failureReason", presentation.failureReason),
       ("helpAnchor", presentation.helpAnchor),
     ]
-    let arguments = fields.compactMap { name, value in
-      value.map { "\(name): \($0.swiftStringLiteralSource)" }
+    let arguments = fields.compactMap { name, template in
+      template.map { "\(name): \($0.expressionSource)" }
     }
 
     guard !arguments.isEmpty else {
@@ -330,7 +369,8 @@ private enum CodeDefinition {
 
   init(
     cases: [ModeledCase],
-    domain: DomainSpecification
+    domain: DomainSpecification,
+    derivedDomain: String
   ) throws {
     try Self.validateUniqueCodes(in: cases)
 
@@ -344,6 +384,16 @@ private enum CodeDefinition {
 
     switch domain {
     case .inferred:
+      if catalogCases.isEmpty {
+        // No catalog to infer from, so derive a domain rather than requiring one.
+        self = .synthesized(
+          domain: derivedDomain.swiftStringLiteralSource,
+          cases: cases
+        )
+
+        return
+      }
+
       guard catalogCases.count == cases.count,
         let firstCatalog = catalogCases.first,
         catalogCases.allSatisfy({ $0.catalogNameComponents == firstCatalog.catalogNameComponents })
@@ -453,6 +503,7 @@ private struct ModeledCase {
     }
 
     result.formUnion(relations.map(\.boundName))
+    result.formUnion(presentation.referencedBindingNames)
 
     return result
   }
@@ -544,9 +595,18 @@ private struct ContextSource {
 }
 
 private struct PresentationAttributes {
-  let message: String?
-  let failureReason: String?
-  let helpAnchor: String?
+  let message: ErrorPresentationTemplate?
+  let failureReason: ErrorPresentationTemplate?
+  let helpAnchor: ErrorPresentationTemplate?
+
+  /// The generated case bindings every authored template reads.
+  var referencedBindingNames: Set<String> {
+    [message, failureReason, helpAnchor]
+      .compactMap { $0 }
+      .reduce(into: Set<String>()) { result, template in
+        result.formUnion(template.referencedBindingNames)
+      }
+  }
 }
 
 private struct RecoveryOptionAttribute {
@@ -679,7 +739,10 @@ extension EnumDeclSyntax {
       let element = try enumCase.elements.first.unwrap()
       let name = element.name.trimmedDescription
       let associatedValues = element.parameterClause?._associatedValues() ?? []
-      let code = try enumCase._errorCodeAttribute()
+      let code = try enumCase._errorCodeAttribute(
+        caseName: name,
+        associatedValues: associatedValues
+      )
 
       guard let code else {
         guard allowsUnmodeledCases else {
@@ -795,7 +858,10 @@ extension EnumCaseParameterClauseSyntax {
 }
 
 extension EnumCaseDeclSyntax {
-  fileprivate func _errorCodeAttribute() throws -> CodeAttribute? {
+  fileprivate func _errorCodeAttribute(
+    caseName: String,
+    associatedValues: [AssociatedValue]
+  ) throws -> CodeAttribute? {
     let errorCodeAttributes = attributes(withUnqualifiedName: "ErrorCode")
 
     guard errorCodeAttributes.count <= 1 else {
@@ -809,13 +875,20 @@ extension EnumCaseDeclSyntax {
 
     try attribute.validateMacroArgumentShape(
       allowedLabels: ["message", "failureReason", "helpAnchor"],
-      unlabeledArgumentCount: 1...1
+      unlabeledArgumentCount: 0...1
     )
 
-    let expression = try attribute.requiredUnlabeledArgument(
-      diagnostic: "@ErrorCode requires one stable code identifier."
+    let presentation = try attribute._errorCodePresentation(
+      associatedValues: associatedValues
     )
-    let presentation = try attribute._errorCodePresentation()
+
+    guard
+      let expression = try attribute.ordinaryArgumentListOrEmpty().uniqueUnlabeledArgument()?
+        .expression
+    else {
+      // An omitted identifier derives the code from the case name.
+      return CodeAttribute(source: .literal(caseName), presentation: presentation)
+    }
 
     if let literal = expression.representedStringLiteralValue {
       guard !literal.isEmpty else {
@@ -1114,11 +1187,49 @@ extension AttributeSyntax {
     } == true
   }
 
-  fileprivate func _errorCodePresentation() throws -> PresentationAttributes {
-    .init(
-      message: try optionalStringLiteralValue(labeled: "message"),
-      failureReason: try optionalStringLiteralValue(labeled: "failureReason"),
-      helpAnchor: try optionalStringLiteralValue(labeled: "helpAnchor")
+  fileprivate func _errorCodePresentation(
+    associatedValues: [AssociatedValue]
+  ) throws -> PresentationAttributes {
+    func template(
+      labeled label: String
+    ) throws -> ErrorPresentationTemplate? {
+      guard let expression = try optionalArgument(labeled: label), !expression.isNilLiteral else {
+        return nil
+      }
+
+      return try ErrorPresentationTemplate(
+        expression: expression,
+        label: label
+      ) { name in
+        // Resolved by position when the placeholder is an index, so that associated values with no
+        // label remain reachable. Deliberately kept out of `AssociatedValue.matches(_:)`, which
+        // also drives `@ErrorContext`, `@ErrorCause`, and `@ErrorRelation`.
+        if let position = Int(name) {
+          guard let associatedValue = associatedValues.first(where: { $0.position == position }) else {
+            throw ErrorXMacroDiagnostic.error(
+              .invalidPresentationPlaceholder,
+              "@ErrorCode '\(label):' interpolates position \(position), but the case has \(associatedValues.count) associated value(s)."
+            )
+          }
+
+          return associatedValue.bindingName
+        }
+
+        guard let associatedValue = associatedValues.uniqueAssociatedValue(named: name) else {
+          throw ErrorXMacroDiagnostic.error(
+            .invalidPresentationPlaceholder,
+            "@ErrorCode '\(label):' interpolates '\(name)', which does not name exactly one associated value. Available associated values: \(associatedValues._availableAssociatedValuesDescription)."
+          )
+        }
+
+        return associatedValue.bindingName
+      }
+    }
+
+    return .init(
+      message: try template(labeled: "message"),
+      failureReason: try template(labeled: "failureReason"),
+      helpAnchor: try template(labeled: "helpAnchor")
     )
   }
 

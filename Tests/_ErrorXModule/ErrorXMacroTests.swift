@@ -299,4 +299,253 @@ final class ErrorXMacroTests: XCTestCase {
     )
   }
 
+  func testInterpolatedMessageBindsEachCasesAssociatedValues() {
+    assertMacroExpansion(
+      #"""
+      @ErrorModel(domain: "com.example.publish")
+      enum Failure {
+          @ErrorCode(message: "Cannot copy sources for \(module).")
+          case unavailableModuleSourceDirectory(module: String)
+
+          @ErrorCode(message: "Cannot publish \(package): module \(module) was not built at \(xcFrameworkURL.path).")
+          case unavailableBuiltArtifact(package: String, module: String, xcFrameworkURL: URL)
+      }
+      """#,
+      expandedSource: #"""
+        enum Failure {
+            @ErrorCode(message: "Cannot copy sources for \(module).")
+            case unavailableModuleSourceDirectory(module: String)
+
+            @ErrorCode(message: "Cannot publish \(package): module \(module) was not built at \(xcFrameworkURL.path).")
+            case unavailableBuiltArtifact(package: String, module: String, xcFrameworkURL: URL)
+
+            enum Code: ErrorCode, CaseIterable {
+                static var domain: String {
+                    "com.example.publish"
+                }
+                case unavailableModuleSourceDirectory
+                case unavailableBuiltArtifact
+
+                var identifier: String {
+                    switch self {
+                        case .unavailableModuleSourceDirectory:
+                            return "unavailableModuleSourceDirectory"
+                        case .unavailableBuiltArtifact:
+                            return "unavailableBuiltArtifact"
+                    }
+                }
+
+                static var allCases: [Self] {
+                    [
+                        Self.unavailableModuleSourceDirectory,
+                        Self.unavailableBuiltArtifact,
+                    ]
+                }
+            }
+
+            static var _errorDescriptor: _ErrorDescriptor<Self> {
+                _ErrorDescriptor { error in
+                    switch error {
+                        case .unavailableModuleSourceDirectory(let _errorX_0_module):
+                                return _ResolvedErrorDescriptor(
+                                    code: AnyErrorCode(Code.unavailableModuleSourceDirectory),
+                                            presentation: ErrorPresentation(message: "Cannot copy sources for \(_errorX_0_module).")
+                                )
+                        case .unavailableBuiltArtifact(let _errorX_0_package, let _errorX_1_module, let _errorX_2_xcFrameworkURL):
+                                return _ResolvedErrorDescriptor(
+                                    code: AnyErrorCode(Code.unavailableBuiltArtifact),
+                                            presentation: ErrorPresentation(message: "Cannot publish \(_errorX_0_package): module \(_errorX_1_module) was not built at \(_errorX_2_xcFrameworkURL.path).")
+                                )
+                    }
+                }
+            }
+        }
+
+        extension Failure: Swift.Error, _ModeledError {
+
+        }
+        """#,
+      macros: ["ErrorModel": ErrorModelMacro.self]
+    )
+  }
+
+  func testOmittedDomainAndCodeAreDerivedFromTheDeclaration() {
+    assertMacroExpansion(
+      #"""
+      @ErrorModel
+      enum Failure {
+          @ErrorCode
+          case nothingToPublish
+
+          @ErrorCode(message: "Cannot copy sources for \(module).")
+          case unavailableModuleSourceDirectory(module: String)
+      }
+      """#,
+      expandedSource: #"""
+        enum Failure {
+            @ErrorCode
+            case nothingToPublish
+
+            @ErrorCode(message: "Cannot copy sources for \(module).")
+            case unavailableModuleSourceDirectory(module: String)
+
+            enum Code: ErrorCode, CaseIterable {
+                static var domain: String {
+                    "TestModule.test.Failure"
+                }
+                case nothingToPublish
+                case unavailableModuleSourceDirectory
+
+                var identifier: String {
+                    switch self {
+                        case .nothingToPublish:
+                            return "nothingToPublish"
+                        case .unavailableModuleSourceDirectory:
+                            return "unavailableModuleSourceDirectory"
+                    }
+                }
+
+                static var allCases: [Self] {
+                    [
+                        Self.nothingToPublish,
+                        Self.unavailableModuleSourceDirectory,
+                    ]
+                }
+            }
+
+            static var _errorDescriptor: _ErrorDescriptor<Self> {
+                _ErrorDescriptor { error in
+                    switch error {
+                        case .nothingToPublish:
+                                return _ResolvedErrorDescriptor(
+                                    code: AnyErrorCode(Code.nothingToPublish)
+                                )
+                        case .unavailableModuleSourceDirectory(let _errorX_0_module):
+                                return _ResolvedErrorDescriptor(
+                                    code: AnyErrorCode(Code.unavailableModuleSourceDirectory),
+                                            presentation: ErrorPresentation(message: "Cannot copy sources for \(_errorX_0_module).")
+                                )
+                    }
+                }
+            }
+        }
+
+        extension Failure: Swift.Error, _ModeledError {
+
+        }
+        """#,
+      macros: ["ErrorModel": ErrorModelMacro.self]
+    )
+  }
+
+  func testInertRawLiteralPlaceholdersMatchRealInterpolation() {
+    // `#"...\(module)..."#` is the spelling adopters must use, because Swift
+    // type-checks the attribute argument and `module` is not in scope there.
+    assertMacroExpansion(
+      ##"""
+      @ErrorModel(domain: "com.example.publish")
+      enum Failure {
+          @ErrorCode("sources.unavailable", message: #"Cannot copy sources for \(module)."#)
+          case unavailableModuleSourceDirectory(module: String)
+      }
+      """##,
+      expandedSource: ##"""
+        enum Failure {
+            @ErrorCode("sources.unavailable", message: #"Cannot copy sources for \(module)."#)
+            case unavailableModuleSourceDirectory(module: String)
+
+            enum Code: ErrorCode, CaseIterable {
+                static var domain: String {
+                    "com.example.publish"
+                }
+                case unavailableModuleSourceDirectory
+
+                var identifier: String {
+                    switch self {
+                        case .unavailableModuleSourceDirectory:
+                            return "sources.unavailable"
+                    }
+                }
+
+                static var allCases: [Self] {
+                    [
+                        Self.unavailableModuleSourceDirectory,
+                    ]
+                }
+            }
+
+            static var _errorDescriptor: _ErrorDescriptor<Self> {
+                _ErrorDescriptor { error in
+                    switch error {
+                        case .unavailableModuleSourceDirectory(let _errorX_0_module):
+                                return _ResolvedErrorDescriptor(
+                                    code: AnyErrorCode(Code.unavailableModuleSourceDirectory),
+                                            presentation: ErrorPresentation(message: "Cannot copy sources for \(_errorX_0_module).")
+                                )
+                    }
+                }
+            }
+        }
+
+        extension Failure: Swift.Error, _ModeledError {
+
+        }
+        """##,
+      macros: ["ErrorModel": ErrorModelMacro.self]
+    )
+  }
+
+  func testMessagePlaceholderMustNameAnAssociatedValue() {
+    assertMacroExpansion(
+      #"""
+      @ErrorModel(domain: "com.example.publish")
+      enum Failure {
+          @ErrorCode(message: "Cannot copy sources for \(moduleName).")
+          case unavailableModuleSourceDirectory(module: String)
+      }
+      """#,
+      expandedSource: #"""
+        enum Failure {
+            @ErrorCode(message: "Cannot copy sources for \(moduleName).")
+            case unavailableModuleSourceDirectory(module: String)
+        }
+        """#,
+      diagnostics: [
+        DiagnosticSpec(
+          message:
+            "@ErrorCode 'message:' interpolates 'moduleName', which does not name exactly one associated value. Available associated values: module.",
+          line: 1,
+          column: 1
+        )
+      ],
+      macros: ["ErrorModel": ErrorModelMacro.self]
+    )
+  }
+
+  func testUnterminatedMessagePlaceholderIsRejected() {
+    assertMacroExpansion(
+      ##"""
+      @ErrorModel(domain: "com.example.publish")
+      enum Failure {
+          @ErrorCode(message: #"Cannot copy sources for \(module."#)
+          case unavailableModuleSourceDirectory(module: String)
+      }
+      """##,
+      expandedSource: ##"""
+        enum Failure {
+            @ErrorCode(message: #"Cannot copy sources for \(module."#)
+            case unavailableModuleSourceDirectory(module: String)
+        }
+        """##,
+      diagnostics: [
+        DiagnosticSpec(
+          message: "@ErrorCode 'message:' has an unterminated '\\(' placeholder.",
+          line: 1,
+          column: 1
+        )
+      ],
+      macros: ["ErrorModel": ErrorModelMacro.self]
+    )
+  }
+
 }

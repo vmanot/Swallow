@@ -113,6 +113,56 @@ inherits `Error` needs to consider both spellings:
 Macro-generated extensions should avoid adding `Swift.Error` when either
 spelling is already present, otherwise Swift reports a redundant conformance.
 
+Attribute Arguments Are Type-Checked Before Expansion
+-----------------------------------------------------
+
+An attached macro's attribute arguments are type-checked against the macro
+declaration, in the scope where the attribute is written. A case's
+associated-value names are not in scope there, so the natural spelling
+
+    @ErrorCode(message: "Cannot copy sources for \(module).")
+    case unavailableModuleSourceDirectory(module: String)
+
+fails before `@ErrorModel` runs, with two compiler errors:
+
+    error: cannot find 'module' in scope
+    error: cannot convert value of type 'String' to expected argument type 'StaticString'
+
+No macro implementation can rescue this: the interpolation is evaluated by the
+compiler, not handed to the macro. `ErrorPresentationTemplate` therefore accepts
+the placeholder text inside an *inert* literal, where `\(` is not an
+interpolation at all:
+
+    @ErrorCode(message: #"Cannot copy sources for \(module)."#)
+
+`StringLiteralExprSyntax.representedLiteralValue` resolves raw-literal
+delimiters, so the represented value still contains the characters `\(module)`
+for the macro to scan. The `StaticString` parameter type is deliberately kept:
+it makes an accidental real interpolation fail loudly instead of silently
+producing text the macro never saw.
+
+A genuinely interpolated literal is also accepted by the implementation, because
+`assertMacroExpansion` does not type-check the attribute. Both spellings produce
+the same expansion, which is what
+`testInertRawLiteralPlaceholdersMatchRealInterpolation` pins down.
+
+Reflected Type Names Are Not Usable As Derived Domains
+------------------------------------------------------
+
+`@ErrorModel` with no `domain:` and no catalog derives a domain. The obvious
+runtime derivation does not work: for the common nested `private enum`,
+
+    String(reflecting: Err.self)
+
+produces an address-bearing, run-to-run unstable name such as
+
+    ProbeModule.Outer.(unknown context at $100aa0fbc).Err
+
+The macro instead bakes a literal domain at expansion time, from
+`context.location(of:)` in `#fileID` mode plus the enum's declared name:
+`ScipioKit.PackageProducer.Error`. `BasicMacroExpansionContext` supplies this in
+`assertMacroExpansion` too, as `TestModule.test.<TypeName>`.
+
 Source Order For Peer Attributes
 --------------------------------
 

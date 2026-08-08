@@ -11,6 +11,8 @@ enum ErrorXMacroDiagnostic {
     case missingErrorCode
     case duplicateErrorCode
     case invalidErrorCode
+    case invalidPresentation
+    case invalidPresentationPlaceholder
     case duplicateStableCode
     case invalidDomain
     case missingDomain
