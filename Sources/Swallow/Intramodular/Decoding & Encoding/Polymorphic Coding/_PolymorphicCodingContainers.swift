@@ -274,6 +274,18 @@ public struct _PolymorphicKeyedDecodingContainer<Key: CodingKey>: KeyedDecodingC
         try base.decode(type, forKey: key)
     }
     
+    /// Do not replace the proxy decode below with `T.init(from:)`.
+    ///
+    /// Decoder-specific behavior is applied at the generic container boundary,
+    /// not by `Decodable.init(from:)` itself. This is the central propagation
+    /// invariant for this wrapper and for any future modular-decoder pipeline:
+    /// https://forums.swift.org/t/propery-wrapper-decoding-difference-between-singlevaluecontainer-and-init-from-decoder/51918/4
+    ///
+    /// The Foundation-type exceptions also demonstrate a limitation of the
+    /// legacy design: concrete coders have private, type-specific strategies.
+    /// General archive-wide type replacement and coder capability reporting
+    /// were identified as missing Codable customization points here:
+    /// https://forums.swift.org/t/codable-improvements-and-refinements/19426
     public func decode<T: Decodable>(_ type: T.Type, forKey key: Key) throws -> T {
         guard !(type is Date.Type) else {
             return try base.decode(T.self, forKey: key)

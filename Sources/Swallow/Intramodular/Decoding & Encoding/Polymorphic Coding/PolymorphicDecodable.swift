@@ -5,7 +5,15 @@
 import Combine
 import Swift
 
-/// A type that supports polymoprhic decoding.
+/// A type that supports polymorphic decoding.
+///
+/// A discriminator is an application-owned wire identifier, not permission to
+/// instantiate an arbitrary runtime type named by untrusted input. Resolvers
+/// should use an allow-listed registry with stable identifiers.
+///
+/// Polymorphism, cyclic object graphs, and runtime registration remain active
+/// design questions even in Swift's contemporary serialization work:
+/// https://forums.swift.org/t/the-future-of-serialization-deserialization-apis/78585/20
 public protocol PolymorphicDecodable: AnyObject, Decodable {
     associatedtype DecodingTypeDiscriminator: Equatable
     
@@ -51,6 +59,13 @@ extension TopLevelDecoder {
 
 // MARK: - Auxiliary
 
+/// A compatibility adapter for the legacy, pull-based `Decoder` protocols.
+///
+/// Swift's experimental 2026 serialization design is parser/visitor-driven and
+/// introduces separate common and format-specific protocol families. Avoid
+/// baking this adapter's `TopLevelDecoder` shape into any future general coder
+/// plugin abstraction:
+/// https://forums.swift.org/t/new-codable-prototype-available-for-feedback/85186
 public struct _PolymorphicTopLevelDecoder<Base: TopLevelDecoder>: TopLevelDecoder {
     public let base: Base
     

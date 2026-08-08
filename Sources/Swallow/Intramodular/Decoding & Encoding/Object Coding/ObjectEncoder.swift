@@ -57,6 +57,15 @@ public struct ObjectEncoder: Initiable {
         return try cast(encoded)
     }
     
+    /// An exact-type, encoder-wide representation override.
+    ///
+    /// This predates, but occupies the same design space as, the general
+    /// `CodingStrategy` protocols and `@EncodableBy` customization under
+    /// development for Swift's new serialization APIs:
+    /// https://github.com/swiftlang/swift-foundation/pull/1945
+    ///
+    /// This table is replacement-based: one strategy wins for one exact type.
+    /// It is not an ordered plugin pipeline and has no fallthrough semantics.
     public struct EncodingStrategy<T: Encodable> {
         public typealias Closure = (T, Encoder) throws -> Void
         

@@ -53,6 +53,16 @@ public struct _PolymorphicDecoder: _PolymorphicDecoderType, Decoder {
 }
 
 /// A proxy for `Decodable` that forces our custom decoder to be used.
+///
+/// The proxy is not merely type erasure. Calling a container's generic
+/// `decode` gives its decoder an opportunity to intercept the requested type;
+/// calling `T.init(from:)` directly bypasses decoder-owned strategies. Keep
+/// this distinction in mind when changing the forwarding paths below:
+/// https://forums.swift.org/t/propery-wrapper-decoding-difference-between-singlevaluecontainer-and-init-from-decoder/51918/4
+///
+/// Every generic child decode must re-enter through a proxy (or an equivalent
+/// interception mechanism), otherwise polymorphic behavior becomes dependent
+/// on where a value happens to occur in the object graph.
 
 public protocol _PolymorphicDecodingProxyType: Decodable {
     associatedtype Value

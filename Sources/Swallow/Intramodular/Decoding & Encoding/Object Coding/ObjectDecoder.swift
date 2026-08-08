@@ -43,6 +43,15 @@ public struct ObjectDecoder: Initiable {
         }
     }
     
+    /// An exact-type, decoder-wide representation override.
+    ///
+    /// This predates, but occupies the same design space as, the general
+    /// `CodingStrategy` protocols and `@DecodableBy` customization under
+    /// development for Swift's new serialization APIs:
+    /// https://github.com/swiftlang/swift-foundation/pull/1945
+    ///
+    /// This table is replacement-based: one strategy wins for one exact type.
+    /// It is not an ordered plugin pipeline and has no fallthrough semantics.
     public struct DecodingStrategy<T: Decodable> {
         public typealias Closure = (Decoder) throws -> T
         
