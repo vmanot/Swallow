@@ -62,6 +62,18 @@ public struct AnyError: CustomStringConvertible, CustomDebugStringConvertible, E
     }
 }
 
+extension AnyError: _UnwrappableTypeEraser {
+    public typealias _UnwrappedBaseType = any Error
+
+    public init(_erasing base: any Error) {
+        self.init(erasing: base)
+    }
+
+    public func _unwrapBase() -> any Error {
+        base
+    }
+}
+
 public struct CustomStringError: Codable, CustomStringConvertible, Error, ExpressibleByStringLiteral, Hashable, Sendable {
     public let description: String
     
