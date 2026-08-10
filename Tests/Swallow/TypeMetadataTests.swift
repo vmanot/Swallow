@@ -17,12 +17,6 @@ final class TypeMetadataTests: XCTestCase {
         XCTAssert(TypeMetadata.of(array).conforms(to: (any Sequence).self))
     }
     
-    func testKeyPaths() throws {
-        let topLevelKeyPaths = TypeMetadata(SomeTypeWithNestedSubtypes.self)._allTopLevelKeyPathsByName
-        let allKeyPaths = TypeMetadata(SomeTypeWithNestedSubtypes.self)._recursivelyGetAllKeyPaths()
-        
-        print(topLevelKeyPaths, allKeyPaths)
-    }
 }
 
 // MARK: - Internal
@@ -48,12 +42,4 @@ extension TypeMetadataTests {
         public var nickname: String = "woof"
     }
     
-    public struct SomeTypeWithNestedSubtypes {
-        public let foo: Int
-        public let nested: NestedSubtype
-        
-        public struct NestedSubtype {
-            let bar: Int
-        }
-    }
 }

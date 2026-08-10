@@ -360,6 +360,7 @@ let package = Package(
             dependencies: [
                 "DiagnosticsSwiftLog",
                 "Diagnostics",
+                "SwiftSyntaxUtilities",
                 .product(name: "Logging", package: "swift-log"),
             ],
             swiftSettings: [

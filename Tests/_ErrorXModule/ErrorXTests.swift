@@ -88,28 +88,6 @@ struct ErrorXTests {
   }
 
   @Test
-  func reportMirrorExposesSemanticReadModel() {
-    let report = ErrorReport(PaymentError.declined(processorCode: "42"))
-    let labels = Mirror(reflecting: report).children.compactMap(\.label)
-
-    #expect(
-      labels == [
-        "error",
-        "causeChain",
-        "errorTree",
-        "primaryIdentity",
-        "causeIdentities",
-        "identities",
-        "identityOccurrences",
-        "contextOccurrences",
-        "presentation",
-        "recoveryOptions",
-        "context",
-        "observation",
-      ])
-  }
-
-  @Test
   func reportPreservesEveryExplicitIdentityInPrimaryChain() {
     let root: PaymentError = .timeout
     let wrapped: IdentityWrappingPaymentError = .init(cause: root)

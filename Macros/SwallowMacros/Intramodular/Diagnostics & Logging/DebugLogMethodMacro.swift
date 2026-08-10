@@ -19,15 +19,6 @@ extension DebugLogMethodMacro: BodyMacro {
             return []
         }
         
-        // Extract variableName from attribute arguments if present
-        let variableName: String?
-        if case .argumentList(let arguments) = node.arguments,
-           let firstArg = arguments.first?.expression.as(StringLiteralExprSyntax.self) {
-            variableName = firstArg.segments.description
-        } else {
-            variableName = nil
-        }
-        
         if let declaration = declaration.as(FunctionDeclSyntax.self) {
             let methodName = declaration.name.text
             let parameters = declaration.signature.parameterClause.parameters
@@ -75,6 +66,15 @@ extension DebugLogMethodMacro: BodyMacro {
             
         } else if let declaration = declaration.as(AccessorDeclSyntax.self) {
             let accessorType = declaration.accessorSpecifier.text
+            let variableName: String?
+
+            if case .argumentList(let arguments) = node.arguments,
+               let firstArgument = arguments.first?.expression.as(StringLiteralExprSyntax.self) {
+                variableName = firstArgument.segments.description
+            } else {
+                variableName = nil
+            }
+
             let variableNameSuffix = variableName.map { " of variable \($0)" } ?? ""
             
             var newBody: [CodeBlockItemSyntax] = [
@@ -94,7 +94,7 @@ extension DebugLogMethodMacro: BodyMacro {
 }
 
 extension DebugLogMethodMacro {
-    class ReturnStatementRewriter: SyntaxRewriter {
+    private final class ReturnStatementRewriter: SyntaxRewriter {
         let methodName: String
         
         init(methodName: String? = nil) {

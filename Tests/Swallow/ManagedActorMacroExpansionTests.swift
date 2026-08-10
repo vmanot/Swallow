@@ -2,16 +2,12 @@
 // Copyright (c) Vatsal Manot
 //
 
-import SwiftUI
-import Swallow
 import SwallowMacros
-import SwallowMacrosClient
 import SwiftSyntaxMacrosTestSupport
 import XCTest
 
 final class ManagedActorMacroExpansionTests: XCTestCase {
     static let macroNameIdentifier = "ManagedActor"
-    static let methodMacroNameIdentifier = "_ManagedActorMethod"
     
     func testMacro() {
         assertMacroExpansion(
@@ -162,23 +158,6 @@ final class ManagedActorMacroExpansionTests: XCTestCase {
             }
             """,
             macros: [ManagedActorMacroExpansionTests.macroNameIdentifier: ManagedActorMacro.self]
-        )
-    }
-    
-    // @_ManagedActorMethod expansion does not seem to be working in a test.
-    // Getting a bunch of parsing errors, and the test never completes.
-    // It does work when I right click on the macro when it is used in the code and do Expand Macro.
-    func needsFix_testManagedActorMethodMacro() {
-        assertMacroExpansion(
-            """
-            @_ManagedActorMethod
-            func alreadyManaged$() {
-                print("Already managed")
-            }
-            """,
-            expandedSource: """
-            """,
-            macros: [ManagedActorMacroExpansionTests.methodMacroNameIdentifier: ManagedActorMethodMacro.self]
         )
     }
 }
