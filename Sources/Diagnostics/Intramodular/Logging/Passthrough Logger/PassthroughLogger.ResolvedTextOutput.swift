@@ -27,7 +27,6 @@ extension PassthroughLogger {
             Self(destination: .standardError, format: format)
         }
         
-        @_spi(Internal)
         public static func custom(
             format: LogEntryTextFormat = .commandLine,
             write: @escaping @Sendable (String) -> Void

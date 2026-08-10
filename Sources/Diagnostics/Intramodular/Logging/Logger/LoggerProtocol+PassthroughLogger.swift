@@ -8,10 +8,10 @@ import Swift
 
 extension LoggerProtocol where Self: PassthroughLogger {
     @_transparent
-    public func log(
+    public func emit(
         level: LogLevel,
         _ message: @autoclosure () -> LogMessage,
-        metadata: @autoclosure () -> [String: Any]?,
+        metadata: @autoclosure () -> DiagnosticLogMetadata?,
         file: String,
         function: String,
         line: UInt
@@ -24,7 +24,7 @@ extension LoggerProtocol where Self: PassthroughLogger {
             }
         }
         
-        base.log(
+        base.emit(
             level: level,
             message(),
             metadata: metadata(),

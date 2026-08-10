@@ -11,7 +11,7 @@ import Foundation
 /// Structured local event stream first; OSLog sink second. Apple's store/query
 /// story is too narrow to be the diagnostic source of truth.
 @usableFromInline
-final class _PassthroughLoggerGuts: LoggerProtocol, @unchecked Sendable {
+final class _PassthroughLoggerGuts: ClientLoggerProtocol, @unchecked Sendable {
     typealias Source = PassthroughLogger.Source
     
     @usableFromInline
@@ -67,10 +67,10 @@ final class _PassthroughLoggerGuts: LoggerProtocol, @unchecked Sendable {
     }
     
     @usableFromInline
-    func log(
+    func emit(
         level: LogLevel,
         _ message: @autoclosure () -> LogMessage,
-        metadata: @autoclosure () -> [String: Any]?,
+        metadata: @autoclosure () -> DiagnosticLogMetadata?,
         file: String,
         function: String,
         line: UInt
@@ -86,7 +86,8 @@ final class _PassthroughLoggerGuts: LoggerProtocol, @unchecked Sendable {
             timestamp: Date(),
             scope: scope,
             level: level,
-            message: message
+            message: message,
+            metadata: metadata() ?? [:]
         )
         
         if _isDebugAssertConfiguration {
@@ -193,7 +194,8 @@ extension _PassthroughLoggerGuts: TextOutputStream {
                 timestamp: Date(),
                 scope: scope,
                 level: .info,
-                message: .init(stringLiteral: string)
+                message: .init(stringLiteral: string),
+                metadata: [:]
             )
         )
     }

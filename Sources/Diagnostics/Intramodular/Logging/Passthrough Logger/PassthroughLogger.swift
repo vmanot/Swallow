@@ -32,7 +32,7 @@ extension PassthroughLogger {
 }
 
 /// A logger that broadcasts its entries.
-public final class PassthroughLogger: @unchecked Sendable, LoggerProtocol, ObservableObject {
+public final class PassthroughLogger: @unchecked Sendable, ClientLoggerProtocol, ObservableObject {
     public typealias LogLevel = ClientLogLevel
     public typealias LogMessage = Message
     
@@ -58,7 +58,12 @@ extension PassthroughLogger {
     public convenience init(
         source: Source
     ) {
-        self.init(base: _PassthroughLoggerGuts(source: source))
+        self.init(
+            base: _PassthroughLoggerGuts(
+                source: source,
+                textOutput: _DiagnosticLoggingValues.environment.wrappedValue?.textOutput
+            )
+        )
     }
     
     public convenience init(

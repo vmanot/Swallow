@@ -384,11 +384,55 @@ final class PassthroughLoggerSinkTests {
     func diagnosticLoggingEnvironmentTaskLocalScopeIsDetectedAndRestored() {
         #expect(!_DiagnosticLoggingValues.isEnvironmentActive)
         
-        _DiagnosticLoggingEnvironment.withEnvironment(.init()) {
+        DiagnosticLoggingEnvironment.withValue(.init()) {
             #expect(_DiagnosticLoggingValues.isEnvironmentActive)
         }
         
         #expect(!_DiagnosticLoggingValues.isEnvironmentActive)
+    }
+
+    @Test
+    func loggingProtocolLoggerInheritsEnvironmentTextOutput() {
+        let output = RecordingTextOutput()
+
+        DiagnosticLoggingEnvironment.withValue(
+            .init(
+                textOutput: .custom(format: .plain) { text in
+                    output.append(text)
+                }
+            )
+        ) {
+            let source = LoggingSource()
+            source.logger.notice("inherited")
+        }
+
+        #expect(output.lines == ["inherited"])
+    }
+
+    @Test
+    func alignedLinePrefixTreatsMultilineMessageAsOneEvent() {
+        let sink = RecordingSink()
+        let logger = makeLogger(sink: sink)
+        let entries = RecordingEntries()
+
+        _withLogTracking(
+            perform: {
+                self.log("first\nsecond", using: logger)
+            },
+            handler: { entry in
+                entries.append(entry)
+            }
+        )
+
+        let format = LogEntryTextFormat(
+            transforms: [
+                AlignedLinePrefixLogEntryTextTransform(prefix: LiteralPrefix("◇ "))
+            ]
+        )
+
+        #expect(entries.formattedMessages(using: format) == [
+            "◇ first\n  second"
+        ])
     }
     
     @Test
@@ -603,6 +647,10 @@ final class PassthroughLoggerSinkTests {
         var description: String {
             name
         }
+    }
+
+    private final class LoggingSource: Logging {
+
     }
     
     private struct StructuredTestScope: Hashable, LogScope, LogScopeTextRepresentable {

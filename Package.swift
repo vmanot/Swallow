@@ -6,6 +6,7 @@ import PackageDescription
 var dependencies: [PackageDescription.Package.Dependency] = [
     .package(url: "https://github.com/apple/swift-atomics.git", from: "1.2.0"),
     .package(url: "https://github.com/apple/swift-collections", from: "1.1.0"),
+    .package(url: "https://github.com/apple/swift-log.git", from: "1.6.0"),
 ]
 // SwiftSyntax macro binaries are coupled to the compiler's plugin protocol.
 // Keep this package source-backed so changing Xcode versions cannot leave a
@@ -39,6 +40,18 @@ let package = Package(
                 "LoremIpsum",
                 "POSIX",
                 "Runtime",
+            ]
+        ),
+        .library(
+            name: "Diagnostics",
+            targets: [
+                "Diagnostics"
+            ]
+        ),
+        .library(
+            name: "DiagnosticsSwiftLog",
+            targets: [
+                "DiagnosticsSwiftLog"
             ]
         ),
         .library(
@@ -173,6 +186,16 @@ let package = Package(
                 "ErrorX",
                 "Swallow",
                 "SwallowMacrosClient",
+            ],
+            swiftSettings: [
+                .swiftLanguageMode(.v6)
+            ]
+        ),
+        .target(
+            name: "DiagnosticsSwiftLog",
+            dependencies: [
+                "Diagnostics",
+                .product(name: "Logging", package: "swift-log"),
             ],
             swiftSettings: [
                 .swiftLanguageMode(.v6)
@@ -330,6 +353,17 @@ let package = Package(
             path: "Tests/Diagnostics",
             swiftSettings: [
                 .swiftLanguageMode(.v5)
+            ]
+        ),
+        .testTarget(
+            name: "DiagnosticsSwiftLogTests",
+            dependencies: [
+                "DiagnosticsSwiftLog",
+                "Diagnostics",
+                .product(name: "Logging", package: "swift-log"),
+            ],
+            swiftSettings: [
+                .swiftLanguageMode(.v6)
             ]
         ),
         .testTarget(

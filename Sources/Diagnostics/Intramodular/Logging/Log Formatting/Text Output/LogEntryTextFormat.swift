@@ -158,6 +158,40 @@ public struct LinePrefixLogEntryTextTransform: Sendable, LogEntryTextTransform {
     }
 }
 
+/// Prefixes the first line and aligns continuation lines beneath its text.
+///
+/// This is suited to status symbols and other compact terminal markers where
+/// repeating the prefix would incorrectly imply a separate event.
+public struct AlignedLinePrefixLogEntryTextTransform: Sendable, LogEntryTextTransform {
+    public var prefix: any LogEntryLinePrefixStrategy
+
+    public init(
+        prefix: some LogEntryLinePrefixStrategy
+    ) {
+        self.prefix = prefix
+    }
+
+    public func transform(
+        _ fragment: LogEntryTextFragment
+    ) -> LogEntryTextFragment {
+        let prefix = prefix.prefix(for: fragment.entry)
+
+        guard !prefix.isEmpty else {
+            return fragment
+        }
+
+        var result = fragment
+        let continuationPrefix = String(repeating: " ", count: prefix.count)
+        let lines = fragment.text.components(separatedBy: .newlines)
+
+        result.text = lines.enumerated().map { index, line in
+            (index == 0 ? prefix : continuationPrefix) + line
+        }.joined(separator: "\n")
+
+        return result
+    }
+}
+
 public struct NoLogEntryLinePrefix: Hashable, LogEntryLinePrefixStrategy {
     public init() {
         

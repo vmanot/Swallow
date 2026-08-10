@@ -42,5 +42,6 @@ extension PassthroughLogger {
         public let scope: PassthroughLogger.Scope
         public let level: LogLevel
         public let message: LogMessage
+        public let metadata: DiagnosticLogMetadata
     }
 }

@@ -4,9 +4,14 @@
 
 import Swallow
 
-public struct _DiagnosticLoggingEnvironment: Sendable {
+/// Output and context inherited by loggers created during an operation.
+///
+/// This lets a library continue to use its ordinary `Logging.logger` while an
+/// executable selects the concrete destination and text presentation at its
+/// boundary.
+public struct DiagnosticLoggingEnvironment: Sendable {
     public var textOutput: PassthroughLogger.ResolvedTextOutput?
-    
+
     public init(
         textOutput: PassthroughLogger.ResolvedTextOutput? = nil
     ) {
@@ -14,20 +19,20 @@ public struct _DiagnosticLoggingEnvironment: Sendable {
     }
 }
 
-public enum _GlobalDiagnosticLoggingEnvironment {
+public enum GlobalDiagnosticLoggingEnvironment {
     public static var isBootstrapped: Bool {
         _DiagnosticLoggingValues.environment.isValueFixed
     }
-    
+
     public static func bootstrap(
-        _ environment: _DiagnosticLoggingEnvironment
+        _ environment: DiagnosticLoggingEnvironment
     ) {
         _DiagnosticLoggingValues.environment.fixValue(environment)
     }
 }
 
-extension _DiagnosticLoggingEnvironment {
-    public static func withEnvironment<R>(
+extension DiagnosticLoggingEnvironment {
+    public static func withValue<R>(
         _ environment: Self,
         operation: () throws -> R
     ) rethrows -> R {
@@ -35,8 +40,8 @@ extension _DiagnosticLoggingEnvironment {
             try operation()
         }
     }
-    
-    public static func withEnvironment<R>(
+
+    public static func withValue<R>(
         _ environment: Self,
         operation: () async throws -> R
     ) async rethrows -> R {
@@ -48,7 +53,7 @@ extension _DiagnosticLoggingEnvironment {
 
 enum _DiagnosticLoggingValues {
     // Static wrapper vars trip Swift 6 mutable-global checking; the wrapper object is the state boundary.
-    static let environment = _GlobalSetOnceOrTaskLocal<_DiagnosticLoggingEnvironment?>(
+    static let environment = _GlobalSetOnceOrTaskLocal<DiagnosticLoggingEnvironment?>(
         wrappedValue: nil
     )
 }
