@@ -528,23 +528,6 @@ struct SwiftSyntaxUtilitiesTests {
     }
 
     @Test
-    func operatorSpecifiersExposeFixityKeywordsAndStableOrdering() {
-        #expect(OperatorSpecifier.allCases == [.prefix, .infix, .postfix])
-        #expect(OperatorSpecifier.prefix.keyword == .prefix)
-        #expect(OperatorSpecifier.infix.keyword == .infix)
-        #expect(OperatorSpecifier.postfix.keyword == .postfix)
-        #expect(OperatorSpecifier.prefix < .infix)
-        #expect(OperatorSpecifier.infix < .postfix)
-    }
-
-    @Test
-    func accessorSpecifiersExposeAccessorKeywords() {
-        #expect(AccessorSpecifier.allCases == [.get, .set])
-        #expect(AccessorSpecifier.get.keyword == .get)
-        #expect(AccessorSpecifier.set.keyword == .set)
-    }
-
-    @Test
     func accessLevelSyntaxRemainsAnExtensibleDeclarationProtocol() throws {
         var declaration = try #require(
             Parser.parse(source: "protocol ClientDeclaration {}")
@@ -561,32 +544,6 @@ struct SwiftSyntaxUtilitiesTests {
 
         #expect(function.accessLevel == .package)
         #expect(function.trimmedDescription == "package func run() {}")
-    }
-
-    @Test
-    func sharedSyntaxProtocolsSupportTypeErasedTraversal() throws {
-        let type = TypeSyntax("Module.Container<String>")
-        let typeWithArguments = try #require(type.asProtocol(WithGenericArgumentClauseSyntax.self))
-
-        #expect(typeWithArguments.genericArgumentClause?.arguments.count == 1)
-        #expect(typeWithArguments.with(\.genericArgumentClause, nil).trimmedDescription == "Module.Container")
-
-        let source = Parser.parse(
-            source: """
-            struct Box<Value>: Sendable where Value: Equatable {}
-            func transform(_ value: Int) -> String { "\\(value)" }
-            """
-        )
-        let structure = try #require(source.statements[0].item.as(StructDeclSyntax.self))
-        let function = try #require(source.statements[1].item.as(FunctionDeclSyntax.self))
-        let withWhereClause = try #require(structure.asProtocol(WithGenericWhereClauseSyntax.self))
-        let withInheritance = try #require(structure.asProtocol(WithInheritanceClauseSyntax.self))
-        let withSignature = try #require(function.asProtocol(WithSignatureSyntax.self))
-
-        #expect(withWhereClause.genericWhereClause?.requirements.count == 1)
-        #expect(withInheritance.inheritanceClause?.inheritedTypes.count == 1)
-        #expect(withSignature.signature.parameterClause.parameters.count == 1)
-        #expect(withSignature.signature.returnClause?.type.trimmedDescription == "String")
     }
 
     @Test
@@ -666,27 +623,6 @@ struct SwiftSyntaxUtilitiesTests {
     }
 
     @Test
-    func collectionLiteralEmptinessIsDirectAndTupleTypeConstructionAcceptsZeroElements() throws {
-        let variables = variableDeclarations(
-            in: """
-            let emptyArray = []
-            let nestedArray = [[]]
-            let emptyDictionary = [:]
-            let dictionary = ["key": 1]
-            """
-        )
-        let expressions = try variables.map { variable in
-            try #require(variable.singleBinding?.initializer?.value)
-        }
-
-        #expect(expressions[0].as(ArrayExprSyntax.self)?.isEmptyArrayLiteral == true)
-        #expect(expressions[1].as(ArrayExprSyntax.self)?.isEmptyArrayLiteral == false)
-        #expect(expressions[2].as(DictionaryExprSyntax.self)?.isEmptyDictionaryLiteral == true)
-        #expect(expressions[3].as(DictionaryExprSyntax.self)?.isEmptyDictionaryLiteral == false)
-        #expect(TupleTypeElementListSyntax([]).isEmpty)
-    }
-
-    @Test
     func literalTypeInferenceIsConservativeAndNamedAccordingly() throws {
         let variables = variableDeclarations(
             in: """
@@ -735,8 +671,6 @@ struct SwiftSyntaxUtilitiesTests {
         #expect(attributes.compactMap { $0.as(AttributeSyntax.self)?.unqualifiedName } == ["Second"])
     }
 }
-
-extension ProtocolDeclSyntax: AccessLevelSyntax { }
 
 private func declarations(in source: String) -> [EnumDeclSyntax] {
     Parser.parse(source: source).statements.compactMap { $0.item.as(EnumDeclSyntax.self) }

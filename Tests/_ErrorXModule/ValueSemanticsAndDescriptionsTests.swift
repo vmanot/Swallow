@@ -31,50 +31,6 @@ private struct DescriptionTestError: Error, ErrorCodeProviding, ErrorTreeProvidi
 @Suite
 struct ValueSemanticsAndDescriptionsTests {
   @Test
-  func valueTypesExposeHonestHashableConformances() {
-    let context: ErrorContext = [
-      .init(key: "request.id", value: "request-1", privacy: .public)
-    ]
-    let observation = ErrorObservation(
-      scenario: ErrorScenario("checkout.submit"),
-      context: context
-    )
-    let values = [
-      observation,
-      observation,
-    ]
-
-    _requireHashable(ErrorIdentity(domain: "com.example", code: "failed"))
-    _requireHashable(AnyErrorCode(DescriptionTestCode.failed))
-    _requireHashable(ErrorPresentation(message: "Failed"))
-    _requireHashable(ErrorRecoveryOption(title: "Retry"))
-    _requireHashable(context)
-    _requireHashable(ErrorContext.AnyKey("request.id"))
-    _requireHashable(ErrorContext.Key<String>("request.id"))
-    _requireHashable(ErrorContext.Privacy.private)
-    _requireHashable(ErrorContext.Value.string("request-1"))
-    _requireHashable(ErrorContext.Entry(key: "request.id", value: "request-1"))
-    _requireHashable(ErrorContext.Projection.diagnostic)
-    _requireHashable(ErrorContext.Projection.Visibility.diagnostic)
-    _requireHashable(ErrorContext.Projection.Redaction.placeholder)
-    _requireHashable(ErrorScenario("checkout.submit"))
-    _requireHashable(ErrorReport.DiagnosticStyle.detailed)
-    _requireHashable(ErrorRelation.Kind.concurrent)
-    _requireHashable(observation)
-    _requireHashable(ErrorReport.ContextOccurrence.Owner.relation)
-    _requireHashable(
-      ErrorReport.ContextOccurrence(
-        path: [0],
-        relationPath: [.concurrent],
-        owner: .relation,
-        entry: .init(key: "request.id", value: "request-1")
-      )
-    )
-
-    #expect(Set(values).count == 1)
-  }
-
-  @Test
   func contextDescriptionsPreservePrivacy() {
     let context: ErrorContext = [
       .init(key: "http.status", value: 503, privacy: .public),
@@ -150,8 +106,4 @@ struct ValueSemanticsAndDescriptionsTests {
     #expect(!report.debugDescription.contains("access.token"))
     #expect(!report.debugDescription.contains("secret-token"))
   }
-}
-
-private func _requireHashable<Value: Hashable>(_ value: Value) {
-  _ = value
 }

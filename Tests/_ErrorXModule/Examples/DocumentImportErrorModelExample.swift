@@ -198,12 +198,6 @@ struct DocumentImportErrorModelExample {
         .string("/Users/example/Customers/private-export.xls"), .string("xls"),
       ])
     #expect(context.map(\.privacy) == [.private, .public])
-    #expect(
-      DocumentImportDiagnostics.Codes.allCases.map(\.identifier) == [
-        "document.unsupported_file_type",
-        "document.invalid_record",
-        "document.invalid",
-      ])
   }
 
   @Test

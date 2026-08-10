@@ -139,13 +139,7 @@ extension WithAttributesSyntax {
     public func hasAttribute(
         withUnqualifiedName name: String
     ) -> Bool {
-        attributes.contains { element in
-            guard case .attribute(let attribute) = element else {
-                return false
-            }
-
-            return attribute.hasUnqualifiedName(name)
-        }
+        attributes.containsAttribute(withUnqualifiedName: name)
     }
 
     public func attributes(
@@ -163,6 +157,36 @@ extension WithAttributesSyntax {
 }
 
 extension AttributeListSyntax {
+    /// Whether an ordinary attribute has the given final type-name component.
+    public func containsAttribute(
+        withUnqualifiedName name: String
+    ) -> Bool {
+        contains { element in
+            guard case .attribute(let attribute) = element else {
+                return false
+            }
+
+            return attribute.hasUnqualifiedName(name)
+        }
+    }
+
+    /// Returns a copy without ordinary attributes whose final type-name
+    /// component is contained in `names`.
+    ///
+    /// Conditional-compilation attribute elements are preserved.
+    public func removingAttributes(
+        withUnqualifiedNames names: Set<String>
+    ) -> Self {
+        filter { element in
+            guard case .attribute(let attribute) = element,
+                  let name = attribute.unqualifiedName else {
+                return true
+            }
+
+            return !names.contains(name)
+        }
+    }
+
     /// Removes ordinary attributes with the given final type-name component.
     ///
     /// Conditional-compilation attribute elements are preserved.

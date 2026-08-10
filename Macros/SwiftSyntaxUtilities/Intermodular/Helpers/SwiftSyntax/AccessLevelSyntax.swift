@@ -49,5 +49,8 @@ extension ClassDeclSyntax: AccessLevelSyntax { }
 extension EnumDeclSyntax: AccessLevelSyntax { }
 extension ExtensionDeclSyntax: AccessLevelSyntax { }
 extension FunctionDeclSyntax: AccessLevelSyntax { }
+extension InitializerDeclSyntax: AccessLevelSyntax { }
+extension MacroDeclSyntax: AccessLevelSyntax { }
+extension ProtocolDeclSyntax: AccessLevelSyntax { }
 extension StructDeclSyntax: AccessLevelSyntax { }
 extension VariableDeclSyntax: AccessLevelSyntax { }

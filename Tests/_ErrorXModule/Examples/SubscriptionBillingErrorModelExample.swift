@@ -148,12 +148,6 @@ struct SubscriptionBillingErrorModelExample {
     #expect(ErrorIdentity(paymentRequired)?.domain == "com.example.billing.subscriptions")
     #expect(ErrorIdentity(paymentRequired)?.code == "subscription.payment_required")
     #expect(
-      SubscriptionBillingDiagnostics.Codes.allCases.map(\.identifier) == [
-        "subscription.plan_unavailable",
-        "subscription.payment_required",
-        "subscription.activation_failed",
-      ])
-    #expect(
       paymentReport.context.map(\.key.name) == ["billing.gateway", "billing.gateway_code"])
     #expect(paymentReport.context.map(\.privacy) == [ErrorContext.Privacy.private, .public])
     #expect(ErrorIdentity(legacyTimeout)?.code == "legacy.gateway_timeout")

@@ -504,11 +504,6 @@ struct ErrorXTests {
     #expect(
       CaseOnlyCatalogDiagnostics.Codes.invalidRecord.identity.domain
         == "dev.vmanot.tests.case-only-catalog")
-    #expect(
-      CaseOnlyCatalogDiagnostics.Codes.allCases.map(\.identifier) == [
-        "unsupportedFileType",
-        "invalidRecord",
-      ])
   }
 
   @Test

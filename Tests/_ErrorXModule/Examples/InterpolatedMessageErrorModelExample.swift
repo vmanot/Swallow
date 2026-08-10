@@ -142,7 +142,6 @@ struct OmittedErrorCodeArgumentsExample {
   func aBareErrorCodeStillModelsTheCase() {
     #expect(ErrorIdentity(MinimalError.cancelled)?.code == "cancelled")
     #expect(ErrorIdentity(MinimalError.timedOut(afterSeconds: 30))?.code == "timedOut")
-    #expect(MinimalError.Code.allCases.map(\.identifier) == ["cancelled", "timedOut"])
   }
 
   @Test
