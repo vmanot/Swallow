@@ -3,6 +3,7 @@
 //
 
 import Darwin
+import Foundation
 import Swallow
 
 public struct POSIXMemoryMap {
@@ -31,9 +32,18 @@ public struct POSIXMemoryMap {
 
 extension POSIXMemoryMap {
     public init(length: IndexDistance, protection: POSIXMemoryMapProtection, accessControl: POSIXMemoryMapAccessControl = .init(), flags: POSIXMemoryMapOtherFlags = .init(), descriptor: POSIXIOResourceDescriptor, offset: Int64 = 0) throws {
-        let baseAddress = try Optional(mmap(nil, length, protection.rawValue, POSIXMemoryMapType.file.rawValue ^ accessControl.rawValue ^ flags.rawValue, descriptor.rawValue, offset)).toPOSIXResult().get().immutableRepresentation
-        
-        self.init(.init(start: baseAddress, count: length))
+        let baseAddress: UnsafeMutableRawPointer? = mmap(
+            nil,
+            length,
+            protection.rawValue,
+            POSIXMemoryMapType.file.rawValue | accessControl.rawValue | flags.rawValue,
+            descriptor.rawValue,
+            offset
+        )
+        guard baseAddress != MAP_FAILED else {
+            throw POSIXError(.init(rawValue: errno) ?? .EIO)
+        }
+        self.init(.init(start: baseAddress.map(UnsafeRawPointer.init), count: length))
     }
     
     public init(protection: POSIXMemoryMapProtection, accessControl: POSIXMemoryMapAccessControl = .init(), flags: POSIXMemoryMapOtherFlags = .init(), descriptor: POSIXIOResourceDescriptor, offset: Int64 = 0) throws {
@@ -43,7 +53,11 @@ extension POSIXMemoryMap {
 
 extension POSIXMemoryMap {
     public func synchronize(synchronously: Bool = true, invalidateSharedMaps: Bool = false) throws {
-        try msync(try baseAddress.unwrap().mutableRepresentation, count, (synchronously ? MS_SYNC : MS_ASYNC) ^ (invalidateSharedMaps ? MS_INVALIDATE : 0)).throwingAsPOSIXErrorIfNecessary()
+        try msync(
+            try baseAddress.unwrap().mutableRepresentation,
+            count,
+            (synchronously ? MS_SYNC : MS_ASYNC) | (invalidateSharedMaps ? MS_INVALIDATE : 0)
+        ).throwingAsPOSIXErrorIfNecessary()
     }
     
     public func unmap() throws {

@@ -20,7 +20,7 @@ extension POSIXIOResourceDescriptor {
     public func lock() {
         flock(rawValue, LOCK_EX)
     }
-    
+
     public func unlock() {
         flock(rawValue, LOCK_UN)
     }
@@ -42,11 +42,14 @@ extension POSIXIOResourceDescriptor {
 
 extension POSIXIOResourceDescriptor {
     public func resolveFilePath() throws -> String {
-        var result = Data(capacity: Int(MAXPATHLEN))
-        
-        _ = try result.withUnsafeMutableBytes({ try fcntl(rawValue, F_GETPATH, $0.baseAddress!).throwingAsPOSIXErrorIfNecessary() })
-        
-        return result.withUnsafeBytes({ String(cString: $0.baseAddress!.assumingMemoryBound(to: CChar.self)) })
+        var buffer = Data(count: Int(MAXPATHLEN))
+        _ = try buffer.withUnsafeMutableBytes { buffer in
+            try fcntl(rawValue, F_GETPATH, buffer.baseAddress!)
+                .throwingAsPOSIXErrorIfNecessary()
+        }
+        return buffer.withUnsafeBytes {
+            String(cString: $0.baseAddress!.assumingMemoryBound(to: CChar.self))
+        }
     }
 }
 

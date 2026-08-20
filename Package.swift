@@ -43,6 +43,12 @@ let package = Package(
             ]
         ),
         .library(
+            name: "POSIX",
+            targets: [
+                "POSIX"
+            ]
+        ),
+        .library(
             name: "Diagnostics",
             targets: [
                 "Diagnostics"
@@ -312,6 +318,16 @@ let package = Package(
             path: "Macros/SwiftSyntaxUtilities",
             swiftSettings: [
                 .swiftLanguageMode(.v5)
+            ]
+        ),
+        .testTarget(
+            name: "POSIXTests",
+            dependencies: [
+                "POSIX",
+            ],
+            path: "Tests/POSIX",
+            swiftSettings: [
+                .swiftLanguageMode(.v6)
             ]
         ),
         .testTarget(

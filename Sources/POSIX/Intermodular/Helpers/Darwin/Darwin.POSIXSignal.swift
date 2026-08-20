@@ -122,7 +122,11 @@ extension POSIXSignal {
     }
 
     public func ignore() throws -> (@convention(c) (Int32) -> ()) {
-        guard let result = Darwin.signal(rawValue, SIG_IGN) else {
+        let result = Darwin.signal(rawValue, SIG_IGN)
+        let resultAddress = unsafeBitCast(result, to: UnsafeMutableRawPointer?.self)
+        let errorAddress = unsafeBitCast(SIG_ERR, to: UnsafeMutableRawPointer?.self)
+
+        guard resultAddress != errorAddress, let result else {
             throw POSIXError.last
         }
 
@@ -130,7 +134,11 @@ extension POSIXSignal {
     }
 
     public func restore() throws -> (@convention(c) (Int32) -> ()) {
-        guard let result = Darwin.signal(rawValue, SIG_DFL) else {
+        let result = Darwin.signal(rawValue, SIG_DFL)
+        let resultAddress = unsafeBitCast(result, to: UnsafeMutableRawPointer?.self)
+        let errorAddress = unsafeBitCast(SIG_ERR, to: UnsafeMutableRawPointer?.self)
+
+        guard resultAddress != errorAddress, let result else {
             throw POSIXError.last
         }
 

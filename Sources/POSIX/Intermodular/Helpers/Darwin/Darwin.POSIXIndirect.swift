@@ -26,8 +26,11 @@ public class POSIXIndirect<Primitive>: Initiable {
     }
 
     public func destruct() throws {
-        try value.unwrap().deinitialize(count: 1)
-        try value.unwrap().deallocate()
+        let value = try self.value.unwrap()
+
+        value.deinitialize(count: 1)
+        value.deallocate()
+        self.value = nil
     }
 
     public func withConstructedValue<Result>(_ body: ((UnsafeMutablePointer<Primitive>) throws -> Result)) throws -> Result {
